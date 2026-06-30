@@ -79,3 +79,24 @@
   rendered as TODO (Phase 6 print options). Halation is approximated via bloom.
 - Determinism verified by construction + seed test; pixel-level golden tests need
   a device/sim GPU and are listed in the final QA manual plan.
+
+---
+
+## Calibration pass (PROMPT 3 parameter table applied)
+
+- All 30 recipes recalibrated to the exact engineering values from the parameter
+  table (EV, C, S, T, Ti, H, Sh, grain @ size, vignette @ radius, fade, sharpen,
+  blur, 5-point curve, RGB multipliers, CC, leak, halation, bloom, border, date
+  stamp, frames, default unlock; B&W luma weights). These are calibrated starting
+  points based on analog film characteristics, **not** manufacturer LUTs.
+- **New: `MatrixBasePreset`** — the 11 named color-mixing matrices
+  (consumerWarmCN … xproSlide) with full r/g/b rows + bias, added as
+  `FilmRecipe.colorBase` and applied via `CIColorMatrix` in the color path
+  (after RGB balance). B&W recipes use `.identity` and the luma path.
+- Builder exposes the color base as "Color profile"; grain-size range widened to
+  accommodate high-ISO stocks (up to ~2.1).
+- **Developer catalog** (`RecipeCatalogDebugView`, `#if DEBUG`, linked from
+  Settings) lists every recipe's metadata with a **procedural demo preview**
+  only — never a user photo.
+- Tests: exact-value spot checks (gold-daylight, cross-process-slide), B&W
+  luma/neutral-base invariant, color-recipes-have-a-base invariant.

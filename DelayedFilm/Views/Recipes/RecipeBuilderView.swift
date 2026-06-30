@@ -92,6 +92,9 @@ struct RecipeBuilderView: View {
 
     private var colorSection: some View {
         Section("Color") {
+            Picker("Color profile", selection: $draft.colorBase) {
+                ForEach(MatrixBasePreset.allCases, id: \.self) { Text($0.displayName).tag($0) }
+            }
             slider("Saturation", $draft.saturation, 0...2)
             slider("Vibrance", $draft.colorChrome, 0...1)
             slider("Temperature", $draft.temperatureShiftK, -800...800, "%.0f K")
@@ -113,7 +116,7 @@ struct RecipeBuilderView: View {
     private var textureSection: some View {
         Section("Texture") {
             slider("Grain strength", $draft.grainAmount, 0...1)
-            slider("Grain size", $draft.grainSize, 0...1)
+            slider("Grain size", $draft.grainSize, 0...2.5)
             slider("Clarity", $draft.sharpen, 0...1)
             slider("Softness", $draft.blur, 0...8, "%.1f px")
             slider("Vignette", $draft.vignetteAmount, 0...1)

@@ -51,6 +51,7 @@ struct DefaultFilmRenderer: FilmRenderer {
         img = toneCurve(img, r.toneCurve)
         img = colorControls(img, contrast: r.contrast, saturation: r.saturation)
         img = rgbBalance(img, r.rgbBalance)
+        img = colorBaseMatrix(img, r.colorBase)
         if r.colorChrome > 0 { img = vibrance(img, r.colorChrome) }
         if r.fade > 0 { img = fade(img, r.fade) }
         if r.bloom > 0 { img = bloom(img, intensity: r.bloom, radiusScale: 10) }
@@ -140,6 +141,19 @@ struct DefaultFilmRenderer: FilmRenderer {
         f.gVector = CIVector(x: 0, y: CGFloat(b.y), z: 0, w: 0)
         f.bVector = CIVector(x: 0, y: 0, z: CGFloat(b.z), w: 0)
         f.aVector = CIVector(x: 0, y: 0, z: 0, w: 1)
+        return f.outputImage ?? img
+    }
+
+    private func colorBaseMatrix(_ img: CIImage, _ base: MatrixBasePreset) -> CIImage {
+        guard base != .identity else { return img }
+        let m = base.coefficients
+        let f = CIFilter.colorMatrix()
+        f.inputImage = img
+        f.rVector = CIVector(x: m.r[0], y: m.r[1], z: m.r[2], w: m.r[3])
+        f.gVector = CIVector(x: m.g[0], y: m.g[1], z: m.g[2], w: m.g[3])
+        f.bVector = CIVector(x: m.b[0], y: m.b[1], z: m.b[2], w: m.b[3])
+        f.aVector = CIVector(x: 0, y: 0, z: 0, w: 1)
+        f.biasVector = CIVector(x: m.bias[0], y: m.bias[1], z: m.bias[2], w: m.bias[3])
         return f.outputImage ?? img
     }
 

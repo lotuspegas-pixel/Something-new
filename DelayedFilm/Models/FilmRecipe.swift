@@ -72,6 +72,7 @@ struct FilmRecipe: Codable, Hashable, Identifiable, Sendable {
     // MARK: Color shaping
     var toneCurve: [CGPoint]     // control points in unit square
     var rgbBalance: SIMD3<Float> // per-channel multiplier
+    var colorBase: MatrixBasePreset // named color-mixing matrix (channel crosstalk)
     var basePreset: String?      // parent recipe id (for custom/derived)
     var lumaWeights: SIMD3<Float>? // B&W channel mix; nil = use category default
     var colorChrome: Float       // vibrance-like boost 0…1
@@ -117,6 +118,7 @@ struct FilmRecipe: Codable, Hashable, Identifiable, Sendable {
         blur: Float = 0,
         toneCurve: [CGPoint] = [CGPoint(x: 0, y: 0), CGPoint(x: 1, y: 1)],
         rgbBalance: SIMD3<Float> = SIMD3<Float>(1, 1, 1),
+        colorBase: MatrixBasePreset = .identity,
         basePreset: String? = nil,
         lumaWeights: SIMD3<Float>? = nil,
         colorChrome: Float = 0,
@@ -151,6 +153,7 @@ struct FilmRecipe: Codable, Hashable, Identifiable, Sendable {
         self.blur = blur
         self.toneCurve = toneCurve
         self.rgbBalance = rgbBalance
+        self.colorBase = colorBase
         self.basePreset = basePreset
         self.lumaWeights = lumaWeights
         self.colorChrome = colorChrome

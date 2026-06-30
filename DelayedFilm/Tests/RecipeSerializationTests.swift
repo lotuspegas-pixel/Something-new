@@ -77,6 +77,37 @@ final class RecipeSerializationTests: XCTestCase {
         XCTAssertEqual(ToneCurveMath.fivePoints(from: curve).count, 5)
     }
 
+    func testCalibrationValuesApplied() throws {
+        let gold = try XCTUnwrap(FilmRecipeCatalog.recipe(for: "gold-daylight"))
+        XCTAssertEqual(gold.ev, -0.10, accuracy: 0.0001)
+        XCTAssertEqual(gold.contrast, 1.06, accuracy: 0.0001)
+        XCTAssertEqual(gold.saturation, 1.12, accuracy: 0.0001)
+        XCTAssertEqual(gold.temperatureShiftK, 180, accuracy: 0.01)
+        XCTAssertEqual(gold.colorBase, .consumerWarmCN)
+        XCTAssertEqual(gold.defaultFrames, 27)
+        XCTAssertEqual(gold.defaultUnlock, .endOfWeek)
+        XCTAssertEqual(gold.toneCurve.map { $0.y }, [0.02, 0.26, 0.53, 0.80, 0.98])
+
+        let xpro = try XCTUnwrap(FilmRecipeCatalog.recipe(for: "cross-process-slide"))
+        XCTAssertEqual(xpro.colorBase, .xproSlide)
+        XCTAssertEqual(xpro.tintShift, 16, accuracy: 0.01)
+        XCTAssertEqual(xpro.category, .experimental)
+    }
+
+    func testBlackAndWhiteRecipesUseLumaAndNeutralBase() {
+        for recipe in FilmRecipeCatalog.all where recipe.category == .blackAndWhite {
+            XCTAssertEqual(recipe.saturation, 0, accuracy: 0.0001, "\(recipe.id) must be desaturated")
+            XCTAssertNotNil(recipe.lumaWeights, "\(recipe.id) needs luma weights")
+            XCTAssertEqual(recipe.colorBase, .identity, "\(recipe.id) uses the luma path, not a color base")
+        }
+    }
+
+    func testColorRecipesHaveAColorBase() {
+        for recipe in FilmRecipeCatalog.all where recipe.category != .blackAndWhite {
+            XCTAssertNotEqual(recipe.colorBase, .identity, "\(recipe.id) should use a named color base")
+        }
+    }
+
     func testStableSeedIsDeterministic() {
         XCTAssertEqual(DefaultFilmRenderer.stableSeed("gold-daylight"),
                        DefaultFilmRenderer.stableSeed("gold-daylight"))

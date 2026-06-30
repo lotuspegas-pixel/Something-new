@@ -19,6 +19,13 @@ struct SettingsView: View {
                     } label: {
                         Label("Recipe Library", systemImage: "camera.filters")
                     }
+                    #if DEBUG
+                    NavigationLink {
+                        RecipeCatalogDebugView()
+                    } label: {
+                        Label("Recipe Catalog (debug)", systemImage: "ladybug")
+                    }
+                    #endif
                 }
 
                 Section("New roll defaults") {
