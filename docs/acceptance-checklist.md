@@ -25,7 +25,7 @@
 | 14 | Gallery only appears after unlock | ✅ | `RollListView` routes by `RollState`; reveal/gallery gated by store + state. |
 | 15 | Revealed photos exportable to Photos after permission | 🟡 | `PhotoExportService` done; flow Phase 8. |
 | 16 | 30 film-inspired recipes exist | ✅ | Full 30-recipe catalog; `testCatalogHasThirtyRecipes`. |
-| 17 | Custom recipe builder exists | ⏳ | Placeholder route; Phase 7. |
+| 17 | Custom recipe builder exists | ✅ | `RecipeBuilderView` + `RecipeLibraryView`; versioned `CustomRecipeRecord`; demo-image preview. |
 | 18 | UI looks premium, retro, tactile | ✅ | `FilmTheme` design system; disposable-camera body, LCD, sticker, shutter, winder. |
 
 ## No-Preview Rule Audit (must stay ✅ every phase)

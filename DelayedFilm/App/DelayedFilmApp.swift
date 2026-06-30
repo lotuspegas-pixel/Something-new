@@ -17,7 +17,7 @@ struct DelayedFilmApp: App {
     init() {
         do {
             modelContainer = try ModelContainer(
-                for: FilmRoll.self, CapturedFrame.self
+                for: FilmRoll.self, CapturedFrame.self, CustomRecipeRecord.self
             )
         } catch {
             // A failed store is unrecoverable; fail loudly in development.

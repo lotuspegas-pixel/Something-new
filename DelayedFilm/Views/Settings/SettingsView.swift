@@ -6,9 +6,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Recipes") {
+                    NavigationLink {
+                        RecipeLibraryView()
+                    } label: {
+                        Label("Recipe Library", systemImage: "camera.filters")
+                    }
+                }
+
                 Section("About") {
                     LabeledContent("App", value: "Delayed Film")
-                    LabeledContent("Phase", value: "1 — Foundation")
                 }
                 Section("The Promise") {
                     Text("Photos stay sealed in their roll until development day. No previews. No peeking.")

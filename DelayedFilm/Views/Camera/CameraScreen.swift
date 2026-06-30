@@ -234,5 +234,5 @@ private struct ViewfinderBrackets: View {
 
 #Preview {
     CameraScreen()
-        .modelContainer(for: [FilmRoll.self, CapturedFrame.self], inMemory: true)
+        .modelContainer(for: [FilmRoll.self, CapturedFrame.self, CustomRecipeRecord.self], inMemory: true)
 }

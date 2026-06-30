@@ -120,7 +120,8 @@ final class SwiftDataFilmRollStore: FilmRollStore {
 
     func addFrame(to roll: FilmRoll, photo: CapturedPhoto) async throws {
         guard !roll.isFull else { throw CameraError.captureFailed }
-        guard let recipe = FilmRecipeCatalog.recipe(for: roll.recipeID) else {
+        let customStore = SwiftDataCustomRecipeStore(context: context)
+        guard let recipe = RecipeResolver.resolve(id: roll.recipeID, customStore: customStore) else {
             throw CameraError.captureFailed
         }
 

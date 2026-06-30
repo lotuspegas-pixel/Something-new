@@ -56,15 +56,20 @@ countdown/date, and analog placeholder graphics.
 
 ## Phase Plan & Status
 
-1. **Project architecture and models** — ✅ complete (this phase)
-2. Camera capture MVP — ⏳ next
-3. Locked film roll storage (wire capture → store) — ⏳
-4. Recipe engine with 30 recipes — ⏳
-5. Reveal logic and gallery — ⏳
-6. Retro disposable camera UI — ⏳
-7. Custom recipe builder — ⏳
-8. Export/share flow — ⏳
-9. QA, polish, accessibility, performance — ⏳
+1. **Project architecture and models** — ✅ complete
+2. **Camera capture MVP** — ✅ complete
+3. **Recipe engine with 30 recipes** — ✅ complete
+4. **Locked rolls, development logic, reveal** — ✅ complete
+5. **Premium retro disposable camera UI** — ✅ complete
+6. **Custom recipe builder** — ✅ complete
+7. Export/share flow + settings + final QA — ⏳ in progress
+
+### Custom recipe provenance (AD-11)
+Captured frames are rendered to disk at capture time and store the recipe id +
+`version`. Reveal reads the developed JPEG and never re-renders, so editing a
+recipe later cannot alter an already-captured photo. Custom recipes persist as a
+JSON `payload` in `CustomRecipeRecord` (avoids SwiftData migrations as the
+parameter model evolves); `RecipeResolver` checks built-ins first, then custom.
 
 ## Open Questions (for later phases)
 

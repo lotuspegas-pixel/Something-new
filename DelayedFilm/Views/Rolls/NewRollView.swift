@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// Sheet for loading a new roll: title → recipe → development schedule →
 /// capacity. The chosen recipe is fixed for the life of the roll.
@@ -9,6 +10,9 @@ struct NewRollView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    @Query(sort: \CustomRecipeRecord.updatedAt, order: .reverse)
+    private var customRecords: [CustomRecipeRecord]
+
     @State private var title = ""
     @State private var selectedRecipeID = FilmRecipeCatalog.default.id
     @State private var schedulePreset: SchedulePresetChoice = .endOfMonth
@@ -16,7 +20,12 @@ struct NewRollView: View {
         byAdding: .month, value: 1, to: Date()) ?? Date()
     @State private var capacity = 27
 
-    private var recipes: [FilmRecipe] { FilmRecipeCatalog.all }
+    private var customRecipes: [FilmRecipe] { customRecords.compactMap { $0.recipe() } }
+    private var recipes: [FilmRecipe] { customRecipes + FilmRecipeCatalog.all }
+
+    private func recipe(for id: String) -> FilmRecipe? {
+        recipes.first { $0.id == id }
+    }
 
     private var resolvedSchedule: DevelopmentSchedule {
         switch schedulePreset {
@@ -38,14 +47,25 @@ struct NewRollView: View {
 
                 Section("Film recipe") {
                     Picker("Recipe", selection: $selectedRecipeID) {
-                        ForEach(recipes) { recipe in
-                            Text(recipe.displayName).tag(recipe.id)
+                        if !customRecipes.isEmpty {
+                            Section("My Recipes") {
+                                ForEach(customRecipes) { Text($0.displayName).tag($0.id) }
+                            }
+                        }
+                        Section("Built-in") {
+                            ForEach(FilmRecipeCatalog.all) { Text($0.displayName).tag($0.id) }
                         }
                     }
-                    if let recipe = FilmRecipeCatalog.recipe(for: selectedRecipeID) {
+                    if let recipe = recipe(for: selectedRecipeID) {
                         Text(recipe.summary)
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+                    NavigationLink {
+                        RecipeLibraryView()
+                    } label: {
+                        Label("Create or edit recipes", systemImage: "slider.horizontal.3")
+                            .font(.subheadline)
                     }
                 }
 
@@ -71,8 +91,7 @@ struct NewRollView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Load Roll") {
-                        let recipe = FilmRecipeCatalog.recipe(for: selectedRecipeID)
-                            ?? FilmRecipeCatalog.default
+                        let recipe = recipe(for: selectedRecipeID) ?? FilmRecipeCatalog.default
                         onCreate(title, resolvedSchedule, recipe, capacity)
                         dismiss()
                     }
