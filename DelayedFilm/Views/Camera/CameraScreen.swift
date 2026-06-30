@@ -4,11 +4,10 @@ import SwiftData
 import UIKit
 #endif
 
-/// The camera surface. Phase 2 wires the working capture flow; Phase 5 gives it
-/// the premium retro body.
+/// The camera surface, styled as a premium retro disposable camera.
 ///
 /// **No-preview invariant:** after the shutter, the frame goes straight to the
-/// locked roll. This screen shows a flash, a wind animation, and a "Frame
+/// locked roll. This screen shows a flash, a winding thumbwheel, and a "Frame
 /// captured" toast — never the image, a thumbnail, or a gallery jump.
 struct CameraScreen: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,32 +16,21 @@ struct CameraScreen: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            RetroCameraBodyView()
 
-            CameraPreviewView(session: viewModel.captureSession) { point in
-                viewModel.focus(at: point)
-            }
-            .ignoresSafeArea()
-
-            if viewModel.gridEnabled {
-                GridOverlayView().ignoresSafeArea()
-            }
-
-            // White flash flare on capture.
-            if viewModel.flashFlare {
-                Color.white.ignoresSafeArea().transition(.opacity)
-            }
-
-            VStack {
-                topBar
-                Spacer()
-                if viewModel.authorization == .denied || viewModel.authorization == .restricted {
-                    permissionDenied
-                    Spacer()
+            VStack(spacing: 14) {
+                topPlate
+                viewfinder
+                controlStrip
+                if viewModel.activeRoll != nil {
+                    ExposureControlView { ev in viewModel.setExposure(ev) }
+                        .frame(maxWidth: 300)
                 }
-                bottomControls
+                Spacer(minLength: 0)
+                bottomPlate
             }
-            .padding()
+            .padding(.horizontal, 22)
+            .padding(.top, 8)
 
             if viewModel.showCapturedToast {
                 capturedToast.transition(.move(edge: .top).combined(with: .opacity))
@@ -66,86 +54,127 @@ struct CameraScreen: View {
         }
     }
 
-    // MARK: Top bar
+    // MARK: Top plate (sticker, flash lamp, lens window)
 
-    private var topBar: some View {
+    private var topPlate: some View {
+        HStack(alignment: .top) {
+            Button { showNewRoll = true } label: {
+                FilmStickerView(
+                    recipeName: viewModel.activeRoll?.recipeName ?? "",
+                    category: viewModel.activeRoll == nil ? "TAP TO LOAD" : "FILM"
+                )
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 10) {
+                FlashLampView(mode: viewModel.flashMode,
+                              isAvailable: viewModel.isFlashAvailable)
+                LensWindowView()
+            }
+        }
+    }
+
+    // MARK: Viewfinder window
+
+    private var viewfinder: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.black)
+            CameraPreviewView(session: viewModel.captureSession) { point in
+                viewModel.focus(at: point)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(6)
+
+            if viewModel.gridEnabled {
+                GridOverlayView().padding(6)
+            }
+            if viewModel.flashFlare {
+                Color.white
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(6)
+                    .transition(.opacity)
+            }
+            // Viewfinder corner brackets.
+            ViewfinderBrackets().padding(16)
+
+            if viewModel.authorization == .denied || viewModel.authorization == .restricted {
+                permissionDenied
+            }
+        }
+        .aspectRatio(4.0 / 5.0, contentMode: .fit)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.black.opacity(0.6), lineWidth: 3)
+        )
+        .shadow(color: .black.opacity(0.5), radius: 6, y: 3)
+    }
+
+    // MARK: Control strip (counter + flash/grid)
+
+    private var controlStrip: some View {
         HStack {
+            FrameCounterView(
+                shot: viewModel.activeRoll?.frameCount ?? 0,
+                capacity: viewModel.activeRoll?.capacity ?? 27
+            )
+            Spacer()
             Button { viewModel.cycleFlash() } label: {
                 Image(systemName: viewModel.flashMode.systemImageName)
                     .font(.title3)
-                    .foregroundStyle(viewModel.isFlashAvailable ? .yellow : .gray)
+                    .foregroundStyle(viewModel.isFlashAvailable ? FilmTheme.accent : .gray)
+                    .frame(width: 40, height: 36)
             }
             .disabled(!viewModel.isFlashAvailable)
-
-            Spacer()
-
-            rollChip
-
-            Spacer()
+            .accessibilityLabel("Flash: \(viewModel.flashMode.rawValue)")
 
             Button { viewModel.toggleGrid() } label: {
-                Image(systemName: viewModel.gridEnabled ? "grid" : "grid")
+                Image(systemName: "grid")
                     .font(.title3)
-                    .foregroundStyle(viewModel.gridEnabled ? .yellow : .white)
+                    .foregroundStyle(viewModel.gridEnabled ? FilmTheme.accent : .white.opacity(0.85))
+                    .frame(width: 40, height: 36)
             }
-        }
-        .foregroundStyle(.white)
-    }
+            .accessibilityLabel("Grid \(viewModel.gridEnabled ? "on" : "off")")
 
-    private var rollChip: some View {
-        Button { showNewRoll = true } label: {
-            VStack(spacing: 2) {
-                if let roll = viewModel.activeRoll {
-                    Text(roll.title.isEmpty ? "Untitled" : roll.title)
-                        .font(.subheadline.weight(.semibold))
-                    Text(roll.recipeName)
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.7))
-                } else {
-                    Label("Load a roll", systemImage: "plus.circle")
-                        .font(.subheadline.weight(.semibold))
-                }
-            }
-            .padding(.horizontal, 14).padding(.vertical, 6)
-            .background(.ultraThinMaterial, in: Capsule())
-        }
-        .foregroundStyle(.white)
-    }
-
-    // MARK: Bottom controls
-
-    private var bottomControls: some View {
-        VStack(spacing: 18) {
-            if viewModel.activeRoll != nil {
-                ExposureControlView { ev in viewModel.setExposure(ev) }
-                    .frame(maxWidth: 280)
-
+            if !viewModel.availableLenses.isEmpty, viewModel.activeRoll != nil {
                 LensSelectorView(
                     lenses: viewModel.availableLenses,
                     selected: viewModel.selectedLens
                 ) { viewModel.selectLens($0) }
             }
+        }
+    }
 
-            HStack(alignment: .center) {
-                Spacer()
-                ShutterButton(
-                    isEnabled: viewModel.activeRoll != nil
-                        && !(viewModel.activeRoll?.isFull ?? true)
-                        && !viewModel.isCapturing
-                ) {
-                    Task { await viewModel.capture() }
-                }
-                .rotationEffect(.degrees(viewModel.isWinding ? 30 : 0))
-                Spacer()
+    // MARK: Bottom plate (shutter + winder)
+
+    private var bottomPlate: some View {
+        HStack(alignment: .center) {
+            Spacer()
+            ShutterButton(
+                isEnabled: viewModel.activeRoll != nil
+                    && !(viewModel.activeRoll?.isFull ?? true)
+                    && !viewModel.isCapturing
+            ) {
+                Task { await viewModel.capture() }
             }
-            .overlay(alignment: .trailing) {
-                FrameCounterView(
-                    shot: viewModel.activeRoll?.frameCount ?? 0,
-                    capacity: viewModel.activeRoll?.capacity ?? 27
-                )
-                .padding(.trailing, 12)
+            Spacer()
+        }
+        .overlay(alignment: .trailing) {
+            WindingLeverView(isWinding: viewModel.isWinding)
+                .padding(.trailing, 6)
+        }
+        .overlay(alignment: .leading) {
+            if viewModel.activeRoll == nil {
+                Button { showNewRoll = true } label: {
+                    Label("Load", systemImage: "plus.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FilmTheme.accent)
+                }
             }
         }
+        .padding(.bottom, 18)
     }
 
     private var capturedToast: some View {
@@ -154,15 +183,14 @@ struct CameraScreen: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 18).padding(.vertical, 10)
             .background(.ultraThinMaterial, in: Capsule())
-            .padding(.top, 80)
+            .padding(.top, 70)
             .frame(maxHeight: .infinity, alignment: .top)
     }
 
     private var permissionDenied: some View {
         VStack(spacing: 10) {
             Image(systemName: "camera.fill").font(.largeTitle)
-            Text("Camera access is off")
-                .font(.headline)
+            Text("Camera access is off").font(.headline)
             Text("Enable camera access in Settings to shoot film.")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
@@ -174,10 +202,33 @@ struct CameraScreen: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .tint(FilmTheme.accent)
             #endif
         }
         .foregroundStyle(.white)
         .padding()
+    }
+}
+
+/// Corner brackets drawn inside the viewfinder for a framing feel.
+private struct ViewfinderBrackets: View {
+    var body: some View {
+        GeometryReader { geo in
+            let len: CGFloat = 18
+            let w = geo.size.width, h = geo.size.height
+            Path { p in
+                // TL
+                p.move(to: CGPoint(x: 0, y: len)); p.addLine(to: .zero); p.addLine(to: CGPoint(x: len, y: 0))
+                // TR
+                p.move(to: CGPoint(x: w - len, y: 0)); p.addLine(to: CGPoint(x: w, y: 0)); p.addLine(to: CGPoint(x: w, y: len))
+                // BL
+                p.move(to: CGPoint(x: 0, y: h - len)); p.addLine(to: CGPoint(x: 0, y: h)); p.addLine(to: CGPoint(x: len, y: h))
+                // BR
+                p.move(to: CGPoint(x: w - len, y: h)); p.addLine(to: CGPoint(x: w, y: h)); p.addLine(to: CGPoint(x: w, y: h - len))
+            }
+            .stroke(.white.opacity(0.5), lineWidth: 2)
+        }
+        .allowsHitTesting(false)
     }
 }
 
