@@ -1,10 +1,28 @@
 import Foundation
 import CoreImage
 import CoreGraphics
+import AVFoundation
 
 /// Flash behavior, decoupled from `AVCaptureDevice.FlashMode`.
 enum CameraFlashMode: String, CaseIterable, Sendable {
     case off, on, auto
+
+    var systemImageName: String {
+        switch self {
+        case .off:  return "bolt.slash.fill"
+        case .on:   return "bolt.fill"
+        case .auto: return "bolt.badge.a.fill"
+        }
+    }
+
+    /// Cycles off → auto → on → off for a single tappable control.
+    var next: CameraFlashMode {
+        switch self {
+        case .off:  return .auto
+        case .auto: return .on
+        case .on:   return .off
+        }
+    }
 }
 
 /// The product of a single capture: a full-resolution image plus its
@@ -37,6 +55,10 @@ protocol CameraService: AnyObject {
     var availableLenses: [CameraLensOption] { get }
     /// Whether the session is currently running.
     var isRunning: Bool { get }
+    /// Whether the active device can fire a flash/torch for capture.
+    var isFlashAvailable: Bool { get }
+    /// The live `AVCaptureSession` for the preview layer, or `nil` for the mock.
+    var captureSession: AVCaptureSession? { get }
 
     func start() async throws
     func stop()
@@ -62,6 +84,8 @@ final class MockCameraService: CameraService {
 
     let availableLenses: [CameraLensOption] = [.ultraWide, .wide, .telephoto, .front]
     private(set) var isRunning = false
+    let isFlashAvailable = true
+    let captureSession: AVCaptureSession? = nil
 
     private var selectedLens: CameraLensOption = .wide
     private var flash: CameraFlashMode = .off

@@ -9,17 +9,17 @@
 
 | # | Criterion | Status | Notes |
 |---|-----------|--------|-------|
-| 1 | App launches | 🟡 | Entry point + `TabView` scaffold exist; needs device/sim build (Phase 2). |
-| 2 | Camera permission requested clearly | 🟡 | `Info.plist` strings + `CameraPermissionService` done; flow wired Phase 2. |
-| 3 | Camera preview works on real device | ⏳ | Phase 2. |
-| 4 | Simulator shows mock camera UI | 🟡 | `MockCameraService` done; screen Phase 2. |
-| 5 | User can create a roll | 🟡 | `FilmRollStore.createRoll` implemented; UI Phase 2/6. |
-| 6 | User can choose unlock schedule | 🟡 | `DevelopmentSchedule` + scheduler done; picker UI later. |
-| 7 | User can choose a film recipe | 🟡 | Catalog (seed) + picker placeholder done. |
-| 8 | User can take a photo | ⏳ | Phase 2. |
-| 9 | Captured photo processed and stored in locked roll | 🟡 | `addFrame` pipeline implemented; renderer passthrough until Phase 3/4. |
+| 1 | App launches | 🟡 | Entry point + `TabView` + camera screen wired; confirm on Mac build. |
+| 2 | Camera permission requested clearly | ✅ | `Info.plist` strings + flow in `CameraViewModel`; denied state in `CameraScreen`. |
+| 3 | Camera preview works on real device | 🟡 | `AVCameraService` + `AVCaptureVideoPreviewLayer` implemented; needs device verification. |
+| 4 | Simulator shows mock camera UI | ✅ | `MockCameraService` + placeholder preview under `targetEnvironment(simulator)`. |
+| 5 | User can create a roll | ✅ | `NewRollView` sheet → `createRoll`. |
+| 6 | User can choose unlock schedule | ✅ | `NewRollView` schedule picker (presets + custom date). |
+| 7 | User can choose a film recipe | ✅ | `NewRollView` recipe picker (4 seed; 30 in Phase 3). |
+| 8 | User can take a photo | ✅ | Shutter → `capture()` → store; simulator via mock. |
+| 9 | Captured photo processed and stored in locked roll | ✅ | `addFrame` pipeline; renderer passthrough until Phase 3. |
 | 10 | Captured photo not shown after capture | ✅ | Enforced by design; see no-preview architecture + tests. |
-| 11 | Frame counter increases | 🟡 | `frameCount` maintained in store; UI Phase 6. |
+| 11 | Frame counter increases | ✅ | `frameCount` maintained; `FrameCounterView` reads it live. |
 | 12 | Roll stays locked before unlock date | ✅ | `isUnlocked` + store gate + tests. |
 | 13 | Roll unlocks after unlock date | ✅ | `isUnlocked` + tests. |
 | 14 | Gallery only appears after unlock | 🟡 | Routes are unlock-gated by design; views Phase 5. |
