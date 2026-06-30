@@ -1,149 +1,190 @@
 import Foundation
+import CoreGraphics
+import simd
 
-/// A deterministic, versioned description of a film-inspired look.
-///
-/// A recipe is **pure data**: it contains no `CIFilter`s and no platform image
-/// types. ``FilmRenderer`` consumes a `FilmRecipe` and produces a processed
-/// image. Keeping the recipe as plain `Codable` data makes it:
-/// - serializable (built-in catalog + user-authored custom recipes),
-/// - deterministic (same recipe + same `version` ⇒ same output), and
-/// - testable without a GPU.
-///
-/// ### Versioning
-/// `formulaVersion` is bumped whenever the *math* a renderer applies for a given
-/// parameter changes. Stored frames record the recipe `id` **and**
-/// `formulaVersion` they were developed with, so a revealed photo always looks
-/// the way it did the moment it was captured, even if the catalog evolves.
-struct FilmRecipe: Codable, Hashable, Identifiable, Sendable {
+/// Film-stock family, used for grouping and to pick the rendering path.
+enum FilmCategory: String, Codable, Hashable, CaseIterable, Sendable {
+    case colorNegative
+    case slide
+    case cine
+    case instant
+    case blackAndWhite
+    case experimental
 
-    /// Stable slug, e.g. `"kodachrome-64"`. Never localized, never reused.
-    var id: String
-
-    /// Display name, e.g. `"Kodachrome 64"`.
-    var name: String
-
-    /// One-line evocative description for the recipe card.
-    var summary: String
-
-    /// Bumped when the rendering math for this recipe changes. See type docs.
-    var formulaVersion: Int
-
-    /// `true` for grayscale stocks; instructs the renderer to take the
-    /// luma-conversion path before tone/grain.
-    var isMonochrome: Bool
-
-    /// `true` for catalog recipes shipped with the app; `false` for
-    /// user-authored recipes from the builder.
-    var isBuiltIn: Bool
-
-    // MARK: Tone
-
-    var toneCurve: ToneCurve
-    /// Exposure offset in stops (EV). 0 = neutral.
-    var exposure: Double
-    /// Contrast multiplier around mid-grey. 1 = neutral.
-    var contrast: Double
-
-    // MARK: Color
-
-    /// Color-temperature shift in Kelvin relative to the captured white point.
-    /// Positive = warmer.
-    var temperature: Double
-    /// Green ↔ magenta tint. 0 = neutral.
-    var tint: Double
-    /// Global saturation multiplier. 1 = neutral, 0 = grayscale.
-    var saturation: Double
-    /// Per-channel multiplicative balance applied after temperature/tint.
-    var rgbBalance: RGBBalance
-    /// Named 3×3 color-mixing matrix that gives a stock its signature crosstalk.
-    var colorMatrix: ColorMatrixPreset
-
-    // MARK: Light shaping
-
-    /// Highlight compression. 0 = linear highlights, 1 = strong shoulder.
-    var highlightRolloff: Double
-    /// Shadow lift. 0 = true black, 1 = strongly lifted.
-    var shadowLift: Double
-    /// Matte fade: raises the black point for a faded, aged print look. 0…1.
-    var fade: Double
-
-    var vignette: VignetteParams
-    var grain: GrainParams
-
-    init(
-        id: String,
-        name: String,
-        summary: String,
-        formulaVersion: Int = 1,
-        isMonochrome: Bool = false,
-        isBuiltIn: Bool = true,
-        toneCurve: ToneCurve = .neutral,
-        exposure: Double = 0,
-        contrast: Double = 1,
-        temperature: Double = 0,
-        tint: Double = 0,
-        saturation: Double = 1,
-        rgbBalance: RGBBalance = .neutral,
-        colorMatrix: ColorMatrixPreset = .identity,
-        highlightRolloff: Double = 0,
-        shadowLift: Double = 0,
-        fade: Double = 0,
-        vignette: VignetteParams = .none,
-        grain: GrainParams = .none
-    ) {
-        self.id = id
-        self.name = name
-        self.summary = summary
-        self.formulaVersion = formulaVersion
-        self.isMonochrome = isMonochrome
-        self.isBuiltIn = isBuiltIn
-        self.toneCurve = toneCurve
-        self.exposure = exposure
-        self.contrast = contrast
-        self.temperature = temperature
-        self.tint = tint
-        self.saturation = saturation
-        self.rgbBalance = rgbBalance
-        self.colorMatrix = colorMatrix
-        self.highlightRolloff = highlightRolloff
-        self.shadowLift = shadowLift
-        self.fade = fade
-        self.vignette = vignette
-        self.grain = grain
+    var displayName: String {
+        switch self {
+        case .colorNegative: return "Color Negative"
+        case .slide:         return "Slide"
+        case .cine:          return "Cine"
+        case .instant:       return "Instant"
+        case .blackAndWhite: return "Black & White"
+        case .experimental:  return "Experimental"
+        }
     }
 }
 
-// MARK: - Supporting parameter types
+/// A deterministic, versioned description of a film-inspired look.
+///
+/// Pure `Codable` data — no `CIFilter`s, no platform image types — so recipes
+/// are serializable (built-in + custom), deterministic, and unit-testable.
+/// ``FilmRenderer`` consumes a recipe and produces the processed image.
+///
+/// ### Naming
+/// User-facing names (`displayName`/`publicName`) are deliberately brand-safe.
+/// `inspiration` records the internal reference stock for development only and
+/// is never shown to users.
+///
+/// ### Versioning
+/// `version` is bumped when the rendering math for a recipe changes. Each
+/// ``CapturedFrame`` records the version it was developed with, so a revealed
+/// photo always matches its capture moment even if the catalog later evolves.
+struct FilmRecipe: Codable, Hashable, Identifiable, Sendable {
 
-/// Per-channel multiplicative RGB balance. 1 = unchanged.
-struct RGBBalance: Codable, Hashable, Sendable {
-    var red: Double
-    var green: Double
-    var blue: Double
+    // MARK: Identity
+    var id: String
+    /// User-facing name shown in the app (brand-safe).
+    var displayName: String
+    /// Stable public/API name (brand-safe); usually equals `displayName`.
+    var publicName: String
+    /// Internal reference stock — development only, never surfaced.
+    var inspiration: String
+    var category: FilmCategory
+    var bestUse: String
 
-    static let neutral = RGBBalance(red: 1, green: 1, blue: 1)
+    // MARK: Tone / exposure
+    var ev: Float
+    var contrast: Float          // CIColorControls contrast (1 = neutral)
+    var saturation: Float        // CIColorControls saturation (1 = neutral)
+    var temperatureShiftK: Float // +warm / −cool, in Kelvin
+    var tintShift: Float         // green ↔ magenta
+    var highlightRecovery: Float // 0…1
+    var shadowLift: Float        // 0…1
+
+    // MARK: Texture
+    var grainAmount: Float       // 0…1
+    var grainSize: Float         // 0…1
+    var vignetteAmount: Float    // 0…1
+    var vignetteRadius: Float
+    var fade: Float              // matte black-lift 0…1
+    var sharpen: Float           // 0…1
+    var blur: Float              // px radius (soft focus)
+
+    // MARK: Color shaping
+    var toneCurve: [CGPoint]     // control points in unit square
+    var rgbBalance: SIMD3<Float> // per-channel multiplier
+    var basePreset: String?      // parent recipe id (for custom/derived)
+    var lumaWeights: SIMD3<Float>? // B&W channel mix; nil = use category default
+    var colorChrome: Float       // vibrance-like boost 0…1
+    var lightLeak: Float         // 0…1 (composited, optional)
+    var halation: Float          // 0…1 (highlight glow, optional)
+    var bloom: Float             // 0…1
+
+    // MARK: Print
+    var borderStyle: String      // "none", "white", "instant", …
+    var dateStampStyle: String   // "none", "classic", …
+
+    // MARK: Roll defaults
+    var defaultFrames: Int
+    var defaultUnlock: DevelopmentSchedule
+    var version: Int
+
+    /// `true` for grayscale stocks — selects the monochrome rendering path.
+    var isMonochrome: Bool { category == .blackAndWhite }
+
+    /// One-line evocative description for cards (derived).
+    var summary: String { bestUse }
+
+    init(
+        id: String,
+        displayName: String,
+        publicName: String? = nil,
+        inspiration: String = "",
+        category: FilmCategory,
+        bestUse: String,
+        ev: Float = 0,
+        contrast: Float = 1.0,
+        saturation: Float = 1.0,
+        temperatureShiftK: Float = 0,
+        tintShift: Float = 0,
+        highlightRecovery: Float = 0,
+        shadowLift: Float = 0,
+        grainAmount: Float = 0.2,
+        grainSize: Float = 0.5,
+        vignetteAmount: Float = 0.1,
+        vignetteRadius: Float = 1.5,
+        fade: Float = 0,
+        sharpen: Float = 0,
+        blur: Float = 0,
+        toneCurve: [CGPoint] = [CGPoint(x: 0, y: 0), CGPoint(x: 1, y: 1)],
+        rgbBalance: SIMD3<Float> = SIMD3<Float>(1, 1, 1),
+        basePreset: String? = nil,
+        lumaWeights: SIMD3<Float>? = nil,
+        colorChrome: Float = 0,
+        lightLeak: Float = 0,
+        halation: Float = 0,
+        bloom: Float = 0,
+        borderStyle: String = "none",
+        dateStampStyle: String = "none",
+        defaultFrames: Int = 27,
+        defaultUnlock: DevelopmentSchedule = .endOfMonth,
+        version: Int = 1
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.publicName = publicName ?? displayName
+        self.inspiration = inspiration
+        self.category = category
+        self.bestUse = bestUse
+        self.ev = ev
+        self.contrast = contrast
+        self.saturation = saturation
+        self.temperatureShiftK = temperatureShiftK
+        self.tintShift = tintShift
+        self.highlightRecovery = highlightRecovery
+        self.shadowLift = shadowLift
+        self.grainAmount = grainAmount
+        self.grainSize = grainSize
+        self.vignetteAmount = vignetteAmount
+        self.vignetteRadius = vignetteRadius
+        self.fade = fade
+        self.sharpen = sharpen
+        self.blur = blur
+        self.toneCurve = toneCurve
+        self.rgbBalance = rgbBalance
+        self.basePreset = basePreset
+        self.lumaWeights = lumaWeights
+        self.colorChrome = colorChrome
+        self.lightLeak = lightLeak
+        self.halation = halation
+        self.bloom = bloom
+        self.borderStyle = borderStyle
+        self.dateStampStyle = dateStampStyle
+        self.defaultFrames = defaultFrames
+        self.defaultUnlock = defaultUnlock
+        self.version = version
+    }
 }
 
-/// Parameters for the post-capture vignette.
-struct VignetteParams: Codable, Hashable, Sendable {
-    /// 0 = no darkening, 1 = heavy corners.
-    var intensity: Double
-    /// Radius of the clear center, in normalized units (0…2).
-    var radius: Double
-    /// Softness of the falloff edge (0…1).
-    var softness: Double
+// MARK: - Shared tone-curve presets
 
-    static let none = VignetteParams(intensity: 0, radius: 1, softness: 0.5)
-}
+extension FilmRecipe {
+    /// Common control-point sets reused across the catalog.
+    enum Curves {
+        static let linear  = [CGPoint(x: 0, y: 0), CGPoint(x: 1, y: 1)]
+        static let filmS   = [CGPoint(x: 0, y: 0.03), CGPoint(x: 0.25, y: 0.20),
+                              CGPoint(x: 0.5, y: 0.5), CGPoint(x: 0.75, y: 0.80),
+                              CGPoint(x: 1, y: 0.97)]
+        static let punchy  = [CGPoint(x: 0, y: 0.0), CGPoint(x: 0.25, y: 0.16),
+                              CGPoint(x: 0.5, y: 0.5), CGPoint(x: 0.75, y: 0.85),
+                              CGPoint(x: 1, y: 1.0)]
+        static let faded   = [CGPoint(x: 0, y: 0.10), CGPoint(x: 0.25, y: 0.26),
+                              CGPoint(x: 0.5, y: 0.5), CGPoint(x: 0.75, y: 0.74),
+                              CGPoint(x: 1, y: 0.92)]
+        static let softHi  = [CGPoint(x: 0, y: 0.04), CGPoint(x: 0.25, y: 0.24),
+                              CGPoint(x: 0.5, y: 0.52), CGPoint(x: 0.75, y: 0.78),
+                              CGPoint(x: 1, y: 0.94)]
+    }
 
-/// Parameters for deterministic film grain.
-struct GrainParams: Codable, Hashable, Sendable {
-    /// 0 = clean, 1 = heavy grain.
-    var intensity: Double
-    /// Relative grain size (0…1); larger ≈ higher ISO stock.
-    var size: Double
-    /// Fixed seed so a given frame always renders identical grain.
-    var seed: UInt64
-
-    static let none = GrainParams(intensity: 0, size: 0.5, seed: 0)
+    /// Standard Rec.709 luma weights for the monochrome path.
+    static let defaultLuma = SIMD3<Float>(0.2126, 0.7152, 0.0722)
 }

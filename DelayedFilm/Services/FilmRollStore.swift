@@ -99,7 +99,7 @@ final class SwiftDataFilmRollStore: FilmRollStore {
             unlockDate: unlock,
             schedule: schedule,
             recipeID: recipe.id,
-            recipeName: recipe.name,
+            recipeName: recipe.displayName,
             capacity: capacity
         )
         context.insert(roll)
@@ -136,7 +136,7 @@ final class SwiftDataFilmRollStore: FilmRollStore {
         let frame = CapturedFrame(
             index: index,
             recipeID: recipe.id,
-            recipeFormulaVersion: recipe.formulaVersion,
+            recipeFormulaVersion: recipe.version,
             lens: .wide,
             assetFileName: info.fileName,
             pixelWidth: info.pixelWidth,

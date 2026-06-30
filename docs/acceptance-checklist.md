@@ -15,16 +15,16 @@
 | 4 | Simulator shows mock camera UI | ✅ | `MockCameraService` + placeholder preview under `targetEnvironment(simulator)`. |
 | 5 | User can create a roll | ✅ | `NewRollView` sheet → `createRoll`. |
 | 6 | User can choose unlock schedule | ✅ | `NewRollView` schedule picker (presets + custom date). |
-| 7 | User can choose a film recipe | ✅ | `NewRollView` recipe picker (4 seed; 30 in Phase 3). |
+| 7 | User can choose a film recipe | ✅ | `NewRollView` recipe picker (full 30-recipe catalog). |
 | 8 | User can take a photo | ✅ | Shutter → `capture()` → store; simulator via mock. |
-| 9 | Captured photo processed and stored in locked roll | ✅ | `addFrame` pipeline; renderer passthrough until Phase 3. |
+| 9 | Captured photo processed and stored in locked roll | ✅ | `addFrame` pipeline; real Core Image chain (`DefaultFilmRenderer`). |
 | 10 | Captured photo not shown after capture | ✅ | Enforced by design; see no-preview architecture + tests. |
 | 11 | Frame counter increases | ✅ | `frameCount` maintained; `FrameCounterView` reads it live. |
 | 12 | Roll stays locked before unlock date | ✅ | `isUnlocked` + store gate + tests. |
 | 13 | Roll unlocks after unlock date | ✅ | `isUnlocked` + tests. |
 | 14 | Gallery only appears after unlock | 🟡 | Routes are unlock-gated by design; views Phase 5. |
 | 15 | Revealed photos exportable to Photos after permission | 🟡 | `PhotoExportService` done; flow Phase 8. |
-| 16 | 30 film-inspired recipes exist | 🟡 | 4 seed recipes; full 30 in Phase 4. |
+| 16 | 30 film-inspired recipes exist | ✅ | Full 30-recipe catalog; `testCatalogHasThirtyRecipes`. |
 | 17 | Custom recipe builder exists | ⏳ | Placeholder route; Phase 7. |
 | 18 | UI looks premium, retro, tactile | ⏳ | Phase 6. |
 

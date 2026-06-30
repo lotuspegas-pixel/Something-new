@@ -41,3 +41,41 @@
 
 - Grain must be tile-stable and seed-driven to avoid re-render drift.
 - Watch peak memory on full-res images; process and release promptly.
+
+---
+
+## Phase 3 — Delivered (engine + 30 recipes)
+
+- **`FilmRecipe` expanded** to the full parameter model: identity (`displayName`/
+  `publicName` brand-safe, `inspiration` internal), `category`, `bestUse`, tone/
+  exposure, texture (grain/vignette/fade/sharpen/blur), color shaping
+  (`toneCurve: [CGPoint]`, `rgbBalance`/`lumaWeights` as `SIMD3<Float>`,
+  `colorChrome`, `lightLeak`, `halation`, `bloom`), print (`borderStyle`/
+  `dateStampStyle`), roll defaults, and `version`. Pure `Codable`, `Hashable`.
+- **`DefaultFilmRenderer`**: deterministic Core Image chains.
+  - Color: exposure → temp/tint → highlight-shadow → tone curve → color controls
+    → RGB balance → vibrance(colorChrome) → fade → bloom → halation → vignette →
+    sharpen → blur → grain, cropped to source extent.
+  - B&W: exposure → temp/tint → highlight-shadow → RGB→luma matrix
+    (`lumaWeights`) → tone curve → contrast (sat 0) → fade → sharpen → vignette →
+    grain.
+- **`DefaultGrainRenderer`**: seeded, size-scaled, overlay-blended grain;
+  reproducible per recipe (FNV-1a `stableSeed`, not the randomized `hashValue`).
+- **`ImageProcessingService`**: shared **Metal** `CIContext`, extended-linear
+  working space, **Display P3** output, JPEG to protected disk, off the main
+  thread, cropped to the original extent.
+- **30 brand-safe recipes** across all six categories (10 color-neg, 7 slide,
+  2 cine, 1 experimental, 10 B&W). `inspiration` keeps the internal reference.
+- **`LivePreviewApproximation`**: encodes the preview clamp rule (≤35% tone,
+  ≤20% saturation, ≤40% temp, no grain/border/stamp) so any styled preview is
+  correct by construction. Live preview otherwise stays clean.
+- **Tests**: catalog count == 30, unique ids, user-facing names match spec,
+  round-trip serialization, mono-flag derivation, tone-curve math, seed
+  determinism.
+
+## Carried forward
+
+- `lightLeak`, split-toning, borders, and date-stamp compositors are modeled but
+  rendered as TODO (Phase 6 print options). Halation is approximated via bloom.
+- Determinism verified by construction + seed test; pixel-level golden tests need
+  a device/sim GPU and are listed in the final QA manual plan.

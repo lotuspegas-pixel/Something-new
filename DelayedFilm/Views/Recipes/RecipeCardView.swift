@@ -8,7 +8,7 @@ struct RecipeCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(recipe.name)
+            Text(recipe.displayName)
                 .font(.headline)
             Text(recipe.summary)
                 .font(.caption)

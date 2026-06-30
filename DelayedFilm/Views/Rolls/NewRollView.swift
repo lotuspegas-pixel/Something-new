@@ -39,7 +39,7 @@ struct NewRollView: View {
                 Section("Film recipe") {
                     Picker("Recipe", selection: $selectedRecipeID) {
                         ForEach(recipes) { recipe in
-                            Text(recipe.name).tag(recipe.id)
+                            Text(recipe.displayName).tag(recipe.id)
                         }
                     }
                     if let recipe = FilmRecipeCatalog.recipe(for: selectedRecipeID) {

@@ -11,16 +11,9 @@ struct ProcessedFrameInfo: Sendable {
 }
 
 /// Develops a captured photo through a recipe and writes the result into a
-/// roll's protected directory — all off the main thread, with no value ever
-/// returned for display.
-///
-/// Phase 1 ships the contract and a working skeleton: a shared Metal-backed
-/// `CIContext`, the renderer/grain dependencies, JPEG encoding, and file
-/// protection. The film math itself is a passthrough until **Phase 3/4** fill in
-/// ``FilmRenderer`` and ``GrainRenderer``.
+/// roll's protected directory — off the main thread, with no value ever returned
+/// for display.
 protocol ImageProcessingService {
-    /// Renders `photo` with `recipe` and writes it to `destinationDirectory`,
-    /// returning the on-disk metadata. The image is never handed back.
     func process(
         _ photo: CapturedPhoto,
         recipe: FilmRecipe,
@@ -29,27 +22,34 @@ protocol ImageProcessingService {
     ) async throws -> ProcessedFrameInfo
 }
 
-/// Default implementation backed by a shared Metal `CIContext`.
+/// Default implementation backed by a shared Metal `CIContext`, rendering in
+/// Display P3 where available.
 final class DefaultImageProcessingService: ImageProcessingService {
 
     private let renderer: FilmRenderer
-    private let grain: GrainRenderer
     private let context: CIContext
-    private let colorSpace: CGColorSpace
+    private let workingColorSpace: CGColorSpace
+    private let outputColorSpace: CGColorSpace
 
-    init(
-        renderer: FilmRenderer = PassthroughFilmRenderer(),
-        grain: GrainRenderer = NoGrainRenderer()
-    ) {
+    init(renderer: FilmRenderer = DefaultFilmRenderer()) {
         self.renderer = renderer
-        self.grain = grain
+        let working = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
+            ?? CGColorSpaceCreateDeviceRGB()
         if let device = MTLCreateSystemDefaultDevice() {
-            self.context = CIContext(mtlDevice: device)
+            self.context = CIContext(mtlDevice: device, options: [
+                .workingColorSpace: working
+            ])
         } else {
-            // Simulators without a Metal device fall back to a software context.
-            self.context = CIContext(options: [.useSoftwareRenderer: true])
+            // Simulators without Metal fall back to a software context.
+            self.context = CIContext(options: [
+                .useSoftwareRenderer: true,
+                .workingColorSpace: working
+            ])
         }
-        self.colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+        self.workingColorSpace = working
+        self.outputColorSpace = CGColorSpace(name: CGColorSpace.displayP3)
+            ?? CGColorSpace(name: CGColorSpace.sRGB)
+            ?? CGColorSpaceCreateDeviceRGB()
     }
 
     func process(
@@ -58,14 +58,14 @@ final class DefaultImageProcessingService: ImageProcessingService {
         destinationDirectory: URL,
         fileName: String
     ) async throws -> ProcessedFrameInfo {
-        // Heavy work stays off the main actor.
-        try await Task.detached(priority: .userInitiated) { [renderer, grain, context, colorSpace] in
+        try await Task.detached(priority: .userInitiated) { [renderer, context, outputColorSpace] in
+            let extent = photo.image.extent
             let developed = renderer.render(photo.image, with: recipe)
-            let grained = grain.applyGrain(to: developed, params: recipe.grain)
+                .cropped(to: extent)   // keep output at the original size
 
             guard let data = context.jpegRepresentation(
-                of: grained,
-                colorSpace: colorSpace,
+                of: developed,
+                colorSpace: outputColorSpace,
                 options: [:]
             ) else {
                 throw CameraError.captureFailed
