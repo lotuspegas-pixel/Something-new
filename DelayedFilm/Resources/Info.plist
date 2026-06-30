@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>Delayed Film</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <!-- Camera capture (Phase 2). -->
+    <key>NSCameraUsageDescription</key>
+    <string>Delayed Film uses the camera to shoot frames onto your film roll. Photos are sealed until your chosen development date.</string>
+    <!-- Add-only export to Photos, requested lazily on reveal (Phase 8). -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Delayed Film can save your revealed photos to your library after a roll is developed.</string>
+</dict>
+</plist>
