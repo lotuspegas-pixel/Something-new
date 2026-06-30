@@ -1,47 +1,47 @@
-# QA / Test Agent — Phase 1 Review
+# QA / Test Agent — Review
 
-**Agent 5.** Goal: try to break it, and verify Phase 1 in lieu of a compiler.
+**Agent 5.** Goal: try to break it, and verify each phase in lieu of a compiler.
 
 ## Build status
 
 No Swift/Xcode toolchain in this environment, and the app depends on Apple-only
-frameworks (SwiftUI, SwiftData, AVFoundation, CoreImage, PhotoKit, Metal). A
-real compile is therefore impossible here and is deferred to a Mac via
-`xcodegen generate` + Xcode. The review below is a manual static pass.
+frameworks (SwiftUI, SwiftData, AVFoundation, CoreImage, PhotoKit, Metal,
+UserNotifications). A real compile is deferred to a Mac via `xcodegen generate`
++ Xcode. The reviews below are manual static passes plus the unit suite.
 
-## Static review findings
-
-- **Models compile-cleanly by inspection.** `FilmRoll`/`CapturedFrame` are
-  `@Model` classes with primitive-only stored properties and one cascade
-  relationship; no associated-value enums are persisted (resolved at AD-3).
-- **`DevelopmentSchedule.custom(Date)` not persisted directly** — good, avoids
-  SwiftData enum pitfalls. Reconstructed via `scheduleCode` + `customUnlockDate`.
-- **Async hygiene:** `ImageProcessingService.process` hops to a detached
-  `Task` so Core Image work never blocks the main actor.
-- **Injectable seams present:** calendar (scheduler), root directory + processor
-  (store) — enabled clean unit tests.
-
-## Tests authored
+## Test suite
 
 | Test file | Covers |
 |-----------|--------|
-| `DevelopmentSchedulerTests` | end-of week/month/quarter/year/custom resolution with a pinned UTC calendar. |
-| `FilmRollTests` | lock before/after date, `developedAt` override, capacity, schedule round-trip. |
-| `RecipeSerializationTests` | recipe Codable round-trip, unique catalog ids, catalog lookup, tone-curve monotonicity + clamping. |
-| `NoPreviewRuleTests` | locked roll throws `RollLockedError`; unlocked roll returns bytes; frame has no image storage. |
+| `DevelopmentSchedulerTests` | unlock-date resolution per schedule (pinned UTC). |
+| `FilmRollTests` | lock logic, capacity, **state machine**, schedule round-trip. |
+| `RecipeSerializationTests` | 30-recipe count, unique ids, names match spec, round-trip, mono flag, tone-curve math, seed determinism. |
+| `NoPreviewRuleTests` | locked roll refuses bytes; unlocked returns; frame has no image storage. |
+| `CameraCaptureTests` | mock capture → store increments counter, file on disk, stays locked. |
+| `RevealLogicTests` | develop blocked before unlock; reveals bytes after; archive only after develop. |
 
-## Attempts to break the no-preview rule
+## No-preview rule audit (re-run every phase) — ✅
 
-- Searched for any view binding to frame bytes → none. Roll list/detail render
-  metadata only.
-- `revealedImageData` is the sole byte reader and is gated. ✅
-- No `PHAsset` creation path reachable before reveal. ✅
+- `CapturedFrame` has no image/thumbnail property.
+- `revealedImageData` is the sole byte reader and throws `RollLockedError`
+  while locked; `RevealViewModel` (thumbnails + full images) only reads through
+  it, so no view can decode a locked frame.
+- `RollListView` rows render metadata only; reveal/gallery reachable only for
+  developed rolls via state routing.
+- No Photos export path before reveal (export lands Phase 7, gated).
 
-## Risks carried into later phases
+## Phase 4 findings
 
-- `DefaultImageProcessingService.process` uses real Core Image; must be smoke-
-  tested on device (Phase 3). Tests use a stub processor to stay headless.
-- Quarter math assumes Gregorian calendar; revisit if localized calendars matter.
+- Roll lifecycle `active → full → readyToReveal → revealed → archived` computed
+  purely from persisted fields; `.developing` is transient (reveal VM only).
+- `develop` and `archive` are idempotent and gated (date passed / already
+  developed). Verified by `RevealLogicTests`.
+- Launch reconcile reschedules reminders and opens the Rolls tab when a roll is
+  ready; notifications are simulator-guarded.
 
-**Verdict:** Phase 1 foundation accepted, pending a Mac build to confirm zero
-compiler diagnostics.
+## Risks carried forward
+
+- Reveal viewer decodes full images on demand (acceptable for MVP; revisit for
+  very large rolls).
+- Real-device camera + GPU golden-image tests remain a manual-plan item
+  (final QA report, Phase 7).

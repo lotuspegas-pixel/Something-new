@@ -38,6 +38,9 @@ protocol FilmRollStore {
     /// Marks the roll developed if it is eligible (date passed). No-op otherwise.
     func develop(_ roll: FilmRoll, now: Date) throws
 
+    /// Archives a revealed roll. No-op if it isn't revealed.
+    func archive(_ roll: FilmRoll) throws
+
     /// Returns decoded image bytes for a frame — **only if its roll is
     /// unlocked**. Throws ``RollLockedError`` while locked.
     func revealedImageData(for frame: CapturedFrame, now: Date) throws -> Data
@@ -153,6 +156,12 @@ final class SwiftDataFilmRollStore: FilmRollStore {
     func develop(_ roll: FilmRoll, now: Date = Date()) throws {
         guard roll.developedAt == nil, now >= roll.unlockDate else { return }
         roll.developedAt = now
+        try context.save()
+    }
+
+    func archive(_ roll: FilmRoll) throws {
+        guard roll.developedAt != nil, roll.archivedAt == nil else { return }
+        roll.archivedAt = Date()
         try context.save()
     }
 

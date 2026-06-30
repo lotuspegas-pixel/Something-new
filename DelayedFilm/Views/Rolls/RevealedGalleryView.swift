@@ -1,16 +1,65 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
-/// The gallery for a *revealed* roll — the first and only place frames become
-/// visible. Reachable strictly after unlock + develop. Phase 5/6 build the
-/// full viewer and export entry points. Placeholder for now.
+/// Full-screen viewer for a **revealed** roll — the first and only place frames
+/// become fully visible. Reachable strictly after develop. Loads full-resolution
+/// images on demand through the locked-storage gate.
 struct RevealedGalleryView: View {
     let roll: FilmRoll
+    @Bindable var viewModel: RevealViewModel
+
+    @State private var selection = 0
+
+    private var frames: [CapturedFrame] {
+        roll.frames.sorted { $0.index < $1.index }
+    }
 
     var body: some View {
-        ContentUnavailableView(
-            "Revealed Gallery",
-            systemImage: "photo.on.rectangle.angled",
-            description: Text("\(roll.frameCount) frames — viewer arrives in Phase 5.")
-        )
+        ZStack {
+            Color.black.ignoresSafeArea()
+            if frames.isEmpty {
+                ContentUnavailableView("No Frames", systemImage: "photo")
+                    .foregroundStyle(.white)
+            } else {
+                TabView(selection: $selection) {
+                    ForEach(Array(frames.enumerated()), id: \.element.id) { index, frame in
+                        FrameView(image: viewModel.fullImage(for: frame), frame: frame)
+                            .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .automatic))
+            }
+        }
+        .navigationTitle("\(selection + 1) of \(frames.count)")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// One full frame plus its capture metadata.
+private struct FrameView: View {
+    let image: UIImage?
+    let frame: CapturedFrame
+
+    var body: some View {
+        VStack {
+            Spacer()
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                ProgressView().tint(.white)
+            }
+            Spacer()
+            HStack(spacing: 12) {
+                Label(frame.lens.displayName, systemImage: "camera.aperture")
+                Text(frame.capturedAt.formatted(date: .abbreviated, time: .shortened))
+            }
+            .font(.caption2)
+            .foregroundStyle(.white.opacity(0.6))
+            .padding(.bottom, 8)
+        }
     }
 }

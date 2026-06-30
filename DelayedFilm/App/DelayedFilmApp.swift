@@ -35,9 +35,10 @@ struct DelayedFilmApp: App {
     }
 }
 
-/// Phase 1 root scaffold. Replaced by the retro camera shell in Phase 6.
+/// Root scaffold. Replaced by the retro camera shell in Phase 5.
 struct RootView: View {
     @Environment(AppRouter.self) private var router
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         @Bindable var router = router
@@ -53,6 +54,23 @@ struct RootView: View {
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(AppRouter.Tab.settings)
+        }
+        .task { await reconcileOnLaunch() }
+    }
+
+    /// Launch check: reschedule reminders for locked rolls and surface any roll
+    /// that's ready to develop by opening the Rolls tab.
+    private func reconcileOnLaunch() async {
+        let store = SwiftDataFilmRollStore(context: modelContext)
+        guard let rolls = try? store.rolls() else { return }
+
+        #if !targetEnvironment(simulator)
+        let scheduler = UserNotificationScheduler()
+        await scheduler.reconcile(rolls: rolls)
+        #endif
+
+        if rolls.contains(where: { $0.isReadyToReveal() }) {
+            router.selectedTab = .rolls
         }
     }
 }

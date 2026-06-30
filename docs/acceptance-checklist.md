@@ -22,7 +22,7 @@
 | 11 | Frame counter increases | ✅ | `frameCount` maintained; `FrameCounterView` reads it live. |
 | 12 | Roll stays locked before unlock date | ✅ | `isUnlocked` + store gate + tests. |
 | 13 | Roll unlocks after unlock date | ✅ | `isUnlocked` + tests. |
-| 14 | Gallery only appears after unlock | 🟡 | Routes are unlock-gated by design; views Phase 5. |
+| 14 | Gallery only appears after unlock | ✅ | `RollListView` routes by `RollState`; reveal/gallery gated by store + state. |
 | 15 | Revealed photos exportable to Photos after permission | 🟡 | `PhotoExportService` done; flow Phase 8. |
 | 16 | 30 film-inspired recipes exist | ✅ | Full 30-recipe catalog; `testCatalogHasThirtyRecipes`. |
 | 17 | Custom recipe builder exists | ⏳ | Placeholder route; Phase 7. |

@@ -51,6 +51,9 @@ final class FilmRoll {
     /// is locked regardless of date.
     var developedAt: Date?
 
+    /// Set when the user archives a revealed roll.
+    var archivedAt: Date?
+
     /// The frames belonging to this roll. Cascade-deleted with the roll.
     @Relationship(deleteRule: .cascade, inverse: \CapturedFrame.roll)
     var frames: [CapturedFrame]
@@ -80,6 +83,7 @@ final class FilmRoll {
         self.frameCount = 0
         self.capacity = capacity
         self.developedAt = nil
+        self.archivedAt = nil
         self.frames = []
     }
 
@@ -109,4 +113,69 @@ final class FilmRoll {
 
     /// Whether the roll has reached its capacity and can take no more frames.
     var isFull: Bool { frameCount >= capacity }
+
+    /// The roll's lifecycle state at a given moment.
+    ///
+    /// `.developing` is a transient UI state (the reveal animation) and is never
+    /// returned here — it's driven by the reveal view-model. The persisted truth
+    /// is the combination of `developedAt`, `archivedAt`, `unlockDate`, and
+    /// `frameCount`.
+    func state(now: Date = Date()) -> RollState {
+        if archivedAt != nil { return .archived }
+        if developedAt != nil { return .revealed }
+        if now >= unlockDate { return .readyToReveal }
+        if isFull { return .full }
+        return .active
+    }
+
+    /// Convenience using the current time.
+    var currentState: RollState { state() }
+
+    /// Ready to be developed: unlocked, not yet developed, not archived.
+    func isReadyToReveal(now: Date = Date()) -> Bool {
+        state(now: now) == .readyToReveal
+    }
+
+    /// Whether more frames can still be shot into this roll.
+    func canShoot(now: Date = Date()) -> Bool {
+        state(now: now) == .active
+    }
+}
+
+/// The lifecycle of a film roll.
+enum RollState: String, Codable, Hashable, Sendable {
+    /// Loaded and accepting frames.
+    case active
+    /// At capacity but not yet unlockable.
+    case full
+    /// Reveal animation in progress (transient, UI-only).
+    case developing
+    /// Unlock date passed; awaiting the user's develop tap.
+    case readyToReveal
+    /// Developed — frames are viewable.
+    case revealed
+    /// Put away by the user.
+    case archived
+
+    var displayName: String {
+        switch self {
+        case .active:        return "Shooting"
+        case .full:          return "Full"
+        case .developing:    return "Developing"
+        case .readyToReveal: return "Ready to develop"
+        case .revealed:      return "Revealed"
+        case .archived:      return "Archived"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .active:        return "camera.fill"
+        case .full:          return "tray.full.fill"
+        case .developing:    return "hourglass"
+        case .readyToReveal: return "sparkles"
+        case .revealed:      return "photo.stack.fill"
+        case .archived:      return "archivebox.fill"
+        }
+    }
 }

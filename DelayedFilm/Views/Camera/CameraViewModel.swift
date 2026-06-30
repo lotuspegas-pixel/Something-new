@@ -19,6 +19,7 @@ final class CameraViewModel {
     private let camera: CameraService
     private let permission: CameraPermissionService
     private let haptics: HapticsService
+    private let notifications: NotificationScheduler
     private var store: FilmRollStore?
 
     // MARK: Observable state
@@ -51,11 +52,13 @@ final class CameraViewModel {
     init(
         camera: CameraService = CameraViewModel.makeDefaultCamera(),
         permission: CameraPermissionService = AVCameraPermissionService(),
-        haptics: HapticsService = CameraViewModel.makeDefaultHaptics()
+        haptics: HapticsService = CameraViewModel.makeDefaultHaptics(),
+        notifications: NotificationScheduler = CameraViewModel.makeDefaultNotifications()
     ) {
         self.camera = camera
         self.permission = permission
         self.haptics = haptics
+        self.notifications = notifications
     }
 
     // MARK: Setup
@@ -112,6 +115,10 @@ final class CameraViewModel {
             )
             activeRoll = roll
             haptics.play(.lock)
+            Task { [notifications] in
+                _ = await notifications.requestAuthorization()
+                await notifications.scheduleReveal(for: roll)
+            }
             return roll
         } catch {
             errorMessage = "Couldn't create roll."
@@ -210,6 +217,14 @@ final class CameraViewModel {
         return SilentHapticsService()
         #else
         return UIKitHapticsService()
+        #endif
+    }
+
+    static func makeDefaultNotifications() -> NotificationScheduler {
+        #if targetEnvironment(simulator)
+        return SilentNotificationScheduler()
+        #else
+        return UserNotificationScheduler()
         #endif
     }
 }

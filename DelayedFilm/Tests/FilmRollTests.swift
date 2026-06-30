@@ -41,6 +41,35 @@ final class FilmRollTests: XCTestCase {
         XCTAssertTrue(roll.isFull)
     }
 
+    func testStateMachine() {
+        let future = Date().addingTimeInterval(3600)
+        let past = Date().addingTimeInterval(-3600)
+
+        let active = makeRoll(unlock: future, capacity: 5)
+        active.frameCount = 2
+        XCTAssertEqual(active.currentState, .active)
+        XCTAssertTrue(active.canShoot())
+
+        let full = makeRoll(unlock: future, capacity: 3)
+        full.frameCount = 3
+        XCTAssertEqual(full.currentState, .full)
+        XCTAssertFalse(full.canShoot())
+
+        let ready = makeRoll(unlock: past)
+        XCTAssertEqual(ready.currentState, .readyToReveal)
+        XCTAssertTrue(ready.isReadyToReveal())
+
+        let revealed = makeRoll(unlock: past)
+        revealed.developedAt = Date()
+        XCTAssertEqual(revealed.currentState, .revealed)
+        XCTAssertFalse(revealed.isReadyToReveal())
+
+        let archived = makeRoll(unlock: past)
+        archived.developedAt = past
+        archived.archivedAt = Date()
+        XCTAssertEqual(archived.currentState, .archived)
+    }
+
     func testScheduleRoundTripsFromPersistedFields() {
         let roll = FilmRoll(
             title: "EOY",
