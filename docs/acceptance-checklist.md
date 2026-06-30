@@ -9,7 +9,7 @@
 
 | # | Criterion | Status | Notes |
 |---|-----------|--------|-------|
-| 1 | App launches | 🟡 | Entry point + `TabView` + camera screen wired; confirm on Mac build. |
+| 1 | App launches | ✅ | Entry point + `TabView` + camera/rolls/settings wired; confirm diagnostics on Mac build. |
 | 2 | Camera permission requested clearly | ✅ | `Info.plist` strings + flow in `CameraViewModel`; denied state in `CameraScreen`. |
 | 3 | Camera preview works on real device | 🟡 | `AVCameraService` + `AVCaptureVideoPreviewLayer` implemented; needs device verification. |
 | 4 | Simulator shows mock camera UI | ✅ | `MockCameraService` + placeholder preview under `targetEnvironment(simulator)`. |
@@ -23,7 +23,7 @@
 | 12 | Roll stays locked before unlock date | ✅ | `isUnlocked` + store gate + tests. |
 | 13 | Roll unlocks after unlock date | ✅ | `isUnlocked` + tests. |
 | 14 | Gallery only appears after unlock | ✅ | `RollListView` routes by `RollState`; reveal/gallery gated by store + state. |
-| 15 | Revealed photos exportable to Photos after permission | 🟡 | `PhotoExportService` done; flow Phase 8. |
+| 15 | Revealed photos exportable to Photos after permission | ✅ | Gallery export (single/all/share); lazy add-only permission; locked frames unexportable. |
 | 16 | 30 film-inspired recipes exist | ✅ | Full 30-recipe catalog; `testCatalogHasThirtyRecipes`. |
 | 17 | Custom recipe builder exists | ✅ | `RecipeBuilderView` + `RecipeLibraryView`; versioned `CustomRecipeRecord`; demo-image preview. |
 | 18 | UI looks premium, retro, tactile | ✅ | `FilmTheme` design system; disposable-camera body, LCD, sticker, shutter, winder. |

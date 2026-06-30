@@ -15,6 +15,7 @@ struct DelayedFilmApp: App {
     @State private var router = AppRouter()
 
     init() {
+        AppSettings.registerDefaults()
         do {
             modelContainer = try ModelContainer(
                 for: FilmRoll.self, CapturedFrame.self, CustomRecipeRecord.self

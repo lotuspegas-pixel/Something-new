@@ -18,7 +18,11 @@ final class RevealViewModel {
     let roll: FilmRoll
 
     private let haptics: HapticsService
+    private let exporter: PhotoExportService
     private var store: FilmRollStore?
+
+    var isExporting = false
+    var exportMessage: String?
 
     /// Transient developing animation flag.
     var isDeveloping = false
@@ -35,9 +39,14 @@ final class RevealViewModel {
         "Almost dry…"
     ]
 
-    init(roll: FilmRoll, haptics: HapticsService = SilentHapticsService()) {
+    init(roll: FilmRoll,
+         haptics: HapticsService = SilentHapticsService(),
+         exporter: PhotoExportService = PhotoKitExportService(),
+         store: FilmRollStore? = nil) {
         self.roll = roll
         self.haptics = haptics
+        self.exporter = exporter
+        self.store = store
     }
 
     func configure(modelContext: ModelContext) {
@@ -87,6 +96,48 @@ final class RevealViewModel {
             return nil
         }
         return UIImage(data: data)
+    }
+
+    // MARK: Export & share (revealed only)
+
+    /// Returns JPEG data for sharing — only for unlocked rolls (gated by the
+    /// store). Returns empty if the roll is still locked.
+    func shareData(for frames: [CapturedFrame]) -> [Data] {
+        guard let store, roll.developedAt != nil else { return [] }
+        return frames.compactMap { try? store.revealedImageData(for: $0, now: Date()) }
+    }
+
+    /// Exports the given frames to the photo library, requesting add-only
+    /// permission lazily. Refuses if the roll is locked.
+    func exportToPhotos(_ frames: [CapturedFrame]) async {
+        guard let store, roll.developedAt != nil else {
+            exportMessage = "This roll isn't developed yet."
+            return
+        }
+        isExporting = true
+        defer { isExporting = false }
+
+        let auth = await exporter.requestAddPermission()
+        guard auth == .authorized || auth == .limited else {
+            exportMessage = "Photos access is needed to export."
+            return
+        }
+
+        var exported = 0
+        for frame in frames {
+            // Reading goes through the lock gate; a locked frame simply throws.
+            guard let data = try? store.revealedImageData(for: frame, now: Date()) else { continue }
+            do {
+                try await exporter.export(jpegData: data)
+                exported += 1
+            } catch {
+                // Continue with the rest; report at the end.
+            }
+        }
+        haptics.play(.reveal)
+        exportMessage = exported == frames.count
+            ? "Saved \(exported) photo\(exported == 1 ? "" : "s") to Photos."
+            : "Saved \(exported) of \(frames.count). Some couldn't be exported."
     }
 
     private func decodeThumbnail(for frame: CapturedFrame, store: FilmRollStore) -> UIImage? {

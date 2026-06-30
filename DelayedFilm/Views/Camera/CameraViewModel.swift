@@ -3,6 +3,7 @@ import SwiftUI
 import SwiftData
 import Observation
 import AVFoundation
+import AudioToolbox
 
 /// Coordinates the camera capture vertical slice:
 /// active roll → recipe (from roll) → capture → process → hidden store → counter.
@@ -30,7 +31,7 @@ final class CameraViewModel {
     var flashMode: CameraFlashMode = .off
     var isFlashAvailable: Bool { camera.isFlashAvailable }
     var exposureBias: Float = 0
-    var gridEnabled = false
+    var gridEnabled = AppSettings.gridEnabled
 
     var activeRoll: FilmRoll?
     var isCapturing = false
@@ -114,7 +115,7 @@ final class CameraViewModel {
                 capacity: capacity, now: Date()
             )
             activeRoll = roll
-            haptics.play(.lock)
+            feedback(.lock)
             Task { [notifications] in
                 _ = await notifications.requestAuthorization()
                 await notifications.scheduleReveal(for: roll)
@@ -133,14 +134,14 @@ final class CameraViewModel {
     func cycleFlash() {
         flashMode = flashMode.next
         camera.setFlash(flashMode)
-        haptics.play(.lensClick)
+        feedback(.lensClick)
     }
 
     func selectLens(_ lens: CameraLensOption) {
         guard availableLenses.contains(lens) else { return }
         selectedLens = lens
         camera.select(lens: lens)
-        haptics.play(.lensClick)
+        feedback(.lensClick)
     }
 
     func setExposure(_ ev: Float) {
@@ -152,6 +153,18 @@ final class CameraViewModel {
 
     func focus(at point: CGPoint) { camera.focus(at: point) }
 
+    /// Plays a haptic only if the user hasn't disabled feedback.
+    private func feedback(_ event: HapticEvent) {
+        guard AppSettings.hapticsEnabled else { return }
+        haptics.play(event)
+    }
+
+    /// Plays the system shutter sound if enabled in settings.
+    private func playShutterSound() {
+        guard AppSettings.soundEnabled else { return }
+        AudioServicesPlaySystemSound(1108) // begin recording / shutter
+    }
+
     // MARK: Capture
 
     func capture() async {
@@ -161,7 +174,7 @@ final class CameraViewModel {
             return
         }
         guard !roll.isFull else {
-            haptics.play(.warning)
+            feedback(.warning)
             errorMessage = "This roll is full."
             return
         }
@@ -170,7 +183,8 @@ final class CameraViewModel {
         defer { isCapturing = false }
 
         // Shutter feedback fires immediately, before the image even exists.
-        haptics.play(.shutter)
+        feedback(.shutter)
+        playShutterSound()
         await flashAnimation()
 
         do {
@@ -178,7 +192,7 @@ final class CameraViewModel {
             try await store.addFrame(to: roll, photo: photo)   // processed + hidden
             await windAndConfirm()
         } catch {
-            haptics.play(.warning)
+            feedback(.warning)
             errorMessage = "Capture failed."
         }
     }
@@ -192,7 +206,7 @@ final class CameraViewModel {
     }
 
     private func windAndConfirm() async {
-        haptics.play(.wind)
+        feedback(.wind)
         withAnimation(.easeInOut(duration: 0.45)) { isWinding = true }
         try? await Task.sleep(nanoseconds: 450_000_000)
         withAnimation { isWinding = false }

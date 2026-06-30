@@ -74,6 +74,18 @@ final class DefaultImageProcessingService: ImageProcessingService {
             let url = destinationDirectory.appendingPathComponent(fileName)
             try data.write(to: url, options: [.atomic, .completeFileProtection])
 
+            // Optionally keep an unprocessed original in the same protected dir.
+            // It stays hidden until the roll develops, like every other frame.
+            if AppSettings.saveOriginalCopy,
+               let originalData = context.jpegRepresentation(
+                   of: photo.image.cropped(to: extent),
+                   colorSpace: outputColorSpace, options: [:]) {
+                let originalURL = destinationDirectory
+                    .appendingPathComponent("original-" + fileName)
+                try? originalData.write(to: originalURL,
+                                        options: [.atomic, .completeFileProtection])
+            }
+
             return ProcessedFrameInfo(
                 fileName: fileName,
                 pixelWidth: photo.pixelWidth,

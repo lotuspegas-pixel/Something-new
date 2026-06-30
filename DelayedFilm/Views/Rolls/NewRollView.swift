@@ -15,10 +15,10 @@ struct NewRollView: View {
 
     @State private var title = ""
     @State private var selectedRecipeID = FilmRecipeCatalog.default.id
-    @State private var schedulePreset: SchedulePresetChoice = .endOfMonth
+    @State private var schedulePreset: SchedulePresetChoice = AppSettings.defaultSchedule
     @State private var customDate = Calendar.current.date(
         byAdding: .month, value: 1, to: Date()) ?? Date()
-    @State private var capacity = 27
+    @State private var capacity = AppSettings.defaultFrameCount
 
     private var customRecipes: [FilmRecipe] { customRecords.compactMap { $0.recipe() } }
     private var recipes: [FilmRecipe] { customRecipes + FilmRecipeCatalog.all }
