@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperEdit — Free Online PDF Editor</title>
+<meta name="description" content="Edit any PDF right in your browser. Edit text, annotate, draw, sign, organize pages and more — free, private, no sign-up.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ===================== HERO / UPLOAD SCREEN ===================== -->
+<div id="hero-screen">
+  <nav class="top-nav">
+    <div class="brand"><span class="brand-mark">📄</span> PaperEdit</div>
+    <div class="top-nav-links">
+      <span class="pill pill-muted">100% free</span>
+      <span class="pill pill-muted">Runs in your browser</span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Edit any PDF.<br><span class="accent">Instantly. Free.</span></h1>
+    <p class="hero-sub">Change text, add annotations, draw, sign, and reorganize pages &mdash; all in one clean tool. Nothing is uploaded to a server; your file never leaves your device.</p>
+
+    <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload a PDF file">
+      <div class="dropzone-icon">📄</div>
+      <div class="dropzone-title">Drop your PDF here</div>
+      <div class="dropzone-sub">or click to browse your files</div>
+      <button type="button" class="btn btn-primary btn-lg" id="choose-file-btn">Choose PDF file</button>
+      <input type="file" id="file-input" accept="application/pdf,.pdf" hidden>
+    </div>
+    <p class="hero-note">No account. No watermark. No file size games.</p>
+  </header>
+
+  <section class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">✏️</div>
+      <h3>Edit existing text</h3>
+      <p>Click any line of text and rewrite it in a matching font, right on the page.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🖍️</div>
+      <h3>Annotate &amp; draw</h3>
+      <p>Highlight, underline, strike through, freehand draw, and add shapes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗂️</div>
+      <h3>Organize pages</h3>
+      <p>Reorder, rotate, delete, add blank pages, or merge in another PDF.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🖋️</div>
+      <h3>Sign documents</h3>
+      <p>Draw or type a signature and drop it anywhere on the page.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧹</div>
+      <h3>Whiteout &amp; redact</h3>
+      <p>Cover up sensitive content with a solid block before sharing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Completely private</h3>
+      <p>All editing happens locally in your browser. Nothing is ever uploaded.</p>
+    </div>
+  </section>
+
+  <footer class="hero-footer">
+    <p>Built for quick, everyday PDF edits — free to use, no limits.</p>
+  </footer>
+</div>
+
+<!-- ===================== EDITOR SCREEN ===================== -->
+<div id="editor-screen" class="hidden">
+
+  <header class="toolbar">
+    <div class="toolbar-group toolbar-brand">
+      <button type="button" id="new-file-btn" class="icon-btn" title="Open a different PDF">📄<span class="btn-label">New</span></button>
+    </div>
+
+    <div class="toolbar-group toolbar-tools" role="toolbar" aria-label="Editing tools">
+      <button type="button" class="tool-btn active" data-tool="select" title="Select &amp; edit text (V)">
+        <span class="tool-icon">🖱️</span><span class="tool-label">Edit Text</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="add-text" title="Add text box (T)">
+        <span class="tool-icon">🅣</span><span class="tool-label">Add Text</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="add-image" title="Add image (I)">
+        <span class="tool-icon">🖼️</span><span class="tool-label">Image</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="draw" title="Freehand draw (D)">
+        <span class="tool-icon">✏️</span><span class="tool-label">Draw</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="highlight" title="Highlight (H)">
+        <span class="tool-icon">🖍️</span><span class="tool-label">Highlight</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="underline" title="Underline (U)">
+        <span class="tool-icon">U̲</span><span class="tool-label">Underline</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="strikethrough" title="Strikethrough (S)">
+        <span class="tool-icon">S̶</span><span class="tool-label">Strike</span>
+      </button>
+
+      <div class="tool-dropdown">
+        <button type="button" class="tool-btn" data-tool="shape-rect" id="shapes-btn" title="Shapes">
+          <span class="tool-icon">▭</span><span class="tool-label">Shapes</span><span class="caret">▾</span>
+        </button>
+        <div class="dropdown-menu" id="shapes-menu">
+          <button type="button" data-tool="shape-rect">▭ Rectangle</button>
+          <button type="button" data-tool="shape-ellipse">◯ Ellipse</button>
+          <button type="button" data-tool="shape-line">╱ Line</button>
+          <button type="button" data-tool="shape-arrow">↗ Arrow</button>
+        </div>
+      </div>
+
+      <button type="button" class="tool-btn" data-tool="whiteout" title="Whiteout / redact (W)">
+        <span class="tool-icon">▮</span><span class="tool-label">Whiteout</span>
+      </button>
+      <button type="button" class="tool-btn" data-tool="sign" title="Sign document">
+        <span class="tool-icon">🖋️</span><span class="tool-label">Sign</span>
+      </button>
+    </div>
+
+    <div class="toolbar-group toolbar-actions">
+      <button type="button" id="undo-btn" class="icon-btn" title="Undo (Ctrl+Z)" disabled>↶</button>
+      <button type="button" id="redo-btn" class="icon-btn" title="Redo (Ctrl+Y)" disabled>↷</button>
+      <div class="zoom-controls">
+        <button type="button" id="zoom-out-btn" class="icon-btn" title="Zoom out">−</button>
+        <span id="zoom-level">100%</span>
+        <button type="button" id="zoom-in-btn" class="icon-btn" title="Zoom in">+</button>
+      </div>
+      <button type="button" id="download-btn" class="btn btn-primary">⬇ Download PDF</button>
+    </div>
+  </header>
+
+  <div id="properties-bar" class="properties-bar hidden"></div>
+
+  <div class="workspace">
+    <aside class="sidebar" id="pages-sidebar">
+      <div class="sidebar-header">Pages</div>
+      <div class="thumb-list" id="thumb-list"></div>
+      <div class="sidebar-actions">
+        <button type="button" id="add-page-btn" class="btn btn-secondary btn-block">+ Blank page</button>
+        <button type="button" id="insert-pdf-btn" class="btn btn-secondary btn-block">+ Insert PDF</button>
+        <input type="file" id="insert-pdf-input" accept="application/pdf,.pdf" hidden>
+      </div>
+    </aside>
+
+    <main class="canvas-area" id="canvas-area">
+      <div id="pages-container"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ===================== SIGNATURE MODAL ===================== -->
+<div id="signature-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add your signature</h3>
+      <button type="button" class="modal-close" id="signature-close-btn">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button type="button" class="modal-tab active" data-sig-tab="draw">Draw</button>
+      <button type="button" class="modal-tab" data-sig-tab="type">Type</button>
+    </div>
+    <div class="modal-body">
+      <div id="signature-draw-pane" class="sig-pane">
+        <canvas id="signature-canvas" width="560" height="200"></canvas>
+        <button type="button" id="signature-clear-btn" class="btn btn-secondary btn-sm">Clear</button>
+      </div>
+      <div id="signature-type-pane" class="sig-pane hidden">
+        <input type="text" id="signature-type-input" placeholder="Type your name" maxlength="60">
+        <div id="signature-type-preview" class="signature-type-preview">Your Name</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="signature-cancel-btn">Cancel</button>
+      <button type="button" class="btn btn-primary" id="signature-insert-btn">Insert signature</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="add-image-input" accept="image/*" hidden>
+
+<div id="toast-container"></div>
+
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div id="loading-text">Loading…</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="js/geometry.js"></script>
+<script src="js/state.js"></script>
+<script src="js/render.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
