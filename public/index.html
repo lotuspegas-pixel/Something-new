@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
+    />
+    <meta name="theme-color" content="#10131c" />
+    <title>Babyfoon — Live geluid & video</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%B6%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo">👶</div>
+        <h1>Babyfoon</h1>
+      </div>
+      <p class="tagline">
+        Live geluid en video via je browser. Werkt op computer en mobiel —
+        3G, 4G, 5G en wifi.
+      </p>
+
+      <div class="cards">
+        <!-- Babyunit -->
+        <div class="card">
+          <div class="emoji">🍼</div>
+          <h2>Babyunit</h2>
+          <p>
+            Plaats dit apparaat bij de baby. Het verzendt live camera en
+            geluid. Gebruik een telefoon of tablet met camera.
+          </p>
+          <div class="field">
+            <label>Kamercode (wordt gedeeld met de ouderunit)</label>
+            <div class="row">
+              <input
+                id="babyRoom"
+                type="text"
+                maxlength="12"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="CODE"
+              />
+              <button class="btn small secondary" id="genRoom" type="button">
+                Nieuw
+              </button>
+            </div>
+          </div>
+          <button class="btn" id="startBaby" type="button">
+            📷 Start als babyunit
+          </button>
+          <div class="qrbox" id="qrbox" title="Scan met de ouderunit"></div>
+          <div class="hint" id="pairHint">
+            Laat de ouder deze QR-code scannen, of geef de kamercode door.
+          </div>
+        </div>
+
+        <!-- Ouderunit -->
+        <div class="card">
+          <div class="emoji">📺</div>
+          <h2>Ouderunit</h2>
+          <p>
+            Dit is de monitor. Vul de kamercode van de babyunit in (of scan de
+            QR-code) om live mee te kijken en te luisteren.
+          </p>
+          <div class="field">
+            <label>Kamercode van de babyunit</label>
+            <div class="row">
+              <input
+                id="parentRoom"
+                type="text"
+                maxlength="12"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="CODE"
+              />
+            </div>
+          </div>
+          <button class="btn" id="startParent" type="button">
+            📡 Verbind als ouderunit
+          </button>
+          <div class="hint">
+            Tip: bewaar deze pagina als favoriet of op je beginscherm voor
+            snelle toegang.
+          </div>
+        </div>
+      </div>
+
+      <div class="info">
+        <h3>Functies</h3>
+        <ul>
+          <li>Live video en geluid met lage vertraging (WebRTC, peer-to-peer)</li>
+          <li>Terugpraten naar de baby (druk-om-te-praten)</li>
+          <li>Geluids-LED-meter en instelbaar geluidsalarm</li>
+          <li>Slaapliedjes en witte ruis op afstand afspelen</li>
+          <li>Nachtlamp op afstand aanzetten</li>
+          <li>Nachtstand, helderheid, volume en zoom</li>
+          <li>Foto maken, volledig scherm en scherm-wakker-houden</li>
+          <li>Signaalsterkte- en batterij-indicator</li>
+        </ul>
+      </div>
+
+      <div class="hint" style="text-align: center; margin-top: 18px">
+        Voor gebruik op mobiele netwerken en tussen verschillende apparaten is
+        een <b>HTTPS</b>-verbinding vereist (camera/microfoon werken alleen via
+        https of localhost).
+      </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script>
+      (function () {
+        const babyRoom = document.getElementById('babyRoom');
+        const parentRoom = document.getElementById('parentRoom');
+        const qrbox = document.getElementById('qrbox');
+
+        // Kamercode uit URL (?room=...&role=...) of opslag halen.
+        const params = new URLSearchParams(location.search);
+        const urlRoom = (params.get('room') || '').toUpperCase();
+        const savedRoom = Baby.storage.get('lastRoom', '');
+
+        let room = urlRoom || savedRoom || Baby.generateRoomCode();
+        babyRoom.value = room;
+        parentRoom.value = urlRoom || savedRoom || '';
+
+        // Als de QR-link met role=parent is geopend, direct naar de ouderunit.
+        if (urlRoom && params.get('role') === 'parent') {
+          location.href = '/parent.html?room=' + encodeURIComponent(urlRoom);
+          return;
+        }
+
+        function updateQR() {
+          const code = babyRoom.value.trim().toUpperCase();
+          if (!/^[A-Z0-9]{4,12}$/.test(code)) {
+            qrbox.innerHTML = '';
+            return;
+          }
+          const link =
+            location.origin +
+            '/parent.html?room=' +
+            encodeURIComponent(code);
+          fetch('/api/qr?data=' + encodeURIComponent(link))
+            .then((r) => (r.ok ? r.text() : Promise.reject()))
+            .then((svg) => {
+              qrbox.innerHTML = svg;
+            })
+            .catch(() => {
+              qrbox.innerHTML =
+                '<div style="color:#333;font-size:12px;text-align:center">QR niet beschikbaar</div>';
+            });
+        }
+
+        babyRoom.addEventListener('input', () => {
+          babyRoom.value = babyRoom.value.toUpperCase();
+          updateQR();
+        });
+
+        document.getElementById('genRoom').addEventListener('click', () => {
+          babyRoom.value = Baby.generateRoomCode();
+          updateQR();
+        });
+
+        document.getElementById('startBaby').addEventListener('click', () => {
+          const code = babyRoom.value.trim().toUpperCase();
+          if (!/^[A-Z0-9]{4,12}$/.test(code)) {
+            alert('Vul een geldige kamercode in (4-12 letters/cijfers).');
+            return;
+          }
+          Baby.storage.set('lastRoom', code);
+          location.href = '/baby.html?room=' + encodeURIComponent(code);
+        });
+
+        document.getElementById('startParent').addEventListener('click', () => {
+          const code = parentRoom.value.trim().toUpperCase();
+          if (!/^[A-Z0-9]{4,12}$/.test(code)) {
+            alert('Vul de kamercode van de babyunit in.');
+            return;
+          }
+          Baby.storage.set('lastRoom', code);
+          location.href = '/parent.html?room=' + encodeURIComponent(code);
+        });
+
+        updateQR();
+      })();
+    </script>
+  </body>
+</html>

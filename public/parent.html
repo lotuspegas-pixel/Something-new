@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#10131c" />
+    <title>Ouderunit — Babyfoon</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BA%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="device-stage">
+      <div class="device" id="device">
+        <div class="antenna"></div>
+
+        <!-- Bovenbalk: titel + status -->
+        <div class="device-top">
+          <div class="device-title">
+            <span class="dot" id="liveDot"></span> OUDERUNIT
+          </div>
+          <div class="statusbar">
+            <span class="sig" id="signal" title="Signaalsterkte">
+              <i></i><i></i><i></i><i></i>
+            </span>
+            <span class="batt" title="Batterij van de babyunit">
+              🍼
+              <span class="cell"><span class="fill" id="babyBattFill" style="width: 0%"></span></span>
+              <span id="babyBattPct">—</span>
+            </span>
+            <span id="clock">--:--</span>
+          </div>
+        </div>
+
+        <!-- Scherm -->
+        <div class="screen" id="screen">
+          <video id="remoteVideo" autoplay playsinline></video>
+          <div class="hud">
+            <span id="roomLabel"></span>
+            <span class="rec"><b></b> <span id="hudState">LIVE</span></span>
+          </div>
+          <div class="overlay" id="overlay">
+            <div>
+              <div class="spinner" id="spinner"></div>
+              <div class="big" id="statusBig">Verbinden met babyunit…</div>
+              <div id="statusSub" style="margin-top: 4px; font-size: 13px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geluids-LED-meter -->
+        <div class="audio-panel">
+          <div class="led-column" id="ledColumn"></div>
+          <div class="meter-info">
+            <div class="label">Geluidsniveau baby</div>
+            <div class="value" id="soundValue">— dB</div>
+            <div class="label" style="margin-top: 6px">Verbinding</div>
+            <div class="value" id="connValue">Verbinden…</div>
+          </div>
+        </div>
+
+        <!-- Bedieningsknoppen -->
+        <div class="controls">
+          <button class="ctrl talk" id="btnTalk" type="button">
+            <span class="ic">🎙️</span> Praten
+          </button>
+          <button class="ctrl" id="btnLullaby" type="button">
+            <span class="ic">🎵</span> Liedje
+          </button>
+          <button class="ctrl" id="btnNightlight" type="button">
+            <span class="ic">💡</span> Nachtlamp
+          </button>
+          <button class="ctrl" id="btnSnapshot" type="button">
+            <span class="ic">📸</span> Foto
+          </button>
+          <button class="ctrl" id="btnNightmode" type="button">
+            <span class="ic">🌙</span> Nachtstand
+          </button>
+          <button class="ctrl" id="btnAlarm" type="button">
+            <span class="ic">🔔</span> Alarm
+          </button>
+          <button class="ctrl" id="btnFullscreen" type="button">
+            <span class="ic">⛶</span> Volledig
+          </button>
+          <button class="ctrl danger" id="btnStop" type="button">
+            <span class="ic">⏻</span> Stoppen
+          </button>
+        </div>
+
+        <!-- Schuifregelaars -->
+        <div class="sliders">
+          <div class="slider-row">
+            <span class="ic">🔈</span>
+            <input type="range" id="volume" min="0" max="100" value="80" />
+            <span style="width: 38px; text-align: right; font-size: 12px" id="volVal">80%</span>
+          </div>
+          <div class="slider-row">
+            <span class="ic">☀️</span>
+            <input type="range" id="brightness" min="30" max="130" value="100" />
+            <span style="width: 38px; text-align: right; font-size: 12px" id="briVal">100%</span>
+          </div>
+          <div class="slider-row" id="alarmRow">
+            <span class="ic">🔔</span>
+            <input type="range" id="sensitivity" min="20" max="90" value="55" />
+            <span style="width: 60px; text-align: right; font-size: 12px" id="sensVal">Gevoel.</span>
+          </div>
+        </div>
+
+        <div class="grille" id="grille"></div>
+      </div>
+    </div>
+
+    <!-- Slaapliedjes-modaal -->
+    <div class="modal-back hidden" id="lullabyModal">
+      <div class="modal">
+        <h3>🎵 Slaapliedjes & geluiden</h3>
+        <div class="lullaby-list" id="lullabyList"></div>
+        <div class="slider-row" style="margin-bottom: 14px">
+          <span class="ic">🔉</span>
+          <input type="range" id="lullabyVolume" min="0" max="100" value="35" />
+        </div>
+        <button class="btn secondary" id="closeLullaby" type="button">Sluiten</button>
+      </div>
+    </div>
+
+    <canvas id="snapCanvas" class="hidden"></canvas>
+    <a id="snapLink" class="hidden"></a>
+    <div class="toast hidden" id="toast"></div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/lullaby.js"></script>
+    <script src="/js/rtc.js"></script>
+    <script src="/js/parent.js"></script>
+  </body>
+</html>

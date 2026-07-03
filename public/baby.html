@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#10131c" />
+    <title>Babyunit — Babyfoon</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%BC%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="device-stage">
+      <div class="device">
+        <div class="antenna"></div>
+
+        <div class="device-top">
+          <div class="device-title">
+            <span class="dot" id="liveDot"></span> BABYUNIT
+          </div>
+          <div class="statusbar">
+            <span class="batt" title="Batterij van dit apparaat">
+              <span class="cell"><span class="fill" id="battFill" style="width: 100%"></span></span>
+              <span id="battPct">—</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="screen" id="screen">
+          <video id="preview" autoplay playsinline muted></video>
+          <div class="hud">
+            <span id="roomLabel"></span>
+            <span class="rec"><b></b> LIVE</span>
+          </div>
+          <div class="overlay" id="overlay">
+            <div>
+              <div class="spinner"></div>
+              <div class="big" id="statusBig">Camera starten…</div>
+              <div id="statusSub" style="margin-top: 4px; font-size: 13px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="meter-info" style="margin-top: 12px">
+          <div class="label">Status</div>
+          <div class="value" id="connText">Wachten op ouderunit…</div>
+        </div>
+
+        <div class="controls" id="controls">
+          <button class="ctrl" id="btnFlip" type="button">
+            <span class="ic">🔄</span> Camera
+          </button>
+          <button class="ctrl" id="btnMic" type="button">
+            <span class="ic">🎙️</span> Microfoon
+          </button>
+          <button class="ctrl" id="btnTorch" type="button" disabled>
+            <span class="ic">🔦</span> Lamp
+          </button>
+          <button class="ctrl danger" id="btnStop" type="button">
+            <span class="ic">⏹️</span> Stoppen
+          </button>
+        </div>
+
+        <div class="grille" id="grille"></div>
+      </div>
+    </div>
+
+    <div class="nightlight-full hidden" id="nightlight">
+      <div>💡 Nachtlamp aan (ingeschakeld door ouder)</div>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/lullaby.js"></script>
+    <script src="/js/rtc.js"></script>
+    <script src="/js/baby.js"></script>
+  </body>
+</html>
