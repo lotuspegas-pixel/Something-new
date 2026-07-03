@@ -61,6 +61,38 @@ video/audio loopt **niet** via de server.
 
 ---
 
+## Twee varianten
+
+Er zijn twee manieren om de app te gebruiken:
+
+### 1. Met signaleringsserver (`public/`) — makkelijkst koppelen
+Start `npm start` en koppel via een **kamercode of QR-code**. De server doet
+alleen de koppeling; beeld/geluid blijft peer-to-peer. Open `http://localhost:3000`.
+
+### 2. Serverloos (`serverless/`) — géén server nodig
+Een volledig zelfstandige versie die je **zonder enige server** gebruikt. Op
+hetzelfde wifi-netwerk is er letterlijk geen server nodig; koppelen gaat door
+een **QR-code te scannen** of een **koppelcode te plakken** tussen de twee
+apparaten. Daarna loopt alles lokaal en peer-to-peer.
+
+- Openen kan direct als bestand (`serverless/index.html`) in **Chrome of
+  Firefox**, of via `http://localhost:3000/serverless/`.
+- Extra functie: **lokaal opnemen** — video/geluid opnemen en als bestand op de
+  computer opslaan (via de bestandskiezer of als download), geheel offline.
+- Koppelen (handmatige WebRTC-signalering):
+  1. Babyunit toont een **QR-code / koppelcode**.
+  2. Ouderunit **scant** die of **plakt** de code, en toont dan een
+     **antwoord-QR / -code**.
+  3. Babyunit scant/plakt het antwoord → verbonden.
+
+> Let op: puur serverloos werkt binnen **hetzelfde netwerk**. Wil je over
+> internet koppelen (baby thuis, jij op 4G), dan is nog steeds een publieke
+> STUN/TURN-server nodig om door routers/firewalls te komen — dat kan niet
+> volledig serverloos. De serverloze versie gebruikt standaard een publieke
+> STUN-server; op hetzelfde wifi wordt die niet gebruikt.
+
+---
+
 ## Belangrijk: HTTPS
 
 Browsers geven **alleen toegang tot camera en microfoon via `https://` of
@@ -102,7 +134,7 @@ npm start
 
 ```
 server.js              Node.js-server: statische bestanden, ICE-config, QR, WebSocket-signalering
-public/
+public/                Variant MET server (koppelen via kamercode/QR)
   index.html           Startscherm + rolkeuze + QR-koppeling
   baby.html            Babyunit (verzendt camera + geluid)
   parent.html          Ouderunit (de babyfoon-monitor)
@@ -113,8 +145,17 @@ public/
     lullaby.js         Slaapliedjes & geluiden (Web Audio API)
     baby.js            Logica van de babyunit
     parent.js          Logica van de ouderunit
+serverless/            SERVERLOZE variant (koppelen via QR/code, lokaal opnemen)
+  index.html           Alles-in-één: rolkeuze, koppelen, baby- en ouderunit
+  style.css            Vormgeving
+  js/
+    codec.js           Koppelcode inpakken/uitpakken (deflate + base64)
+    app.js             Alle logica (handmatige signalering, opnemen, functies)
+    lullaby.js         Slaapliedjes & geluiden
+  vendor/              Ingebouwde open-source libs (QR tonen + scannen), offline
 test/
-  e2e.js               End-to-end test (twee browsers, echte WebRTC-verbinding)
+  e2e.js               End-to-end test — variant met server
+  e2e-serverless.js    End-to-end test — serverloze variant
 ```
 
 ---
@@ -126,8 +167,9 @@ nep-camera en controleert of er daadwerkelijk video stroomt en of de
 besturingscommando's aankomen.
 
 ```bash
-npm start &      # start de server
-npm test         # draait de e2e-test tegen http://localhost:3000
+npm start &            # start de server
+npm test               # e2e-test (variant met server)
+npm run test:serverless # e2e-test (serverloze variant)
 ```
 
 ---

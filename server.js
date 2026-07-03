@@ -97,6 +97,12 @@ app.get('/api/qr', async (req, res) => {
   }
 });
 
+// Serverloze variant (statisch gehost — werkt ook als los bestand geopend).
+app.use(
+  '/serverless',
+  express.static(path.join(__dirname, 'serverless'), { extensions: ['html'] })
+);
+
 // Statische bestanden.
 app.use(
   express.static(path.join(__dirname, 'public'), {

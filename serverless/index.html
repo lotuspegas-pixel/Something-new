@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#10131c" />
+    <title>Babyfoon (serverloos) — Live geluid & video</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%B6%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <!-- ============================ SETUP ============================ -->
+    <section id="screenSetup" class="wrap">
+      <div class="brand">
+        <div class="logo">👶</div>
+        <h1>Babyfoon</h1>
+      </div>
+      <p class="tagline">
+        Serverloos — draait volledig lokaal. Geen account, geen server. Op
+        hetzelfde wifi-netwerk is er geen enkele server nodig.
+      </p>
+
+      <div class="setup-role">
+        <div class="role-pick" id="pickBaby">
+          <div class="emoji">🍼</div>
+          <h3>Babyunit</h3>
+          <p>Bij de baby. Verzendt live camera en geluid.</p>
+        </div>
+        <div class="role-pick" id="pickParent">
+          <div class="emoji">📺</div>
+          <h3>Ouderunit</h3>
+          <p>De monitor. Kijkt en luistert mee.</p>
+        </div>
+      </div>
+
+      <div class="info">
+        <h3>Zo werkt het serverloos koppelen</h3>
+        <ul>
+          <li>De babyunit toont een <b>QR-code</b> (of koppelcode).</li>
+          <li>De ouderunit <b>scant</b> die of <b>plakt</b> de code.</li>
+          <li>De ouderunit toont een antwoord-QR; de babyunit scant/plakt die.</li>
+          <li>Daarna loopt beeld en geluid <b>rechtstreeks</b> tussen de apparaten.</li>
+        </ul>
+      </div>
+      <div class="hint" style="text-align: center; margin-top: 16px">
+        Werkt in Chrome en Firefox. Camera/microfoon vereist <b>https</b> of dat
+        je het bestand lokaal opent. Over internet is een STUN/TURN-server nodig
+        (zie README); op hetzelfde wifi niet.
+      </div>
+    </section>
+
+    <!-- ======================= PAIR: BABY ======================= -->
+    <section id="screenPairBaby" class="wrap hidden">
+      <div class="brand"><div class="logo">🍼</div><h1>Babyunit koppelen</h1></div>
+      <ol class="steps" id="babySteps">
+        <li id="bStep1" class="active">Laat de ouder deze QR-code scannen (of stuur de koppelcode).</li>
+        <li id="bStep2">Scan of plak de antwoordcode van de ouder.</li>
+      </ol>
+
+      <div class="pair-box">
+        <h4>1 · Jouw koppelcode (babyunit)</h4>
+        <div class="qr-display" id="babyQR"></div>
+        <textarea class="code" id="babyOfferCode" readonly></textarea>
+        <div class="pair-actions">
+          <button class="btn small secondary" id="copyBabyOffer" type="button">📋 Kopieer code</button>
+        </div>
+      </div>
+
+      <div class="pair-box">
+        <h4>2 · Antwoord van de ouder</h4>
+        <div id="babyScanWrap" class="hidden">
+          <div class="scanner"><video id="babyScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
+        </div>
+        <textarea class="code" id="babyAnswerInput" placeholder="Plak hier de antwoordcode van de ouder…"></textarea>
+        <div class="pair-actions">
+          <button class="btn small secondary" id="babyScanBtn" type="button">📷 Scan QR</button>
+          <button class="btn small" id="babyConnectBtn" type="button">Verbinden</button>
+        </div>
+      </div>
+      <div class="backlink"><a href="#" id="babyBack">← Terug</a></div>
+    </section>
+
+    <!-- ======================= PAIR: PARENT ======================= -->
+    <section id="screenPairParent" class="wrap hidden">
+      <div class="brand"><div class="logo">📺</div><h1>Ouderunit koppelen</h1></div>
+      <ol class="steps" id="parentSteps">
+        <li id="pStep1" class="active">Scan de QR-code van de babyunit (of plak de code).</li>
+        <li id="pStep2">Laat de babyunit jouw antwoord-QR scannen (of stuur de code).</li>
+      </ol>
+
+      <div class="pair-box">
+        <h4>1 · Koppelcode van de babyunit</h4>
+        <div id="parentScanWrap" class="hidden">
+          <div class="scanner"><video id="parentScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
+        </div>
+        <textarea class="code" id="parentOfferInput" placeholder="Plak hier de koppelcode van de babyunit…"></textarea>
+        <div class="pair-actions">
+          <button class="btn small secondary" id="parentScanBtn" type="button">📷 Scan QR</button>
+          <button class="btn small" id="parentGenBtn" type="button">Genereer antwoord</button>
+        </div>
+      </div>
+
+      <div class="pair-box hidden" id="parentAnswerBox">
+        <h4>2 · Jouw antwoordcode</h4>
+        <div class="qr-display" id="parentQR"></div>
+        <textarea class="code" id="parentAnswerCode" readonly></textarea>
+        <div class="pair-actions">
+          <button class="btn small secondary" id="copyParentAnswer" type="button">📋 Kopieer code</button>
+        </div>
+        <div class="hint" style="margin-top:10px">Wacht tot de verbinding tot stand komt…</div>
+      </div>
+      <div class="backlink"><a href="#" id="parentBack">← Terug</a></div>
+    </section>
+
+    <!-- ======================= DEVICE: PARENT (monitor) ======================= -->
+    <section id="screenParent" class="device-stage hidden">
+      <div class="device">
+        <div class="antenna"></div>
+        <div class="device-top">
+          <div class="device-title"><span class="dot" id="pLiveDot"></span> OUDERUNIT</div>
+          <div class="statusbar">
+            <span class="batt" title="Batterij babyunit">🍼
+              <span class="cell"><span class="fill" id="pBabyBatt" style="width:0%"></span></span>
+              <span id="pBabyBattPct">—</span>
+            </span>
+            <span id="pClock">--:--</span>
+          </div>
+        </div>
+        <div class="screen" id="pScreen">
+          <video id="pVideo" autoplay playsinline></video>
+          <div class="hud"><span></span><span class="rec"><b></b> LIVE</span></div>
+          <div class="overlay" id="pOverlay"><div><div class="spinner"></div><div class="big">Verbinden…</div></div></div>
+        </div>
+        <div class="audio-panel">
+          <div class="led-column" id="pLed"></div>
+          <div class="meter-info">
+            <div class="label">Geluidsniveau baby</div>
+            <div class="value" id="pSound">— %</div>
+            <div class="label" style="margin-top:6px">Verbinding</div>
+            <div class="value" id="pConn">Verbinden…</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctrl talk" id="pTalk" type="button"><span class="ic">🎙️</span> Praten</button>
+          <button class="ctrl" id="pLullaby" type="button"><span class="ic">🎵</span> Liedje</button>
+          <button class="ctrl" id="pNightlight" type="button"><span class="ic">💡</span> Nachtlamp</button>
+          <button class="ctrl rec" id="pRecord" type="button"><span class="ic">⏺️</span> Opnemen</button>
+          <button class="ctrl" id="pNightmode" type="button"><span class="ic">🌙</span> Nachtstand</button>
+          <button class="ctrl active" id="pAlarm" type="button"><span class="ic">🔔</span> Alarm</button>
+          <button class="ctrl" id="pSnapshot" type="button"><span class="ic">📸</span> Foto</button>
+          <button class="ctrl danger" id="pStop" type="button"><span class="ic">⏻</span> Stoppen</button>
+        </div>
+        <div class="sliders">
+          <div class="slider-row"><span class="ic">🔈</span><input type="range" id="pVol" min="0" max="100" value="80" /><span id="pVolVal" style="width:38px;text-align:right;font-size:12px">80%</span></div>
+          <div class="slider-row"><span class="ic">☀️</span><input type="range" id="pBri" min="30" max="130" value="100" /><span id="pBriVal" style="width:38px;text-align:right;font-size:12px">100%</span></div>
+          <div class="slider-row"><span class="ic">🔔</span><input type="range" id="pSens" min="20" max="90" value="55" /><span id="pSensVal" style="width:60px;text-align:right;font-size:12px">Gevoel.</span></div>
+        </div>
+        <div class="grille" id="pGrille"></div>
+      </div>
+    </section>
+
+    <!-- ======================= DEVICE: BABY ======================= -->
+    <section id="screenBaby" class="device-stage hidden">
+      <div class="device">
+        <div class="antenna"></div>
+        <div class="device-top">
+          <div class="device-title"><span class="dot" id="bLiveDot"></span> BABYUNIT</div>
+          <div class="statusbar">
+            <span class="batt" title="Batterij"><span class="cell"><span class="fill" id="bBatt" style="width:100%"></span></span><span id="bBattPct">—</span></span>
+          </div>
+        </div>
+        <div class="screen" id="bScreen">
+          <video id="bPreview" autoplay playsinline muted></video>
+          <div class="hud"><span></span><span class="rec"><b></b> LIVE</span></div>
+          <div class="overlay hidden" id="bOverlay"><div><div class="spinner"></div><div class="big">Wachten…</div></div></div>
+        </div>
+        <div class="meter-info" style="margin-top:12px">
+          <div class="label">Status</div>
+          <div class="value" id="bConn">Verbinden…</div>
+        </div>
+        <div class="controls">
+          <button class="ctrl" id="bFlip" type="button"><span class="ic">🔄</span> Camera</button>
+          <button class="ctrl active" id="bMic" type="button"><span class="ic">🎙️</span> Microfoon</button>
+          <button class="ctrl rec" id="bRecord" type="button"><span class="ic">⏺️</span> Opnemen</button>
+          <button class="ctrl danger" id="bStop" type="button"><span class="ic">⏹️</span> Stoppen</button>
+        </div>
+        <div class="grille" id="bGrille"></div>
+      </div>
+    </section>
+
+    <div class="nightlight-full hidden" id="nightlight"><div>💡 Nachtlamp aan (ingeschakeld door ouder)</div></div>
+
+    <!-- Slaapliedjes-modaal -->
+    <div class="modal-back hidden" id="lullabyModal">
+      <div class="modal">
+        <h3>🎵 Slaapliedjes & geluiden</h3>
+        <div class="lullaby-list" id="lullabyList"></div>
+        <button class="btn secondary" id="closeLullaby" type="button">Sluiten</button>
+      </div>
+    </div>
+
+    <canvas id="scratch" class="hidden"></canvas>
+    <div class="toast hidden" id="toast"></div>
+
+    <script src="vendor/qrcode.js"></script>
+    <script src="vendor/jsQR.js"></script>
+    <script src="js/codec.js"></script>
+    <script src="js/lullaby.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
