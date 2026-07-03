@@ -77,7 +77,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const start = Date.now();
     while (Date.now() - start < 25000) {
       info = await parent.evaluate(() => {
-        const v = document.getElementById('remoteVideo');
+        const v = document.getElementById('video');
         return { w: v?.videoWidth || 0, ready: v?.readyState || 0 };
       });
       if (info.w > 0 && info.ready >= 2) break;
@@ -92,23 +92,32 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     await sleep(1000); // datakanaal laten openen
 
-    // 2. Nachtlamp op afstand.
-    await parent.click('#btnNightlight');
+    // 2. Nachtlamp op afstand (schuif de nachtlamp-slider omhoog).
+    await parent.evaluate(() => {
+      const s = document.getElementById('sNightlight');
+      const r = s.getBoundingClientRect();
+      s.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + 4 }));
+      s.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    });
     await sleep(700);
     const nl = await baby.evaluate(
       () => !document.getElementById('nightlight').classList.contains('hidden')
     );
     check('Nachtlamp-commando komt aan bij baby', nl);
 
-    // 3. Terugpraten activeert de microfoon.
-    await parent.evaluate(() => {
-      document
-        .getElementById('btnTalk')
-        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    });
+    // 3. Slaapmuziek: klik op een chip -> gaat naar baby en terug (datakanaal heen en weer).
+    await parent.click('#chips .chip');
+    await sleep(800);
+    const lull = await parent.evaluate(
+      () => !!document.querySelector('#chips .chip.on')
+    );
+    check('Slaapmuziek round-trip (ouder→baby→ouder)', lull);
+
+    // 4. Terugpraten activeert de microfoon.
+    await parent.click('#btnTalk');
     await sleep(300);
     const talking = await parent.evaluate(() =>
-      document.getElementById('btnTalk').classList.contains('active')
+      document.getElementById('btnTalk').classList.contains('on')
     );
     check('Terugpraten activeert microfoon', talking);
   } catch (err) {

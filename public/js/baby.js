@@ -148,6 +148,36 @@
     reportBattery();
   }
 
+  // Zoektoon: speelt een reeks luide piepjes zodat je de babyunit terugvindt.
+  let locateCtx = null;
+  function playLocateTone() {
+    try {
+      if (!locateCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        locateCtx = new AC();
+      }
+      if (locateCtx.state === 'suspended') locateCtx.resume();
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+      const ctx = locateCtx;
+      let t = ctx.currentTime;
+      for (let k = 0; k < 6; k++) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = k % 2 ? 990 : 1320;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.6, t + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        osc.connect(g).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.4);
+        t += 0.45;
+      }
+    } catch (e) {
+      /* noop */
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Besturingscommando's van de ouderunit
   // -------------------------------------------------------------------------
@@ -166,9 +196,18 @@
       case 'lullabyVolume':
         lullaby.setVolume(msg.value);
         break;
-      case 'nightlight':
-        el.nightlight.classList.toggle('hidden', !msg.on);
-        toast(msg.on ? '💡 Nachtlamp aan' : 'Nachtlamp uit');
+      case 'nightlight': {
+        const on = msg.on !== false && (msg.level == null || msg.level > 0);
+        el.nightlight.classList.toggle('hidden', !on);
+        if (on) {
+          const lvl = msg.level == null ? 100 : msg.level;
+          el.nightlight.style.opacity = Math.max(0.12, lvl / 100).toFixed(2);
+        }
+        break;
+      }
+      case 'locate':
+        playLocateTone();
+        toast('🔊 Zoektoon');
         break;
       case 'flip':
         flipCamera();

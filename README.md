@@ -93,6 +93,25 @@ apparaten. Daarna loopt alles lokaal en peer-to-peer.
 
 ---
 
+## Ouder-paneel — "Luna Unit"
+
+De ouderunit (`parent.html`) gebruikt een neumorf ontwerp ("Luna Unit"). Alle
+knoppen zijn volledig functioneel gekoppeld aan de echte verbinding. Overbodige
+knoppen uit het oorspronkelijke ontwerp zijn weggelaten of samengevoegd:
+
+- **Weg**: dubbele aan/uit-knop, meerdere-camera-lijst + favoriet + lock,
+  aparte "nachtvisie"-knop (viel samen met Nachtstand), losse kanaal-/volume±-
+  knoppen (dubbel met de volumeknop), en de dubbele transportknoppen
+  (shuffle/repeat/rewind/forward/pauze).
+- **Behouden en werkend**: verbindingsstatus + signaal + vertraging, camera
+  wisselen, zoek-unit (toon bij de baby), live beeld met dB-meter, VU-balken,
+  zoom, foto, volledig scherm, terugpraten, volumeknop, helderheid, nachtlampje,
+  mic-gevoeligheid, slaapmuziek (Regen/Oceaan/Hartslag/Witte ruis) met
+  vorige/afspelen/volgende/stop, opnemen, geluid dempen, alarm en
+  "huilen gedetecteerd", nachtstand en batterij van de babyunit.
+
+---
+
 ## Belangrijk: HTTPS
 
 Browsers geven **alleen toegang tot camera en microfoon via `https://` of
@@ -137,8 +156,10 @@ server.js              Node.js-server: statische bestanden, ICE-config, QR, WebS
 public/                Variant MET server (koppelen via kamercode/QR)
   index.html           Startscherm + rolkeuze + QR-koppeling
   baby.html            Babyunit (verzendt camera + geluid)
-  parent.html          Ouderunit (de babyfoon-monitor)
-  css/style.css        Vormgeving (ziet eruit als een echte babyfoon)
+  parent.html          Ouderunit — "Luna Unit"-paneel (neumorf ontwerp)
+  css/style.css        Vormgeving babyunit + startscherm
+  css/luna.css         Vormgeving ouder-paneel (Luna Unit)
+  fonts/               Ingebouwde lettertypes (Nunito, Quicksand) — offline
   js/
     common.js          Hulpfuncties (kamercode, opslag, wake lock)
     rtc.js             WebRTC-verbinding (perfect negotiation)

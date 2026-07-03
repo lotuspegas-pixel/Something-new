@@ -1,77 +1,34 @@
 'use strict';
 
 /**
- * Ouderunit — de monitor. Ontvangt live beeld/geluid van de babyunit,
- * toont een geluids-LED-meter, waarschuwt bij geluid, en kan terugpraten,
- * slaapliedjes/nachtlamp op afstand bedienen, foto's maken en meer.
+ * Luna Unit — ouder-paneel. Koppelt de neumorfe UI aan de echte
+ * WebRTC-babyfoonverbinding. Alle knoppen zijn functioneel.
  */
 (function () {
   const params = new URLSearchParams(location.search);
-  const room = (params.get('room') || Baby.storage.get('lastRoom', '') || '')
-    .toUpperCase();
-
+  const room = (params.get('room') || Baby.storage.get('lastRoom', '') || '').toUpperCase();
   if (!room) {
     location.href = '/';
     return;
   }
   Baby.storage.set('lastRoom', room);
 
-  const el = {
-    device: document.getElementById('device'),
-    screen: document.getElementById('screen'),
-    video: document.getElementById('remoteVideo'),
-    overlay: document.getElementById('overlay'),
-    spinner: document.getElementById('spinner'),
-    statusBig: document.getElementById('statusBig'),
-    statusSub: document.getElementById('statusSub'),
-    roomLabel: document.getElementById('roomLabel'),
-    hudState: document.getElementById('hudState'),
-    liveDot: document.getElementById('liveDot'),
-    ledColumn: document.getElementById('ledColumn'),
-    soundValue: document.getElementById('soundValue'),
-    connValue: document.getElementById('connValue'),
-    signal: document.getElementById('signal'),
-    babyBattFill: document.getElementById('babyBattFill'),
-    babyBattPct: document.getElementById('babyBattPct'),
-    clock: document.getElementById('clock'),
-    btnTalk: document.getElementById('btnTalk'),
-    btnLullaby: document.getElementById('btnLullaby'),
-    btnNightlight: document.getElementById('btnNightlight'),
-    btnSnapshot: document.getElementById('btnSnapshot'),
-    btnNightmode: document.getElementById('btnNightmode'),
-    btnAlarm: document.getElementById('btnAlarm'),
-    btnFullscreen: document.getElementById('btnFullscreen'),
-    btnStop: document.getElementById('btnStop'),
-    volume: document.getElementById('volume'),
-    volVal: document.getElementById('volVal'),
-    brightness: document.getElementById('brightness'),
-    briVal: document.getElementById('briVal'),
-    sensitivity: document.getElementById('sensitivity'),
-    sensVal: document.getElementById('sensVal'),
-    lullabyModal: document.getElementById('lullabyModal'),
-    lullabyList: document.getElementById('lullabyList'),
-    lullabyVolume: document.getElementById('lullabyVolume'),
-    closeLullaby: document.getElementById('closeLullaby'),
-    snapCanvas: document.getElementById('snapCanvas'),
-    grille: document.getElementById('grille'),
-    toast: document.getElementById('toast'),
-  };
+  const $ = (id) => document.getElementById(id);
+  const el = {};
+  [
+    'btnPower', 'btnNightmode', 'connDot', 'connText', 'clock', 'babyBatt',
+    'roomLabel', 'signal', 'rttVal', 'btnFlip', 'btnLocate',
+    'screen', 'video', 'nightVeil', 'snapFlash', 'liveBadge', 'liveText',
+    'dbText', 'placeholder', 'phText', 'vu', 'btnSnapshot', 'btnFullscreen',
+    'zoomOut', 'zoomVal', 'zoomIn', 'btnTalk', 'talkText', 'btnFsClose',
+    'volDial', 'volNeedle', 'volHub', 'sBrightness', 'sNightlight', 'sSensitivity',
+    'tPrev', 'tPlay', 'tNext', 'tStop', 'btnRecord', 'btnMute', 'btnAlarm',
+    'alarmText', 'cryAlert', 'chips', 'errorCard', 'scratch', 'toast',
+  ].forEach((id) => (el[id] = $(id)));
 
-  el.roomLabel.textContent = 'Kamer ' + room;
+  el.roomLabel.textContent = room;
 
-  // Luidsprekerrooster.
-  el.grille.innerHTML = '';
-  for (let i = 0; i < 36; i++) el.grille.appendChild(document.createElement('i'));
-
-  // LED-meter opbouwen (12 leds: groen/geel/rood).
-  const LED_COUNT = 12;
-  const leds = [];
-  for (let i = 0; i < LED_COUNT; i++) {
-    const d = document.createElement('div');
-    d.className = 'led ' + (i >= 10 ? 'r' : i >= 7 ? 'y' : 'g');
-    el.ledColumn.appendChild(d);
-    leds.push(d);
-  }
+  const vuBars = Array.from(el.vu.querySelectorAll('i'));
 
   let toastTimer = null;
   function toast(msg) {
@@ -81,125 +38,105 @@
     toastTimer = setTimeout(() => el.toast.classList.add('hidden'), 3000);
   }
 
-  // State
+  // -------------------------------------------------------------- state
   let link = null;
   let micStream = null;
   let remoteStream = null;
-  let talking = false;
-  let nightlightOn = false;
-  let nightMode = false;
-  let alarmOn = true;
-  let lullabyPlayingId = null;
   let audioCtx = null;
   let analyser = null;
+  let talking = false;
+  let nightMode = false;
+  let alarmOn = true;
+  let muted = false;
+  let zoom = 1.0;
+  let volume = 80;
+  let brightness = 100; // 30..130
+  let nightlight = 0; // 0..100
+  let sensitivity = 55; // 0..100 (hoger = gevoeliger)
   let alarmCooldown = 0;
 
-  el.btnAlarm.classList.add('active');
+  // slaapmuziek
+  const tracks = LullabyPlayer.list();
+  let trackIndex = 0;
+  let playing = false;
 
-  // -------------------------------------------------------------------------
-  // Microfoon voor terugpraten (optioneel)
-  // -------------------------------------------------------------------------
-  async function getMic() {
-    try {
-      micStream = await Baby.getMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
-      // Standaard uit (alleen actief tijdens indrukken van "Praten").
-      micStream.getAudioTracks().forEach((t) => (t.enabled = false));
-    } catch (e) {
-      micStream = null;
-      el.btnTalk.disabled = true;
-      el.btnTalk.style.opacity = 0.4;
-      toast('Terugpraten uit (geen microfoontoegang)');
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Verbinding
-  // -------------------------------------------------------------------------
+  // -------------------------------------------------------------- verbinding
   function connect() {
     link = new BabyphoneLink({
       room,
       role: 'parent',
       localStream: micStream,
       onConnectionState: (state) => {
-        el.connValue.textContent = Baby.connLabel(state);
+        el.connText.textContent = Baby.connLabel(state);
         if (state === 'connected') {
-          el.overlay.classList.add('hidden');
-          el.liveDot.classList.add('live');
-          el.hudState.textContent = 'LIVE';
-          // Vraag actuele status van de babyunit op.
+          el.placeholder.classList.add('hidden');
+          el.errorCard.classList.add('hidden');
+          el.connDot.classList.remove('off');
+          el.liveText.textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
           if (link) link.sendControl({ cmd: 'ping' });
         } else if (state === 'failed' || state === 'disconnected') {
-          el.liveDot.classList.remove('live');
-          el.hudState.textContent = 'HERVERBINDEN';
+          el.connDot.classList.add('off');
+          el.liveText.textContent = 'HERVERBINDEN';
+          el.errorCard.classList.remove('hidden');
         }
       },
       onPeerPresence: (present) => {
         if (!present) {
-          el.overlay.classList.remove('hidden');
-          el.spinner.style.display = '';
-          el.statusBig.textContent = 'Wachten op babyunit…';
-          el.statusSub.textContent = 'Kamer ' + room + ' — babyunit nog niet online';
-          el.liveDot.classList.remove('live');
+          el.placeholder.classList.remove('hidden');
+          el.phText.textContent = 'Wachten op babyunit…';
+          el.connDot.classList.add('off');
+          el.liveText.textContent = 'VERBINDEN…';
           setSignal(0);
-          el.babyBattPct.textContent = '—';
-          el.babyBattFill.style.width = '0%';
+          el.rttVal.textContent = '—';
+          el.babyBatt.textContent = '🔋 —';
         } else {
-          el.statusBig.textContent = 'Babyunit gevonden, verbinden…';
+          el.phText.textContent = 'Babyunit gevonden, verbinden…';
         }
       },
       onSignalingState: (s) => {
         if (s === 'error:role-taken') {
-          el.statusBig.textContent = 'Er is al een ouderunit in deze kamer';
-          el.statusSub.textContent = 'Sluit de andere ouderunit of gebruik een andere kamer.';
-          el.spinner.style.display = 'none';
+          el.phText.textContent = 'Er is al een ouderunit in deze kamer';
         }
       },
       onTrack: (ev) => {
         remoteStream = ev.streams[0];
         el.video.srcObject = remoteStream;
-        el.video.play().catch(() => showTapToStart());
+        el.video.play().catch(() => {});
         setupAnalyser(remoteStream);
       },
       onControl: (msg) => {
         if (msg.cmd === 'battery') {
-          const pct = msg.level;
-          el.babyBattPct.textContent = pct + '%' + (msg.charging ? ' ⚡' : '');
-          el.babyBattFill.style.width = pct + '%';
-          el.babyBattFill.style.background =
-            pct < 20 ? 'var(--danger)' : 'var(--accent)';
+          el.babyBatt.textContent = '🔋 ' + msg.level + '%' + (msg.charging ? '⚡' : '');
         } else if (msg.cmd === 'lullabyState') {
-          lullabyPlayingId = msg.id;
-          el.btnLullaby.classList.toggle('active', !!msg.id);
-          renderLullabyList();
+          playing = !!msg.id;
+          if (msg.id) {
+            const i = tracks.findIndex((t) => t.id === msg.id);
+            if (i >= 0) trackIndex = i;
+          }
+          renderTransport();
+          renderChips();
         }
       },
     });
     link.start();
   }
 
-  // Sommige browsers blokkeren automatisch afspelen van geluid tot een klik.
-  function showTapToStart() {
-    el.statusBig.textContent = 'Tik om geluid in te schakelen';
-    el.spinner.style.display = 'none';
-    el.overlay.classList.remove('hidden');
-    const start = () => {
-      el.video.play().catch(() => {});
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      el.overlay.classList.add('hidden');
-    };
-    el.overlay.addEventListener('click', start, { once: true });
+  // -------------------------------------------------------------- microfoon (terugpraten)
+  async function getMic() {
+    try {
+      micStream = await Baby.getMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false,
+      });
+      micStream.getAudioTracks().forEach((t) => (t.enabled = false));
+    } catch (e) {
+      micStream = null;
+      el.btnTalk.style.opacity = 0.45;
+      el.btnTalk.title = 'Geen microfoontoegang';
+    }
   }
 
-  // -------------------------------------------------------------------------
-  // Geluidsanalyse (VU-meter + alarm)
-  // -------------------------------------------------------------------------
+  // -------------------------------------------------------------- geluidsanalyse
   function setupAnalyser(stream) {
     try {
       if (!audioCtx) {
@@ -212,70 +149,50 @@
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.6;
       src.connect(analyser);
-      // Niet met destination verbinden: afspelen gebeurt via het <video>-element.
     } catch (e) {
       analyser = null;
     }
   }
 
-  const buf = new Uint8Array(256);
+  const meterBuf = new Uint8Array(256);
   function meterLoop() {
     let level = 0;
     if (analyser) {
-      analyser.getByteTimeDomainData(buf.subarray(0, analyser.fftSize / 2));
       const n = analyser.fftSize / 2;
+      analyser.getByteTimeDomainData(meterBuf.subarray(0, n));
       let sum = 0;
       for (let i = 0; i < n; i++) {
-        const v = (buf[i] - 128) / 128;
+        const v = (meterBuf[i] - 128) / 128;
         sum += v * v;
       }
-      const rms = Math.sqrt(sum / n);
-      // Naar 0-100 schalen met een prettige curve.
-      level = Math.min(100, Math.round(rms * 300));
+      level = Math.min(100, Math.round(Math.sqrt(sum / n) * 300));
     }
-    updateLeds(level);
-    updateSoundValue(level);
-    checkAlarm(level);
-    requestAnimationFrame(meterLoop);
-  }
-
-  function updateLeds(level) {
-    const lit = Math.round((level / 100) * LED_COUNT);
-    for (let i = 0; i < LED_COUNT; i++) {
-      leds[i].classList.toggle('on', i < lit);
+    // VU-balken
+    for (let i = 0; i < vuBars.length; i++) {
+      const jitter = 0.7 + Math.random() * 0.6;
+      const h = Math.max(0.12, Math.min(1, (level / 100) * jitter));
+      vuBars[i].style.transform = 'scaleY(' + h.toFixed(2) + ')';
     }
-  }
+    // dB-benadering (30–85 dB)
+    el.dbText.textContent = Math.round(30 + level * 0.55) + ' dB';
 
-  function updateSoundValue(level) {
-    let word = 'Stil';
-    if (level > 70) word = 'Luid';
-    else if (level > 40) word = 'Matig';
-    else if (level > 12) word = 'Zacht';
-    el.soundValue.textContent = level + '% • ' + word;
-    el.soundValue.classList.toggle('alert', level > (100 - Number(el.sensitivity.value)));
-  }
-
-  function checkAlarm(level) {
-    if (!alarmOn) {
-      el.screen.classList.remove('alarm');
-      return;
-    }
-    const threshold = 100 - Number(el.sensitivity.value);
+    // alarm / huilen
+    const threshold = 100 - sensitivity;
     const now = Date.now();
-    if (level > threshold) {
-      el.screen.classList.add('alarm');
+    if (alarmOn && level > threshold) {
+      el.cryAlert.classList.remove('hidden');
       if (now > alarmCooldown) {
         alarmCooldown = now + 6000;
         triggerAlarm();
       }
     } else if (now > alarmCooldown - 5000) {
-      el.screen.classList.remove('alarm');
+      el.cryAlert.classList.add('hidden');
     }
+    requestAnimationFrame(meterLoop);
   }
 
   function triggerAlarm() {
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    // Waarschuwingstoon (los van het monitorvolume).
     try {
       if (!audioCtx) {
         const AC = window.AudioContext || window.webkitAudioContext;
@@ -297,199 +214,301 @@
     } catch (e) {
       /* noop */
     }
-    toast('🔔 Geluid gedetecteerd bij de baby');
   }
 
-  // -------------------------------------------------------------------------
-  // Signaalsterkte (uit WebRTC-statistieken)
-  // -------------------------------------------------------------------------
+  // -------------------------------------------------------------- signaal
   function setSignal(bars) {
-    el.signal.querySelectorAll('i').forEach((i, idx) => {
-      i.classList.toggle('on', idx < bars);
-    });
+    el.signal.querySelectorAll('i').forEach((i, idx) => i.classList.toggle('on', idx < bars));
   }
-
   async function statsLoop() {
     if (link) {
       const s = await link.getStats();
       if (s && s.rtt != null) {
+        el.rttVal.textContent = Math.round(s.rtt) + ' ms';
         let bars = 4;
         if (s.rtt > 400) bars = 1;
         else if (s.rtt > 250) bars = 2;
         else if (s.rtt > 120) bars = 3;
-        if (s.packetsLost && s.bitrateKbps != null && s.bitrateKbps < 30) {
-          bars = Math.min(bars, 1);
-        }
         setSignal(bars);
       }
     }
     setTimeout(statsLoop, 2000);
   }
 
-  // -------------------------------------------------------------------------
-  // Knoppen
-  // -------------------------------------------------------------------------
-  // Terugpraten (druk-en-houd).
-  function talkStart(e) {
-    if (e) e.preventDefault();
-    if (!micStream || talking) return;
-    talking = true;
-    micStream.getAudioTracks().forEach((t) => (t.enabled = true));
-    el.btnTalk.classList.add('active');
+  // -------------------------------------------------------------- video-filter
+  function applyVideoFilter() {
+    let f = 'brightness(' + brightness / 100 + ')';
+    if (nightMode) f += ' grayscale(1) brightness(0.6) contrast(1.1)';
+    el.video.style.filter = f;
+    el.nightVeil.classList.toggle('hidden', !nightMode);
   }
-  function talkEnd() {
-    if (!talking) return;
-    talking = false;
-    if (micStream) micStream.getAudioTracks().forEach((t) => (t.enabled = false));
-    el.btnTalk.classList.remove('active');
+  function applyZoom() {
+    el.video.style.transform = 'scale(' + zoom + ')';
+    el.zoomVal.textContent = zoom.toFixed(1) + '×';
   }
-  el.btnTalk.addEventListener('pointerdown', talkStart);
-  el.btnTalk.addEventListener('pointerup', talkEnd);
-  el.btnTalk.addEventListener('pointerleave', talkEnd);
-  el.btnTalk.addEventListener('pointercancel', talkEnd);
+  function applyVolume() {
+    el.video.volume = muted ? 0 : volume / 100;
+    el.video.muted = muted || volume === 0;
+    el.volHub.textContent = muted ? '⌀' : volume;
+    el.volNeedle.style.transform =
+      'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
+  }
 
-  // Nachtlamp op afstand.
-  el.btnNightlight.addEventListener('click', () => {
-    nightlightOn = !nightlightOn;
-    el.btnNightlight.classList.toggle('active', nightlightOn);
-    if (link) link.sendControl({ cmd: 'nightlight', on: nightlightOn });
-    toast(nightlightOn ? 'Nachtlamp aan bij de baby' : 'Nachtlamp uit');
-  });
+  // -------------------------------------------------------------- schuifregelaars
+  function sliderPct(field) {
+    // huidige waarde → 0..1 positie
+    const map = {
+      sBrightness: (brightness - 30) / 100,
+      sNightlight: nightlight / 100,
+      sSensitivity: sensitivity / 100,
+    };
+    return map[field];
+  }
+  function setSliderKnob(elm, pct) {
+    elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
+  }
+  function applySlider(field, pct) {
+    if (field === 'sBrightness') {
+      brightness = Math.round(30 + pct * 100);
+      applyVideoFilter();
+    } else if (field === 'sNightlight') {
+      nightlight = Math.round(pct * 100);
+      if (link) link.sendControl({ cmd: 'nightlight', on: nightlight > 3, level: nightlight });
+    } else if (field === 'sSensitivity') {
+      sensitivity = Math.round(pct * 100);
+    }
+    setSliderKnob($(field), pct);
+  }
 
-  // Nachtstand (scherm dimmen + grijstinten voor rust in het donker).
-  el.btnNightmode.addEventListener('click', () => {
-    nightMode = !nightMode;
-    el.btnNightmode.classList.toggle('active', nightMode);
-    applyVideoFilter();
-    toast(nightMode ? 'Nachtstand aan' : 'Nachtstand uit');
-  });
+  function bindVertical(elm, onPct) {
+    let active = false;
+    const upd = (e) => {
+      const r = elm.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height));
+      onPct(pct);
+    };
+    elm.addEventListener('pointerdown', (e) => {
+      active = true;
+      try { elm.setPointerCapture(e.pointerId); } catch (x) {}
+      upd(e);
+    });
+    elm.addEventListener('pointermove', (e) => active && upd(e));
+    elm.addEventListener('pointerup', () => (active = false));
+    elm.addEventListener('pointercancel', () => (active = false));
+  }
 
-  // Geluidsalarm aan/uit.
-  el.btnAlarm.addEventListener('click', () => {
-    alarmOn = !alarmOn;
-    el.btnAlarm.classList.toggle('active', alarmOn);
-    if (!alarmOn) el.screen.classList.remove('alarm');
-    toast(alarmOn ? 'Geluidsalarm aan' : 'Geluidsalarm uit');
-  });
-
-  // Foto maken (momentopname van het beeld).
-  el.btnSnapshot.addEventListener('click', () => {
-    if (!remoteStream || !el.video.videoWidth) {
-      toast('Nog geen beeld om vast te leggen');
+  // -------------------------------------------------------------- slaapmuziek
+  function renderChips() {
+    el.chips.innerHTML = '';
+    tracks.forEach((t, i) => {
+      const c = document.createElement('div');
+      c.className = 'chip' + (playing && i === trackIndex ? ' on' : '');
+      c.textContent = t.label;
+      c.onclick = () => selectTrack(i, true);
+      el.chips.appendChild(c);
+    });
+  }
+  function renderTransport() {
+    el.tPlay.textContent = playing ? '❚❚' : '▶';
+    el.tPlay.classList.toggle('on', playing);
+  }
+  function sendPlay() {
+    if (link) link.sendControl({ cmd: 'lullaby', on: true, id: tracks[trackIndex].id });
+    playing = true;
+    renderTransport();
+    renderChips();
+  }
+  function sendStop() {
+    if (link) link.sendControl({ cmd: 'lullaby', on: false, id: tracks[trackIndex].id });
+    playing = false;
+    renderTransport();
+    renderChips();
+  }
+  function selectTrack(i, autoplay) {
+    if (i === trackIndex && playing && autoplay) {
+      sendStop();
       return;
     }
-    const c = el.snapCanvas;
-    c.width = el.video.videoWidth;
-    c.height = el.video.videoHeight;
-    c.getContext('2d').drawImage(el.video, 0, 0, c.width, c.height);
-    c.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download =
-        'babyfoon-' + new Date().toISOString().replace(/[:.]/g, '-') + '.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast('📸 Foto opgeslagen');
-    }, 'image/png');
-  });
-
-  // Volledig scherm.
-  el.btnFullscreen.addEventListener('click', () => {
-    const target = el.screen;
-    if (!document.fullscreenElement) {
-      (target.requestFullscreen || target.webkitRequestFullscreen)?.call(target);
-    } else {
-      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    trackIndex = i;
+    if (playing || autoplay) sendPlay();
+    else {
+      renderChips();
     }
-  });
+  }
 
-  // Stoppen.
-  el.btnStop.addEventListener('click', () => {
+  // -------------------------------------------------------------- opnemen
+  let recorder = null;
+  let recChunks = [];
+  function pickMime() {
+    const opts = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+    for (const m of opts) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+    return '';
+  }
+  async function saveBlob(blob, prefix, ext) {
+    const name = prefix + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
+    if (window.showSaveFilePicker) {
+      try {
+        const h = await window.showSaveFilePicker({
+          suggestedName: name,
+          types: [{ accept: { [blob.type || 'application/octet-stream']: ['.' + ext] } }],
+        });
+        const w = await h.createWritable();
+        await w.write(blob);
+        await w.close();
+        toast('💾 Opgeslagen');
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('💾 Opgeslagen');
+  }
+  function toggleRecord() {
+    if (!remoteStream) return toast('Nog geen beeld om op te nemen');
+    if (recorder) {
+      recorder.stop();
+      return;
+    }
+    if (!window.MediaRecorder) return toast('Opnemen niet ondersteund');
+    const mime = pickMime();
+    try {
+      recorder = new MediaRecorder(remoteStream, mime ? { mimeType: mime } : undefined);
+    } catch (e) {
+      return toast('Opnemen niet ondersteund');
+    }
+    recChunks = [];
+    recorder.ondataavailable = (e) => e.data && e.data.size && recChunks.push(e.data);
+    recorder.onstop = async () => {
+      const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
+      el.btnRecord.classList.remove('active');
+      recorder = null;
+      const ext = (blob.type || '').includes('mp4') ? 'mp4' : 'webm';
+      await saveBlob(blob, 'babyfoon-opname', ext);
+    };
+    recorder.start(1000);
+    el.btnRecord.classList.add('active');
+    toast('⏺️ Opname gestart');
+  }
+
+  // -------------------------------------------------------------- knoppen wiring
+  el.btnPower.onclick = () => {
     if (confirm('Ouderunit stoppen en terug naar het startscherm?')) {
       cleanup();
       location.href = '/';
     }
+  };
+
+  el.btnNightmode.onclick = () => {
+    nightMode = !nightMode;
+    el.btnNightmode.classList.toggle('on', nightMode);
+    applyVideoFilter();
+    el.liveText.textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
+  };
+
+  el.btnFlip.onclick = () => {
+    if (link) link.sendControl({ cmd: 'flip' });
+    toast('Camera wisselen…');
+  };
+  el.btnLocate.onclick = () => {
+    if (link) link.sendControl({ cmd: 'locate' });
+    el.btnLocate.classList.add('active');
+    setTimeout(() => el.btnLocate.classList.remove('active'), 2500);
+    toast('🔊 Babyunit speelt een toon');
+  };
+
+  el.btnSnapshot.onclick = () => {
+    if (!el.video.videoWidth) return toast('Nog geen beeld');
+    el.snapFlash.classList.remove('hidden');
+    setTimeout(() => el.snapFlash.classList.add('hidden'), 250);
+    const c = el.scratch;
+    c.width = el.video.videoWidth;
+    c.height = el.video.videoHeight;
+    c.getContext('2d').drawImage(el.video, 0, 0, c.width, c.height);
+    c.toBlob((b) => b && saveBlob(b, 'babyfoon-foto', 'png'), 'image/png');
+  };
+
+  el.btnFullscreen.onclick = () => {
+    if (!document.fullscreenElement) {
+      (el.screen.requestFullscreen || el.screen.webkitRequestFullscreen)?.call(el.screen);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+  };
+  el.btnFsClose.onclick = () => (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+  document.addEventListener('fullscreenchange', () => {
+    const fs = !!document.fullscreenElement;
+    el.screen.classList.toggle('fs', fs);
+    el.btnFsClose.classList.toggle('hidden', !fs);
   });
 
-  // -------------------------------------------------------------------------
-  // Schuifregelaars
-  // -------------------------------------------------------------------------
-  function applyVolume() {
-    const v = Number(el.volume.value) / 100;
-    el.video.volume = v;
-    el.video.muted = v === 0;
-    el.volVal.textContent = el.volume.value + '%';
-  }
-  el.volume.addEventListener('input', applyVolume);
+  el.zoomIn.onclick = () => {
+    zoom = Math.min(3, Math.round((zoom + 0.2) * 10) / 10);
+    applyZoom();
+  };
+  el.zoomOut.onclick = () => {
+    zoom = Math.max(1, Math.round((zoom - 0.2) * 10) / 10);
+    applyZoom();
+  };
 
-  function applyVideoFilter() {
-    const b = Number(el.brightness.value) / 100;
-    let filter = `brightness(${b})`;
-    if (nightMode) filter += ' grayscale(1) brightness(0.6) contrast(1.1)';
-    el.video.style.filter = filter;
-    el.briVal.textContent = el.brightness.value + '%';
-  }
-  el.brightness.addEventListener('input', applyVideoFilter);
+  // terugpraten (klik = aan/uit)
+  el.btnTalk.onclick = () => {
+    if (!micStream) return toast('Geen microfoontoegang');
+    talking = !talking;
+    micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
+    el.btnTalk.classList.toggle('on', talking);
+    el.talkText.textContent = talking ? 'Aan het praten…' : 'Praat tegen baby';
+  };
 
-  el.sensitivity.addEventListener('input', () => {
-    el.sensVal.textContent = 'Gevoel. ' + el.sensitivity.value;
+  el.btnMute.onclick = () => {
+    muted = !muted;
+    el.btnMute.classList.toggle('active', muted);
+    applyVolume();
+    toast(muted ? 'Geluid gedempt' : 'Geluid aan');
+  };
+
+  el.btnAlarm.onclick = () => {
+    alarmOn = !alarmOn;
+    el.btnAlarm.classList.toggle('off', !alarmOn);
+    el.alarmText.textContent = alarmOn ? 'ALARM AAN' : 'ALARM UIT';
+    if (!alarmOn) el.cryAlert.classList.add('hidden');
+  };
+
+  el.btnRecord.onclick = toggleRecord;
+
+  el.tPlay.onclick = () => (playing ? sendStop() : sendPlay());
+  el.tStop.onclick = () => sendStop();
+  el.tNext.onclick = () => selectTrack((trackIndex + 1) % tracks.length, false);
+  el.tPrev.onclick = () => selectTrack((trackIndex - 1 + tracks.length) % tracks.length, false);
+
+  el.errorCard.onclick = () => {
+    el.errorCard.classList.add('hidden');
+    if (link) {
+      link.close();
+      link = null;
+    }
+    connect();
+  };
+
+  // dial + sliders
+  bindVertical(el.volDial, (pct) => {
+    volume = Math.round(pct * 100);
+    muted = false;
+    el.btnMute.classList.remove('active');
+    applyVolume();
   });
+  bindVertical(el.sBrightness, (pct) => applySlider('sBrightness', pct));
+  bindVertical(el.sNightlight, (pct) => applySlider('sNightlight', pct));
+  bindVertical(el.sSensitivity, (pct) => applySlider('sSensitivity', pct));
 
-  // -------------------------------------------------------------------------
-  // Slaapliedjes-modaal
-  // -------------------------------------------------------------------------
-  function renderLullabyList() {
-    el.lullabyList.innerHTML = '';
-    LullabyPlayer.list().forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'lullaby-item' + (lullabyPlayingId === item.id ? ' playing' : '');
-      const name = document.createElement('span');
-      name.textContent = (item.kind === 'sound' ? '🌊 ' : '🎵 ') + item.label;
-      const btn = document.createElement('button');
-      const isPlaying = lullabyPlayingId === item.id;
-      btn.textContent = isPlaying ? 'Stop' : 'Speel';
-      btn.addEventListener('click', () => {
-        if (isPlaying) {
-          if (link) link.sendControl({ cmd: 'lullaby', on: false, id: item.id });
-          lullabyPlayingId = null;
-        } else {
-          if (link) link.sendControl({ cmd: 'lullaby', on: true, id: item.id });
-          lullabyPlayingId = item.id;
-        }
-        el.btnLullaby.classList.toggle('active', !!lullabyPlayingId);
-        renderLullabyList();
-      });
-      row.appendChild(name);
-      row.appendChild(btn);
-      el.lullabyList.appendChild(row);
-    });
-  }
-
-  el.btnLullaby.addEventListener('click', () => {
-    renderLullabyList();
-    el.lullabyModal.classList.remove('hidden');
-  });
-  el.closeLullaby.addEventListener('click', () =>
-    el.lullabyModal.classList.add('hidden')
-  );
-  el.lullabyModal.addEventListener('click', (e) => {
-    if (e.target === el.lullabyModal) el.lullabyModal.classList.add('hidden');
-  });
-  el.lullabyVolume.addEventListener('input', () => {
-    if (link)
-      link.sendControl({
-        cmd: 'lullabyVolume',
-        value: Number(el.lullabyVolume.value) / 100,
-      });
-  });
-
-  // -------------------------------------------------------------------------
-  // Klok + opruimen
-  // -------------------------------------------------------------------------
+  // -------------------------------------------------------------- klok / opruimen
   function tickClock() {
     el.clock.textContent = Baby.formatClock();
   }
@@ -497,6 +516,7 @@
   tickClock();
 
   function cleanup() {
+    if (recorder) try { recorder.stop(); } catch (e) {}
     if (link) link.close();
     if (micStream) micStream.getTracks().forEach((t) => t.stop());
     Baby.wakeLock.disable();
@@ -504,23 +524,21 @@
   window.addEventListener('pagehide', cleanup);
   window.addEventListener('beforeunload', cleanup);
 
-  // Eerste gebruikersinteractie: audio ontgrendelen.
-  document.addEventListener(
-    'pointerdown',
-    () => {
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      el.video.play().catch(() => {});
-    },
-    { once: true }
-  );
+  document.addEventListener('pointerdown', () => {
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    el.video.play().catch(() => {});
+  }, { once: true });
 
-  // -------------------------------------------------------------------------
-  // Opstarten
-  // -------------------------------------------------------------------------
+  // -------------------------------------------------------------- start
   (async function init() {
     applyVolume();
     applyVideoFilter();
-    el.sensVal.textContent = 'Gevoel. ' + el.sensitivity.value;
+    applyZoom();
+    setSliderKnob(el.sBrightness, sliderPct('sBrightness'));
+    setSliderKnob(el.sNightlight, sliderPct('sNightlight'));
+    setSliderKnob(el.sSensitivity, sliderPct('sSensitivity'));
+    renderChips();
+    renderTransport();
     await getMic();
     await Baby.wakeLock.enable();
     connect();
