@@ -88,7 +88,7 @@ function findExecutable() {
     const t = Date.now();
     while (Date.now() - t < 25000) {
       info = await parent.evaluate(() => {
-        const v = document.getElementById('pVideo');
+        const v = document.getElementById('video');
         return {
           shown: !document.getElementById('screenParent').classList.contains('hidden'),
           w: v?.videoWidth || 0,
@@ -100,13 +100,18 @@ function findExecutable() {
     }
     check(`Ouder-monitor toont live video (${info.w}px)`, info.shown && info.w > 0 && info.ready >= 2);
 
+    await sleep(1000);
+    // Slaapmuziek: klik op een chip -> ouder→baby→ouder round-trip via datakanaal.
+    await parent.click('#chips .chip');
     await sleep(800);
-    await parent.click('#pNightlight');
-    await sleep(600);
-    const nl = await baby.evaluate(
-      () => !document.getElementById('nightlight').classList.contains('hidden')
+    const lull = await parent.evaluate(() => !!document.querySelector('#chips .chip.on'));
+    check('Slaapmuziek round-trip (ouder→baby→ouder)', lull);
+
+    // Babyunit-scherm actief.
+    const babyShown = await baby.evaluate(
+      () => !document.getElementById('screenBaby').classList.contains('hidden')
     );
-    check('Nachtlamp-commando komt aan bij baby', nl);
+    check('Babyunit-scherm actief', babyShown);
   } catch (err) {
     console.error('Testfout:', err);
     fail = true;

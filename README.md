@@ -166,9 +166,10 @@ public/                Variant MET server (koppelen via kamercode/QR)
     lullaby.js         Slaapliedjes & geluiden (Web Audio API)
     baby.js            Logica van de babyunit
     parent.js          Logica van de ouderunit
-serverless/            SERVERLOZE variant (koppelen via QR/code, lokaal opnemen)
-  index.html           Alles-in-één: rolkeuze, koppelen, baby- en ouderunit
-  style.css            Vormgeving
+serverless/            SERVERLOZE variant — Luna Unit-ontwerp, géén server nodig
+  index.html           Alles-in-één: rolkeuze, QR-koppelen, baby- en ouder-paneel
+  luna.css             Vormgeving (neumorf, zelfde ontwerp als de server-variant)
+  fonts/               Ingebouwde lettertypes (offline)
   js/
     codec.js           Koppelcode inpakken/uitpakken (deflate + base64)
     app.js             Alle logica (handmatige signalering, opnemen, functies)

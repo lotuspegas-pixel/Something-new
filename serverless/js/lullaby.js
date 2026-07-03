@@ -79,20 +79,21 @@ class LullabyPlayer {
   };
 
   static SOUNDS = {
-    white: { label: 'Witte ruis', type: 'noise', color: 'white' },
-    pink: { label: 'Roze ruis', type: 'noise', color: 'pink' },
-    heartbeat: { label: 'Hartslag', type: 'heartbeat' },
+    regen: { label: 'Regen', type: 'rain' },
+    oceaan: { label: 'Oceaan', type: 'ocean' },
+    hartslag: { label: 'Hartslag', type: 'heartbeat' },
+    witte: { label: 'Witte ruis', type: 'noise', color: 'white' },
   };
 
+  // Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
+  static ORDER = ['regen', 'oceaan', 'hartslag', 'witte'];
+
   static list() {
-    const out = [];
-    for (const [id, m] of Object.entries(LullabyPlayer.MELODIES)) {
-      out.push({ id, label: m.label, kind: 'melody' });
-    }
-    for (const [id, s] of Object.entries(LullabyPlayer.SOUNDS)) {
-      out.push({ id, label: s.label, kind: 'sound' });
-    }
-    return out;
+    return LullabyPlayer.ORDER.map((id) => ({
+      id,
+      label: LullabyPlayer.SOUNDS[id].label,
+      kind: 'sound',
+    }));
   }
 
   play(id) {
@@ -147,9 +148,63 @@ class LullabyPlayer {
     };
   }
 
+  _whiteNoiseSource() {
+    const ctx = this.ctx;
+    const bufferSize = 2 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    return src;
+  }
+
   _playSound(id) {
     const s = LullabyPlayer.SOUNDS[id];
     const ctx = this.ctx;
+
+    if (s.type === 'rain') {
+      // Regen: witte ruis met hoogdoorlaatfilter (sissend) + zachte druppels.
+      const src = this._whiteNoiseSource();
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1000;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 7000;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.4;
+      src.connect(hp).connect(lp).connect(gain).connect(this.master);
+      src.start();
+      this.current = { stop: () => src.stop() };
+      return;
+    }
+
+    if (s.type === 'ocean') {
+      // Oceaan: laaggefilterde ruis met trage golfslag (LFO op het volume).
+      const src = this._whiteNoiseSource();
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 550;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.28;
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.12; // ~8 sec per golf
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.22;
+      lfo.connect(lfoGain).connect(gain.gain);
+      src.connect(lp).connect(gain).connect(this.master);
+      src.start();
+      lfo.start();
+      this.current = {
+        stop: () => {
+          src.stop();
+          lfo.stop();
+        },
+      };
+      return;
+    }
 
     if (s.type === 'noise') {
       const bufferSize = 2 * ctx.sampleRate;
