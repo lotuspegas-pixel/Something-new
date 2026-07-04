@@ -32,9 +32,31 @@
     nightlight: document.getElementById('nightlight'),
     toast: document.getElementById('toast'),
     screen: document.getElementById('screen'),
+    pairCard: document.getElementById('pairCard'),
+    pairQR: document.getElementById('pairQR'),
+    pairCode: document.getElementById('pairCode'),
   };
 
   el.roomLabel.textContent = 'Kamer ' + room;
+
+  // Koppelen: korte kamercode + scanbare QR (bevat alleen een kort linkje,
+  // zodat de QR spaarzaam en goed leesbaar blijft).
+  if (el.pairCode) el.pairCode.textContent = room;
+  if (el.pairQR) {
+    const link = location.origin + '/parent.html?room=' + encodeURIComponent(room);
+    fetch('/api/qr?data=' + encodeURIComponent(link))
+      .then((r) => (r.ok ? r.text() : Promise.reject()))
+      .then((svg) => {
+        el.pairQR.innerHTML = svg;
+      })
+      .catch(() => {
+        el.pairQR.innerHTML =
+          '<div style="color:#333;font-size:12px;text-align:center;padding:10px">QR niet beschikbaar</div>';
+      });
+  }
+  function showPairing(show) {
+    if (el.pairCard) el.pairCard.classList.toggle('hidden', !show);
+  }
 
   // Luidsprekerrooster tekenen.
   el.grille.innerHTML = '';
@@ -104,6 +126,7 @@
           el.overlay.classList.add('hidden');
           el.liveDot.classList.add('live');
           el.connText.textContent = 'Verbonden met ouderunit';
+          showPairing(false);
         } else if (state === 'connecting' || state === 'new') {
           el.connText.textContent = 'Verbinden met ouderunit…';
         } else if (state === 'disconnected' || state === 'failed') {
@@ -120,6 +143,7 @@
           el.statusBig.textContent = 'Wachten op ouderunit…';
           el.statusSub.textContent = 'Kamer ' + room;
           el.connText.textContent = 'Wachten op ouderunit…';
+          showPairing(true);
         }
       },
       onSignalingState: (s) => {
