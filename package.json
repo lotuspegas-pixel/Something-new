@@ -18,8 +18,5 @@
     "qrcode": "^1.5.3",
     "ws": "^8.18.0"
   },
-  "license": "MIT",
-  "devDependencies": {
-    "playwright": "^1.61.1"
-  }
+  "license": "MIT"
 }

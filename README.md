@@ -188,10 +188,14 @@ De end-to-end test start twee browsers (babyunit + ouderunit) met een
 nep-camera en controleert of er daadwerkelijk video stroomt en of de
 besturingscommando's aankomen.
 
+De tests gebruiken Playwright (alleen voor ontwikkeling — niet nodig om de app
+te draaien). Installeer die eerst apart:
+
 ```bash
-npm start &            # start de server
-npm test               # e2e-test (variant met server)
-npm run test:serverless # e2e-test (serverloze variant)
+npm install -D playwright   # eenmalig, alleen voor de tests
+npm start &                 # start de server
+npm test                    # e2e-test (variant met server)
+npm run test:serverless     # e2e-test (serverloze variant)
 ```
 
 ---
