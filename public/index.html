@@ -4,113 +4,76 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#10131c" />
-    <title>Babyfoon — Live geluid & video</title>
-    <link rel="stylesheet" href="/css/style.css" />
+    <meta name="theme-color" content="#f0eee8" />
+    <title>Luna Unit — Babyfoon</title>
+    <link rel="stylesheet" href="/css/luna.css" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%B6%3C/text%3E%3C/svg%3E"
     />
   </head>
   <body>
-    <div class="wrap">
-      <div class="brand">
+    <div class="setup-wrap">
+      <div class="setup-head">
         <div class="logo">👶</div>
-        <h1>Babyfoon</h1>
+        <h1>Luna Unit</h1>
+        <p>
+          Babyfoon met live geluid en video via je browser. Werkt op computer en
+          mobiel — 3G, 4G, 5G en wifi.
+        </p>
       </div>
-      <p class="tagline">
-        Live geluid en video via je browser. Werkt op computer en mobiel —
-        3G, 4G, 5G en wifi.
-      </p>
 
-      <div class="cards">
+      <div class="landing-cards">
         <!-- Babyunit -->
-        <div class="card">
+        <div class="card role">
           <div class="emoji">🍼</div>
           <h2>Babyunit</h2>
-          <p>
-            Plaats dit apparaat bij de baby. Het verzendt live camera en
-            geluid. Gebruik een telefoon of tablet met camera.
-          </p>
+          <p>Plaats dit apparaat bij de baby. Het verzendt live camera en geluid.</p>
           <div class="field">
             <label>Kamercode (wordt gedeeld met de ouderunit)</label>
             <div class="row">
-              <input
-                id="babyRoom"
-                type="text"
-                maxlength="12"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="CODE"
-              />
-              <button class="btn small secondary" id="genRoom" type="button">
-                Nieuw
-              </button>
+              <input id="babyRoom" class="text-input" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="CODE" />
+              <button class="btn secondary compact" id="genRoom" type="button">Nieuw</button>
             </div>
           </div>
-          <button class="btn" id="startBaby" type="button">
-            📷 Start als babyunit
-          </button>
-          <div class="qrbox" id="qrbox" title="Scan met de ouderunit"></div>
-          <div class="hint" id="pairHint">
-            Laat de ouder deze QR-code scannen, of geef de kamercode door.
-          </div>
+          <button class="btn" id="startBaby" type="button" style="width:100%">📷 Start als babyunit</button>
+          <div class="qr-display" id="qrbox" style="margin-top:16px"></div>
+          <div class="hint" id="pairHint">Laat de ouder deze QR-code scannen, of geef de kamercode door.</div>
         </div>
 
         <!-- Ouderunit -->
-        <div class="card">
+        <div class="card role">
           <div class="emoji">📺</div>
           <h2>Ouderunit</h2>
-          <p>
-            Dit is de monitor. Vul de kamercode van de babyunit in (of scan de
-            QR-code) om live mee te kijken en te luisteren.
-          </p>
+          <p>Dit is de monitor. Vul de kamercode van de babyunit in (of scan de QR-code) om mee te kijken en te luisteren.</p>
           <div class="field">
             <label>Kamercode van de babyunit</label>
             <div class="row">
-              <input
-                id="parentRoom"
-                type="text"
-                maxlength="12"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="CODE"
-              />
+              <input id="parentRoom" class="text-input" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="CODE" />
             </div>
           </div>
-          <button class="btn" id="startParent" type="button">
-            📡 Verbind als ouderunit
-          </button>
-          <div class="hint">
-            Tip: bewaar deze pagina als favoriet of op je beginscherm voor
-            snelle toegang.
-          </div>
+          <button class="btn" id="startParent" type="button" style="width:100%">📡 Verbind als ouderunit</button>
+          <div class="hint">Tip: bewaar deze pagina als favoriet of op je beginscherm voor snelle toegang.</div>
         </div>
       </div>
 
-      <div class="info">
-        <h3>Functies</h3>
-        <ul>
+      <div class="card" style="margin-top:18px">
+        <div class="label">Functies</div>
+        <ul class="feature-list">
           <li>Live video en geluid met lage vertraging (WebRTC, peer-to-peer)</li>
-          <li>Terugpraten naar de baby (druk-om-te-praten)</li>
-          <li>Geluids-LED-meter en instelbaar geluidsalarm</li>
-          <li>Slaapliedjes en witte ruis op afstand afspelen</li>
-          <li>Nachtlamp op afstand aanzetten</li>
+          <li>Terugpraten, geluids-meter en instelbaar geluidsalarm</li>
+          <li>Slaapmuziek en nachtlamp op afstand</li>
           <li>Nachtstand, helderheid, volume en zoom</li>
           <li>Foto maken, volledig scherm en scherm-wakker-houden</li>
-          <li>Signaalsterkte- en batterij-indicator</li>
         </ul>
       </div>
 
-      <div class="hint" style="text-align: center; margin-top: 18px">
-        Voor gebruik op mobiele netwerken en tussen verschillende apparaten is
-        een <b>HTTPS</b>-verbinding vereist (camera/microfoon werken alleen via
-        https of localhost).
+      <div class="hint" style="text-align:center; margin-top:16px">
+        Camera/microfoon werken alleen via <b>https</b> of localhost.
       </div>
-
-      <div class="backlink" style="margin-top: 20px">
+      <div class="backlink" style="margin-top:14px">
         <a href="/serverless/">⚡ Serverloze versie (koppelen via QR, geen server nodig) →</a>
       </div>
     </div>
@@ -143,10 +106,7 @@
             qrbox.innerHTML = '';
             return;
           }
-          const link =
-            location.origin +
-            '/parent.html?room=' +
-            encodeURIComponent(code);
+          const link = location.origin + '/parent.html?room=' + encodeURIComponent(code);
           fetch('/api/qr?data=' + encodeURIComponent(link))
             .then((r) => (r.ok ? r.text() : Promise.reject()))
             .then((svg) => {
