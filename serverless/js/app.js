@@ -91,6 +91,16 @@
   function stopScanner() {
     if (scannerStop) scannerStop();
   }
+  // Verklein de SDP voor de QR-code: verwijder TCP-ICE-kandidaten (niet nodig
+  // voor peer-to-peer op hetzelfde netwerk). Dat maakt de QR minder dicht en
+  // dus beter scanbaar. UDP host/srflx-kandidaten blijven behouden.
+  function slimSdp(sdp) {
+    return sdp
+      .split(/\r?\n/)
+      .filter((line) => !(line.startsWith('a=candidate') && /tcp/i.test(line)))
+      .join('\r\n');
+  }
+
   function waitIce(pc) {
     return new Promise((res) => {
       if (pc.iceGatheringState === 'complete') return res();
@@ -249,7 +259,7 @@
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     await waitIce(pc);
-    const code = await SignalCodec.pack({ t: 'offer', sdp: pc.localDescription.sdp });
+    const code = await SignalCodec.pack({ t: 'offer', sdp: slimSdp(pc.localDescription.sdp) });
     renderQR('babyQR', code);
     $('babyOfferCode').value = code;
   }
@@ -299,7 +309,7 @@
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     await waitIce(pc);
-    const acode = await SignalCodec.pack({ t: 'answer', sdp: pc.localDescription.sdp });
+    const acode = await SignalCodec.pack({ t: 'answer', sdp: slimSdp(pc.localDescription.sdp) });
     renderQR('parentQR', acode);
     $('parentAnswerCode').value = acode;
     $('parentAnswerBox').classList.remove('hidden');
