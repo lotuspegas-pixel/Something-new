@@ -13,14 +13,48 @@
 
   function uid() { return Geometry.uid(); }
 
-  Pages.addBlankPage = function () {
-    const last = State.data.pages[State.data.pages.length - 1];
-    const width = last ? last.width : 612;
-    const height = last ? last.height : 792;
+  const PAGE_SIZES = {
+    'a4-portrait': [595.28, 841.89],
+    'a4-landscape': [841.89, 595.28],
+    'letter-portrait': [612, 792],
+    'letter-landscape': [792, 612],
+  };
+
+  Pages.addBlankPage = function (sizeKey) {
+    let width, height;
+    if (sizeKey && PAGE_SIZES[sizeKey]) {
+      [width, height] = PAGE_SIZES[sizeKey];
+    } else {
+      const last = State.data.pages[State.data.pages.length - 1];
+      width = last ? last.width : 612;
+      height = last ? last.height : 792;
+    }
     const pd = { id: uid(), kind: 'blank', width, height, baseRotation: 0, rotation: 0 };
     State.mutate((s) => s.pages.push(pd));
     State.commit();
     return rebuildAndFocus(pd.id);
+  };
+
+  // Copies a page's structure AND its edit objects onto a brand-new page
+  // right after the original.
+  Pages.duplicatePage = function (pageId) {
+    const pd = State.getPageById(pageId);
+    if (!pd) return;
+    const newPd = Object.assign({}, pd, { id: uid() });
+    const clonedObjects = State.objectsForPage(pageId).map((o) => (
+      Object.assign(JSON.parse(JSON.stringify(o)), { id: uid(), page: newPd.id })
+    ));
+    State.mutate((s) => {
+      const idx = s.pages.findIndex((p) => p.id === pageId);
+      s.pages.splice(idx + 1, 0, newPd);
+      s.objects.push(...clonedObjects);
+    });
+    State.commit();
+    return rebuildAndFocus(newPd.id);
+  };
+
+  Pages.extractPage = function (pageId) {
+    return App.Export.downloadSinglePage(pageId);
   };
 
   Pages.insertPdfFile = async function (file) {
@@ -119,18 +153,18 @@
 
       const actions = document.createElement('div');
       actions.className = 'thumb-actions';
-      const rotateBtn = document.createElement('button');
-      rotateBtn.className = 'thumb-action-btn';
-      rotateBtn.title = 'Rotate 90°';
-      rotateBtn.textContent = '⟳';
-      rotateBtn.addEventListener('click', (e) => { e.stopPropagation(); Pages.rotatePage(pd.id); });
-      const delBtn = document.createElement('button');
-      delBtn.className = 'thumb-action-btn';
-      delBtn.title = 'Delete page';
-      delBtn.textContent = '✕';
-      delBtn.addEventListener('click', (e) => { e.stopPropagation(); Pages.deletePage(pd.id); });
-      actions.appendChild(rotateBtn);
-      actions.appendChild(delBtn);
+      const makeBtn = (title, label, handler) => {
+        const btn = document.createElement('button');
+        btn.className = 'thumb-action-btn';
+        btn.title = title;
+        btn.textContent = label;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); handler(); });
+        return btn;
+      };
+      actions.appendChild(makeBtn('Rotate 90°', '⟳', () => Pages.rotatePage(pd.id)));
+      actions.appendChild(makeBtn('Duplicate page', '⧉', () => Pages.duplicatePage(pd.id)));
+      actions.appendChild(makeBtn('Download this page', '⬇', () => Pages.extractPage(pd.id)));
+      actions.appendChild(makeBtn('Delete page', '✕', () => Pages.deletePage(pd.id)));
       item.appendChild(actions);
 
       item.addEventListener('click', () => {
@@ -163,6 +197,7 @@
 
       list.appendChild(item);
     }
+    if (App.updateCurrentPageIndicator) App.updateCurrentPageIndicator();
   };
 
   App.Pages = Pages;

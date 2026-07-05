@@ -179,16 +179,23 @@
     } else if (d.tool === 'whiteout') {
       if (isPoint) return;
       const r = Geometry.viewportRectToPdf(d.viewport, Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
-      State.mutate(() => State.addObject({ type: 'whiteout', page: pageId, rect: r, color: '#ffffff' }));
+      let created;
+      State.mutate(() => { created = State.addObject({ type: 'whiteout', page: pageId, rect: r, color: '#ffffff' }); });
       State.commit();
+      State.setSelected(created.id);
     } else if (d.tool === 'highlight' || d.tool === 'underline' || d.tool === 'strikethrough') {
       if (isPoint) return;
       const r = Geometry.viewportRectToPdf(d.viewport, Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
-      State.mutate(() => State.addObject({
-        type: d.tool, page: pageId, rect: r,
-        color: d.tool === 'highlight' ? State.data.highlightColor : State.data.activeColor,
-      }));
+      let created;
+      State.mutate(() => {
+        created = State.addObject({
+          type: d.tool, page: pageId, rect: r,
+          color: d.tool === 'highlight' ? State.data.highlightColor : State.data.activeColor,
+          opacity: d.tool === 'highlight' ? State.data.highlightOpacity : 1,
+        });
+      });
       State.commit();
+      State.setSelected(created.id);
     } else if (d.tool.startsWith('shape-')) {
       const shapeType = d.tool.replace('shape-', '');
       let r;
@@ -201,11 +208,16 @@
         if (isPoint) { x2 = x1 + 120; y2 = y1 + 90; }
         r = Geometry.viewportRectToPdf(d.viewport, Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
       }
-      State.mutate(() => State.addObject({
-        type: 'shape', shapeType, page: pageId, rect: r,
-        color: State.data.activeColor, strokeWidth: State.data.strokeWidth, fill: null,
-      }));
+      let created;
+      State.mutate(() => {
+        created = State.addObject({
+          type: 'shape', shapeType, page: pageId, rect: r,
+          color: State.data.activeColor, strokeWidth: State.data.strokeWidth, fill: null,
+          opacity: State.data.shapeOpacity,
+        });
+      });
       State.commit();
+      State.setSelected(created.id);
     }
     revertToolIfOneShot();
   }
@@ -259,10 +271,15 @@
     const pageId = d.pageWrap.dataset.pageId;
     const points = d.screenPts.map(([x, y]) => Geometry.viewportPointToPdf(d.viewport, x, y));
     d.path.remove();
-    State.mutate(() => State.addObject({
-      type: 'draw', page: pageId, points, color: State.data.activeColor, strokeWidth: State.data.strokeWidth,
-    }));
+    let created;
+    State.mutate(() => {
+      created = State.addObject({
+        type: 'draw', page: pageId, points, color: State.data.activeColor, strokeWidth: State.data.strokeWidth,
+        opacity: State.data.shapeOpacity,
+      });
+    });
     State.commit();
+    State.setSelected(created.id);
   }
 
   // ---------------------------------------------------------------
@@ -361,6 +378,37 @@
   function deleteObject(objId) {
     State.mutate(() => State.removeObject(objId));
     State.commit();
+  }
+
+  // Shifts an object's stored PDF-space geometry by (dx, dy) points. Works
+  // uniformly across box-based, point-based (ink) and line-based (shape)
+  // objects, so keyboard nudging and duplication apply to every type —
+  // including SVG shapes/ink strokes that mouse-drag doesn't support.
+  function translateObject(obj, dx, dy) {
+    if (obj.type === 'draw') {
+      obj.points = obj.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+    } else if (obj.type === 'text-edit') {
+      obj.coverRect.x1 += dx; obj.coverRect.x2 += dx;
+      obj.coverRect.y1 += dy; obj.coverRect.y2 += dy;
+      obj.baseline.x += dx; obj.baseline.y += dy;
+    } else if (obj.rect) {
+      obj.rect.x1 += dx; obj.rect.x2 += dx;
+      obj.rect.y1 += dy; obj.rect.y2 += dy;
+    }
+  }
+
+  function duplicateSelectedObject() {
+    const id = State.data.selectedObjectId;
+    const obj = State.data.objects.find((o) => o.id === id);
+    if (!obj) return;
+    const clone = JSON.parse(JSON.stringify(obj));
+    clone.id = Geometry.uid();
+    delete clone.sourceRunKey; // don't let it shadow the original text run
+    translateObject(clone, 14, -14);
+    State.mutate(() => State.addObject(clone));
+    State.commit();
+    State.setSelected(clone.id);
+    App.toast('Duplicated');
   }
 
   // ---------------------------------------------------------------
@@ -595,13 +643,26 @@
       }
     });
 
+    const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
     document.addEventListener('keydown', (e) => {
-      const activeTag = document.activeElement && document.activeElement.tagName;
       const isEditing = document.activeElement && document.activeElement.isContentEditable;
       if (isEditing) return;
-      if ((e.key === 'Delete' || e.key === 'Backspace') && State.data.selectedObjectId) {
+      if (!State.data.selectedObjectId) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         deleteObject(State.data.selectedObjectId);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        duplicateSelectedObject();
+      } else if (NUDGE[e.key]) {
+        e.preventDefault();
+        const [dx, dy] = NUDGE[e.key];
+        const step = e.shiftKey ? 10 : 1;
+        const obj = State.data.objects.find((o) => o.id === State.data.selectedObjectId);
+        if (obj) {
+          State.mutate(() => translateObject(obj, dx * step, dy * step));
+          State.commit();
+        }
       }
     });
   }

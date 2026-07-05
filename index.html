@@ -133,7 +133,9 @@
         <button type="button" id="zoom-out-btn" class="icon-btn" title="Zoom out">−</button>
         <span id="zoom-level">100%</span>
         <button type="button" id="zoom-in-btn" class="icon-btn" title="Zoom in">+</button>
+        <button type="button" id="zoom-fit-btn" class="icon-btn" style="width:auto;padding:0 8px;font-size:12px;" title="Fit page to window width">Fit</button>
       </div>
+      <button type="button" id="shortcuts-btn" class="icon-btn" title="Keyboard shortcuts">?</button>
       <button type="button" id="download-btn" class="btn btn-primary">⬇ Download PDF</button>
     </div>
   </header>
@@ -145,7 +147,16 @@
       <div class="sidebar-header">Pages</div>
       <div class="thumb-list" id="thumb-list"></div>
       <div class="sidebar-actions">
-        <button type="button" id="add-page-btn" class="btn btn-secondary btn-block">+ Blank page</button>
+        <div class="tool-dropdown" style="width:100%;">
+          <button type="button" id="add-page-btn" class="btn btn-secondary btn-block">+ Blank page <span class="caret">▾</span></button>
+          <div class="dropdown-menu" id="add-page-menu" style="width:100%;">
+            <button type="button" data-size="match">Same as last page</button>
+            <button type="button" data-size="a4-portrait">A4 — Portrait</button>
+            <button type="button" data-size="a4-landscape">A4 — Landscape</button>
+            <button type="button" data-size="letter-portrait">US Letter — Portrait</button>
+            <button type="button" data-size="letter-landscape">US Letter — Landscape</button>
+          </div>
+        </div>
         <button type="button" id="insert-pdf-btn" class="btn btn-secondary btn-block">+ Insert PDF</button>
         <input type="file" id="insert-pdf-input" accept="application/pdf,.pdf" hidden>
       </div>
@@ -181,6 +192,37 @@
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" id="signature-cancel-btn">Cancel</button>
       <button type="button" class="btn btn-primary" id="signature-insert-btn">Insert signature</button>
+    </div>
+  </div>
+</div>
+
+<div id="shortcuts-modal" class="modal-overlay hidden">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <h3>Keyboard shortcuts</h3>
+      <button type="button" class="modal-close" id="shortcuts-close-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tbody>
+          <tr><td style="padding:6px 0;">Select / edit text</td><td style="text-align:right;"><kbd>V</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Add text</td><td style="text-align:right;"><kbd>T</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Add image</td><td style="text-align:right;"><kbd>I</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Draw</td><td style="text-align:right;"><kbd>D</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Highlight</td><td style="text-align:right;"><kbd>H</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Underline</td><td style="text-align:right;"><kbd>U</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Strikethrough</td><td style="text-align:right;"><kbd>S</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Whiteout</td><td style="text-align:right;"><kbd>W</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Undo / Redo</td><td style="text-align:right;"><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Duplicate selected object</td><td style="text-align:right;"><kbd>Ctrl+D</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Delete selected object</td><td style="text-align:right;"><kbd>Delete</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Nudge selected object</td><td style="text-align:right;"><kbd>Arrow keys</kbd></td></tr>
+          <tr><td style="padding:6px 0;">Cancel text editing</td><td style="text-align:right;"><kbd>Esc</kbd></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="shortcuts-done-btn">Got it</button>
     </div>
   </div>
 </div>

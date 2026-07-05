@@ -16,6 +16,8 @@
     activeColor: '#e5484d',
     textColor: '#14161a',
     highlightColor: '#ffe066',
+    highlightOpacity: 0.45,
+    shapeOpacity: 1,
     strokeWidth: 3,
     fontChoice: 'Helvetica',
     fontSize: 14,

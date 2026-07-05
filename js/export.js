@@ -33,7 +33,7 @@
     return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${-p.y}`).join(' ');
   }
 
-  async function buildOutputDoc(onProgress) {
+  async function buildOutputDoc(onProgress, pagesOverride) {
     const state = State.data;
     const mainDoc = await PDFDocument.load(state.originalBytes);
     const insertedDocCache = {};
@@ -58,7 +58,7 @@
       return imageCache[dataUrl];
     }
 
-    const pages = state.pages;
+    const pages = pagesOverride || state.pages;
     for (let i = 0; i < pages.length; i++) {
       const pd = pages[i];
       if (onProgress) onProgress(i + 1, pages.length);
@@ -126,7 +126,11 @@
       }
       case 'highlight': {
         const r = obj.rect;
-        page.drawRectangle({ x: r.x1, y: r.y1, width: r.x2 - r.x1, height: r.y2 - r.y1, color: hexToRgb01(obj.color || '#ffe066'), opacity: 0.45 });
+        page.drawRectangle({
+          x: r.x1, y: r.y1, width: r.x2 - r.x1, height: r.y2 - r.y1,
+          color: hexToRgb01(obj.color || '#ffe066'),
+          opacity: obj.opacity != null ? obj.opacity : 0.45,
+        });
         break;
       }
       case 'underline':
@@ -150,6 +154,7 @@
         page.drawSvgPath(path, {
           x: 0, y: 0, borderColor: hexToRgb01(obj.color || '#e5484d'),
           borderWidth: obj.strokeWidth || 3, borderLineCap: LineCapStyle.Round,
+          borderOpacity: obj.opacity != null ? obj.opacity : 1,
         });
         break;
       }
@@ -165,24 +170,27 @@
     const r = obj.rect;
     const color = hexToRgb01(obj.color || '#e5484d');
     const strokeWidth = obj.strokeWidth || 2;
+    const opacity = obj.opacity != null ? obj.opacity : 1;
     if (obj.shapeType === 'rect') {
       page.drawRectangle({
         x: Math.min(r.x1, r.x2), y: Math.min(r.y1, r.y2),
         width: Math.abs(r.x2 - r.x1), height: Math.abs(r.y2 - r.y1),
-        borderColor: color, borderWidth: strokeWidth,
+        borderColor: color, borderWidth: strokeWidth, borderOpacity: opacity,
         color: obj.fill ? hexToRgb01(obj.fill) : undefined,
+        opacity: obj.fill ? opacity : undefined,
       });
     } else if (obj.shapeType === 'ellipse') {
       page.drawEllipse({
         x: (r.x1 + r.x2) / 2, y: (r.y1 + r.y2) / 2,
         xScale: Math.abs(r.x2 - r.x1) / 2, yScale: Math.abs(r.y2 - r.y1) / 2,
-        borderColor: color, borderWidth: strokeWidth,
+        borderColor: color, borderWidth: strokeWidth, borderOpacity: opacity,
         color: obj.fill ? hexToRgb01(obj.fill) : undefined,
+        opacity: obj.fill ? opacity : undefined,
       });
     } else if (obj.shapeType === 'line' || obj.shapeType === 'arrow') {
       page.drawLine({
         start: { x: r.x1, y: r.y1 }, end: { x: r.x2, y: r.y2 },
-        color, thickness: strokeWidth, lineCap: LineCapStyle.Round,
+        color, thickness: strokeWidth, lineCap: LineCapStyle.Round, opacity,
       });
       if (obj.shapeType === 'arrow') {
         const angle = Math.atan2(r.y2 - r.y1, r.x2 - r.x1);
@@ -192,7 +200,7 @@
         const p2 = { x: r.x2 - headLen * Math.cos(angle - wing), y: r.y2 - headLen * Math.sin(angle - wing) };
         const p3 = { x: r.x2 - headLen * Math.cos(angle + wing), y: r.y2 - headLen * Math.sin(angle + wing) };
         const path = svgPathFromPoints([p1, p2, p3]) + ' Z';
-        page.drawSvgPath(path, { x: 0, y: 0, color });
+        page.drawSvgPath(path, { x: 0, y: 0, color, opacity });
       }
     }
   }
@@ -218,6 +226,33 @@
     } catch (err) {
       console.error(err);
       App.toast('Something went wrong while preparing the PDF', true);
+    } finally {
+      App.hideLoading();
+    }
+  };
+
+  Export.downloadSinglePage = async function (pageId) {
+    const pd = State.getPageById(pageId);
+    if (!pd) return;
+    const pageIndex = State.getPageIndex(pageId) + 1;
+    App.showLoading('Preparing that page…');
+    try {
+      const outDoc = await buildOutputDoc(null, [pd]);
+      const bytes = await outDoc.save();
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const base = (State.data.fileName || 'document.pdf').replace(/\.pdf$/i, '');
+      a.download = `${base}-page-${pageIndex}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      App.toast(`Page ${pageIndex} downloaded`);
+    } catch (err) {
+      console.error(err);
+      App.toast('Could not export that page', true);
     } finally {
       App.hideLoading();
     }

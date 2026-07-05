@@ -53,6 +53,7 @@
       svg.classList.toggle('tool-active', ['draw'].includes(tool));
     });
     document.getElementById('shapes-menu').classList.remove('open');
+    document.getElementById('add-page-menu').classList.remove('open');
     if (tool !== 'select') State.setSelected(null);
     renderPropertiesBar();
   };
@@ -65,8 +66,12 @@
       e.stopPropagation();
       document.getElementById('shapes-menu').classList.toggle('open');
     });
-    document.addEventListener('click', () => document.getElementById('shapes-menu').classList.remove('open'));
+    document.addEventListener('click', () => {
+      document.getElementById('shapes-menu').classList.remove('open');
+      document.getElementById('add-page-menu').classList.remove('open');
+    });
     document.getElementById('shapes-menu').addEventListener('click', (e) => e.stopPropagation());
+    document.getElementById('add-page-menu').addEventListener('click', (e) => e.stopPropagation());
 
     document.getElementById('undo-btn').addEventListener('click', () => State.undo());
     document.getElementById('redo-btn').addEventListener('click', () => State.redo());
@@ -80,12 +85,40 @@
       showHero();
     });
 
-    document.getElementById('add-page-btn').addEventListener('click', () => Pages.addBlankPage());
+    document.getElementById('add-page-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('add-page-menu').classList.toggle('open');
+    });
+    document.querySelectorAll('#add-page-menu [data-size]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.getElementById('add-page-menu').classList.remove('open');
+        Pages.addBlankPage(btn.dataset.size);
+      });
+    });
     document.getElementById('insert-pdf-btn').addEventListener('click', () => document.getElementById('insert-pdf-input').click());
     document.getElementById('insert-pdf-input').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) Pages.insertPdfFile(file);
       e.target.value = '';
+    });
+
+    document.getElementById('zoom-fit-btn').addEventListener('click', fitWidth);
+
+    document.getElementById('shortcuts-btn').addEventListener('click', () => document.getElementById('shortcuts-modal').classList.remove('hidden'));
+    document.getElementById('shortcuts-close-btn').addEventListener('click', () => document.getElementById('shortcuts-modal').classList.add('hidden'));
+    document.getElementById('shortcuts-done-btn').addEventListener('click', () => document.getElementById('shortcuts-modal').classList.add('hidden'));
+
+    document.getElementById('canvas-area').addEventListener('scroll', () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => { updateCurrentPageIndicator(); scrollTicking = false; });
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (State.data.pdfDoc && State.data.objects.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
     });
 
     document.addEventListener('keydown', (e) => {
@@ -109,10 +142,34 @@
     Render.renderAll();
   }
 
+  function fitWidth() {
+    const pageId = App.getCurrentVisiblePageId();
+    const pd = pageId && State.getPageById(pageId);
+    if (!pd) return;
+    const totalRotation = ((pd.baseRotation || 0) + (pd.rotation || 0)) % 180;
+    const naturalWidth = totalRotation === 90 ? pd.height : pd.width;
+    const area = document.getElementById('canvas-area');
+    const available = area.clientWidth - 64;
+    setZoom(available / naturalWidth);
+  }
+
+  // Highlights, in the page sidebar, the thumbnail for whichever page is
+  // currently centered in the scrollable canvas area.
+  let scrollTicking = false;
+  function updateCurrentPageIndicator() {
+    const id = App.getCurrentVisiblePageId();
+    document.querySelectorAll('.thumb-item.selected').forEach((el) => el.classList.remove('selected'));
+    if (!id) return;
+    const el = document.querySelector(`.thumb-item[data-page-id="${id}"]`);
+    if (el) el.classList.add('selected');
+  }
+  App.updateCurrentPageIndicator = updateCurrentPageIndicator;
+
   // ---------------- properties bar ----------------
   function swatchRow(current, onPick) {
     const row = document.createElement('div');
     row.className = 'swatch-row';
+    const isPreset = COLORS.some((c) => c.toLowerCase() === (current || '').toLowerCase());
     COLORS.forEach((c) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -122,7 +179,50 @@
       btn.addEventListener('click', () => onPick(c));
       row.appendChild(btn);
     });
+
+    // Custom color picker, shown as one more swatch. Native <input type=color>
+    // proxied behind a styled button so it matches the preset swatches.
+    const customWrap = document.createElement('div');
+    customWrap.className = 'color-swatch custom-swatch' + (!isPreset ? ' active' : '');
+    customWrap.title = 'Custom color';
+    customWrap.style.background = !isPreset ? current : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)';
+    customWrap.style.position = 'relative';
+    customWrap.style.padding = '0';
+    customWrap.style.overflow = 'hidden';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = /^#[0-9a-f]{6}$/i.test(current || '') ? current : '#000000';
+    colorInput.style.position = 'absolute';
+    colorInput.style.inset = '-4px';
+    colorInput.style.width = '30px';
+    colorInput.style.height = '30px';
+    colorInput.style.opacity = '0';
+    colorInput.style.cursor = 'pointer';
+    colorInput.addEventListener('input', () => onPick(colorInput.value));
+    customWrap.appendChild(colorInput);
+    row.appendChild(customWrap);
     return row;
+  }
+
+  function opacityInput(current, onChange) {
+    const wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.alignItems = 'center';
+    wrap.style.gap = '6px';
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.min = '10'; range.max = '100'; range.step = '5';
+    range.value = String(Math.round((current != null ? current : 1) * 100));
+    range.style.width = '80px';
+    const pct = document.createElement('span');
+    pct.textContent = range.value + '%';
+    pct.style.width = '34px';
+    pct.style.fontVariantNumeric = 'tabular-nums';
+    range.addEventListener('input', () => { pct.textContent = range.value + '%'; });
+    range.addEventListener('change', () => onChange(Number(range.value) / 100));
+    wrap.appendChild(range);
+    wrap.appendChild(pct);
+    return wrap;
   }
 
   function labeled(text, el) {
@@ -199,12 +299,17 @@
       bar.appendChild(toggleBtn('I', selected.italic, () => mutateSelected({ italic: !selected.italic }), { fontStyle: 'italic' }));
       bar.appendChild(swatchRow(selected.color, (c) => mutateSelected({ color: c })));
       deleteSelectedBtn(bar);
-    } else if (selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strikethrough' || selected.type === 'whiteout')) {
+    } else if (selected && selected.type === 'highlight') {
+      bar.appendChild(labeled('Color', swatchRow(selected.color, (c) => mutateSelected({ color: c }))));
+      bar.appendChild(labeled('Opacity', opacityInput(selected.opacity, (v) => mutateSelected({ opacity: v }))));
+      deleteSelectedBtn(bar);
+    } else if (selected && (selected.type === 'underline' || selected.type === 'strikethrough' || selected.type === 'whiteout')) {
       bar.appendChild(labeled('Color', swatchRow(selected.color, (c) => mutateSelected({ color: c }))));
       deleteSelectedBtn(bar);
     } else if (selected && (selected.type === 'draw' || selected.type === 'shape')) {
       bar.appendChild(swatchRow(selected.color, (c) => mutateSelected({ color: c })));
       bar.appendChild(labeled('Stroke', sizeInput(selected.strokeWidth, (v) => mutateSelected({ strokeWidth: v }))));
+      bar.appendChild(labeled('Opacity', opacityInput(selected.opacity, (v) => mutateSelected({ opacity: v }))));
       if (selected.type === 'shape' && (selected.shapeType === 'rect' || selected.shapeType === 'ellipse')) {
         bar.appendChild(toggleBtn('Fill', !!selected.fill, () => mutateSelected({ fill: selected.fill ? null : selected.color })));
       }
@@ -219,9 +324,11 @@
       bar.appendChild(swatchRow(State.data.activeColor, (c) => { State.data.activeColor = c; renderPropertiesBar(); }));
       if (tool === 'draw' || tool.startsWith('shape-')) {
         bar.appendChild(labeled('Stroke', sizeInput(State.data.strokeWidth, (v) => { State.data.strokeWidth = v; })));
+        bar.appendChild(labeled('Opacity', opacityInput(State.data.shapeOpacity, (v) => { State.data.shapeOpacity = v; renderPropertiesBar(); })));
       }
     } else if (tool === 'highlight') {
       bar.appendChild(labeled('Color', swatchRow(State.data.highlightColor, (c) => { State.data.highlightColor = c; renderPropertiesBar(); })));
+      bar.appendChild(labeled('Opacity', opacityInput(State.data.highlightOpacity, (v) => { State.data.highlightOpacity = v; renderPropertiesBar(); })));
     } else {
       show = false;
     }

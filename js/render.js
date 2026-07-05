@@ -371,7 +371,7 @@
     div.style.top = box.top + 'px';
     div.style.width = box.width + 'px';
     div.style.height = box.height + 'px';
-    div.style.background = colorWithAlpha(obj.color || '#ffe066', 0.45);
+    div.style.background = colorWithAlpha(obj.color || '#ffe066', obj.opacity != null ? obj.opacity : 0.45);
     div.style.mixBlendMode = 'multiply';
     addHandles(div);
     els.objLayer.appendChild(div);
@@ -416,6 +416,7 @@
     path.setAttribute('stroke-width', String((obj.strokeWidth || 3) * viewport.scale));
     path.setAttribute('stroke-linecap', 'round');
     path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('opacity', String(obj.opacity != null ? obj.opacity : 1));
     path.dataset.objId = obj.id;
     path.dataset.objType = obj.type;
     path.style.pointerEvents = 'stroke';
@@ -456,6 +457,7 @@
         const head = document.createElementNS(ns, 'polygon');
         head.setAttribute('points', `${p2[0]},${p2[1]} ${hx1},${hy1} ${hx2},${hy2}`);
         head.setAttribute('fill', obj.color || '#e5484d');
+        head.setAttribute('opacity', String(obj.opacity != null ? obj.opacity : 1));
         head.dataset.objId = obj.id;
         els.drawLayer.appendChild(head);
       }
@@ -464,6 +466,7 @@
     el.setAttribute('stroke', obj.color || '#e5484d');
     el.setAttribute('stroke-width', String(strokeW));
     el.setAttribute('fill', obj.fill || 'none');
+    el.setAttribute('opacity', String(obj.opacity != null ? obj.opacity : 1));
     el.dataset.objId = obj.id;
     el.dataset.objType = obj.type;
     el.style.pointerEvents = obj.fill ? 'all' : 'stroke';
