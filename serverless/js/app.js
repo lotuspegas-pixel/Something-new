@@ -199,16 +199,13 @@
           sendControl({ cmd: 'lullabyState', id: lullaby.isPlaying() ? lullaby.currentName() : null });
           break;
         case 'nightlight': {
-          const on = msg.on !== false && (msg.level == null || msg.level > 0);
+          const on = !!msg.on;
           $('nightlight').classList.toggle('hidden', !on);
-          if (on) $('nightlight').style.opacity = Math.max(0.12, (msg.level == null ? 100 : msg.level) / 100).toFixed(2);
+          if (on) $('nightlight').style.opacity = Math.max(0.12, (msg.level == null ? 60 : msg.level) / 100).toFixed(2);
           break;
         }
         case 'flip':
           flipCamera();
-          break;
-        case 'locate':
-          playLocateTone();
           break;
         case 'ping':
           reportBattery(true);
@@ -223,7 +220,6 @@
           const i = tracks.findIndex((t) => t.id === msg.id);
           if (i >= 0) trackIndex = i;
         }
-        renderTransport();
         renderChips();
       }
     }
@@ -323,7 +319,8 @@
   let zoom = 1.0;
   let volume = 80;
   let brightness = 100;
-  let nightlight = 0;
+  let nightlightOn = false; // aan/uit — via de Nachtstand-knop, niet de schuifbalk
+  let nightlightLevel = 60; // 0..100 — sterkte terwijl het aan is
   let sensitivity = 55;
   let alarmCooldown = 0;
   const tracks = LullabyPlayer.list();
@@ -428,10 +425,23 @@
   function setSliderKnob(elm, pct) {
     elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
   }
+  function sendNightlightState() {
+    sendControl({ cmd: 'nightlight', on: nightlightOn, level: nightlightLevel });
+  }
   function applySlider(field, pct) {
-    if (field === 'sBrightness') { brightness = Math.round(30 + pct * 100); applyVideoFilter(); }
-    else if (field === 'sNightlight') { nightlight = Math.round(pct * 100); sendControl({ cmd: 'nightlight', on: nightlight > 3, level: nightlight }); }
-    else if (field === 'sSensitivity') { sensitivity = Math.round(pct * 100); }
+    if (field === 'sBrightness') {
+      brightness = Math.round(30 + pct * 100);
+      applyVideoFilter();
+      $('briReadout').textContent = brightness + '%';
+    } else if (field === 'sNightlight') {
+      // Regelt alleen de STERKTE, niet aan/uit — dat gaat via de Nachtstand-knop.
+      nightlightLevel = Math.round(pct * 100);
+      if (nightlightOn) sendNightlightState();
+      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+    } else if (field === 'sSensitivity') {
+      sensitivity = Math.round(pct * 100);
+      $('sensReadout').textContent = sensitivity + '%';
+    }
     setSliderKnob($(field), pct);
   }
   function bindVertical(elm, onPct) {
@@ -457,17 +467,13 @@
       box.appendChild(c);
     });
   }
-  function renderTransport() {
-    $('tPlay').textContent = playing ? '❚❚' : '▶';
-    $('tPlay').classList.toggle('on', playing);
-  }
   function sendPlay() {
     sendControl({ cmd: 'lullaby', on: true, id: tracks[trackIndex].id });
-    playing = true; renderTransport(); renderChips();
+    playing = true; renderChips();
   }
   function sendStop() {
     sendControl({ cmd: 'lullaby', on: false, id: tracks[trackIndex].id });
-    playing = false; renderTransport(); renderChips();
+    playing = false; renderChips();
   }
   function selectTrack(i, autoplay) {
     if (i === trackIndex && playing && autoplay) { sendStop(); return; }
@@ -529,24 +535,26 @@
 
     applyVolume(); applyVideoFilter(); applyZoom();
     setSliderKnob($('sBrightness'), (brightness - 30) / 100);
-    setSliderKnob($('sNightlight'), nightlight / 100);
+    setSliderKnob($('sNightlight'), nightlightLevel / 100);
     setSliderKnob($('sSensitivity'), sensitivity / 100);
-    renderChips(); renderTransport();
+    $('briReadout').textContent = brightness + '%';
+    $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+    $('sensReadout').textContent = sensitivity + '%';
+    renderChips();
 
     $('btnPower').onclick = () => { if (confirm('Ouderunit stoppen?')) location.reload(); };
     $('btnNightmode').onclick = () => {
+      // Nachtstand: dimt het eigen beeld EN zet het nachtlampje bij de
+      // babyunit aan/uit — één druk op de knop voor beide.
       nightMode = !nightMode;
+      nightlightOn = nightMode;
       $('btnNightmode').classList.toggle('on', nightMode);
       applyVideoFilter();
       $('liveText').textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
+      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+      sendNightlightState();
     };
     $('btnFlip').onclick = () => { sendControl({ cmd: 'flip' }); toast('Camera wisselen…'); };
-    $('btnLocate').onclick = () => {
-      sendControl({ cmd: 'locate' });
-      $('btnLocate').classList.add('active');
-      setTimeout(() => $('btnLocate').classList.remove('active'), 2500);
-      toast('🔊 Babyunit speelt een toon');
-    };
     $('btnSnapshot').onclick = () => {
       if (!$('video').videoWidth) return toast('Nog geen beeld');
       $('snapFlash').classList.remove('hidden');
@@ -557,6 +565,12 @@
       c.toBlob((b) => b && saveBlob(b, 'babyfoon-foto', 'png'), 'image/png');
     };
     $('btnFullscreen').onclick = () => {
+      // iOS Safari ondersteunt geen Fullscreen API op een <div> — alleen op
+      // het <video>-element zelf via de eigen (webkit) videofullscreen.
+      const v = $('video');
+      if (v.webkitEnterFullscreen && !document.fullscreenElement) {
+        try { v.webkitEnterFullscreen(); return; } catch (e) { /* val terug */ }
+      }
       if (!document.fullscreenElement) ($('screen').requestFullscreen || $('screen').webkitRequestFullscreen)?.call($('screen'));
       else (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
     };
@@ -587,10 +601,6 @@
       if (!alarmOn) $('cryAlert').classList.add('hidden');
     };
     $('btnRecord').onclick = () => toggleRecord(remoteStream, $('btnRecord'), 'babyfoon-opname');
-    $('tPlay').onclick = () => (playing ? sendStop() : sendPlay());
-    $('tStop').onclick = () => sendStop();
-    $('tNext').onclick = () => selectTrack((trackIndex + 1) % tracks.length, false);
-    $('tPrev').onclick = () => selectTrack((trackIndex - 1 + tracks.length) % tracks.length, false);
 
     bindVertical($('volDial'), (pct) => { volume = Math.round(pct * 100); muted = false; $('btnMute').classList.remove('active'); applyVolume(); });
     bindVertical($('sBrightness'), (pct) => applySlider('sBrightness', pct));
@@ -653,29 +663,6 @@
       if (!once) { b.addEventListener('levelchange', upd); b.addEventListener('chargingchange', upd); }
     } catch (e) { $('bBatt').textContent = '🔋 n.v.t.'; }
   }
-  let locateCtx = null;
-  function playLocateTone() {
-    try {
-      if (!locateCtx) { const AC = window.AudioContext || window.webkitAudioContext; locateCtx = new AC(); }
-      if (locateCtx.state === 'suspended') locateCtx.resume();
-      if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
-      const ctx = locateCtx;
-      let t = ctx.currentTime;
-      for (let k = 0; k < 6; k++) {
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = k % 2 ? 990 : 1320;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.6, t + 0.03);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-        osc.connect(g).connect(ctx.destination);
-        osc.start(t); osc.stop(t + 0.4);
-        t += 0.45;
-      }
-    } catch (e) {}
-  }
-
   // ------------------------------------------------------------------ wake lock
   let wl = null;
   async function enableWakeLock() {

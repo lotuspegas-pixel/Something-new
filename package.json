@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node test/e2e.js",
-    "test:serverless": "node test/e2e-serverless.js"
+    "test:serverless": "node test/e2e-serverless.js",
+    "test:reconnect": "node test/e2e-reconnect.js"
   },
   "engines": {
     "node": ">=18"

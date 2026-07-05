@@ -173,9 +173,18 @@ wss.on('connection', (ws) => {
       }
 
       const room = getRoom(code);
-      if (room[role] && room[role] !== ws) {
-        // Er is al een unit met deze rol in de kamer.
-        return send(ws, { type: 'error', reason: 'role-taken' });
+      const existing = room[role];
+      if (existing && existing !== ws) {
+        // Sta herverbinden altijd toe: de nieuwste sessie wint. De oude
+        // verbinding is meestal een verweesde sessie (netwerkwissel, dichte
+        // tab, achtergrond-tabblad) die de heartbeat nog niet heeft opgeruimd.
+        send(existing, { type: 'kicked' });
+        try {
+          existing.terminate();
+        } catch (e) {
+          /* noop */
+        }
+        room[role] = null;
       }
 
       ws.roomCode = code;
@@ -236,7 +245,8 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Houd verbindingen levend en ruim dode op.
+// Houd verbindingen levend en ruim dode op (snel, zodat de andere unit vlot
+// hoort dat de peer weg is en opnieuw kan verbinden).
 const heartbeat = setInterval(() => {
   wss.clients.forEach((ws) => {
     if (ws.isAlive === false) return ws.terminate();
@@ -247,7 +257,7 @@ const heartbeat = setInterval(() => {
       /* noop */
     }
   });
-}, 30000);
+}, 12000);
 
 wss.on('close', () => clearInterval(heartbeat));
 

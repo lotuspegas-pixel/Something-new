@@ -100,15 +100,23 @@ knoppen zijn volledig functioneel gekoppeld aan de echte verbinding. Overbodige
 knoppen uit het oorspronkelijke ontwerp zijn weggelaten of samengevoegd:
 
 - **Weg**: dubbele aan/uit-knop, meerdere-camera-lijst + favoriet + lock,
-  aparte "nachtvisie"-knop (viel samen met Nachtstand), losse kanaal-/volume±-
-  knoppen (dubbel met de volumeknop), en de dubbele transportknoppen
-  (shuffle/repeat/rewind/forward/pauze).
+  aparte "nachtvisie"-knop, losse kanaal-/volume±-knoppen (dubbel met de
+  volumeknop), "zoek unit", en de losse afspeel-/vorige/volgende/stop-knoppen
+  voor slaapmuziek (de chips zelf spelen/stoppen al direct af).
 - **Behouden en werkend**: verbindingsstatus + signaal + vertraging, camera
-  wisselen, zoek-unit (toon bij de baby), live beeld met dB-meter, VU-balken,
-  zoom, foto, volledig scherm, terugpraten, volumeknop, helderheid, nachtlampje,
-  mic-gevoeligheid, slaapmuziek (Regen/Oceaan/Hartslag/Witte ruis) met
-  vorige/afspelen/volgende/stop, opnemen, geluid dempen, alarm en
-  "huilen gedetecteerd", nachtstand en batterij van de babyunit.
+  wisselen, live beeld met dB-meter, VU-balken, zoom, foto, volledig scherm
+  (met iOS-fallback), terugpraten, volumeknop, helderheid, mic-gevoeligheid
+  (met percentage-uitlezing), slaapmuziek (Regen/Oceaan/Hartslag/Witte ruis —
+  klik een chip aan/uit), opnemen, geluid dempen, alarm en
+  "huilen gedetecteerd", en batterij van de babyunit.
+- **Nachtlamp**: aan/uit via de "Nachtstand"-knop (geen schuifbalk meer voor
+  aan/uit); de schuifbalk regelt alleen nog de sterkte. Zet bij de babyunit
+  het scherm op vol wit én probeert (indien beschikbaar) de fysieke
+  flitser/torch aan te zetten.
+- **Herverbinden**: de ouderunit (en babyunit) herstellen zelf de verbinding
+  na een netwerkwissel (wifi ↔ 4G/5G) of tijdelijke onderbreking — ook als de
+  vorige sessie niet netjes is afgesloten. Een nieuwe sessie voor dezelfde
+  kamer wint altijd van een verweesde oude verbinding.
 
 ---
 
@@ -196,6 +204,7 @@ npm install -D playwright   # eenmalig, alleen voor de tests
 npm start &                 # start de server
 npm test                    # e2e-test (variant met server)
 npm run test:serverless     # e2e-test (serverloze variant)
+npm run test:reconnect      # e2e-test: herverbinden na verbroken verbinding
 ```
 
 ---

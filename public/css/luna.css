@@ -617,6 +617,14 @@ button {
   width: 52px;
   text-align: center;
 }
+.vlabel-val {
+  display: block;
+  font: 800 11px 'Nunito', sans-serif;
+  color: var(--red);
+  margin-top: 2px;
+  letter-spacing: 0;
+  text-transform: none;
+}
 
 /* transport */
 .transport {

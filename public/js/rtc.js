@@ -38,7 +38,21 @@ class BabyphoneLink {
 
     this._pendingControl = [];
     this._reconnectTimer = null;
+    this._recoveryTimer = null;
     this._closed = false;
+
+    // Probeer proactief te herstellen zodra het tabblad weer zichtbaar wordt
+    // (bijv. na schermvergrendeling of app-wissel op mobiel — een veelvoorkomend
+    // moment waarop wifi/4G/5G is gewisseld terwijl de pagina op de achtergrond stond).
+    this._onVisible = () => {
+      if (document.visibilityState !== 'visible' || this._closed) return;
+      if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+        this._openSocket();
+      } else if (this.pc && this.pc.connectionState !== 'connected') {
+        this._attemptRecovery();
+      }
+    };
+    document.addEventListener('visibilitychange', this._onVisible);
   }
 
   async start() {
@@ -109,8 +123,31 @@ class BabyphoneLink {
         this.onPeerPresence(false);
         this._teardownPeer();
         break;
+      case 'kicked':
+        // Een nieuwere sessie (bijv. een vernieuwde pagina) heeft deze rol
+        // overgenomen. Niet blijven proberen te herverbinden — dat zou de
+        // nieuwe sessie er meteen weer uit gooien.
+        this._closed = true;
+        clearTimeout(this._reconnectTimer);
+        clearTimeout(this._recoveryTimer);
+        this._teardownPeer();
+        this.onSignalingState('kicked');
+        break;
       case 'error':
         this.onSignalingState('error:' + msg.reason);
+        if (msg.reason === 'role-taken') {
+          // Zeldzame race met de opruiming van een verweesde verbinding —
+          // de server accepteert normaal altijd de nieuwste sessie, dus dit
+          // hoort vanzelf op te lossen. Forceer een verse pogingscyclus.
+          clearTimeout(this._reconnectTimer);
+          this._reconnectTimer = setTimeout(() => {
+            try {
+              this.ws.close();
+            } catch (e) {
+              /* noop */
+            }
+          }, 1500);
+        }
         break;
       case 'signal':
         await this._onSignal(msg.data);
@@ -168,26 +205,53 @@ class BabyphoneLink {
 
     pc.onconnectionstatechange = () => {
       this.onConnectionState(pc.connectionState);
-      if (pc.connectionState === 'failed' && !this.polite) {
-        try {
-          pc.restartIce();
-        } catch (e) {
-          /* noop */
-        }
+      if (pc.connectionState === 'connected') {
+        this._clearRecoveryTimer();
+      } else if (pc.connectionState === 'failed') {
+        this._attemptRecovery();
       }
     };
 
     pc.oniceconnectionstatechange = () => {
-      if (pc.iceConnectionState === 'failed' && !this.polite) {
-        try {
-          pc.restartIce();
-        } catch (e) {
-          /* noop */
-        }
+      if (pc.iceConnectionState === 'failed') {
+        this._attemptRecovery();
       }
     };
 
     return pc;
+  }
+
+  // Probeer een mislukte verbinding te herstellen. Eerst een ICE-restart
+  // (werkt bij de meeste netwerkwissels); als dat niet binnen enkele seconden
+  // aanslaat, forceer dan een volledige nieuwe verbinding door de
+  // signaleringssocket te sluiten — dat triggert bij beide units een verse
+  // 'peer-left' + herverbinding met een gloednieuwe PeerConnection.
+  _attemptRecovery() {
+    if (!this.pc || this._closed) return;
+    try {
+      this.pc.restartIce();
+    } catch (e) {
+      /* noop */
+    }
+    if (this._recoveryTimer) return;
+    this._recoveryTimer = setTimeout(() => {
+      this._recoveryTimer = null;
+      if (this.pc && this.pc.connectionState !== 'connected') {
+        this._teardownPeer();
+        try {
+          this.ws.close();
+        } catch (e) {
+          /* noop */
+        }
+      }
+    }, 8000);
+  }
+
+  _clearRecoveryTimer() {
+    if (this._recoveryTimer) {
+      clearTimeout(this._recoveryTimer);
+      this._recoveryTimer = null;
+    }
   }
 
   async _onSignal({ description, candidate } = {}) {
@@ -331,6 +395,7 @@ class BabyphoneLink {
   // Opruimen
   // -------------------------------------------------------------------------
   _teardownPeer() {
+    this._clearRecoveryTimer();
     if (this.pc) {
       try {
         this.pc.close();
@@ -348,6 +413,8 @@ class BabyphoneLink {
   close() {
     this._closed = true;
     clearTimeout(this._reconnectTimer);
+    this._clearRecoveryTimer();
+    document.removeEventListener('visibilitychange', this._onVisible);
     try {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ type: 'bye' }));

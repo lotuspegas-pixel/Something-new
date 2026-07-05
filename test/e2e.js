@@ -92,13 +92,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     await sleep(1000); // datakanaal laten openen
 
-    // 2. Nachtlamp op afstand (schuif de nachtlamp-slider omhoog).
-    await parent.evaluate(() => {
-      const s = document.getElementById('sNightlight');
-      const r = s.getBoundingClientRect();
-      s.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + 4 }));
-      s.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
-    });
+    // 2. Nachtlamp op afstand (druk op de Nachtstand-knop — aan/uit-knop,
+    // geen schuifbalk meer).
+    await parent.click('#btnNightmode');
     await sleep(700);
     const nl = await baby.evaluate(
       () => !document.getElementById('nightlight').classList.contains('hidden')

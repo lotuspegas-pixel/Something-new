@@ -17,12 +17,13 @@
   const el = {};
   [
     'btnPower', 'btnNightmode', 'connDot', 'connText', 'clock', 'babyBatt',
-    'roomLabel', 'signal', 'rttVal', 'btnFlip', 'btnLocate',
+    'roomLabel', 'signal', 'rttVal', 'btnFlip',
     'screen', 'video', 'nightVeil', 'snapFlash', 'liveBadge', 'liveText',
     'dbText', 'placeholder', 'phText', 'vu', 'btnSnapshot', 'btnFullscreen',
     'zoomOut', 'zoomVal', 'zoomIn', 'btnTalk', 'talkText', 'btnFsClose',
     'volDial', 'volNeedle', 'volHub', 'sBrightness', 'sNightlight', 'sSensitivity',
-    'tPrev', 'tPlay', 'tNext', 'tStop', 'btnRecord', 'btnMute', 'btnAlarm',
+    'briReadout', 'nlReadout', 'sensReadout',
+    'btnRecord', 'btnMute', 'btnAlarm',
     'alarmText', 'cryAlert', 'chips', 'errorCard', 'scratch', 'toast',
   ].forEach((id) => (el[id] = $(id)));
 
@@ -51,7 +52,8 @@
   let zoom = 1.0;
   let volume = 80;
   let brightness = 100; // 30..130
-  let nightlight = 0; // 0..100
+  let nightlightOn = false; // aan/uit — via de Nachtstand-knop, niet de schuifbalk
+  let nightlightLevel = 60; // 0..100 — sterkte van het nachtlampje terwijl het aan is
   let sensitivity = 55; // 0..100 (hoger = gevoeliger)
   let alarmCooldown = 0;
 
@@ -95,7 +97,11 @@
       },
       onSignalingState: (s) => {
         if (s === 'error:role-taken') {
-          el.phText.textContent = 'Er is al een ouderunit in deze kamer';
+          el.phText.textContent = 'Er is al een ouderunit in deze kamer — opnieuw verbinden…';
+        } else if (s === 'kicked') {
+          el.phText.textContent = 'Deze sessie is elders geopend (nieuw tabblad/apparaat)';
+          el.placeholder.classList.remove('hidden');
+          el.connText.textContent = 'Overgenomen door een andere sessie';
         }
       },
       onTrack: (ev) => {
@@ -113,7 +119,6 @@
             const i = tracks.findIndex((t) => t.id === msg.id);
             if (i >= 0) trackIndex = i;
           }
-          renderTransport();
           renderChips();
         }
       },
@@ -259,7 +264,7 @@
     // huidige waarde → 0..1 positie
     const map = {
       sBrightness: (brightness - 30) / 100,
-      sNightlight: nightlight / 100,
+      sNightlight: nightlightLevel / 100,
       sSensitivity: sensitivity / 100,
     };
     return map[field];
@@ -267,15 +272,23 @@
   function setSliderKnob(elm, pct) {
     elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
   }
+  function sendNightlightState() {
+    if (link) link.sendControl({ cmd: 'nightlight', on: nightlightOn, level: nightlightLevel });
+  }
   function applySlider(field, pct) {
     if (field === 'sBrightness') {
       brightness = Math.round(30 + pct * 100);
       applyVideoFilter();
+      el.briReadout.textContent = brightness + '%';
     } else if (field === 'sNightlight') {
-      nightlight = Math.round(pct * 100);
-      if (link) link.sendControl({ cmd: 'nightlight', on: nightlight > 3, level: nightlight });
+      // Deze schuifbalk regelt alleen de STERKTE, niet aan/uit — dat gaat
+      // via de Nachtstand-knop (zie item hierboven in de gebruikersfeedback).
+      nightlightLevel = Math.round(pct * 100);
+      if (nightlightOn) sendNightlightState();
+      el.nlReadout.textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
     } else if (field === 'sSensitivity') {
       sensitivity = Math.round(pct * 100);
+      el.sensReadout.textContent = sensitivity + '%';
     }
     setSliderKnob($(field), pct);
   }
@@ -308,20 +321,14 @@
       el.chips.appendChild(c);
     });
   }
-  function renderTransport() {
-    el.tPlay.textContent = playing ? '❚❚' : '▶';
-    el.tPlay.classList.toggle('on', playing);
-  }
   function sendPlay() {
     if (link) link.sendControl({ cmd: 'lullaby', on: true, id: tracks[trackIndex].id });
     playing = true;
-    renderTransport();
     renderChips();
   }
   function sendStop() {
     if (link) link.sendControl({ cmd: 'lullaby', on: false, id: tracks[trackIndex].id });
     playing = false;
-    renderTransport();
     renderChips();
   }
   function selectTrack(i, autoplay) {
@@ -407,21 +414,20 @@
   };
 
   el.btnNightmode.onclick = () => {
+    // Nachtstand: dimt het eigen beeld EN zet het nachtlampje (scherm of
+    // flitser) bij de babyunit aan — één druk op de knop voor beide.
     nightMode = !nightMode;
+    nightlightOn = nightMode;
     el.btnNightmode.classList.toggle('on', nightMode);
     applyVideoFilter();
     el.liveText.textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
+    el.nlReadout.textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+    sendNightlightState();
   };
 
   el.btnFlip.onclick = () => {
     if (link) link.sendControl({ cmd: 'flip' });
     toast('Camera wisselen…');
-  };
-  el.btnLocate.onclick = () => {
-    if (link) link.sendControl({ cmd: 'locate' });
-    el.btnLocate.classList.add('active');
-    setTimeout(() => el.btnLocate.classList.remove('active'), 2500);
-    toast('🔊 Babyunit speelt een toon');
   };
 
   el.btnSnapshot.onclick = () => {
@@ -436,6 +442,16 @@
   };
 
   el.btnFullscreen.onclick = () => {
+    // iOS Safari ondersteunt geen Fullscreen API op een gewone <div> — alleen
+    // op het <video>-element zelf, via de eigen (webkit) videofullscreen.
+    if (el.video.webkitEnterFullscreen && !document.fullscreenElement) {
+      try {
+        el.video.webkitEnterFullscreen();
+        return;
+      } catch (e) {
+        /* val terug op de generieke Fullscreen API */
+      }
+    }
     if (!document.fullscreenElement) {
       (el.screen.requestFullscreen || el.screen.webkitRequestFullscreen)?.call(el.screen);
     } else {
@@ -482,11 +498,6 @@
   };
 
   el.btnRecord.onclick = toggleRecord;
-
-  el.tPlay.onclick = () => (playing ? sendStop() : sendPlay());
-  el.tStop.onclick = () => sendStop();
-  el.tNext.onclick = () => selectTrack((trackIndex + 1) % tracks.length, false);
-  el.tPrev.onclick = () => selectTrack((trackIndex - 1 + tracks.length) % tracks.length, false);
 
   el.errorCard.onclick = () => {
     el.errorCard.classList.add('hidden');
@@ -537,8 +548,10 @@
     setSliderKnob(el.sBrightness, sliderPct('sBrightness'));
     setSliderKnob(el.sNightlight, sliderPct('sNightlight'));
     setSliderKnob(el.sSensitivity, sliderPct('sSensitivity'));
+    el.briReadout.textContent = brightness + '%';
+    el.nlReadout.textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+    el.sensReadout.textContent = sensitivity + '%';
     renderChips();
-    renderTransport();
     await getMic();
     await Baby.wakeLock.enable();
     connect();
