@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#f0eee8" />
-    <title>Luna Unit — Babyfoon (serverloos)</title>
+    <title>Luna Unit — Baby Monitor</title>
     <link rel="stylesheet" href="luna.css" />
     <link
       rel="icon"
@@ -17,106 +17,107 @@
   <body>
     <!-- ============================ SETUP ============================ -->
     <section id="screenSetup" class="setup-wrap">
+      <div class="lang-bar"><span class="lang-ic">🌐</span><span id="langSelectSetup"></span></div>
       <div class="setup-head">
         <div class="logo">👶</div>
         <h1>Luna Unit</h1>
-        <p>
-          Serverloze babyfoon. Werkt volledig lokaal — op hetzelfde wifi-netwerk
-          is er geen server nodig. Kies een rol om te beginnen.
+        <p data-i18n="tagline">
+          A private baby monitor that runs entirely in your browser. On the same
+          Wi‑Fi network no server is needed. Choose a role to begin.
         </p>
       </div>
       <div class="role-cards">
         <div class="role-pick" id="pickBaby">
           <div class="emoji">🍼</div>
-          <h3>Babyunit</h3>
-          <p>Bij de baby. Verzendt live camera en geluid. Toont een QR-code om te koppelen.</p>
+          <h3 data-i18n="roleBabyTitle">Baby Unit</h3>
+          <p data-i18n="roleBabyDesc">Place near the baby. Sends live camera and sound. Shows a QR code to pair.</p>
         </div>
         <div class="role-pick" id="pickParent">
           <div class="emoji">📺</div>
-          <h3>Ouderunit</h3>
-          <p>De monitor. Scan de QR-code van de babyunit om mee te kijken en te luisteren.</p>
+          <h3 data-i18n="roleParentTitle">Parent Unit</h3>
+          <p data-i18n="roleParentDesc">The monitor. Scan the baby unit's QR code to watch and listen.</p>
         </div>
       </div>
     </section>
 
     <!-- ======================= PAIR: BABY ======================= -->
     <section id="screenPairBaby" class="pair-wrap hidden">
-      <div class="pair-head"><div class="logo">🍼</div><h1>Babyunit koppelen</h1></div>
+      <div class="pair-head"><div class="logo">🍼</div><h1 data-i18n="pairBabyTitle">Pair Baby Unit</h1></div>
       <ol class="steps">
-        <li id="bStep1" class="active">Laat de ouder deze QR-code scannen (of stuur de koppelcode).</li>
-        <li id="bStep2">Scan of plak de antwoordcode van de ouder.</li>
+        <li id="bStep1" class="active" data-i18n="pairBabyStep1">Let the parent scan this QR code (or send the pairing code).</li>
+        <li id="bStep2" data-i18n="pairBabyStep2">Scan or paste the parent's answer code.</li>
       </ol>
       <div class="pair-box">
-        <h4>1 · Jouw koppelcode</h4>
+        <h4 data-i18n="yourCode">1 · Your pairing code</h4>
         <div class="qr-display" id="babyQR"></div>
         <textarea class="code" id="babyOfferCode" readonly></textarea>
         <div class="pair-actions">
-          <button class="btn secondary" id="copyBabyOffer" type="button">📋 Kopieer code</button>
+          <button class="btn secondary" id="copyBabyOffer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
         </div>
       </div>
       <div class="pair-box">
-        <h4>2 · Antwoord van de ouder</h4>
+        <h4 data-i18n="answerFromParent">2 · Parent's answer</h4>
         <div id="babyScanWrap" class="hidden">
           <div class="scanner"><video id="babyScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
         </div>
-        <textarea class="code" id="babyAnswerInput" placeholder="Plak hier de antwoordcode…"></textarea>
+        <textarea class="code" id="babyAnswerInput" data-i18n-ph="phAnswerCode" placeholder="Paste the answer code here…"></textarea>
         <div class="pair-actions">
-          <button class="btn secondary" id="babyScanBtn" type="button">📷 Scan QR</button>
-          <button class="btn" id="babyConnectBtn" type="button">Verbinden</button>
+          <button class="btn secondary" id="babyScanBtn" type="button">📷 <span data-i18n="scanQR">Scan QR</span></button>
+          <button class="btn" id="babyConnectBtn" type="button" data-i18n="connect">Connect</button>
         </div>
       </div>
-      <div class="backlink"><a href="#" id="babyBack">← Terug</a></div>
+      <div class="backlink"><a href="#" id="babyBack">← <span data-i18n="back">Back</span></a></div>
     </section>
 
     <!-- ======================= PAIR: PARENT ======================= -->
     <section id="screenPairParent" class="pair-wrap hidden">
-      <div class="pair-head"><div class="logo">📺</div><h1>Ouderunit koppelen</h1></div>
+      <div class="pair-head"><div class="logo">📺</div><h1 data-i18n="pairParentTitle">Pair Parent Unit</h1></div>
       <ol class="steps">
-        <li id="pStep1" class="active">Scan de QR-code van de babyunit (of plak de code).</li>
-        <li id="pStep2">Laat de babyunit jouw antwoord-QR scannen (of stuur de code).</li>
+        <li id="pStep1" class="active" data-i18n="pairParentStep1">Scan the baby unit's QR code (or paste the code).</li>
+        <li id="pStep2" data-i18n="pairParentStep2">Let the baby unit scan your answer QR (or send the code).</li>
       </ol>
       <div class="pair-box">
-        <h4>1 · Koppelcode van de babyunit</h4>
+        <h4 data-i18n="pairCodeTitle">1 · Baby unit's pairing code</h4>
         <div id="parentScanWrap" class="hidden">
           <div class="scanner"><video id="parentScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
         </div>
-        <textarea class="code" id="parentOfferInput" placeholder="Plak hier de koppelcode…"></textarea>
+        <textarea class="code" id="parentOfferInput" data-i18n-ph="phPairCode" placeholder="Paste the pairing code here…"></textarea>
         <div class="pair-actions">
-          <button class="btn secondary" id="parentScanBtn" type="button">📷 Scan QR</button>
-          <button class="btn" id="parentGenBtn" type="button">Genereer antwoord</button>
+          <button class="btn secondary" id="parentScanBtn" type="button">📷 <span data-i18n="scanQR">Scan QR</span></button>
+          <button class="btn" id="parentGenBtn" type="button" data-i18n="genAnswer">Generate answer</button>
         </div>
       </div>
       <div class="pair-box hidden" id="parentAnswerBox">
-        <h4>2 · Jouw antwoordcode</h4>
+        <h4 data-i18n="yourAnswerCode">2 · Your answer code</h4>
         <div class="qr-display" id="parentQR"></div>
         <textarea class="code" id="parentAnswerCode" readonly></textarea>
         <div class="pair-actions">
-          <button class="btn secondary" id="copyParentAnswer" type="button">📋 Kopieer code</button>
+          <button class="btn secondary" id="copyParentAnswer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
         </div>
       </div>
-      <div class="backlink"><a href="#" id="parentBack">← Terug</a></div>
+      <div class="backlink"><a href="#" id="parentBack">← <span data-i18n="back">Back</span></a></div>
     </section>
 
-    <!-- ======================= OUDER-PANEEL (Luna) ======================= -->
+    <!-- ======================= PARENT PANEL (Luna) ======================= -->
     <section id="screenParent" class="hidden">
       <div class="panel">
         <div class="topbar">
           <div class="brand">
-            <div class="round-icon on" id="btnPower" title="Stoppen">
+            <div class="round-icon on" id="btnPower" data-i18n-title="stop" title="Stop">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
                 <path d="M12 3v7" stroke="#fff" stroke-width="2" stroke-linecap="round" />
                 <path d="M6.5 6.5a8 8 0 1 0 11 0" stroke="#fff" stroke-width="2" stroke-linecap="round" />
               </svg>
             </div>
-            <div><div class="title">Luna Unit</div><div class="subtitle">Ouder-paneel</div></div>
+            <div><div class="title">Luna Unit</div><div class="subtitle" data-i18n="subtitleParent">Parent panel</div></div>
           </div>
           <div class="topstatus">
-            <div class="pill inset"><span class="dot off breathe" id="connDot"></span><span id="connText">Verbinden…</span></div>
+            <div class="pill inset"><span class="dot off breathe" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
             <div class="pill" id="clock">--:--</div>
             <div class="pill" id="babyBatt">🔋 —</div>
             <div class="pill btn" id="btnNightmode">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="var(--ink)" /></svg>
-              <span>Nachtstand</span>
+              <span data-i18n="nightmode">Night mode</span>
             </div>
           </div>
         </div>
@@ -124,18 +125,18 @@
         <div class="grid3">
           <div class="col col-left">
             <div class="card">
-              <div class="label">Verbinding</div>
-              <div class="info-row"><span>Kamer</span><span class="v" id="roomLabel">P2P</span></div>
-              <div class="info-row"><span>Signaal</span><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
-              <div class="info-row"><span>Vertraging</span><span class="v" id="rttVal">—</span></div>
+              <div class="label" data-i18n="connection">Connection</div>
+              <div class="info-row"><span data-i18n="room">Room</span><span class="v" id="roomLabel">P2P</span></div>
+              <div class="info-row"><span data-i18n="signal">Signal</span><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
+              <div class="info-row"><span data-i18n="latency">Latency</span><span class="v" id="rttVal">—</span></div>
             </div>
             <div class="circle-row">
-              <div class="circle-btn" id="btnFlip" title="Wissel camera">
+              <div class="circle-btn" id="btnFlip" data-i18n-title="switchCamera" title="Switch camera">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
                   <path d="M4 8a8 8 0 0 1 14-3M20 16a8 8 0 0 1-14 3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" />
                   <path d="M18 3v3h-3M6 21v-3h3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <span>WISSEL CAMERA</span>
+                <span data-i18n="switchCamera">SWITCH CAMERA</span>
               </div>
             </div>
           </div>
@@ -145,31 +146,31 @@
               <video id="video" autoplay playsinline></video>
               <div class="night-veil hidden" id="nightVeil"></div>
               <div class="snap-flash hidden" id="snapFlash"></div>
-              <div class="badge live" id="liveBadge"><span class="rec-dot breathe"></span><span id="liveText">VERBINDEN…</span></div>
+              <div class="badge live" id="liveBadge"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
               <div class="badge db"><span id="dbText">— dB</span></div>
-              <div class="placeholder" id="placeholder"><div class="spinner"></div><div id="phText">Verbinden…</div></div>
+              <div class="placeholder" id="placeholder"><div class="spinner"></div><div id="phText" data-i18n="connecting">Connecting…</div></div>
               <div class="vu" id="vu"><i></i><i></i><i></i><i></i><i></i></div>
               <div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px">
-                <div class="scr-btn" id="btnSnapshot" title="Foto">
+                <div class="scr-btn" id="btnSnapshot" title="Photo">
                   <svg viewBox="0 0 24 24" width="17" height="17" fill="none"><rect x="3" y="7" width="18" height="13" rx="2.5" stroke="#fff" stroke-width="1.6" /><path d="M8 7l1.5-2.5h5L16 7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" /><circle cx="12" cy="13.5" r="3.2" stroke="#fff" stroke-width="1.5" /></svg>
                 </div>
-                <div class="scr-btn" id="btnFullscreen" title="Volledig scherm">
+                <div class="scr-btn" id="btnFullscreen" title="Fullscreen">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
                 </div>
                 <div class="zoom-ctl"><b id="zoomOut">−</b><span id="zoomVal">1.0×</span><b id="zoomIn">+</b></div>
               </div>
-              <div class="talk-btn" id="btnTalk" title="Terugpraten">
+              <div class="talk-btn" id="btnTalk" data-i18n-title="talkIdle" title="Talk to baby">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="1.8" /><path d="M5 11a7 7 0 0 0 14 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" /></svg>
-                <span id="talkText">Praat tegen baby</span>
+                <span id="talkText" data-i18n="talkIdle">Talk to baby</span>
               </div>
               <div class="fs-close hidden" id="btnFsClose"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2" stroke-linecap="round" /></svg></div>
             </div>
 
             <div class="dial-wrap">
-              <div class="dial" id="volDial" title="Volume">
+              <div class="dial" id="volDial" data-i18n-title="volume" title="Volume">
                 <div class="ring1"></div>
                 <div class="ring2"><div class="needle" id="volNeedle"></div><div class="hub" id="volHub">80</div></div>
-                <div class="cap">Volume</div>
+                <div class="cap" data-i18n="volume">Volume</div>
               </div>
               <div class="vsliders">
                 <div class="vslider" id="sBrightness"><div class="rail"></div><div class="knob"></div><div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="4" stroke="var(--red)" stroke-width="1.6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/></svg></div></div>
@@ -179,30 +180,30 @@
             </div>
             <div class="vlabels">
               <span></span>
-              <span>HELDERHEID<b class="vlabel-val" id="briReadout">100%</b></span>
-              <span>NACHTLAMP<b class="vlabel-val" id="nlReadout">UIT</b></span>
-              <span>GEVOELIGHEID<b class="vlabel-val" id="sensReadout">55%</b></span>
+              <span><span data-i18n="brightness">BRIGHTNESS</span><b class="vlabel-val" id="briReadout">100%</b></span>
+              <span><span data-i18n="nightlight">NIGHT‑LIGHT</span><b class="vlabel-val" id="nlReadout" data-i18n="off">OFF</b></span>
+              <span><span data-i18n="sensitivity">SENSITIVITY</span><b class="vlabel-val" id="sensReadout">55%</b></span>
             </div>
           </div>
 
           <div class="col col-right">
             <div class="circle-row">
-              <div class="circle-btn" id="btnRecord" title="Lokaal opnemen">
+              <div class="circle-btn" id="btnRecord" data-i18n-title="record" title="Record locally">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="12" cy="12" r="7" stroke="var(--ink)" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" fill="var(--red)"/></svg>
-                <span>OPNEMEN</span>
+                <span data-i18n="record">RECORD</span>
               </div>
-              <div class="circle-btn" id="btnMute" title="Geluid dempen">
+              <div class="circle-btn" id="btnMute" data-i18n-title="sound" title="Mute sound">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M9 6v12l-5-4H2V10h2l5-4z" fill="var(--ink)"/><path d="M15 9a4 4 0 0 1 0 6" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
-                <span>GELUID</span>
+                <span data-i18n="sound">SOUND</span>
               </div>
             </div>
             <div class="wide-btn" id="btnAlarm">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="var(--red)" stroke-width="1.8" stroke-linejoin="round" /><path d="M10 19a2 2 0 0 0 4 0" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" /></svg>
-              <span id="alarmText">ALARM AAN</span>
+              <span id="alarmText" data-i18n="alarmOn">ALARM ON</span>
             </div>
-            <div class="alert-pill breathe hidden" id="cryAlert">🔔 Huilen gedetecteerd</div>
+            <div class="alert-pill breathe hidden" id="cryAlert" data-i18n="cryingDetected">🔔 Crying detected</div>
             <div class="card">
-              <div class="label">Slaapmuziek</div>
+              <div class="label" data-i18n="lullabies">Lullabies</div>
               <div class="chips" id="chips"></div>
             </div>
           </div>
@@ -210,39 +211,40 @@
       </div>
     </section>
 
-    <!-- ======================= BABYUNIT ======================= -->
+    <!-- ======================= BABY UNIT ======================= -->
     <section id="screenBaby" class="hidden">
       <div class="panel baby-panel">
         <div class="topbar">
           <div class="brand">
             <div class="round-icon on"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M8 3h8M9 3c0 3-2 4-2 7v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9c0-3-2-4-2-7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-            <div><div class="title">Luna Unit</div><div class="subtitle">Babyunit</div></div>
+            <div><div class="title">Luna Unit</div><div class="subtitle" data-i18n="subtitleBaby">Baby unit</div></div>
           </div>
           <div class="topstatus">
-            <div class="pill inset"><span class="dot off breathe" id="bConnDot"></span><span id="bConn">Verbinden…</span></div>
+            <div class="pill inset"><span class="dot off breathe" id="bConnDot"></span><span id="bConn" data-i18n="connecting">Connecting…</span></div>
             <div class="pill" id="bBatt">🔋 —</div>
           </div>
         </div>
         <div class="screen" id="bScreen">
           <video id="bPreview" autoplay playsinline muted></video>
-          <div class="badge live"><span class="rec-dot breathe"></span><span>LIVE</span></div>
-          <div class="placeholder hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus">Camera starten…</div></div>
+          <div class="badge live"><span class="rec-dot breathe"></span><span data-i18n="live">LIVE</span></div>
+          <div class="placeholder hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
         </div>
         <div class="baby-controls">
-          <button class="bctrl" id="bFlip" type="button"><span class="ic">🔄</span> Camera</button>
-          <button class="bctrl active" id="bMic" type="button"><span class="ic">🎙️</span> Microfoon</button>
-          <button class="bctrl" id="bRecord" type="button"><span class="ic">⏺️</span> Opnemen</button>
-          <button class="bctrl danger" id="bStop" type="button"><span class="ic">⏹️</span> Stoppen</button>
+          <button class="bctrl" id="bFlip" type="button"><span class="ic">🔄</span> <span data-i18n="camera">Camera</span></button>
+          <button class="bctrl active" id="bMic" type="button"><span class="ic">🎙️</span> <span data-i18n="microphone">Microphone</span></button>
+          <button class="bctrl" id="bRecord" type="button"><span class="ic">⏺️</span> <span data-i18n="record">Record</span></button>
+          <button class="bctrl danger" id="bStop" type="button"><span class="ic">⏹️</span> <span data-i18n="stop">Stop</span></button>
         </div>
       </div>
     </section>
 
-    <div class="nightlight-full hidden" id="nightlight"><div>💡 Nachtlamp aan (ingeschakeld door ouder)</div></div>
+    <div class="nightlight-full hidden" id="nightlight"><div data-i18n="nightlightOverlay">💡 Night‑light on (turned on by parent)</div></div>
     <canvas id="scratch" class="hidden"></canvas>
     <div class="toast hidden" id="toast"></div>
 
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/codec.js"></script>
     <script src="js/lullaby.js"></script>
     <script src="js/app.js"></script>

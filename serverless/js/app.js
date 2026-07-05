@@ -10,6 +10,10 @@
 (function () {
   const ICE = [{ urls: 'stun:stun.l.google.com:19302' }];
   const $ = (id) => document.getElementById(id);
+  const T = (k) => (window.I18n ? window.I18n.t(k) : k);
+  // Slaapmuziek-ID → i18n-sleutel (labels worden vertaald weergegeven).
+  const TRACK_I18N = { regen: 'trackRain', oceaan: 'trackOcean', hartslag: 'trackHeartbeat', witte: 'trackWhite' };
+  const trackLabel = (tr) => T(TRACK_I18N[tr.id] || tr.id);
 
   // ------------------------------------------------------------------ helpers
   let toastTimer = null;
@@ -27,7 +31,7 @@
   }
   async function getMedia(c) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error('Camera/microfoon niet beschikbaar. Gebruik https of open het bestand in Chrome/Firefox.');
+      throw new Error(T('mediaError'));
     }
     return navigator.mediaDevices.getUserMedia(c);
   }
@@ -40,15 +44,15 @@
       box.innerHTML = qr.createImgTag(4, 8);
     } catch (e) {
       box.innerHTML =
-        '<div style="color:#333;font-size:12px;text-align:center;padding:10px">Code te groot voor QR.<br>Gebruik “Kopieer code”.</div>';
+        '<div style="color:#333;font-size:12px;text-align:center;padding:10px">' + T('copyCode') + '</div>';
     }
   }
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
-      toast('📋 Gekopieerd');
+      toast(T('copied'));
     } catch (e) {
-      toast('Kopiëren mislukt — selecteer handmatig');
+      toast(T('copyFail'));
     }
   }
   let scannerStop = null;
@@ -58,7 +62,7 @@
     try {
       stream = await getMedia({ video: { facingMode: 'environment' }, audio: false });
     } catch (e) {
-      toast('Kan camera niet openen om te scannen — plak de code');
+      toast(T('scanFail'));
       return;
     }
     videoEl.srcObject = stream;
@@ -165,14 +169,14 @@
       if (role === 'baby') {
         showScreen('screenBaby');
         $('bConnDot').classList.remove('off');
-        $('bConn').textContent = 'Verbonden met ouderunit';
+        $('bConn').textContent = T('connectedToParent');
         startBabyDevice();
       } else {
         showScreen('screenParent');
         $('connDot').classList.remove('off');
-        $('connText').textContent = 'Verbonden';
+        $('connText').textContent = T('connected');
         $('placeholder').classList.add('hidden');
-        $('liveText').textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
+        $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
         startParentDevice();
         sendControl({ cmd: 'ping' });
       }
@@ -245,7 +249,7 @@
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
       });
     } catch (e) {
-      toast(e.message || 'Geen toegang tot camera/microfoon');
+      toast(e.message || T('mediaError'));
       showScreen('screenSetup');
       role = null;
       return;
@@ -265,29 +269,29 @@
   }
   async function babyConnectAnswer() {
     const code = $('babyAnswerInput').value.trim();
-    if (!code) return toast('Plak of scan eerst de antwoordcode');
+    if (!code) return toast(T('pasteAnswerFirst'));
     try {
       const obj = await SignalCodec.unpack(code);
       if (obj.t !== 'answer') throw new Error();
       await pc.setRemoteDescription({ type: 'answer', sdp: obj.sdp });
       $('bStep1').classList.add('done');
       $('bStep2').classList.add('done');
-      toast('Verbinden…');
+      toast(T('connecting'));
     } catch (e) {
-      toast('Ongeldige antwoordcode');
+      toast(T('invalidAnswer'));
     }
   }
 
   // ------------------------------------------------------------------ koppelen: ouder
   async function parentAcceptOffer() {
     const code = $('parentOfferInput').value.trim();
-    if (!code) return toast('Plak of scan eerst de koppelcode');
+    if (!code) return toast(T('pastePairFirst'));
     let obj;
     try {
       obj = await SignalCodec.unpack(code);
       if (obj.t !== 'offer') throw new Error();
     } catch (e) {
-      return toast('Ongeldige koppelcode');
+      return toast(T('invalidPair'));
     }
     role = 'parent';
     pc = new RTCPeerConnection({ iceServers: ICE });
@@ -447,7 +451,7 @@
       // Regelt alleen de STERKTE, niet aan/uit — dat gaat via de Nachtstand-knop.
       nightlightLevel = Math.round(pct * 100);
       if (nightlightOn) sendNightlightState();
-      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
     } else if (field === 'sSensitivity') {
       sensitivity = Math.round(pct * 100);
       $('sensReadout').textContent = sensitivity + '%';
@@ -472,7 +476,7 @@
     tracks.forEach((t, i) => {
       const c = document.createElement('div');
       c.className = 'chip' + (playing && i === trackIndex ? ' on' : '');
-      c.textContent = t.label;
+      c.textContent = trackLabel(t);
       c.onclick = () => selectTrack(i, true);
       box.appendChild(c);
     });
@@ -506,7 +510,7 @@
         const h = await window.showSaveFilePicker({ suggestedName: name, types: [{ accept: { [blob.type || 'application/octet-stream']: ['.' + ext] } }] });
         const w = await h.createWritable();
         await w.write(blob); await w.close();
-        toast('💾 Opgeslagen'); return;
+        toast(T('saved')); return;
       } catch (e) { if (e && e.name === 'AbortError') return; }
     }
     const url = URL.createObjectURL(blob);
@@ -514,15 +518,15 @@
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast('💾 Opgeslagen');
+    toast(T('saved'));
   }
   function toggleRecord(stream, btn, prefix) {
-    if (!stream) return toast('Nog geen beeld om op te nemen');
+    if (!stream) return toast(T('noStream'));
     if (recorder) { recorder.stop(); return; }
-    if (!window.MediaRecorder) return toast('Opnemen niet ondersteund');
+    if (!window.MediaRecorder) return toast(T('recNotSupported'));
     const mime = pickMime();
     try { recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
-    catch (e) { return toast('Opnemen niet ondersteund'); }
+    catch (e) { return toast(T('recNotSupported')); }
     recChunks = [];
     recorder.ondataavailable = (e) => e.data && e.data.size && recChunks.push(e.data);
     recorder.onstop = async () => {
@@ -533,7 +537,7 @@
     };
     recorder.start(1000);
     btn.classList.add('active');
-    toast('⏺️ Opname gestart');
+    toast(T('recStarted'));
   }
 
   let parentStarted = false;
@@ -548,11 +552,11 @@
     setSliderKnob($('sNightlight'), nightlightLevel / 100);
     setSliderKnob($('sSensitivity'), sensitivity / 100);
     $('briReadout').textContent = brightness + '%';
-    $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+    $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
     $('sensReadout').textContent = sensitivity + '%';
     renderChips();
 
-    $('btnPower').onclick = () => { if (confirm('Ouderunit stoppen?')) location.reload(); };
+    $('btnPower').onclick = () => { if (confirm(T('stopParentQ'))) location.reload(); };
     $('btnNightmode').onclick = () => {
       // Nachtstand: dimt het eigen beeld EN zet het nachtlampje bij de
       // babyunit aan/uit — één druk op de knop voor beide.
@@ -560,13 +564,13 @@
       nightlightOn = nightMode;
       $('btnNightmode').classList.toggle('on', nightMode);
       applyVideoFilter();
-      $('liveText').textContent = nightMode ? 'NACHTSTAND' : 'LIVE';
-      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : 'UIT';
+      $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
       sendNightlightState();
     };
-    $('btnFlip').onclick = () => { sendControl({ cmd: 'flip' }); toast('Camera wisselen…'); };
+    $('btnFlip').onclick = () => { sendControl({ cmd: 'flip' }); toast(T('cameraSwitched')); };
     $('btnSnapshot').onclick = () => {
-      if (!$('video').videoWidth) return toast('Nog geen beeld');
+      if (!$('video').videoWidth) return toast(T('noImage'));
       $('snapFlash').classList.remove('hidden');
       setTimeout(() => $('snapFlash').classList.add('hidden'), 250);
       const c = $('scratch');
@@ -593,11 +597,11 @@
     $('zoomIn').onclick = () => { zoom = Math.min(3, Math.round((zoom + 0.2) * 10) / 10); applyZoom(); };
     $('zoomOut').onclick = () => { zoom = Math.max(1, Math.round((zoom - 0.2) * 10) / 10); applyZoom(); };
     $('btnTalk').onclick = () => {
-      if (!micStream) return toast('Geen microfoontoegang');
+      if (!micStream) return toast(T('noMic'));
       talking = !talking;
       micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
       $('btnTalk').classList.toggle('on', talking);
-      $('talkText').textContent = talking ? 'Aan het praten…' : 'Praat tegen baby';
+      $('talkText').textContent = talking ? T('talkActive') : T('talkIdle');
     };
     $('btnMute').onclick = () => {
       muted = !muted;
@@ -607,7 +611,7 @@
     $('btnAlarm').onclick = () => {
       alarmOn = !alarmOn;
       $('btnAlarm').classList.toggle('off', !alarmOn);
-      $('alarmText').textContent = alarmOn ? 'ALARM AAN' : 'ALARM UIT';
+      $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
       if (!alarmOn) $('cryAlert').classList.add('hidden');
     };
     $('btnRecord').onclick = () => toggleRecord(remoteStream, $('btnRecord'), 'babyfoon-opname');
@@ -639,7 +643,7 @@
       $('bMic').querySelector('.ic').textContent = micOn ? '🎙️' : '🔇';
     };
     $('bRecord').onclick = () => toggleRecord(localStream, $('bRecord'), 'babyunit-opname');
-    $('bStop').onclick = () => { if (confirm('Babyunit stoppen?')) location.reload(); };
+    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) location.reload(); };
     enableWakeLock();
     reportBattery();
   }
@@ -654,14 +658,14 @@
       if (ot) { localStream.removeTrack(ot); ot.stop(); }
       localStream.addTrack(nt);
       $('bPreview').srcObject = localStream;
-      toast('Camera gewisseld');
+      toast(T('cameraSwitched'));
     } catch (e) {
       facing = facing === 'environment' ? 'user' : 'environment';
-      toast('Kan camera niet wisselen');
+      toast(T('cannotSwitch'));
     }
   }
   async function reportBattery(once) {
-    if (!('getBattery' in navigator)) { $('bBatt').textContent = '🔋 n.v.t.'; return; }
+    if (!('getBattery' in navigator)) { $('bBatt').textContent = '🔋 N/A'; return; }
     try {
       const b = await navigator.getBattery();
       const upd = () => {
@@ -671,7 +675,7 @@
       };
       upd();
       if (!once) { b.addEventListener('levelchange', upd); b.addEventListener('chargingchange', upd); }
-    } catch (e) { $('bBatt').textContent = '🔋 n.v.t.'; }
+    } catch (e) { $('bBatt').textContent = '🔋 N/A'; }
   }
   // ------------------------------------------------------------------ wake lock
   let wl = null;
@@ -686,6 +690,26 @@
         });
       }
     } catch (e) {}
+  }
+
+  // ------------------------------------------------------------------ i18n
+  if (window.I18n) {
+    I18n.init();
+    I18n.buildSelector($('langSelectSetup'));
+    // Bij het wisselen van taal de dynamisch gezette teksten herstellen
+    // volgens de huidige status (apply() zet ze eerst terug op de standaard).
+    I18n.onChange(() => {
+      if (role === 'parent' && parentStarted) {
+        if (pc && pc.connectionState === 'connected') $('connText').textContent = T('connected');
+        $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+        $('talkText').textContent = talking ? T('talkActive') : T('talkIdle');
+        $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
+        $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
+        renderChips();
+      } else if (role === 'baby' && babyStarted) {
+        if (pc && pc.connectionState === 'connected') $('bConn').textContent = T('connectedToParent');
+      }
+    });
   }
 
   // ------------------------------------------------------------------ wiring
