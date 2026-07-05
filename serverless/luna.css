@@ -704,6 +704,92 @@ button {
   color: var(--red);
 }
 
+.music-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 12px;
+  margin: 2px 0 12px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--raised);
+  color: var(--ink);
+  font: 800 12px 'Nunito', sans-serif;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+.music-btn.on {
+  box-shadow: var(--pressed);
+  color: var(--red);
+}
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 176px;
+  overflow-y: auto;
+}
+.track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font: 700 11.5px 'Nunito', sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--raised-sm);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.track .n {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+  opacity: 0.55;
+}
+.track .tt {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.track.on {
+  box-shadow: var(--pressed);
+  color: var(--red);
+}
+.track.on .eq {
+  display: inline-flex;
+}
+.track .eq {
+  display: none;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.track .eq i {
+  width: 2.5px;
+  background: var(--red);
+  border-radius: 2px;
+  animation: eqbar 0.9s ease-in-out infinite;
+}
+.track .eq i:nth-child(1) { height: 5px; animation-delay: 0s; }
+.track .eq i:nth-child(2) { height: 11px; animation-delay: 0.18s; }
+.track .eq i:nth-child(3) { height: 7px; animation-delay: 0.36s; }
+@keyframes eqbar {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+.playlist-empty {
+  padding: 10px 4px;
+  font: 600 11.5px 'Nunito', sans-serif;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .error-card {
   display: flex;
   flex-direction: column;

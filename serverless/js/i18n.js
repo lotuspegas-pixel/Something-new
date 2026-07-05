@@ -105,6 +105,10 @@
       trackOcean: 'Ocean',
       trackHeartbeat: 'Heartbeat',
       trackWhite: 'White noise',
+      musicTitle: 'Children’s songs',
+      musicPlay: 'Play music',
+      musicStop: 'Stop music',
+      musicEmpty: 'No songs yet — add MP3s to the music folder',
       copied: '📋 Copied',
       copyFail: 'Copy failed — select manually',
       scanFail: "Can't open camera to scan — paste the code",
@@ -144,6 +148,7 @@
       connecting: '连接中…', connected: '已连接', connectionLost: '连接中断', waitingBaby: '等待宝宝端…',
       connectedToParent: '已连接家长端', startingCamera: '正在启动摄像头…', nightlightOverlay: '💡 夜灯已开启（由家长打开）',
       trackRain: '雨声', trackOcean: '海洋', trackHeartbeat: '心跳', trackWhite: '白噪音',
+      musicTitle: '儿歌', musicPlay: '播放音乐', musicStop: '停止音乐', musicEmpty: '暂无歌曲 — 请将 MP3 添加到 music 文件夹',
     },
 
     hi: {
@@ -163,6 +168,7 @@
       connecting: 'कनेक्ट हो रहा है…', connected: 'कनेक्ट हो गया', connectionLost: 'कनेक्शन टूट गया', waitingBaby: 'बेबी यूनिट का इंतज़ार…',
       connectedToParent: 'पैरेंट यूनिट से जुड़ा', startingCamera: 'कैमरा शुरू हो रहा है…', nightlightOverlay: '💡 नाइट‑लाइट चालू (पैरेंट द्वारा)',
       trackRain: 'बारिश', trackOcean: 'समुद्र', trackHeartbeat: 'दिल की धड़कन', trackWhite: 'व्हाइट नॉइज़',
+      musicTitle: 'बच्चों के गाने', musicPlay: 'संगीत चलाएं', musicStop: 'संगीत रोकें', musicEmpty: 'अभी कोई गाना नहीं — music फ़ोल्डर में MP3 जोड़ें',
     },
 
     es: {
@@ -182,6 +188,7 @@
       connecting: 'Conectando…', connected: 'Conectado', connectionLost: 'Conexión interrumpida', waitingBaby: 'Esperando la unidad bebé…',
       connectedToParent: 'Conectado a la unidad padres', startingCamera: 'Iniciando cámara…', nightlightOverlay: '💡 Luz nocturna activada (por el padre)',
       trackRain: 'Lluvia', trackOcean: 'Océano', trackHeartbeat: 'Latido', trackWhite: 'Ruido blanco',
+      musicTitle: 'Canciones infantiles', musicPlay: 'Reproducir música', musicStop: 'Detener música', musicEmpty: 'Aún no hay canciones — añade MP3 a la carpeta music',
     },
 
     fr: {
@@ -201,6 +208,7 @@
       connecting: 'Connexion…', connected: 'Connecté', connectionLost: 'Connexion interrompue', waitingBaby: 'En attente de l’unité bébé…',
       connectedToParent: 'Connecté à l’unité parent', startingCamera: 'Démarrage de la caméra…', nightlightOverlay: '💡 Veilleuse allumée (par le parent)',
       trackRain: 'Pluie', trackOcean: 'Océan', trackHeartbeat: 'Battement', trackWhite: 'Bruit blanc',
+      musicTitle: 'Chansons pour enfants', musicPlay: 'Lancer la musique', musicStop: 'Arrêter la musique', musicEmpty: 'Aucune chanson — ajoutez des MP3 au dossier music',
     },
 
     ar: {
@@ -220,6 +228,7 @@
       connecting: 'جارٍ الاتصال…', connected: 'متصل', connectionLost: 'انقطع الاتصال', waitingBaby: 'في انتظار وحدة الطفل…',
       connectedToParent: 'متصل بوحدة الوالد', startingCamera: 'جارٍ تشغيل الكاميرا…', nightlightOverlay: '💡 الضوء الليلي مفعّل (من الوالد)',
       trackRain: 'مطر', trackOcean: 'محيط', trackHeartbeat: 'نبض القلب', trackWhite: 'ضوضاء بيضاء',
+      musicTitle: 'أغاني الأطفال', musicPlay: 'تشغيل الموسيقى', musicStop: 'إيقاف الموسيقى', musicEmpty: 'لا توجد أغانٍ بعد — أضف ملفات MP3 إلى مجلد music',
     },
 
     bn: {
@@ -239,6 +248,7 @@
       connecting: 'সংযোগ হচ্ছে…', connected: 'সংযুক্ত', connectionLost: 'সংযোগ বিচ্ছিন্ন', waitingBaby: 'বেবি ইউনিটের অপেক্ষায়…',
       connectedToParent: 'প্যারেন্ট ইউনিটে সংযুক্ত', startingCamera: 'ক্যামেরা চালু হচ্ছে…', nightlightOverlay: '💡 নাইট‑লাইট চালু (প্যারেন্ট দ্বারা)',
       trackRain: 'বৃষ্টি', trackOcean: 'সমুদ্র', trackHeartbeat: 'হৃদস্পন্দন', trackWhite: 'হোয়াইট নয়েজ',
+      musicTitle: 'শিশুদের গান', musicPlay: 'মিউজিক চালান', musicStop: 'মিউজিক থামান', musicEmpty: 'এখনও কোনো গান নেই — music ফোল্ডারে MP3 যোগ করুন',
     },
 
     pt: {
@@ -258,6 +268,7 @@
       connecting: 'Conectando…', connected: 'Conectado', connectionLost: 'Conexão interrompida', waitingBaby: 'Aguardando a unidade bebê…',
       connectedToParent: 'Conectado à unidade pais', startingCamera: 'Iniciando câmera…', nightlightOverlay: '💡 Luz noturna ligada (pelos pais)',
       trackRain: 'Chuva', trackOcean: 'Oceano', trackHeartbeat: 'Batimento', trackWhite: 'Ruído branco',
+      musicTitle: 'Canções infantis', musicPlay: 'Tocar música', musicStop: 'Parar música', musicEmpty: 'Ainda sem músicas — adicione MP3 à pasta music',
     },
 
     ru: {
@@ -277,6 +288,7 @@
       connecting: 'Подключение…', connected: 'Подключено', connectionLost: 'Соединение прервано', waitingBaby: 'Ожидание детского блока…',
       connectedToParent: 'Подключено к родительскому блоку', startingCamera: 'Запуск камеры…', nightlightOverlay: '💡 Ночник включён (родителем)',
       trackRain: 'Дождь', trackOcean: 'Океан', trackHeartbeat: 'Сердцебиение', trackWhite: 'Белый шум',
+      musicTitle: 'Детские песни', musicPlay: 'Включить музыку', musicStop: 'Остановить музыку', musicEmpty: 'Пока нет песен — добавьте MP3 в папку music',
     },
 
     ur: {
@@ -296,6 +308,7 @@
       connecting: 'کنیکٹ ہو رہا ہے…', connected: 'کنیکٹڈ', connectionLost: 'کنکشن منقطع', waitingBaby: 'بے بی یونٹ کا انتظار…',
       connectedToParent: 'پیرنٹ یونٹ سے منسلک', startingCamera: 'کیمرہ شروع ہو رہا ہے…', nightlightOverlay: '💡 نائٹ لائٹ آن (والدین کی طرف سے)',
       trackRain: 'بارش', trackOcean: 'سمندر', trackHeartbeat: 'دل کی دھڑکن', trackWhite: 'وائٹ نوائز',
+      musicTitle: 'بچوں کے گانے', musicPlay: 'موسیقی چلائیں', musicStop: 'موسیقی روکیں', musicEmpty: 'ابھی کوئی گانا نہیں — music فولڈر میں MP3 شامل کریں',
     },
 
     id: {
@@ -315,6 +328,7 @@
       connecting: 'Menghubungkan…', connected: 'Terhubung', connectionLost: 'Koneksi terputus', waitingBaby: 'Menunggu unit bayi…',
       connectedToParent: 'Terhubung ke unit orang tua', startingCamera: 'Memulai kamera…', nightlightOverlay: '💡 Lampu malam menyala (oleh orang tua)',
       trackRain: 'Hujan', trackOcean: 'Laut', trackHeartbeat: 'Detak jantung', trackWhite: 'Derau putih',
+      musicTitle: 'Lagu anak', musicPlay: 'Putar musik', musicStop: 'Hentikan musik', musicEmpty: 'Belum ada lagu — tambahkan MP3 ke folder music',
     },
 
     de: {
@@ -334,6 +348,7 @@
       connecting: 'Verbinden…', connected: 'Verbunden', connectionLost: 'Verbindung unterbrochen', waitingBaby: 'Warte auf Baby-Einheit…',
       connectedToParent: 'Mit Eltern-Einheit verbunden', startingCamera: 'Kamera wird gestartet…', nightlightOverlay: '💡 Nachtlicht an (von den Eltern)',
       trackRain: 'Regen', trackOcean: 'Ozean', trackHeartbeat: 'Herzschlag', trackWhite: 'Weißes Rauschen',
+      musicTitle: 'Kinderlieder', musicPlay: 'Musik abspielen', musicStop: 'Musik stoppen', musicEmpty: 'Noch keine Lieder — MP3s in den Ordner „music“ legen',
     },
 
     ja: {
@@ -353,6 +368,7 @@
       connecting: '接続中…', connected: '接続済み', connectionLost: '接続が切れました', waitingBaby: 'ベビー機を待っています…',
       connectedToParent: 'ペアレント機に接続', startingCamera: 'カメラを起動中…', nightlightOverlay: '💡 ナイトライト点灯（ペアレントが操作）',
       trackRain: '雨', trackOcean: '海', trackHeartbeat: '心音', trackWhite: 'ホワイトノイズ',
+      musicTitle: '子供の歌', musicPlay: '音楽を再生', musicStop: '音楽を停止', musicEmpty: '曲がありません — music フォルダーに MP3 を追加してください',
     },
 
     mr: {
@@ -372,6 +388,7 @@
       connecting: 'कनेक्ट होत आहे…', connected: 'कनेक्ट झाले', connectionLost: 'कनेक्शन तुटले', waitingBaby: 'बेबी युनिटची वाट पाहत आहे…',
       connectedToParent: 'पॅरेंट युनिटशी जोडले', startingCamera: 'कॅमेरा सुरू होत आहे…', nightlightOverlay: '💡 नाईट‑लाईट चालू (पालकांकडून)',
       trackRain: 'पाऊस', trackOcean: 'महासागर', trackHeartbeat: 'हृदयाचे ठोके', trackWhite: 'व्हाइट नॉइज',
+      musicTitle: 'मुलांची गाणी', musicPlay: 'संगीत सुरू करा', musicStop: 'संगीत थांबवा', musicEmpty: 'अजून गाणी नाहीत — music फोल्डरमध्ये MP3 जोडा',
     },
 
     te: {
@@ -391,6 +408,7 @@
       connecting: 'కనెక్ట్ అవుతోంది…', connected: 'కనెక్ట్ అయింది', connectionLost: 'కనెక్షన్ తెగింది', waitingBaby: 'బేబీ యూనిట్ కోసం వేచి…',
       connectedToParent: 'పేరెంట్ యూనిట్‌కు కనెక్ట్', startingCamera: 'కెమెరా ప్రారంభమవుతోంది…', nightlightOverlay: '💡 నైట్‑లైట్ ఆన్ (తల్లిదండ్రుల ద్వారా)',
       trackRain: 'వర్షం', trackOcean: 'సముద్రం', trackHeartbeat: 'గుండె చప్పుడు', trackWhite: 'వైట్ నాయిస్',
+      musicTitle: 'పిల్లల పాటలు', musicPlay: 'సంగీతం ప్లే చేయి', musicStop: 'సంగీతం ఆపు', musicEmpty: 'ఇంకా పాటలు లేవు — music ఫోల్డర్‌కు MP3 జోడించండి',
     },
 
     tr: {
@@ -410,6 +428,7 @@
       connecting: 'Bağlanıyor…', connected: 'Bağlandı', connectionLost: 'Bağlantı kesildi', waitingBaby: 'Bebek ünitesi bekleniyor…',
       connectedToParent: 'Ebeveyn ünitesine bağlandı', startingCamera: 'Kamera başlatılıyor…', nightlightOverlay: '💡 Gece ışığı açık (ebeveyn tarafından)',
       trackRain: 'Yağmur', trackOcean: 'Okyanus', trackHeartbeat: 'Kalp atışı', trackWhite: 'Beyaz gürültü',
+      musicTitle: 'Çocuk şarkıları', musicPlay: 'Müzik çal', musicStop: 'Müziği durdur', musicEmpty: 'Henüz şarkı yok — music klasörüne MP3 ekleyin',
     },
 
     ta: {
@@ -429,6 +448,7 @@
       connecting: 'இணைக்கிறது…', connected: 'இணைக்கப்பட்டது', connectionLost: 'இணைப்பு துண்டிக்கப்பட்டது', waitingBaby: 'குழந்தை பிரிவுக்காக காத்திருக்கிறது…',
       connectedToParent: 'பெற்றோர் பிரிவுடன் இணைக்கப்பட்டது', startingCamera: 'காமிரா தொடங்குகிறது…', nightlightOverlay: '💡 இரவு விளக்கு ஆன் (பெற்றோரால்)',
       trackRain: 'மழை', trackOcean: 'கடல்', trackHeartbeat: 'இதயத் துடிப்பு', trackWhite: 'வெள்ளை இரைச்சல்',
+      musicTitle: 'குழந்தை பாடல்கள்', musicPlay: 'இசையை இயக்கு', musicStop: 'இசையை நிறுத்து', musicEmpty: 'இன்னும் பாடல்கள் இல்லை — music கோப்புறையில் MP3 சேர்க்கவும்',
     },
 
     vi: {
@@ -448,6 +468,7 @@
       connecting: 'Đang kết nối…', connected: 'Đã kết nối', connectionLost: 'Mất kết nối', waitingBaby: 'Đang chờ thiết bị bé…',
       connectedToParent: 'Đã kết nối với thiết bị bố mẹ', startingCamera: 'Đang khởi động camera…', nightlightOverlay: '💡 Đèn ngủ bật (do bố mẹ)',
       trackRain: 'Mưa', trackOcean: 'Đại dương', trackHeartbeat: 'Nhịp tim', trackWhite: 'Tiếng ồn trắng',
+      musicTitle: 'Bài hát trẻ em', musicPlay: 'Phát nhạc', musicStop: 'Dừng nhạc', musicEmpty: 'Chưa có bài hát — thêm MP3 vào thư mục music',
     },
 
     ko: {
@@ -467,6 +488,7 @@
       connecting: '연결 중…', connected: '연결됨', connectionLost: '연결 끊김', waitingBaby: '베이비 유닛 대기 중…',
       connectedToParent: '부모 유닛에 연결됨', startingCamera: '카메라 시작 중…', nightlightOverlay: '💡 야간등 켜짐 (부모가 켬)',
       trackRain: '비', trackOcean: '바다', trackHeartbeat: '심장 박동', trackWhite: '백색 소음',
+      musicTitle: '동요', musicPlay: '음악 재생', musicStop: '음악 정지', musicEmpty: '아직 노래가 없습니다 — music 폴더에 MP3를 추가하세요',
     },
 
     it: {
@@ -486,6 +508,7 @@
       connecting: 'Connessione…', connected: 'Connesso', connectionLost: 'Connessione interrotta', waitingBaby: 'In attesa dell’unità bimbo…',
       connectedToParent: 'Connesso all’unità genitore', startingCamera: 'Avvio camera…', nightlightOverlay: '💡 Luce notturna accesa (dal genitore)',
       trackRain: 'Pioggia', trackOcean: 'Oceano', trackHeartbeat: 'Battito', trackWhite: 'Rumore bianco',
+      musicTitle: 'Canzoni per bambini', musicPlay: 'Riproduci musica', musicStop: 'Ferma la musica', musicEmpty: 'Ancora nessuna canzone — aggiungi MP3 nella cartella music',
     },
 
     th: {
@@ -505,6 +528,7 @@
       connecting: 'กำลังเชื่อมต่อ…', connected: 'เชื่อมต่อแล้ว', connectionLost: 'การเชื่อมต่อขาด', waitingBaby: 'กำลังรอเครื่องทารก…',
       connectedToParent: 'เชื่อมต่อกับเครื่องผู้ปกครอง', startingCamera: 'กำลังเริ่มกล้อง…', nightlightOverlay: '💡 เปิดไฟกลางคืน (โดยผู้ปกครอง)',
       trackRain: 'ฝน', trackOcean: 'มหาสมุทร', trackHeartbeat: 'เสียงหัวใจ', trackWhite: 'ไวต์นอยส์',
+      musicTitle: 'เพลงเด็ก', musicPlay: 'เล่นเพลง', musicStop: 'หยุดเพลง', musicEmpty: 'ยังไม่มีเพลง — เพิ่มไฟล์ MP3 ในโฟลเดอร์ music',
     },
 
     gu: {
@@ -524,6 +548,7 @@
       connecting: 'કનેક્ટ થઈ રહ્યું છે…', connected: 'કનેક્ટ થયું', connectionLost: 'કનેક્શન તૂટ્યું', waitingBaby: 'બેબી યુનિટની રાહ…',
       connectedToParent: 'પેરેન્ટ યુનિટ સાથે જોડાયું', startingCamera: 'કૅમેરા શરૂ થઈ રહ્યો છે…', nightlightOverlay: '💡 નાઇટ‑લાઇટ ચાલુ (માતાપિતા દ્વારા)',
       trackRain: 'વરસાદ', trackOcean: 'મહાસાગર', trackHeartbeat: 'હૃદયના ધબકારા', trackWhite: 'વ્હાઇટ નોઇઝ',
+      musicTitle: 'બાળગીતો', musicPlay: 'સંગીત વગાડો', musicStop: 'સંગીત બંધ કરો', musicEmpty: 'હજી કોઈ ગીત નથી — music ફોલ્ડરમાં MP3 ઉમેરો',
     },
 
     fa: {
@@ -543,6 +568,7 @@
       connecting: 'در حال اتصال…', connected: 'متصل شد', connectionLost: 'اتصال قطع شد', waitingBaby: 'در انتظار واحد کودک…',
       connectedToParent: 'به واحد والدین متصل شد', startingCamera: 'در حال شروع دوربین…', nightlightOverlay: '💡 چراغ‌خواب روشن (توسط والدین)',
       trackRain: 'باران', trackOcean: 'اقیانوس', trackHeartbeat: 'ضربان قلب', trackWhite: 'نویز سفید',
+      musicTitle: 'ترانه‌های کودکان', musicPlay: 'پخش موسیقی', musicStop: 'توقف موسیقی', musicEmpty: 'هنوز آهنگی نیست — فایل MP3 را به پوشه music اضافه کنید',
     },
 
     pl: {
@@ -562,6 +588,7 @@
       connecting: 'Łączenie…', connected: 'Połączono', connectionLost: 'Połączenie przerwane', waitingBaby: 'Oczekiwanie na jednostkę dziecka…',
       connectedToParent: 'Połączono z jednostką rodzica', startingCamera: 'Uruchamianie kamery…', nightlightOverlay: '💡 Lampka nocna wł. (przez rodzica)',
       trackRain: 'Deszcz', trackOcean: 'Ocean', trackHeartbeat: 'Bicie serca', trackWhite: 'Biały szum',
+      musicTitle: 'Piosenki dla dzieci', musicPlay: 'Odtwórz muzykę', musicStop: 'Zatrzymaj muzykę', musicEmpty: 'Brak piosenek — dodaj pliki MP3 do folderu music',
     },
 
     uk: {
@@ -581,6 +608,7 @@
       connecting: 'З’єднання…', connected: 'З’єднано', connectionLost: 'З’єднання перервано', waitingBaby: 'Очікування дитячого блоку…',
       connectedToParent: 'З’єднано з батьківським блоком', startingCamera: 'Запуск камери…', nightlightOverlay: '💡 Нічник увімкнено (батьками)',
       trackRain: 'Дощ', trackOcean: 'Океан', trackHeartbeat: 'Серцебиття', trackWhite: 'Білий шум',
+      musicTitle: 'Дитячі пісні', musicPlay: 'Увімкнути музику', musicStop: 'Зупинити музику', musicEmpty: 'Пісень поки немає — додайте MP3 до папки music',
     },
 
     nl: {
@@ -600,6 +628,7 @@
       connecting: 'Verbinden…', connected: 'Verbonden', connectionLost: 'Verbinding onderbroken', waitingBaby: 'Wachten op babyunit…',
       connectedToParent: 'Verbonden met ouderunit', startingCamera: 'Camera starten…', nightlightOverlay: '💡 Nachtlamp aan (ingeschakeld door ouder)',
       trackRain: 'Regen', trackOcean: 'Oceaan', trackHeartbeat: 'Hartslag', trackWhite: 'Witte ruis',
+      musicTitle: 'Kinderliedjes', musicPlay: 'Muziek afspelen', musicStop: 'Muziek stoppen', musicEmpty: 'Nog geen liedjes — voeg mp3’s toe aan de map music',
     },
 
     pa: {
@@ -619,6 +648,7 @@
       connecting: 'ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ…', connected: 'ਕਨੈਕਟ ਹੋਇਆ', connectionLost: 'ਕਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ', waitingBaby: 'ਬੇਬੀ ਯੂਨਿਟ ਦੀ ਉਡੀਕ…',
       connectedToParent: 'ਪੇਰੈਂਟ ਯੂਨਿਟ ਨਾਲ ਜੁੜਿਆ', startingCamera: 'ਕੈਮਰਾ ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ…', nightlightOverlay: '💡 ਨਾਈਟ‑ਲਾਈਟ ਚਾਲੂ (ਮਾਪਿਆਂ ਵੱਲੋਂ)',
       trackRain: 'ਮੀਂਹ', trackOcean: 'ਸਮੁੰਦਰ', trackHeartbeat: 'ਦਿਲ ਦੀ ਧੜਕਣ', trackWhite: 'ਵ੍ਹਾਈਟ ਨੋਇਜ਼',
+      musicTitle: 'ਬੱਚਿਆਂ ਦੇ ਗੀਤ', musicPlay: 'ਸੰਗੀਤ ਚਲਾਓ', musicStop: 'ਸੰਗੀਤ ਰੋਕੋ', musicEmpty: 'ਹਾਲੇ ਕੋਈ ਗੀਤ ਨਹੀਂ — music ਫੋਲਡਰ ਵਿੱਚ MP3 ਸ਼ਾਮਲ ਕਰੋ',
     },
 
     sw: {
@@ -638,6 +668,7 @@
       connecting: 'Inaunganisha…', connected: 'Imeunganishwa', connectionLost: 'Muunganisho umekatika', waitingBaby: 'Inasubiri kitengo cha mtoto…',
       connectedToParent: 'Imeunganishwa na kitengo cha mzazi', startingCamera: 'Inaanzisha kamera…', nightlightOverlay: '💡 Taa ya usiku imewaka (na mzazi)',
       trackRain: 'Mvua', trackOcean: 'Bahari', trackHeartbeat: 'Mapigo ya moyo', trackWhite: 'Kelele nyeupe',
+      musicTitle: 'Nyimbo za watoto', musicPlay: 'Cheza muziki', musicStop: 'Simamisha muziki', musicEmpty: 'Bado hakuna nyimbo — ongeza MP3 kwenye folda music',
     },
 
     ha: {
@@ -657,6 +688,7 @@
       connecting: 'Ana haɗawa…', connected: 'An haɗa', connectionLost: 'Haɗi ya yanke', waitingBaby: 'Ana jiran na’urar jariri…',
       connectedToParent: 'An haɗa da na’urar iyaye', startingCamera: 'Ana fara kyamara…', nightlightOverlay: '💡 Fitilar dare a kunne (ta iyaye)',
       trackRain: 'Ruwan sama', trackOcean: 'Teku', trackHeartbeat: 'Bugun zuciya', trackWhite: 'Farin amo',
+      musicTitle: 'Waƙoƙin yara', musicPlay: 'Kunna kiɗa', musicStop: 'Tsayar da kiɗa', musicEmpty: 'Babu waƙoƙi tukuna — ƙara MP3 a cikin manɗalar music',
     },
 
     ro: {
@@ -676,6 +708,7 @@
       connecting: 'Se conectează…', connected: 'Conectat', connectionLost: 'Conexiune întreruptă', waitingBaby: 'Se așteaptă unitatea bebeluș…',
       connectedToParent: 'Conectat la unitatea părinte', startingCamera: 'Se pornește camera…', nightlightOverlay: '💡 Lumină de noapte pornită (de părinte)',
       trackRain: 'Ploaie', trackOcean: 'Ocean', trackHeartbeat: 'Bătăi de inimă', trackWhite: 'Zgomot alb',
+      musicTitle: 'Cântece pentru copii', musicPlay: 'Redă muzica', musicStop: 'Oprește muzica', musicEmpty: 'Încă nu există cântece — adaugă MP3 în folderul music',
     },
   };
 

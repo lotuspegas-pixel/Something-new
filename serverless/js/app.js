@@ -208,9 +208,15 @@
     if (role === 'baby') {
       switch (msg.cmd) {
         case 'lullaby':
-          if (msg.on) lullaby.play(msg.id);
+          if (msg.on) { babyStopMusic(); lullaby.play(msg.id); }
           else lullaby.stop();
           sendControl({ cmd: 'lullabyState', id: lullaby.isPlaying() ? lullaby.currentName() : null });
+          break;
+        case 'music':
+          if (msg.action === 'stop') babyStopMusic();
+          else if (msg.action === 'next') babyPlayMusic(musicIndex + 1);
+          else if (msg.action === 'prev') babyPlayMusic(musicIndex - 1);
+          else babyPlayMusic(msg.index || 0);
           break;
         case 'nightlight': {
           const on = !!msg.on;
@@ -235,6 +241,15 @@
           if (i >= 0) trackIndex = i;
         }
         renderChips();
+      } else if (msg.cmd === 'musicState') {
+        musicPlaying = !!msg.playing;
+        if (typeof msg.index === 'number') musicIndex = msg.index;
+        // als de ouder (nog) geen eigen playlist kon laden, gebruik die van de baby
+        if ((!musicList || !musicList.length) && Array.isArray(msg.list) && msg.list.length) {
+          musicList = msg.list.map((t) => ({ file: null, title: t }));
+          renderPlaylist();
+        }
+        updateMusicUI();
       }
     }
   }
@@ -341,6 +356,14 @@
   let trackIndex = 0;
   let playing = false;
   let vuBars = [];
+
+  // muziek-playlist (mp3's uit de map "music/")
+  let musicList = null;       // [{ file, title }]
+  let musicIndex = 0;
+  let musicPlaying = false;   // ouder: spiegelt de babyunit-status
+  let musicAudio = null;      // baby: <audio>-element
+  let musicBabyPlaying = false;
+  let musicErr = 0;
 
   function setupAnalyser(stream) {
     try {
@@ -495,6 +518,106 @@
     if (playing || autoplay) sendPlay(); else renderChips();
   }
 
+  // ------------------------------------------------------------------ muziek-playlist
+  // Laadt music/playlist.json (accepteert een array of { songs: [...] }; elk
+  // item is een bestandsnaam of { file, title }). Zo kan de gebruiker zelf
+  // mp3's toevoegen door ze in de map te zetten en playlist.json aan te vullen.
+  async function loadPlaylist() {
+    if (musicList) return musicList;
+    try {
+      const res = await fetch('music/playlist.json', { cache: 'no-store' });
+      const data = await res.json();
+      const arr = Array.isArray(data) ? data : (data && data.songs) || [];
+      musicList = arr
+        .map((s) => (typeof s === 'string'
+          ? { file: s, title: s.replace(/\.[^.]+$/, '') }
+          : { file: s.file, title: s.title || (s.file || '').replace(/\.[^.]+$/, '') }))
+        .filter((s) => s.file);
+    } catch (e) {
+      musicList = [];
+    }
+    return musicList;
+  }
+
+  // --- babyunit: speelt de mp3's hardop af (loopt de hele playlist rond) ---
+  async function babyPlayMusic(i) {
+    const list = await loadPlaylist();
+    if (!list.length) { sendBabyMusicState(); return; }
+    lullaby.stop(); playing = false; // geen dubbel geluid met de gegenereerde slaapmuziek
+    musicIndex = ((i % list.length) + list.length) % list.length;
+    if (!musicAudio) {
+      musicAudio = new Audio();
+      musicAudio.id = 'musicAudio';
+      document.body.appendChild(musicAudio);
+      musicAudio.addEventListener('ended', () => babyPlayMusic(musicIndex + 1));
+      musicAudio.addEventListener('playing', () => { musicErr = 0; });
+      musicAudio.addEventListener('error', () => {
+        // sla een ontbrekend/defect bestand over; stop als niets speelt
+        if (++musicErr > (musicList ? musicList.length : 1)) { babyStopMusic(); return; }
+        babyPlayMusic(musicIndex + 1);
+      });
+    }
+    musicAudio.src = 'music/' + list[musicIndex].file;
+    musicAudio.play().catch(() => {});
+    musicBabyPlaying = true;
+    sendBabyMusicState();
+  }
+  function babyStopMusic() {
+    if (musicAudio) { try { musicAudio.pause(); musicAudio.currentTime = 0; } catch (e) {} }
+    musicBabyPlaying = false;
+    sendBabyMusicState();
+  }
+  function sendBabyMusicState() {
+    sendControl({ cmd: 'musicState', playing: musicBabyPlaying, index: musicIndex,
+      list: (musicList || []).map((s) => s.title) });
+  }
+
+  // --- ouderunit: bediening + weergave van de playlist ---
+  async function renderPlaylist() {
+    const box = $('playlist');
+    if (!box) return;
+    const list = await loadPlaylist();
+    box.innerHTML = '';
+    if (!list.length) {
+      const d = document.createElement('div');
+      d.className = 'playlist-empty';
+      d.textContent = T('musicEmpty');
+      box.appendChild(d);
+      updateMusicUI();
+      return;
+    }
+    list.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
+      row.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="tt"></span><span class="eq"><i></i><i></i><i></i></span>';
+      row.querySelector('.tt').textContent = s.title;
+      row.onclick = () => parentPlayMusic(i);
+      box.appendChild(row);
+    });
+    updateMusicUI();
+  }
+  function updateMusicUI() {
+    const btn = $('btnMusic');
+    if (!btn) return;
+    btn.classList.toggle('on', musicPlaying);
+    $('musicBtnText').textContent = musicPlaying ? T('musicStop') : T('musicPlay');
+    btn.querySelector('.ic-play').classList.toggle('hidden', musicPlaying);
+    btn.querySelector('.ic-stop').classList.toggle('hidden', !musicPlaying);
+    $('playlist').querySelectorAll('.track').forEach((r, i) =>
+      r.classList.toggle('on', musicPlaying && i === musicIndex));
+  }
+  function parentPlayMusic(i) {
+    if (musicPlaying && i === musicIndex) { parentStopMusic(); return; }
+    musicIndex = i; musicPlaying = true;
+    sendControl({ cmd: 'music', action: 'play', index: i });
+    updateMusicUI();
+  }
+  function parentStopMusic() {
+    musicPlaying = false;
+    sendControl({ cmd: 'music', action: 'stop' });
+    updateMusicUI();
+  }
+
   // opnemen (lokaal)
   let recorder = null;
   let recChunks = [];
@@ -555,7 +678,12 @@
     $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
     $('sensReadout').textContent = sensitivity + '%';
     renderChips();
+    renderPlaylist();
 
+    $('btnMusic').onclick = () => {
+      if (musicPlaying) parentStopMusic();
+      else parentPlayMusic(musicIndex || 0);
+    };
     $('btnPower').onclick = () => { if (confirm(T('stopParentQ'))) location.reload(); };
     $('btnNightmode').onclick = () => {
       // Nachtstand: dimt het eigen beeld EN zet het nachtlampje bij de
@@ -706,6 +834,7 @@
         $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
         $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
         renderChips();
+        renderPlaylist();
       } else if (role === 'baby' && babyStarted) {
         if (pc && pc.connectionState === 'connected') $('bConn').textContent = T('connectedToParent');
       }
