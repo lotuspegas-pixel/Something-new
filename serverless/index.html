@@ -193,154 +193,155 @@
       <div class="backlink"><a href="#" id="parentBack">← <span data-i18n="back">Back</span></a></div>
     </section>
 
-    <!-- ======================= PARENT PANEL (Luna) ======================= -->
+    <!-- ======================= PARENT UNIT (dark dashboard) ======================= -->
     <section id="screenParent" class="hidden">
-      <div class="panel">
-        <div class="topbar">
-          <div class="brand">
-            <div class="round-icon on" id="btnPower" data-i18n-title="stop" title="Stop">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-                <path d="M12 3v7" stroke="#fff" stroke-width="2" stroke-linecap="round" />
-                <path d="M6.5 6.5a8 8 0 1 0 11 0" stroke="#fff" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-            <div><div class="title">BabyPhone</div><div class="subtitle" data-i18n="subtitleParent">Parent panel</div></div>
-          </div>
-          <div class="topstatus">
-            <div class="pill inset"><span class="dot off breathe" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
-            <div class="pill" id="clock">--:--</div>
-            <div class="pill" id="babyBatt">🔋 —</div>
-            <div class="pill btn" id="btnNightmode">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="var(--ink)" /></svg>
-              <span data-i18n="nightmode">Night mode</span>
-            </div>
-          </div>
-        </div>
+      <div class="dash">
+        <aside class="dash-side">
+          <div class="dash-logo"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></div>
+          <nav class="dash-nav">
+            <button class="dnav active" data-view="monitor" title="Monitor"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 21h6M12 17v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="navMonitor">Monitor</span></button>
+            <button class="dnav" data-view="talk" title="Talk back"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="talkIdle">Talk back</span></button>
+            <button class="dnav" data-view="lullabies" title="Lullabies"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.7"/></svg><span data-i18n="lullabies">Lullabies</span></button>
+            <button class="dnav" data-view="night" title="Night light"><svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span data-i18n="featNight">Night light</span></button>
+            <button class="dnav" data-view="alerts" title="Alerts"><svg viewBox="0 0 24 24" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="navAlerts">Alerts</span></button>
+            <button class="dnav" data-view="log" title="Event log"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="navLog">Event log</span></button>
+            <button class="dnav" data-view="settings" title="Settings"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 3h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 21h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span data-i18n="navSettings">Settings</span></button>
+          </nav>
+        </aside>
 
-        <div class="grid3">
-          <div class="col col-left">
-            <div class="card">
-              <div class="label" data-i18n="connection">Connection</div>
-              <div class="info-row"><span data-i18n="room">Room</span><span class="v" id="roomLabel">P2P</span></div>
-              <div class="info-row"><span data-i18n="signal">Signal</span><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
-              <div class="info-row"><span data-i18n="latency">Latency</span><span class="v" id="rttVal">—</span></div>
+        <main class="dash-main">
+          <header class="dash-head">
+            <div class="dash-title">
+              <span class="dash-title-ic"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 20s-7-4.3-7-9.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.5C19 15.7 12 20 12 20z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+              <div><h1>BabyPhone<span class="tld">.online</span></h1><small data-i18n="parentUnitSub">Parent Unit · Monitoring</small></div>
             </div>
-            <div class="circle-row">
-              <div class="circle-btn" id="btnFlip" data-i18n-title="switchCamera" title="Switch camera">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-                  <path d="M4 8a8 8 0 0 1 14-3M20 16a8 8 0 0 1-14 3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" />
-                  <path d="M18 3v3h-3M6 21v-3h3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <span data-i18n="switchCamera">SWITCH CAMERA</span>
-              </div>
+            <div class="dash-head-right">
+              <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectParent"></span></span>
             </div>
+          </header>
+
+          <div class="dash-statusbar">
+            <div class="dsb-item conn"><span class="dot off" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
+            <div class="dsb-item"><small data-i18n="room">Room</small><b id="roomLabel">—</b></div>
+            <div class="dsb-item"><small data-i18n="signal">Signal</small><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
+            <div class="dsb-item"><small data-i18n="latency">Latency</small><b id="rttVal">— ms</b></div>
+            <button class="dsb-fs" id="btnFullscreen" data-i18n-title="fullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
 
-          <div class="col col-center">
-            <div class="screen" id="screen">
-              <video id="video" autoplay playsinline></video>
-              <div class="night-veil hidden" id="nightVeil"></div>
-              <div class="snap-flash hidden" id="snapFlash"></div>
-              <div class="badge live" id="liveBadge"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
-              <div class="badge db"><span id="dbText">— dB</span></div>
-              <div class="placeholder" id="placeholder"><div class="spinner"></div><div id="phText" data-i18n="connecting">Connecting…</div></div>
-              <div class="vu" id="vu"><i></i><i></i><i></i><i></i><i></i></div>
-              <div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px">
-                <div class="scr-btn" id="btnSnapshot" title="Photo">
-                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none"><rect x="3" y="7" width="18" height="13" rx="2.5" stroke="#fff" stroke-width="1.6" /><path d="M8 7l1.5-2.5h5L16 7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" /><circle cx="12" cy="13.5" r="3.2" stroke="#fff" stroke-width="1.5" /></svg>
-                </div>
-                <div class="scr-btn" id="btnFullscreen" title="Fullscreen">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                </div>
-                <div class="zoom-ctl"><b id="zoomOut">−</b><span id="zoomVal">1.0×</span><b id="zoomIn">+</b></div>
-              </div>
-              <div class="talk-btn" id="btnTalk" data-i18n-title="talkIdle" title="Talk to baby">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="1.8" /><path d="M5 11a7 7 0 0 0 14 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" /></svg>
-                <span id="talkText" data-i18n="talkIdle">Talk to baby</span>
-              </div>
-              <div class="fs-close hidden" id="btnFsClose"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2" stroke-linecap="round" /></svg></div>
-            </div>
-
-            <div class="dial-wrap">
-              <div class="dial" id="volDial" data-i18n-title="volume" title="Volume">
-                <div class="ring1"></div>
-                <div class="ring2"><div class="needle" id="volNeedle"></div><div class="hub" id="volHub">80</div></div>
-                <div class="cap" data-i18n="volume">Volume</div>
-              </div>
-              <div class="vsliders">
-                <div class="vslider" id="sBrightness"><div class="rail"></div><div class="knob"></div><div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="4" stroke="var(--red)" stroke-width="1.6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/></svg></div></div>
-                <div class="vslider" id="sNightlight"><div class="rail"></div><div class="knob"></div><div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11z" fill="var(--red)"/></svg></div></div>
-                <div class="vslider" id="sSensitivity"><div class="rail"></div><div class="knob"></div><div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="var(--red)" stroke-width="1.6"/><path d="M5 11a7 7 0 0 0 14 0" stroke="var(--red)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div>
-              </div>
-            </div>
-            <div class="vlabels">
-              <span></span>
-              <span><span data-i18n="brightness">BRIGHTNESS</span><b class="vlabel-val" id="briReadout">100%</b></span>
-              <span><span data-i18n="nightlight">NIGHT‑LIGHT</span><b class="vlabel-val" id="nlReadout" data-i18n="off">OFF</b></span>
-              <span><span data-i18n="sensitivity">SENSITIVITY</span><b class="vlabel-val" id="sensReadout">55%</b></span>
-            </div>
+          <div class="vcard" id="screen">
+            <video id="video" autoplay playsinline></video>
+            <div class="night-veil hidden" id="nightVeil"></div>
+            <div class="vcard-badge live"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
+            <div class="vcard-ph" id="placeholder"><div class="spinner"></div><div id="phText" data-i18n="connecting">Connecting…</div></div>
+            <div class="vcard-focus"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div>
+            <div class="vcard-hd"><span data-i18n="hd">HD</span><span class="sig sm"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
           </div>
 
-          <div class="col col-right">
-            <div class="circle-row">
-              <div class="circle-btn" id="btnRecord" data-i18n-title="record" title="Record locally">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="12" cy="12" r="7" stroke="var(--ink)" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" fill="var(--red)"/></svg>
-                <span data-i18n="record">RECORD</span>
-              </div>
-              <div class="circle-btn" id="btnMute" data-i18n-title="sound" title="Mute sound">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M9 6v12l-5-4H2V10h2l5-4z" fill="var(--ink)"/><path d="M15 9a4 4 0 0 1 0 6" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
-                <span data-i18n="sound">SOUND</span>
-              </div>
+          <div class="ameter">
+            <div class="ameter-top">
+              <span class="ameter-label"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="liveAudio">Live audio</span></span>
+              <span class="ameter-mode" id="audioMode">Auto</span>
             </div>
-            <div class="wide-btn" id="btnAlarm">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="var(--red)" stroke-width="1.8" stroke-linejoin="round" /><path d="M10 19a2 2 0 0 0 4 0" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" /></svg>
-              <span id="alarmText" data-i18n="alarmOn">ALARM ON</span>
-            </div>
-            <div class="alert-pill breathe hidden" id="cryAlert" data-i18n="cryingDetected">🔔 Crying detected</div>
-            <div class="card">
-              <div class="label" data-i18n="lullabies">Lullabies</div>
-              <div class="chips" id="chips"></div>
-            </div>
-            <div class="card">
-              <div class="label" data-i18n="musicTitle">Children’s songs</div>
-              <button class="music-btn" id="btnMusic" type="button">
-                <svg class="ic-play" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M7 5l12 7-12 7V5z" fill="var(--red)"/></svg>
-                <svg class="ic-stop hidden" viewBox="0 0 24 24" width="18" height="18" fill="none"><rect x="6" y="6" width="12" height="12" rx="2" fill="var(--red)"/></svg>
-                <span id="musicBtnText" data-i18n="musicPlay">Play music</span>
-              </button>
-              <div class="playlist" id="playlist"></div>
-            </div>
+            <div class="ameter-bars" id="audioMeter"></div>
+            <div class="ameter-scale"><span>-60</span><span>-30</span><span>-12</span><span>-6</span><span>0 dB</span></div>
           </div>
-        </div>
+
+          <div class="ctrlrow">
+            <button class="ctrlbtn" id="btnTalk" type="button"><span class="cb-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span id="talkText" data-i18n="talkBack">Talk back</span></button>
+            <button class="ctrlbtn" id="btnLullaby" type="button"><span class="cb-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/></svg></span><span data-i18n="lullaby">Lullaby</span></button>
+            <button class="ctrlbtn" id="btnNightlight" type="button"><span class="cb-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span data-i18n="featNight">Night light</span></button>
+            <button class="ctrlbtn" id="btnAlarm" type="button"><span class="cb-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span id="alarmText" data-i18n="cryAlert">Cry alert</span></button>
+            <button class="ctrlbtn danger" id="btnStop" type="button"><span class="cb-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.9"/></svg></span><span data-i18n="stop">Stop</span></button>
+          </div>
+
+          <div class="statcards">
+            <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div><b class="ok" data-i18n="on2">On</b><small data-i18n="autoNoise">Auto noise reduction</small></div>
+            <div class="statcard tap" id="cardSleep"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 9v4l2.5 2M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="sleepTimer">Sleep timer</span></div><b id="sleepVal" data-i18n="off2">Off</b><small data-i18n="sleepSub">Stops lullaby after time</small></div>
+            <div class="statcard tap" id="cardPrivacy"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M2 12a10 6.5 0 0 0 20 0 10 6.5 0 0 0-20 0z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg><span data-i18n="videoPrivacy">Video privacy</span></div><b id="privVal" data-i18n="cameraVisible">Camera visible</b><small data-i18n="tapHideVideo">Tap to hide the video</small></div>
+            <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="3" y="8" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M21 11v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b id="battVal">—</b><small id="battSub" data-i18n="battWaiting">Waiting…</small></div>
+          </div>
+
+          <div class="evlog">
+            <div class="evlog-h"><span data-i18n="navLog">Event log</span></div>
+            <div class="evlog-list" id="eventLog"></div>
+          </div>
+        </main>
+      </div>
+
+      <!-- compat: verborgen elementen die bestaande functies aansturen -->
+      <div class="hidden" id="parentCompat" aria-hidden="true">
+        <span id="clock"></span><span id="dbText"></span>
+        <div id="vu"><i></i><i></i><i></i><i></i><i></i></div>
+        <div id="chips"></div>
+        <button id="btnMusic"><span class="ic-play"></span><span class="ic-stop"></span><span id="musicBtnText"></span></button>
+        <div id="playlist"></div>
+        <div class="alert-pill hidden" id="cryAlert" data-i18n="cryingDetected">Crying detected</div>
       </div>
     </section>
 
-    <!-- ======================= BABY UNIT ======================= -->
+    <!-- ======================= BABY UNIT (dark dashboard) ======================= -->
     <section id="screenBaby" class="hidden">
-      <div class="panel baby-panel">
-        <div class="topbar">
-          <div class="brand">
-            <div class="round-icon on"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M8 3h8M9 3c0 3-2 4-2 7v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9c0-3-2-4-2-7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-            <div><div class="title">BabyPhone</div><div class="subtitle" data-i18n="subtitleBaby">Baby unit</div></div>
+      <div class="bdash">
+        <header class="dash-head">
+          <div class="dash-title">
+            <span class="dash-title-ic baby"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="6" width="14" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M17 10l4-2.5v9L17 14z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+            <div><h1>BabyPhone<span class="tld">.online</span></h1><small><span data-i18n="subtitleBaby">Baby Unit</span> · <span data-i18n="room">Room</span> <b id="bRoomInline">—</b></small></div>
           </div>
-          <div class="topstatus">
-            <div class="pill inset"><span class="dot off breathe" id="bConnDot"></span><span id="bConn" data-i18n="connecting">Connecting…</span></div>
-            <div class="pill"><span class="dot ok"></span><span data-i18n="cameraActive">Camera on</span></div>
-            <div class="pill"><span class="dot ok" id="bMicDot"></span><span id="bMicStatus" data-i18n="micActive">Microphone on</span></div>
-            <div class="pill" id="bBatt">🔋 —</div>
+          <div class="dash-head-right">
+            <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectBaby"></span></span>
+            <button class="btn-stop" id="bStop" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="#fff"/></svg><span data-i18n="stop">Stop</span></button>
           </div>
-        </div>
-        <div class="screen" id="bScreen">
+        </header>
+
+        <div class="vcard baby" id="bScreen">
           <video id="bPreview" autoplay playsinline muted></video>
-          <div class="badge live"><span class="rec-dot breathe"></span><span data-i18n="live">LIVE</span></div>
-          <div class="placeholder hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
+          <div class="vcard-ph hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
+          <div class="vcard-focus"><span class="dot ok" id="bConnDot"></span><span data-i18n="cameraActive">Camera</span> <b data-i18n="on2">On</b></div>
+          <button class="vcard-shade" id="tgPrivacyBtn" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6M9.9 5.1A9.6 9.6 0 0 1 12 5c5 0 9 4.5 9 7 0 1-1 2.6-2.7 4M6.6 6.6C4.2 8.1 3 10 3 12c0 2 3 6 9 6 1 0 2-.2 2.9-.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="privacyShade">Privacy shade</span></button>
         </div>
-        <div class="baby-controls">
-          <button class="bctrl" id="bFlip" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8a8 8 0 0 1 14-3M20 16a8 8 0 0 1-14 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M18 3v3h-3M6 21v-3h3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span> <span data-i18n="camera">Camera</span></button>
-          <button class="bctrl active" id="bMic" type="button"><span class="ic"><svg class="ic-on" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.9"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="ic-off hidden" viewBox="0 0 24 24" fill="none"><path d="M9 9v-.5a3 3 0 0 1 6 0V11M15 13.5a3 3 0 0 1-4.5 2.6M5 11a7 7 0 0 0 10.5 6M12 18v3M4 4l16 16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span> <span data-i18n="microphone">Microphone</span></button>
-          <button class="bctrl" id="bRecord" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg></span> <span data-i18n="record">Record</span></button>
-          <button class="bctrl danger" id="bStop" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.9"/></svg></span> <span data-i18n="stop">Stop</span></button>
+
+        <div class="bstat-row">
+          <div class="bstat"><div class="bstat-h"><span class="dot ok"></span><span id="bConn" data-i18n="connected">Connected</span></div><small data-i18n="excellentConn">Excellent connection</small><b id="bLatency">— ms</b></div>
+          <div class="bstat"><div class="bstat-h"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="3" y="8" width="16" height="9" rx="2" stroke="var(--ok)" stroke-width="1.7"/><rect x="5" y="10" width="9" height="5" fill="var(--ok)"/><path d="M21 11v3" stroke="var(--ok)" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b class="big" id="bBatt">—</b><small class="ok" id="bBattSub" data-i18n="battWaiting">Waiting…</small></div>
+          <div class="bstat"><div class="bstat-h"><span data-i18n="room">Room</span></div><b class="big code" id="bRoom">—</b><small><svg viewBox="0 0 24 24" fill="none" width="13" height="13" style="vertical-align:-2px"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <span data-i18n="localOnly">Local network only</span></small></div>
         </div>
+
+        <div class="bgrid">
+          <div class="bcard bpair">
+            <div class="bcard-h"><span data-i18n="pairingCode">Pairing &amp; room code</span><small data-i18n="shareToConnect">Share to connect</small></div>
+            <div class="bpair-row">
+              <div class="bpair-code" id="babyDashCode">—</div>
+              <button class="icon-btn" id="copyBabyDash" type="button" data-i18n-title="copyCode" title="Copy code"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8"/></svg></button>
+            </div>
+            <div class="bpair-qrrow">
+              <div class="bpair-qr" id="babyDashQR"></div>
+              <div class="bpair-scan"><b data-i18n="scanToConnect">Scan to connect</b><small data-i18n="useParentScan">Use the parent unit to scan</small></div>
+            </div>
+          </div>
+
+          <div class="bcard btoggles">
+            <div class="btgl" id="tgCam"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="6" width="13" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M16 10l5-3v10l-5-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div><div class="btgl-t"><b data-i18n="camera">Camera</b><small data-i18n="videoStreaming">Video streaming</small></div><span class="switch on" id="swCam"></span></div>
+            <div class="btgl" id="tgMic"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="btgl-t"><b data-i18n="microphone">Microphone</b><small data-i18n="audioStreaming">Audio streaming</small></div><span class="switch on" id="swMic"></span></div>
+            <div class="btgl" id="tgAudioOnly"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 9v6M8 5v14M12 8v8M16 6v12M20 10v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="btgl-t"><b data-i18n="audioOnly">Audio only</b><small data-i18n="audioOnlySub">Stream audio without video</small></div><span class="switch" id="swAudioOnly"></span></div>
+            <div class="btgl" id="tgPrivacy"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6M9.9 5.1A9.6 9.6 0 0 1 12 5c5 0 9 4.5 9 7 0 1-1 2.6-2.7 4M6.6 6.6C4.2 8.1 3 10 3 12c0 2 3 6 9 6 1 0 2-.2 2.9-.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="btgl-t"><b data-i18n="privacyShade">Privacy shade</b><small data-i18n="hideVideoKeepAudio">Hide video, keep audio</small></div><span class="switch" id="swPrivacy"></span></div>
+          </div>
+        </div>
+
+        <div class="btiles">
+          <div class="btile"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><b data-i18n="featNight">Night light</b><small id="tileNight" data-i18n="off2">Off</small></div>
+          <div class="btile"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/></svg></span><b data-i18n="lullaby">Lullaby</b><small id="tileLullaby" data-i18n="off2">Off</small></div>
+          <div class="btile"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b data-i18n="cryAlert">Cry alert</b><small id="tileCry" class="ok" data-i18n="on2">On</small></div>
+          <div class="btile"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l2.5 2M9 3h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b data-i18n="sleepTimer">Sleep timer</b><small id="tileSleep" data-i18n="off2">Off</small></div>
+        </div>
+
+        <div class="btip"><span data-i18n="babyTip">Tip: keep this browser open and the phone on its charger to stay connected.</span></div>
+      </div>
+
+      <!-- compat: verborgen bediening voor bestaande baby-logica -->
+      <div class="hidden" id="babyCompat" aria-hidden="true">
+        <button id="bMic"><span class="ic-on"></span><span class="ic-off"></span></button>
+        <span id="bMicDot"></span><span id="bMicStatus"></span>
+        <button id="bFlip"></button><button id="bRecord"></button>
       </div>
     </section>
 

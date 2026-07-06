@@ -180,7 +180,8 @@
   function babyConnected() {
     showScreen('screenBaby');
     $('bConnDot').classList.remove('off');
-    $('bConn').textContent = T('connectedToParent');
+    $('bConn').textContent = T('connected');
+    const bl = $('bLatency'); if (bl) bl.textContent = T('live');
     startBabyDevice();
   }
   function parentConnected() {
@@ -208,11 +209,13 @@
   function handleControl(msg) {
     if (role === 'baby') {
       switch (msg.cmd) {
-        case 'lullaby':
+        case 'lullaby': {
           if (msg.on) { babyStopMusic(); lullaby.play(msg.id); }
           else lullaby.stop();
+          const tl = $('tileLullaby'); if (tl) { tl.textContent = lullaby.isPlaying() ? T('on2') : T('off2'); tl.classList.toggle('ok', lullaby.isPlaying()); }
           sendControl({ cmd: 'lullabyState', id: lullaby.isPlaying() ? lullaby.currentName() : null });
           break;
+        }
         case 'music':
           if (msg.action === 'stop') babyStopMusic();
           else if (msg.action === 'next') babyPlayMusic(musicIndex + 1);
@@ -223,6 +226,7 @@
           const on = !!msg.on;
           $('nightlight').classList.toggle('hidden', !on);
           if (on) $('nightlight').style.opacity = Math.max(0.12, (msg.level == null ? 60 : msg.level) / 100).toFixed(2);
+          const tn = $('tileNight'); if (tn) { tn.textContent = on ? T('on2') : T('off2'); tn.classList.toggle('ok', on); }
           break;
         }
         case 'flip':
@@ -234,13 +238,15 @@
       }
     } else {
       if (msg.cmd === 'battery') {
-        $('babyBatt').textContent = '🔋 ' + msg.level + '%' + (msg.charging ? '⚡' : '');
+        const bv = $('battVal'); if (bv) bv.textContent = msg.level + '%';
+        const bs = $('battSub'); if (bs) bs.textContent = msg.charging ? T('charging') : T('onBattery');
       } else if (msg.cmd === 'lullabyState') {
         playing = !!msg.id;
         if (msg.id) {
           const i = tracks.findIndex((t) => t.id === msg.id);
           if (i >= 0) trackIndex = i;
         }
+        const bl = $('btnLullaby'); if (bl) bl.classList.toggle('on', playing);
         renderChips();
       } else if (msg.cmd === 'musicState') {
         musicPlaying = !!msg.playing;
@@ -417,6 +423,8 @@
     }
   }
   const meterBuf = new Uint8Array(256);
+  let amBars = [];
+  let soundEventCooldown = 0;
   function meterLoop() {
     let level = 0;
     if (analyser) {
@@ -430,14 +438,26 @@
       const h = Math.max(0.12, Math.min(1, (level / 100) * (0.7 + Math.random() * 0.6)));
       vuBars[i].style.transform = 'scaleY(' + h.toFixed(2) + ')';
     }
-    $('dbText').textContent = Math.round(30 + level * 0.55) + ' dB';
+    // dB-audiometer (nieuw ontwerp): balken vullen op basis van niveau
+    if (amBars.length) {
+      const active = Math.round((level / 100) * amBars.length);
+      for (let i = 0; i < amBars.length; i++) {
+        const on = i < active;
+        const h = on ? (30 + (i / amBars.length) * 70) * (0.75 + Math.random() * 0.4) : 18;
+        amBars[i].style.height = Math.min(100, h).toFixed(0) + '%';
+        amBars[i].style.opacity = on ? '1' : '0.3';
+      }
+    }
+    const dbt = $('dbText'); if (dbt) dbt.textContent = Math.round(30 + level * 0.55) + ' dB';
     const threshold = 100 - sensitivity;
     const now = Date.now();
+    const cry = $('cryAlert');
     if (alarmOn && level > threshold) {
-      $('cryAlert').classList.remove('hidden');
+      if (cry) cry.classList.remove('hidden');
       if (now > alarmCooldown) { alarmCooldown = now + 6000; triggerAlarm(); }
+      if (now > soundEventCooldown) { soundEventCooldown = now + 8000; if (typeof addEvent === 'function') addEvent('sound', T('evSound'), T('evSoundSub')); }
     } else if (now > alarmCooldown - 5000) {
-      $('cryAlert').classList.add('hidden');
+      if (cry) cry.classList.add('hidden');
     }
     requestAnimationFrame(meterLoop);
   }
@@ -486,13 +506,13 @@
   }
   function applyZoom() {
     $('video').style.transform = 'scale(' + zoom + ')';
-    $('zoomVal').textContent = zoom.toFixed(1) + '×';
+    const z = $('zoomVal'); if (z) z.textContent = zoom.toFixed(1) + '×';
   }
   function applyVolume() {
     $('video').volume = muted ? 0 : volume / 100;
     $('video').muted = muted || volume === 0;
-    $('volHub').textContent = muted ? '⌀' : volume;
-    $('volNeedle').style.transform = 'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
+    const h = $('volHub'); if (h) h.textContent = muted ? '⌀' : volume;
+    const n = $('volNeedle'); if (n) n.style.transform = 'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
   }
   function setSliderKnob(elm, pct) {
     elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
@@ -698,95 +718,113 @@
     toast(T('recStarted'));
   }
 
+  // ------------------------------------------------------------------ event log
+  const events = [];
+  const EV_ICON = {
+    sound: '<path d="M9 6v12l-5-4H2V10h2l5-4z" fill="currentColor"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>',
+    talk: '<rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"/>',
+    lullaby: '<path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.7" fill="none"/>',
+    connect: '<path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  };
+  function addEvent(kind, title, sub) {
+    const t = new Date();
+    const hhmm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0') + ':' + String(t.getSeconds()).padStart(2, '0');
+    events.unshift({ kind, title, sub, time: hhmm });
+    if (events.length > 20) events.pop();
+    renderEventLog();
+  }
+  function renderEventLog() {
+    const box = $('eventLog');
+    if (!box) return;
+    box.innerHTML = '';
+    events.slice(0, 6).forEach((e) => {
+      const row = document.createElement('div');
+      row.className = 'evrow';
+      row.innerHTML = '<span class="ev-ic"><svg viewBox="0 0 24 24" width="15" height="15">' + (EV_ICON[e.kind] || EV_ICON.connect) + '</svg></span>'
+        + '<span class="ev-b"><b></b><small></small></span><span class="ev-t"></span>';
+      row.querySelector('.ev-b b').textContent = e.title;
+      row.querySelector('.ev-b small').textContent = e.sub || '';
+      row.querySelector('.ev-t').textContent = e.time;
+      box.appendChild(row);
+    });
+  }
+
   let parentStarted = false;
+  let sleepTimerMin = 0, sleepTimerId = null, videoHidden = false;
+  function buildAudioMeter() {
+    const m = $('audioMeter');
+    if (!m || m.childElementCount) return;
+    for (let i = 0; i < 40; i++) m.appendChild(document.createElement('i'));
+    amBars = Array.from(m.children);
+  }
   function startParentDevice() {
     if (parentStarted) return;
     parentStarted = true;
-    vuBars = Array.from($('vu').querySelectorAll('i'));
-    if (talkDisabled) { $('btnTalk').style.opacity = 0.45; }
+    vuBars = $('vu') ? Array.from($('vu').querySelectorAll('i')) : [];
+    buildAudioMeter();
+    if (talkDisabled) { $('btnTalk').style.opacity = 0.5; }
+    const rl = $('roomLabel'); if (rl) rl.textContent = currentCode || 'P2P';
+    applyVolume(); applyVideoFilter();
+    renderChips(); renderPlaylist();
+    $('btnAlarm').classList.toggle('on', alarmOn);
+    addEvent('connect', T('evBabyConnected'), (currentCode ? T('room') + ' ' + currentCode : ''));
 
-    applyVolume(); applyVideoFilter(); applyZoom();
-    setSliderKnob($('sBrightness'), (brightness - 30) / 100);
-    setSliderKnob($('sNightlight'), nightlightLevel / 100);
-    setSliderKnob($('sSensitivity'), sensitivity / 100);
-    $('briReadout').textContent = brightness + '%';
-    $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
-    $('sensReadout').textContent = sensitivity + '%';
-    renderChips();
-    renderPlaylist();
-
-    $('btnMusic').onclick = () => {
-      if (musicPlaying) parentStopMusic();
-      else parentPlayMusic(musicIndex || 0);
-    };
-    $('btnPower').onclick = () => { if (confirm(T('stopParentQ'))) location.reload(); };
-    $('btnNightmode').onclick = () => {
-      // Nachtstand: dimt het eigen beeld EN zet het nachtlampje bij de
-      // babyunit aan/uit — één druk op de knop voor beide.
-      nightMode = !nightMode;
-      nightlightOn = nightMode;
-      $('btnNightmode').classList.toggle('on', nightMode);
-      applyVideoFilter();
-      $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
-      $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
-      sendNightlightState();
-    };
-    $('btnFlip').onclick = () => { sendControl({ cmd: 'flip' }); toast(T('cameraSwitched')); };
-    $('btnSnapshot').onclick = () => {
-      if (!$('video').videoWidth) return toast(T('noImage'));
-      $('snapFlash').classList.remove('hidden');
-      setTimeout(() => $('snapFlash').classList.add('hidden'), 250);
-      const c = $('scratch');
-      c.width = $('video').videoWidth; c.height = $('video').videoHeight;
-      c.getContext('2d').drawImage($('video'), 0, 0, c.width, c.height);
-      c.toBlob((b) => b && saveBlob(b, 'babyfoon-foto', 'png'), 'image/png');
-    };
-    $('btnFullscreen').onclick = () => {
-      // iOS Safari ondersteunt geen Fullscreen API op een <div> — alleen op
-      // het <video>-element zelf via de eigen (webkit) videofullscreen.
-      const v = $('video');
-      if (v.webkitEnterFullscreen && !document.fullscreenElement) {
-        try { v.webkitEnterFullscreen(); return; } catch (e) { /* val terug */ }
-      }
-      if (!document.fullscreenElement) ($('screen').requestFullscreen || $('screen').webkitRequestFullscreen)?.call($('screen'));
-      else (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
-    };
-    $('btnFsClose').onclick = () => (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
-    document.addEventListener('fullscreenchange', () => {
-      const fs = !!document.fullscreenElement;
-      $('screen').classList.toggle('fs', fs);
-      $('btnFsClose').classList.toggle('hidden', !fs);
-    });
-    $('zoomIn').onclick = () => { zoom = Math.min(3, Math.round((zoom + 0.2) * 10) / 10); applyZoom(); };
-    $('zoomOut').onclick = () => { zoom = Math.max(1, Math.round((zoom - 0.2) * 10) / 10); applyZoom(); };
+    // Talk back (druk om te praten)
     $('btnTalk').onclick = () => {
       if (!micStream) return toast(T('noMic'));
       talking = !talking;
       micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
       $('btnTalk').classList.toggle('on', talking);
-      $('talkText').textContent = talking ? T('talkActive') : T('talkIdle');
+      $('talkText').textContent = talking ? T('talkActive') : T('talkBack');
+      if (talking) addEvent('talk', T('evTalk'), T('evTalkSub'));
     };
-    $('btnMute').onclick = () => {
-      muted = !muted;
-      $('btnMute').classList.toggle('active', muted);
-      applyVolume();
+    // Lullaby (eerste slaapliedje aan/uit)
+    $('btnLullaby').onclick = () => {
+      if (playing) { sendStop(); $('btnLullaby').classList.remove('on'); }
+      else { trackIndex = 0; sendPlay(); $('btnLullaby').classList.add('on'); addEvent('lullaby', T('evLullaby'), tracks[0] ? trackLabel(tracks[0]) : ''); }
     };
+    // Night light (dimt eigen beeld + zet nachtlampje bij de baby)
+    $('btnNightlight').onclick = () => {
+      nightMode = !nightMode; nightlightOn = nightMode;
+      $('btnNightlight').classList.toggle('on', nightMode);
+      applyVideoFilter();
+      $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+      sendNightlightState();
+    };
+    // Cry alert aan/uit
     $('btnAlarm').onclick = () => {
       alarmOn = !alarmOn;
-      $('btnAlarm').classList.toggle('off', !alarmOn);
-      $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
-      if (!alarmOn) $('cryAlert').classList.add('hidden');
+      $('btnAlarm').classList.toggle('on', alarmOn);
+      if (!alarmOn) { const c = $('cryAlert'); if (c) c.classList.add('hidden'); }
     };
-    $('btnRecord').onclick = () => toggleRecord(remoteStream, $('btnRecord'), 'babyfoon-opname');
+    // Stop
+    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) location.reload(); };
+    // Fullscreen
+    $('btnFullscreen').onclick = () => {
+      const v = $('video');
+      if (v.webkitEnterFullscreen && !document.fullscreenElement) { try { v.webkitEnterFullscreen(); return; } catch (e) {} }
+      if (!document.fullscreenElement) ($('screen').requestFullscreen || $('screen').webkitRequestFullscreen)?.call($('screen'));
+      else (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    };
+    document.addEventListener('fullscreenchange', () => { $('screen').classList.toggle('fs', !!document.fullscreenElement); });
+    // Sleep timer-kaart (Off → 15 → 30 → 60)
+    $('cardSleep').onclick = () => {
+      const seq = [0, 15, 30, 60];
+      sleepTimerMin = seq[(seq.indexOf(sleepTimerMin) + 1) % seq.length];
+      if (sleepTimerId) { clearTimeout(sleepTimerId); sleepTimerId = null; }
+      $('sleepVal').textContent = sleepTimerMin ? sleepTimerMin + ' min' : T('off2');
+      if (sleepTimerMin) sleepTimerId = setTimeout(() => {
+        sendStop(); parentStopMusic(); $('btnLullaby').classList.remove('on');
+        sleepTimerMin = 0; $('sleepVal').textContent = T('off2');
+      }, sleepTimerMin * 60000);
+    };
+    // Video privacy-kaart (verberg het beeld lokaal)
+    $('cardPrivacy').onclick = () => {
+      videoHidden = !videoHidden;
+      $('screen').classList.toggle('privacy', videoHidden);
+      $('privVal').textContent = videoHidden ? T('videoHidden') : T('cameraVisible');
+    };
 
-    bindVertical($('volDial'), (pct) => { volume = Math.round(pct * 100); muted = false; $('btnMute').classList.remove('active'); applyVolume(); });
-    bindVertical($('sBrightness'), (pct) => applySlider('sBrightness', pct));
-    bindVertical($('sNightlight'), (pct) => applySlider('sNightlight', pct));
-    bindVertical($('sSensitivity'), (pct) => applySlider('sSensitivity', pct));
-
-    const clock = () => ($('clock').textContent =
-      String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0'));
-    clock(); setInterval(clock, 10000);
     meterLoop(); statsLoop();
     enableWakeLock();
   }
@@ -798,17 +836,29 @@
   function startBabyDevice() {
     if (babyStarted) return;
     babyStarted = true;
-    $('bFlip').onclick = flipCamera;
-    $('bMic').onclick = () => {
-      micOn = !micOn;
-      localStream.getAudioTracks().forEach((t) => (t.enabled = micOn));
-      $('bMic').classList.toggle('active', micOn);
-      $('bMic').querySelector('.ic-on').classList.toggle('hidden', !micOn);
-      $('bMic').querySelector('.ic-off').classList.toggle('hidden', micOn);
-      const dot = $('bMicDot'); if (dot) dot.classList.toggle('off', !micOn);
-      const st = $('bMicStatus'); if (st) st.textContent = micOn ? T('micActive') : T('micOff');
+    // kamercode + QR ook op het babydashboard tonen
+    const code = currentCode || '';
+    ['babyDashCode', 'bRoom', 'bRoomInline'].forEach((id) => { const el = $(id); if (el) el.textContent = code; });
+    if (code) renderQR('babyDashQR', location.href.split('#')[0] + '#' + code, 3);
+    const cp = $('copyBabyDash'); if (cp) cp.onclick = () => copyText(code);
+
+    const swCam = $('swCam'), swMic = $('swMic'), swAO = $('swAudioOnly'), swPriv = $('swPrivacy');
+    const setVideoEnabled = (on) => { if (localStream) localStream.getVideoTracks().forEach((t) => (t.enabled = on)); if (swCam) swCam.classList.toggle('on', on); $('bScreen') && $('bScreen').classList.toggle('privacy', !on); };
+    // Camera-toggle
+    $('tgCam').onclick = () => { const on = !swCam.classList.contains('on'); setVideoEnabled(on); if (swAO) swAO.classList.toggle('on', !on); if (swPriv) swPriv.classList.toggle('on', !on); };
+    // Microfoon-toggle
+    $('tgMic').onclick = () => {
+      const on = !swMic.classList.contains('on');
+      swMic.classList.toggle('on', on); micOn = on;
+      if (localStream) localStream.getAudioTracks().forEach((t) => (t.enabled = on));
     };
-    $('bRecord').onclick = () => toggleRecord(localStream, $('bRecord'), 'babyunit-opname');
+    // Audio only — beeld uit, geluid aan
+    $('tgAudioOnly').onclick = () => { const on = !swAO.classList.contains('on'); swAO.classList.toggle('on', on); setVideoEnabled(!on); if (swPriv) swPriv.classList.toggle('on', on); };
+    // Privacy shade — beeld verbergen, geluid houden
+    const toggleShade = () => { const on = !swPriv.classList.contains('on'); swPriv.classList.toggle('on', on); setVideoEnabled(!on); if (swAO) swAO.classList.toggle('on', on); };
+    $('tgPrivacy').onclick = toggleShade;
+    const shadeBtn = $('tgPrivacyBtn'); if (shadeBtn) shadeBtn.onclick = toggleShade;
+
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) location.reload(); };
     enableWakeLock();
     reportBattery();
@@ -831,17 +881,18 @@
     }
   }
   async function reportBattery(once) {
-    if (!('getBattery' in navigator)) { $('bBatt').textContent = '🔋 N/A'; return; }
+    const setB = (txt, sub) => { const b1 = $('bBatt'); if (b1) b1.textContent = txt; const s = $('bBattSub'); if (s && sub != null) s.textContent = sub; };
+    if (!('getBattery' in navigator)) { setB('N/A', ''); return; }
     try {
       const b = await navigator.getBattery();
       const upd = () => {
         const pct = Math.round(b.level * 100);
-        $('bBatt').textContent = '🔋 ' + pct + '%' + (b.charging ? '⚡' : '');
+        setB(pct + '%', b.charging ? T('charging') : T('onBattery'));
         sendControl({ cmd: 'battery', level: pct, charging: b.charging });
       };
       upd();
       if (!once) { b.addEventListener('levelchange', upd); b.addEventListener('chargingchange', upd); }
-    } catch (e) { $('bBatt').textContent = '🔋 N/A'; }
+    } catch (e) { setB('N/A', ''); }
   }
   // ------------------------------------------------------------------ wake lock
   let wl = null;
@@ -862,19 +913,21 @@
   if (window.I18n) {
     I18n.init();
     I18n.buildSelector($('langSelectSetup'));
-    // Bij het wisselen van taal de dynamisch gezette teksten herstellen
-    // volgens de huidige status (apply() zet ze eerst terug op de standaard).
+    I18n.buildSelector($('langSelectParent'));
+    I18n.buildSelector($('langSelectBaby'));
+    // Bij het wisselen van taal de dynamisch gezette teksten herstellen.
     I18n.onChange(() => {
+      const set = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
       if (role === 'parent' && parentStarted) {
-        if (controlConn && controlConn.open) $('connText').textContent = T('connected');
-        $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
-        $('talkText').textContent = talking ? T('talkActive') : T('talkIdle');
-        $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
-        $('nlReadout').textContent = nightlightOn ? nightlightLevel + '%' : T('off');
+        if (controlConn && controlConn.open) set('connText', T('connected'));
+        set('liveText', nightMode ? T('nightModeBadge') : T('live'));
+        set('talkText', talking ? T('talkActive') : T('talkBack'));
+        set('alarmText', T('cryAlert'));
         renderChips();
         renderPlaylist();
+        renderEventLog();
       } else if (role === 'baby' && babyStarted) {
-        if (controlConn && controlConn.open) $('bConn').textContent = T('connectedToParent');
+        if (controlConn && controlConn.open) set('bConn', T('connected'));
       }
     });
   }
