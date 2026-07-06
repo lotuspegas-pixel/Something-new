@@ -6,8 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#f0eee8" />
-    <title>Luna Unit — Baby Monitor</title>
+    <meta name="theme-color" content="#F4F1EB" />
+    <meta name="description" content="BabyPhone.online — gebruik je tweede telefoon, tablet of laptop als babyfoon. Live beeld en geluid via je browser. Geen app, geen account." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="BabyPhone" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta property="og:title" content="BabyPhone.online — babyfoon via je browser" />
+    <meta property="og:description" content="Gebruik je tweede telefoon als babyfoon. Live beeld en geluid, geen app, geen account." />
+    <title>BabyPhone.online — babyfoon via je browser</title>
     <link rel="stylesheet" href="luna.css" />
     <link
       rel="icon"
@@ -15,43 +21,112 @@
     />
   </head>
   <body>
-    <!-- ============================ SETUP ============================ -->
+    <!-- ============================ LANDING ============================ -->
     <section id="screenSetup" class="setup-wrap">
-      <div class="lang-bar"><span class="lang-ic">🌐</span><span id="langSelectSetup"></span></div>
-      <div class="setup-head">
-        <div class="logo">👶</div>
-        <h1>Luna Unit</h1>
-        <p data-i18n="tagline">
-          A private baby monitor that runs entirely in your browser. On the same
-          Wi‑Fi network no server is needed. Choose a role to begin.
-        </p>
-      </div>
-      <div class="role-cards">
-        <div class="role-pick" id="pickBaby">
-          <div class="emoji">🍼</div>
-          <h3 data-i18n="roleBabyTitle">Baby Unit</h3>
-          <p data-i18n="roleBabyDesc">Place near the baby. Sends live camera and sound. Shows a QR code to pair.</p>
+      <div class="home">
+        <div class="home-top">
+          <div class="home-brand">
+            <div class="brand-mark">
+              <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/><circle cx="9" cy="15.5" r="1.4" fill="#6E6AE6"/></svg>
+            </div>
+            <div class="brand-name">BabyPhone</div>
+          </div>
+          <span class="lang-pill">
+            <svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg>
+            <span id="langSelectSetup"></span>
+          </span>
         </div>
-        <div class="role-pick" id="pickParent">
-          <div class="emoji">📺</div>
-          <h3 data-i18n="roleParentTitle">Parent Unit</h3>
-          <p data-i18n="roleParentDesc">The monitor. Scan the baby unit's QR code to watch and listen.</p>
+
+        <!-- 1. HERO -->
+        <div class="hero">
+          <h1 data-i18n="heroTitle">Use your spare phone as a baby monitor</h1>
+          <p class="sub" data-i18n="heroSub">Live video and sound, right in your browser. No app, no account, no fuss.</p>
+          <div class="cta-row">
+            <button class="cta baby" id="pickBaby" type="button">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 20V10m18 10V10M3 14h18M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4M8 6V4m8 2V4" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span data-i18n="ctaStartBaby">Start baby unit</span>
+            </button>
+            <button class="cta parent" id="pickParent" type="button">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M2 12a10 6.5 0 0 0 20 0 10 6.5 0 0 0-20 0z" stroke="#fff" stroke-width="1.9"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.9"/></svg>
+              <span data-i18n="ctaConnectParent">Connect parent unit</span>
+            </button>
+          </div>
         </div>
+
+        <!-- 2. HOW IT WORKS -->
+        <div class="section">
+          <div class="section-h"><h2 data-i18n="howTitle">How does it work?</h2></div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-b"><h3 data-i18n="step1t">By the baby</h3><p data-i18n="step1">Open BabyPhone.online on the phone you leave next to your baby.</p></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-b"><h3 data-i18n="step2t">Pair</h3><p data-i18n="step2">Start the baby unit and scan the QR code with your own phone.</p></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-b"><h3 data-i18n="step3t">Watch live</h3><p data-i18n="step3">See and hear your baby live from your parent unit.</p></div></div>
+          </div>
+        </div>
+
+        <!-- 3. TRUST & SAFETY -->
+        <div class="section">
+          <div class="section-h"><h2 data-i18n="trustTitle">Safe and private</h2></div>
+          <div class="trust-card">
+            <div class="trow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div><b data-i18n="trust1t">No app or account</b><small data-i18n="trust1">Just open it in your browser and pair.</small></div>
+            </div>
+            <div class="trow">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <div><b data-i18n="trust2t">Camera and microphone only with permission</b><small data-i18n="trust2">You allow them yourself, on your own device.</small></div>
+            </div>
+            <div class="trow">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="15" y="9" width="6" height="10" rx="1.6" stroke="currentColor" stroke-width="1.8"/></svg>
+              <div><b data-i18n="trust3t">Between your own devices</b><small data-i18n="trust3">The connection is meant for watching live between your phones.</small></div>
+            </div>
+          </div>
+          <div class="disclaimer">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 17.2v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <p data-i18n="disclaimer">BabyPhone.online is an aid, not a replacement for keeping an eye on your baby in person.</p>
+          </div>
+        </div>
+
+        <!-- 5. FEATURES -->
+        <div class="section">
+          <div class="section-h"><h2 data-i18n="featTitle">Everything you need</h2></div>
+          <div class="features">
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M16 10l5-3v10l-5-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div><h4 data-i18n="featVideo">Live video</h4></div>
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6M8 5v14M12 8v8M16 6v12M20 10v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div><h4 data-i18n="featSound">Sound</h4></div>
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h4 data-i18n="featTalk">Talk back</h4></div>
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div><h4 data-i18n="featNight">Night mode</h4></div>
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h4 data-i18n="featAlarm">Sound alarm</h4></div>
+            <div class="feature"><div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/></svg></div><h4 data-i18n="featLullaby">Lullabies</h4></div>
+          </div>
+          <p class="foot-devices" data-i18n="featDevices">Works on phone, tablet and computer.</p>
+        </div>
+
+        <!-- 9. FOOTER -->
+        <footer class="site-footer">
+          <div class="fname">BabyPhone<span class="dot" style="color:var(--accent)">.online</span></div>
+          <p data-i18n="footPrivacy">Video and sound go directly between your own devices. No recordings are stored.</p>
+          <p data-i18n="footDisclaimer">An aid, not a replacement for in-person supervision of your baby.</p>
+          <div class="fver">© 2026 · BabyPhone.online</div>
+        </footer>
       </div>
     </section>
 
     <!-- ======================= PAIR: BABY ======================= -->
     <section id="screenPairBaby" class="pair-wrap hidden">
-      <div class="pair-head"><div class="logo">🍼</div><h1 data-i18n="pairBabyTitle">Pair Baby Unit</h1></div>
+      <div class="pair-head baby">
+        <div class="unit-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M3 20V10m18 10V10M3 14h18M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4M8 6V4m8 2V4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h1 data-i18n="pairBabyTitle">Baby unit</h1>
+        <div class="unit-sub" data-i18n="pairBabySub">Show this code (or QR) to your own phone to connect.</div>
+      </div>
       <div class="pair-box">
         <h4 data-i18n="roomCodeShare">Room code (share with the parent unit)</h4>
         <div class="bigcode" id="babyCodeText">······</div>
         <div class="qr-display" id="babyQR"></div>
         <div class="qr-hint" data-i18n="qrScanHint">Let the parent scan this QR — or type the code above</div>
         <input type="hidden" id="babyOfferCode" />
+        <div class="waiting-pill" id="babyWaiting"><span class="spinner"></span><span data-i18n="waitingConnection">Waiting for the parent unit…</span></div>
         <div class="pair-actions">
-          <button class="btn secondary" id="copyBabyOffer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
-          <button class="btn secondary" id="babyNewCode" type="button">🔄 <span data-i18n="newCode">New code</span></button>
+          <button class="btn secondary" id="copyBabyOffer" type="button"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8"/></svg> <span data-i18n="copyCode">Copy code</span></button>
+          <button class="btn secondary" id="babyNewCode" type="button"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 12a8 8 0 0 1 14-5m2-2v5h-5M20 12a8 8 0 0 1-14 5m-2 2v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> <span data-i18n="newCode">New code</span></button>
         </div>
       </div>
       <div class="backlink"><a href="#" id="babyBack">← <span data-i18n="back">Back</span></a></div>
@@ -59,7 +134,11 @@
 
     <!-- ======================= PAIR: PARENT ======================= -->
     <section id="screenPairParent" class="pair-wrap hidden">
-      <div class="pair-head"><div class="logo">📺</div><h1 data-i18n="pairParentTitle">Pair Parent Unit</h1></div>
+      <div class="pair-head parent">
+        <div class="unit-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12a10 6.5 0 0 0 20 0 10 6.5 0 0 0-20 0z" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.9"/></svg></div>
+        <h1 data-i18n="pairParentTitle">Parent unit</h1>
+        <div class="unit-sub" data-i18n="pairParentSub">Enter the code from the baby unit, or scan its QR.</div>
+      </div>
       <div class="pair-box">
         <h4 data-i18n="roomCodeOfBaby">Room code of the baby unit</h4>
         <div id="parentScanWrap" class="hidden">
@@ -67,7 +146,7 @@
         </div>
         <input class="bigcode-input" id="parentOfferInput" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" data-i18n-ph="phCode" placeholder="CODE" />
         <div class="pair-actions">
-          <button class="btn secondary" id="parentScanBtn" type="button">📷 <span data-i18n="scanQR">Scan QR</span></button>
+          <button class="btn secondary" id="parentScanBtn" type="button"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="3" y="6" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 6l1.5-2.5h5L16 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> <span data-i18n="scanQR">Scan QR</span></button>
           <button class="btn" id="parentGenBtn" type="button" data-i18n="connect">Connect</button>
         </div>
         <div class="connecting-row hidden" id="parentConnecting"><div class="spinner"></div><span data-i18n="connecting">Connecting…</span></div>
@@ -86,7 +165,7 @@
                 <path d="M6.5 6.5a8 8 0 1 0 11 0" stroke="#fff" stroke-width="2" stroke-linecap="round" />
               </svg>
             </div>
-            <div><div class="title">Luna Unit</div><div class="subtitle" data-i18n="subtitleParent">Parent panel</div></div>
+            <div><div class="title">BabyPhone</div><div class="subtitle" data-i18n="subtitleParent">Parent panel</div></div>
           </div>
           <div class="topstatus">
             <div class="pill inset"><span class="dot off breathe" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
@@ -203,7 +282,7 @@
         <div class="topbar">
           <div class="brand">
             <div class="round-icon on"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M8 3h8M9 3c0 3-2 4-2 7v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9c0-3-2-4-2-7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-            <div><div class="title">Luna Unit</div><div class="subtitle" data-i18n="subtitleBaby">Baby unit</div></div>
+            <div><div class="title">BabyPhone</div><div class="subtitle" data-i18n="subtitleBaby">Baby unit</div></div>
           </div>
           <div class="topstatus">
             <div class="pill inset"><span class="dot off breathe" id="bConnDot"></span><span id="bConn" data-i18n="connecting">Connecting…</span></div>

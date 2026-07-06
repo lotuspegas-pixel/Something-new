@@ -39,19 +39,34 @@
 }
 
 :root {
-  --bg: #f0eee8;
-  --surface: oklch(92% 0.006 250);
-  --text: oklch(34% 0.015 255);
-  --muted: oklch(55% 0.015 255);
-  --ink: oklch(45% 0.015 255);
-  --red: oklch(70% 0.19 25);
-  --red-g1: oklch(72% 0.18 25);
-  --red-g2: oklch(62% 0.2 22);
-  --green: oklch(60% 0.14 155);
-  --raised: 8px 8px 18px rgba(163, 177, 198, 0.5), -8px -8px 18px rgba(255, 255, 255, 0.9);
-  --raised-sm: 4px 4px 10px rgba(163, 177, 198, 0.5), -4px -4px 10px rgba(255, 255, 255, 0.85);
-  --pressed: inset 5px 5px 11px rgba(163, 177, 198, 0.55), inset -5px -5px 11px rgba(255, 255, 255, 0.9);
-  --pressed-sm: inset 3px 3px 6px rgba(163, 177, 198, 0.5), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+  /* Rustig, warm, betrouwbaar — nachtblauw + crème + lavendel-accent */
+  --bg: #F4F1EB;            /* warm crème */
+  --bg2: #ECE8DF;
+  --surface: #FFFFFF;
+  --text: #232734;         /* nachtblauw-slate */
+  --muted: #797682;
+  --ink: #3A3E4C;          /* icoon-lijnen */
+  --nightblue: #2B3350;
+  --accent: #6E6AE6;       /* lavendel */
+  --accent-ink: #4A46C6;
+  --accent-soft: #EDECFC;
+  --mint: #4FB79A;
+  --ok: #3FA98A;
+  --green: #3FA98A;
+  --warm: #E7A085;         /* zachte terracotta (baby) */
+  --warm-soft: #FBEDE7;
+  --red: #E5654C;          /* rustiger koraal — alleen voor alarm/opname */
+  --red-g1: #EC7358;
+  --red-g2: #DB4F3C;
+  --line: rgba(28, 26, 40, 0.08);
+  --sh-sm: 0 1px 2px rgba(24, 22, 40, 0.05);
+  --sh: 0 2px 6px rgba(24, 22, 40, 0.05), 0 14px 34px rgba(24, 22, 40, 0.07);
+  --r: 24px;
+  /* zachte diepte (afgezwakt neumorfisme voor de bestaande monitor-controls) */
+  --raised: 6px 6px 14px rgba(176, 180, 196, 0.42), -6px -6px 14px rgba(255, 255, 255, 0.9);
+  --raised-sm: 3px 3px 8px rgba(176, 180, 196, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.85);
+  --pressed: inset 4px 4px 9px rgba(176, 180, 196, 0.5), inset -4px -4px 9px rgba(255, 255, 255, 0.9);
+  --pressed-sm: inset 3px 3px 6px rgba(176, 180, 196, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
 }
 
 * {
@@ -1036,7 +1051,7 @@ button {
   font: 800 40px/1 'Quicksand', sans-serif;
   letter-spacing: 10px;
   text-align: center;
-  color: var(--red);
+  color: var(--accent-ink);
   padding: 18px 10px 20px;
   margin: 0 0 8px;
   border-radius: 16px;
@@ -1196,3 +1211,166 @@ textarea.code:focus { outline: none; }
   box-shadow: var(--raised);
 }
 .modal h3 { margin: 0 0 16px; font: 700 18px 'Quicksand', sans-serif; }
+
+/* =========================================================================
+   BabyPhone — landing / homepage (mobile-first, rustig & premium)
+   ========================================================================= */
+.home {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 6px 0 10px;
+}
+.home-top { display: flex; align-items: center; justify-content: space-between; }
+.home-brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: 13px; flex: 0 0 auto;
+  background: linear-gradient(150deg, #8A87F0, var(--accent));
+  display: grid; place-items: center;
+  box-shadow: 0 6px 16px rgba(110, 106, 230, 0.32);
+}
+.brand-name { font: 700 19px 'Quicksand', sans-serif; letter-spacing: 0.2px; color: var(--text); }
+.brand-name .dot { color: var(--accent); }
+
+/* hero */
+.hero { text-align: center; padding: 4px 4px 0; }
+.hero h1 {
+  font: 700 30px/1.16 'Quicksand', sans-serif;
+  letter-spacing: -0.4px; color: var(--text); margin: 0;
+}
+.hero .sub {
+  color: var(--muted); font-size: 16px; line-height: 1.55; font-weight: 600;
+  margin: 14px auto 0; max-width: 360px;
+}
+.cta-row { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
+.cta {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 17px 20px; border-radius: 18px;
+  font: 800 16px 'Nunito', sans-serif; color: #fff; border: none; cursor: pointer;
+  box-shadow: var(--sh); transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+.cta svg { width: 21px; height: 21px; }
+.cta:active { transform: translateY(1px); }
+.cta.baby { background: linear-gradient(150deg, #EEA88F, #E08360); box-shadow: 0 10px 26px rgba(224, 131, 96, 0.32); }
+.cta.parent { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: 0 10px 26px rgba(110, 106, 230, 0.32); }
+
+/* generic section */
+.section { display: flex; flex-direction: column; gap: 16px; }
+.section-h { text-align: center; }
+.section-h h2 { font: 700 21px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
+.section-h p { color: var(--muted); font-size: 14px; font-weight: 600; margin: 6px auto 0; max-width: 320px; }
+
+/* how it works — steps */
+.steps { display: flex; flex-direction: column; gap: 12px; }
+.step {
+  display: flex; align-items: flex-start; gap: 15px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 20px; padding: 18px; box-shadow: var(--sh-sm);
+}
+.step-num {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 11px;
+  background: var(--accent-soft); color: var(--accent-ink);
+  display: grid; place-items: center; font: 800 16px 'Nunito', sans-serif;
+}
+.step-b h3 { font: 700 15.5px 'Quicksand', sans-serif; color: var(--text); margin: 2px 0 3px; }
+.step-b p { color: var(--muted); font-size: 13.5px; font-weight: 600; line-height: 1.45; margin: 0; }
+
+/* trust */
+.trust-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  padding: 18px 18px 6px; box-shadow: var(--sh-sm);
+}
+.trow { display: flex; align-items: flex-start; gap: 13px; padding-bottom: 15px; }
+.trow svg { width: 20px; height: 20px; color: var(--ok); flex: 0 0 auto; margin-top: 1px; }
+.trow b { display: block; font: 800 14px 'Nunito', sans-serif; color: #35323f; }
+.trow small { display: block; color: var(--muted); font-weight: 600; font-size: 12.5px; margin-top: 2px; line-height: 1.4; }
+
+/* features grid */
+.features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.feature {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+  padding: 16px 14px; box-shadow: var(--sh-sm); text-align: left; position: relative;
+}
+.feature .fic {
+  width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft);
+  display: grid; place-items: center; margin-bottom: 10px;
+}
+.feature .fic svg { width: 22px; height: 22px; color: var(--accent-ink); }
+.feature h4 { font: 700 14px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
+.feature p { color: var(--muted); font-size: 12px; font-weight: 600; margin: 3px 0 0; line-height: 1.4; }
+.feature .soon {
+  position: absolute; top: 12px; right: 12px; font: 800 9.5px 'Nunito', sans-serif;
+  letter-spacing: 0.4px; text-transform: uppercase; color: var(--accent-ink);
+  background: var(--accent-soft); padding: 3px 7px; border-radius: 100px;
+}
+
+/* disclaimer + footer */
+.disclaimer {
+  background: var(--warm-soft); border: 1px solid rgba(231, 160, 133, 0.3);
+  border-radius: 16px; padding: 14px 16px; display: flex; gap: 11px; align-items: flex-start;
+}
+.disclaimer svg { width: 19px; height: 19px; color: #C56A4B; flex: 0 0 auto; margin-top: 1px; }
+.disclaimer p { color: #8a5a44; font-size: 12.5px; font-weight: 700; line-height: 1.45; margin: 0; }
+.site-footer {
+  border-top: 1px solid var(--line); padding: 20px 4px 4px; text-align: center;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.site-footer .fname { font: 700 15px 'Quicksand', sans-serif; color: var(--text); }
+.site-footer p { color: var(--muted); font-size: 12px; font-weight: 600; line-height: 1.5; margin: 0; }
+.site-footer .fver { color: var(--muted); opacity: 0.7; font-size: 11px; font-weight: 700; margin-top: 4px; }
+
+/* language pill on landing */
+.lang-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 100px;
+  padding: 6px 6px 6px 12px; box-shadow: var(--sh-sm);
+}
+.lang-pill .globe { width: 15px; height: 15px; color: var(--muted); }
+.lang-pill .lang-select {
+  border: none; background: transparent; box-shadow: none; padding: 2px 22px 2px 4px;
+  font: 700 12.5px 'Nunito', sans-serif; color: var(--text); border-radius: 8px;
+  background-position: right 4px center;
+}
+.lang-pill .lang-select:focus { box-shadow: none; }
+
+/* tablet / desktop */
+@media (min-width: 560px) {
+  .home { max-width: 720px; gap: 40px; padding-top: 14px; }
+  .hero h1 { font-size: 40px; }
+  .hero .sub { font-size: 17.5px; max-width: 460px; }
+  .cta-row { flex-direction: row; justify-content: center; margin-top: 28px; }
+  .cta { max-width: 260px; }
+  .steps { flex-direction: row; }
+  .step { flex-direction: column; text-align: center; align-items: center; flex: 1; }
+  .features { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 900px) {
+  .home { max-width: 860px; }
+  .hero h1 { font-size: 46px; }
+}
+
+/* landing helpers + verbeterde koppelschermen */
+.foot-devices { text-align: center; color: var(--muted); font-weight: 700; font-size: 13px; margin: 2px 0 0; }
+.pair-wrap { width: 100%; max-width: 460px; margin: 0 auto; }
+.pair-head { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; margin-bottom: 20px; }
+.pair-head .unit-badge {
+  width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center;
+  box-shadow: var(--sh);
+}
+.pair-head .unit-badge svg { width: 30px; height: 30px; color: #fff; }
+.pair-head.baby .unit-badge { background: linear-gradient(150deg, #EEA88F, #E08360); }
+.pair-head.parent .unit-badge { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
+.pair-head h1 { font: 700 22px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
+.pair-head .unit-sub { color: var(--muted); font-size: 13.5px; font-weight: 600; max-width: 300px; }
+.waiting-pill {
+  display: inline-flex; align-items: center; gap: 9px; margin: 4px auto 0;
+  background: var(--accent-soft); color: var(--accent-ink);
+  border-radius: 100px; padding: 9px 16px; font: 800 13px 'Nunito', sans-serif;
+}
+.waiting-pill .spinner {
+  width: 15px; height: 15px; border: 2.5px solid rgba(74,70,198,.25);
+  border-top-color: var(--accent-ink); border-radius: 50%; animation: spin 0.8s linear infinite;
+}

@@ -295,7 +295,7 @@
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
       });
     } catch (e) {
-      toast(e.message || T('mediaError'));
+      toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
       showScreen('screenSetup');
       role = null;
       return;
