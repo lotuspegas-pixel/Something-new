@@ -801,7 +801,10 @@
       micOn = !micOn;
       localStream.getAudioTracks().forEach((t) => (t.enabled = micOn));
       $('bMic').classList.toggle('active', micOn);
-      $('bMic').querySelector('.ic').textContent = micOn ? '🎙️' : '🔇';
+      $('bMic').querySelector('.ic-on').classList.toggle('hidden', !micOn);
+      $('bMic').querySelector('.ic-off').classList.toggle('hidden', micOn);
+      const dot = $('bMicDot'); if (dot) dot.classList.toggle('off', !micOn);
+      const st = $('bMicStatus'); if (st) st.textContent = micOn ? T('micActive') : T('micOff');
     };
     $('bRecord').onclick = () => toggleRecord(localStream, $('bRecord'), 'babyunit-opname');
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) location.reload(); };

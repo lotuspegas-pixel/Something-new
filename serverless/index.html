@@ -286,6 +286,8 @@
           </div>
           <div class="topstatus">
             <div class="pill inset"><span class="dot off breathe" id="bConnDot"></span><span id="bConn" data-i18n="connecting">Connecting…</span></div>
+            <div class="pill"><span class="dot ok"></span><span data-i18n="cameraActive">Camera on</span></div>
+            <div class="pill"><span class="dot ok" id="bMicDot"></span><span id="bMicStatus" data-i18n="micActive">Microphone on</span></div>
             <div class="pill" id="bBatt">🔋 —</div>
           </div>
         </div>
@@ -295,10 +297,10 @@
           <div class="placeholder hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
         </div>
         <div class="baby-controls">
-          <button class="bctrl" id="bFlip" type="button"><span class="ic">🔄</span> <span data-i18n="camera">Camera</span></button>
-          <button class="bctrl active" id="bMic" type="button"><span class="ic">🎙️</span> <span data-i18n="microphone">Microphone</span></button>
-          <button class="bctrl" id="bRecord" type="button"><span class="ic">⏺️</span> <span data-i18n="record">Record</span></button>
-          <button class="bctrl danger" id="bStop" type="button"><span class="ic">⏹️</span> <span data-i18n="stop">Stop</span></button>
+          <button class="bctrl" id="bFlip" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8a8 8 0 0 1 14-3M20 16a8 8 0 0 1-14 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M18 3v3h-3M6 21v-3h3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span> <span data-i18n="camera">Camera</span></button>
+          <button class="bctrl active" id="bMic" type="button"><span class="ic"><svg class="ic-on" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.9"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="ic-off hidden" viewBox="0 0 24 24" fill="none"><path d="M9 9v-.5a3 3 0 0 1 6 0V11M15 13.5a3 3 0 0 1-4.5 2.6M5 11a7 7 0 0 0 10.5 6M12 18v3M4 4l16 16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span> <span data-i18n="microphone">Microphone</span></button>
+          <button class="bctrl" id="bRecord" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg></span> <span data-i18n="record">Record</span></button>
+          <button class="bctrl danger" id="bStop" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.9"/></svg></span> <span data-i18n="stop">Stop</span></button>
         </div>
       </div>
     </section>

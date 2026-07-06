@@ -1374,3 +1374,117 @@ textarea.code:focus { outline: none; }
   width: 15px; height: 15px; border: 2.5px solid rgba(74,70,198,.25);
   border-top-color: var(--accent-ink); border-radius: 50%; animation: spin 0.8s linear infinite;
 }
+
+/* =========================================================================
+   BabyPhone designsysteem v3 — toegepast op de hele app
+   (append-overrides: rustig, warm, premium — weg van neumorfisme/gadget)
+   ========================================================================= */
+
+/* rustgevende achtergrond met zachte gradient (nachtblauw ↔ crème ↔ lavendel) */
+body {
+  background: radial-gradient(135% 110% at 50% 0%,
+    #F8F5F0 0%, #F2EEE7 46%, #EBE8F4 100%) fixed;
+}
+
+/* device-shell → schone, grote afgeronde kaart met zachte schaduw */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  box-shadow: var(--sh);
+}
+.baby-panel { max-width: 520px; }
+
+/* topbar-merk */
+.brand .title { font-family: 'Quicksand', sans-serif; letter-spacing: 0.2px; }
+.brand .subtitle { color: var(--muted); }
+
+/* pillen / status-indicatoren */
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-sm);
+  border-radius: 100px;
+}
+.pill.inset { box-shadow: var(--sh-sm); }
+.pill.on { border-color: transparent; }
+.dot { background: var(--mint); }
+.dot.off { background: #C9C6CF; }
+.dot.ok { background: var(--mint); }
+
+/* ronde icoonknop (power/stop) */
+.round-icon { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); }
+.round-icon svg path { stroke: var(--ink); }
+.round-icon.on { background: linear-gradient(150deg, #EC7358, #DB4F3C); border-color: transparent; }
+.round-icon.on svg path { stroke: #fff; }
+.baby-panel .round-icon.on { background: linear-gradient(150deg, #EEA88F, #E08360); }
+
+/* kaarten */
+.card { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); border-radius: 22px; }
+.card .label, .section-label { color: var(--muted); }
+.info-row .v { color: var(--accent-ink); }
+.sig i { background: rgba(120, 116, 135, 0.28); }
+.sig i.on { background: var(--mint); }
+
+/* cirkelknoppen */
+.circle-btn { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); }
+.circle-btn span { color: var(--ink); }
+.circle-btn.active { border-color: var(--accent); box-shadow: var(--sh-sm); }
+.circle-btn.active span { color: var(--accent-ink); }
+.circle-btn.active svg path, .circle-btn.active svg rect, .circle-btn.active svg circle { stroke: var(--accent-ink); }
+
+/* scherm-omlijsting */
+.screen { box-shadow: var(--sh), 0 0 0 5px var(--surface); border-radius: 26px; }
+.spinner { border-top-color: var(--accent); }
+.talk-btn.on, .scr-btn.on { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
+.vu i { background: var(--mint); }
+.badge .rec-dot { background: var(--red); }
+
+/* volume-dial → lavendel i.p.v. alarm-rood */
+.dial { background: var(--surface); border: 1px solid var(--line);
+  box-shadow: var(--sh); }
+.dial .ring1 { box-shadow: inset 0 1px 3px rgba(30, 28, 50, 0.06); border: 1px solid var(--line); }
+.dial .ring2 { background: var(--surface); box-shadow: var(--sh-sm); }
+.dial .needle { background: var(--accent); }
+.dial .hub { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: var(--sh-sm); }
+.dial .cap { color: var(--muted); }
+
+/* verticale sliders → rustige lavendel */
+.vslider { background: var(--surface); border: 1px solid var(--line);
+  box-shadow: inset 0 1px 3px rgba(30, 28, 50, 0.05); }
+.vslider .rail { background: rgba(120, 116, 135, 0.25); }
+.vslider .knob { background: var(--accent); box-shadow: 0 3px 9px rgba(74, 70, 198, 0.32); }
+.vslider .ic svg path, .vslider .ic svg circle, .vslider .ic svg rect { stroke: var(--accent-ink); }
+#sNightlight .ic svg path { fill: var(--accent-ink); stroke: none; }
+.vlabels span { color: var(--muted); }
+.vlabel-val { color: var(--accent-ink); }
+
+/* slaapmuziek + playlist → lavendel accent (rood alleen voor alarm) */
+.chip { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
+.chip.on { background: var(--accent-soft); color: var(--accent-ink); border-color: rgba(110, 106, 230, 0.28); box-shadow: none; }
+.music-btn { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
+.music-btn.on { color: var(--accent-ink); border-color: rgba(110, 106, 230, 0.28); }
+.music-btn .ic-play path { fill: var(--accent-ink); }
+.music-btn .ic-stop rect { fill: var(--accent-ink); }
+.track { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
+.track.on { color: var(--accent-ink); box-shadow: none; background: var(--accent-soft); }
+.track .eq i { background: var(--accent-ink); }
+
+/* babyunit-bediening */
+.bctrl { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); border-radius: 16px; color: var(--ink); }
+.bctrl .ic svg { width: 22px; height: 22px; }
+.bctrl.active { border-color: var(--accent); color: var(--accent-ink); box-shadow: var(--sh-sm); }
+.bctrl.active svg path, .bctrl.active svg rect, .bctrl.active svg circle { stroke: var(--accent-ink); }
+.bctrl.danger { color: var(--red); }
+.bctrl.danger svg path, .bctrl.danger svg rect { stroke: var(--red); }
+.bctrl.danger.active { background: linear-gradient(150deg, var(--red-g1), var(--red-g2)); color: #fff; border-color: transparent; }
+.bctrl.danger.active svg path, .bctrl.danger.active svg rect { stroke: #fff; }
+
+/* fix: Night-mode pill erfde .btn (wit op wit); primaire knoppen → lavendel */
+.pill.btn { color: var(--ink); background: var(--surface); box-shadow: var(--sh-sm); }
+.pill.btn svg path { fill: var(--ink); }
+.pill.btn.on { background: linear-gradient(150deg, #8A87F0, var(--accent)); color: #fff; border-color: transparent; }
+.pill.btn.on svg path { fill: #fff; }
+.btn { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: 0 8px 20px rgba(110, 106, 230, 0.28); }
+.btn.secondary { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
+.btn:active { box-shadow: var(--sh-sm); }
