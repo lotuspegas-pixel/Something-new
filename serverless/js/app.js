@@ -28,6 +28,8 @@
     ['screenSetup', 'screenPairBaby', 'screenPairParent', 'screenParent', 'screenBaby'].forEach(
       (s) => $(s).classList.toggle('hidden', s !== id)
     );
+    // Landing = donker/full-bleed; app-schermen = het lichte thema.
+    document.body.classList.toggle('app-mode', id !== 'screenSetup');
   }
   async function getMedia(c) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -880,6 +882,19 @@
   // ------------------------------------------------------------------ wiring
   $('pickBaby').onclick = startBaby;
   $('pickParent').onclick = () => { role = 'parent'; showScreen('screenPairParent'); $('parentOfferInput').focus(); };
+  // Landing: direct koppelen met code of QR (gaan via de bestaande ouder-flow)
+  if ($('homeConnect')) $('homeConnect').onclick = () => {
+    const v = ($('homeCode').value || '').trim();
+    if (!v) { $('homeCode').focus(); return; }
+    $('parentOfferInput').value = v;
+    role = 'parent'; showScreen('screenPairParent');
+    startParentConnect(v);
+  };
+  if ($('homeScan')) $('homeScan').onclick = () => {
+    role = 'parent'; showScreen('screenPairParent');
+    $('parentOfferInput').focus();
+    if ($('parentScanBtn')) $('parentScanBtn').click();
+  };
   $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
