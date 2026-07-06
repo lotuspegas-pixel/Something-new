@@ -35,18 +35,26 @@
     }
     return navigator.mediaDevices.getUserMedia(c);
   }
-  function renderQR(containerId, text) {
+  function renderQR(containerId, text, cell) {
     const box = $(containerId);
+    if (box.dataset) box.dataset.code = text;
     try {
       const qr = qrcode(0, 'L');
       qr.addData(text);
       qr.make();
-      box.innerHTML = qr.createImgTag(4, 8);
+      box.innerHTML = qr.createImgTag(cell || 4, 8);
     } catch (e) {
       box.innerHTML =
         '<div style="color:#333;font-size:12px;text-align:center;padding:10px">' + T('copyCode') + '</div>';
     }
   }
+  // Toon de QR groot op het volledige scherm zodat een camera hem makkelijk leest.
+  function openQrZoom(text) {
+    if (!text) return;
+    renderQR('qrZoomBox', text, 10);
+    $('qrZoom').classList.remove('hidden');
+  }
+  function closeQrZoom() { $('qrZoom').classList.add('hidden'); }
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -95,13 +103,23 @@
   function stopScanner() {
     if (scannerStop) scannerStop();
   }
-  // Verklein de SDP voor de QR-code: verwijder TCP-ICE-kandidaten (niet nodig
-  // voor peer-to-peer op hetzelfde netwerk). Dat maakt de QR minder dicht en
-  // dus beter scanbaar. UDP host/srflx-kandidaten blijven behouden.
+  // Verklein de SDP voor de QR-code zodat die minder dicht en beter scanbaar
+  // wordt. We verwijderen:
+  //  - TCP-ICE-kandidaten (niet nodig voor p2p op hetzelfde netwerk);
+  //  - a=extmap (RTP-headerextensies — optioneel, verbinding werkt zonder);
+  //  - a=rtcp-fb (feedbackmechanismen — optioneel);
+  //  - a=rtcp-rsize (optioneel).
+  // De essentie (sleutels, kandidaten, codecs, stream-ID's) blijft intact.
   function slimSdp(sdp) {
     return sdp
       .split(/\r?\n/)
-      .filter((line) => !(line.startsWith('a=candidate') && /tcp/i.test(line)))
+      .filter((line) => {
+        if (line.startsWith('a=candidate') && /tcp/i.test(line)) return false;
+        if (line.startsWith('a=extmap')) return false;
+        if (line.startsWith('a=rtcp-fb')) return false;
+        if (line.startsWith('a=rtcp-rsize')) return false;
+        return true;
+      })
       .join('\r\n');
   }
 
@@ -850,6 +868,11 @@
   $('copyParentAnswer').onclick = () => copyText($('parentAnswerCode').value);
   $('babyConnectBtn').onclick = babyConnectAnswer;
   $('parentGenBtn').onclick = parentAcceptOffer;
+  // QR groot maken door erop te tikken (veel makkelijker te scannen)
+  $('babyQR').onclick = () => openQrZoom($('babyQR').dataset.code);
+  $('parentQR').onclick = () => openQrZoom($('parentQR').dataset.code);
+  $('qrZoomClose').onclick = closeQrZoom;
+  $('qrZoom').onclick = (e) => { if (e.target === $('qrZoom') || e.target === $('qrZoomClose')) closeQrZoom(); };
   $('babyScanBtn').onclick = () => {
     $('babyScanWrap').classList.remove('hidden');
     startScanner($('babyScanVideo'), (data) => { $('babyScanWrap').classList.add('hidden'); $('babyAnswerInput').value = data; babyConnectAnswer(); });

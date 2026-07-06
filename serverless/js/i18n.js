@@ -109,6 +109,8 @@
       musicPlay: 'Play music',
       musicStop: 'Stop music',
       musicEmpty: 'No songs yet — add MP3s to the music folder',
+      qrTapZoom: '👆 Tap the QR to enlarge it for scanning',
+      qrZoomHint: "Point the other phone's camera at this code",
       copied: '📋 Copied',
       copyFail: 'Copy failed — select manually',
       scanFail: "Can't open camera to scan — paste the code",
@@ -629,6 +631,7 @@
       connectedToParent: 'Verbonden met ouderunit', startingCamera: 'Camera starten…', nightlightOverlay: '💡 Nachtlamp aan (ingeschakeld door ouder)',
       trackRain: 'Regen', trackOcean: 'Oceaan', trackHeartbeat: 'Hartslag', trackWhite: 'Witte ruis',
       musicTitle: 'Kinderliedjes', musicPlay: 'Muziek afspelen', musicStop: 'Muziek stoppen', musicEmpty: 'Nog geen liedjes — voeg mp3’s toe aan de map music',
+      qrTapZoom: '👆 Tik op de QR om hem groot te maken voor scannen', qrZoomHint: 'Richt de camera van de andere telefoon op deze code',
     },
 
     pa: {

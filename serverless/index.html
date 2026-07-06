@@ -50,6 +50,7 @@
       <div class="pair-box">
         <h4 data-i18n="yourCode">1 · Your pairing code</h4>
         <div class="qr-display" id="babyQR"></div>
+        <div class="qr-hint" data-i18n="qrTapZoom">👆 Tap the QR to enlarge it for scanning</div>
         <textarea class="code" id="babyOfferCode" readonly></textarea>
         <div class="pair-actions">
           <button class="btn secondary" id="copyBabyOffer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
@@ -90,6 +91,7 @@
       <div class="pair-box hidden" id="parentAnswerBox">
         <h4 data-i18n="yourAnswerCode">2 · Your answer code</h4>
         <div class="qr-display" id="parentQR"></div>
+        <div class="qr-hint" data-i18n="qrTapZoom">👆 Tap the QR to enlarge it for scanning</div>
         <textarea class="code" id="parentAnswerCode" readonly></textarea>
         <div class="pair-actions">
           <button class="btn secondary" id="copyParentAnswer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
@@ -250,6 +252,15 @@
     <div class="nightlight-full hidden" id="nightlight"><div data-i18n="nightlightOverlay">💡 Night‑light on (turned on by parent)</div></div>
     <canvas id="scratch" class="hidden"></canvas>
     <div class="toast hidden" id="toast"></div>
+
+    <!-- Fullscreen-vergroting van de QR-code -->
+    <div class="qr-zoom hidden" id="qrZoom">
+      <div class="qr-zoom-inner">
+        <div class="qr-zoom-box" id="qrZoomBox"></div>
+        <p data-i18n="qrZoomHint">Point the other phone's camera at this code</p>
+        <button class="btn" id="qrZoomClose" type="button" data-i18n="back">Close</button>
+      </div>
+    </div>
 
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
