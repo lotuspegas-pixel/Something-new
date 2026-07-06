@@ -111,6 +111,11 @@
       musicEmpty: 'No songs yet — add MP3s to the music folder',
       qrTapZoom: '👆 Tap the QR to enlarge it for scanning',
       qrZoomHint: "Point the other phone's camera at this code",
+      roomCodeShare: 'Room code (share with the parent unit)',
+      roomCodeOfBaby: 'Room code of the baby unit',
+      qrScanHint: 'Let the parent scan this QR — or type the code above',
+      phCode: 'CODE',
+      newCode: 'New code',
       copied: '📋 Copied',
       copyFail: 'Copy failed — select manually',
       scanFail: "Can't open camera to scan — paste the code",
@@ -632,6 +637,7 @@
       trackRain: 'Regen', trackOcean: 'Oceaan', trackHeartbeat: 'Hartslag', trackWhite: 'Witte ruis',
       musicTitle: 'Kinderliedjes', musicPlay: 'Muziek afspelen', musicStop: 'Muziek stoppen', musicEmpty: 'Nog geen liedjes — voeg mp3’s toe aan de map music',
       qrTapZoom: '👆 Tik op de QR om hem groot te maken voor scannen', qrZoomHint: 'Richt de camera van de andere telefoon op deze code',
+      roomCodeShare: 'Kamercode (deel met de ouderunit)', roomCodeOfBaby: 'Kamercode van de babyunit', qrScanHint: 'Laat de ouder deze QR scannen — of typ de code hierboven', phCode: 'CODE', newCode: 'Nieuwe code',
     },
 
     pa: {

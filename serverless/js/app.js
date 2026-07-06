@@ -103,61 +103,50 @@
   function stopScanner() {
     if (scannerStop) scannerStop();
   }
-  // Verklein de SDP voor de QR-code zodat die minder dicht en beter scanbaar
-  // wordt. We verwijderen:
-  //  - TCP-ICE-kandidaten (niet nodig voor p2p op hetzelfde netwerk);
-  //  - a=extmap (RTP-headerextensies — optioneel, verbinding werkt zonder);
-  //  - a=rtcp-fb (feedbackmechanismen — optioneel);
-  //  - a=rtcp-rsize (optioneel).
-  // De essentie (sleutels, kandidaten, codecs, stream-ID's) blijft intact.
-  function slimSdp(sdp) {
-    return sdp
-      .split(/\r?\n/)
-      .filter((line) => {
-        if (line.startsWith('a=candidate') && /tcp/i.test(line)) return false;
-        if (line.startsWith('a=extmap')) return false;
-        if (line.startsWith('a=rtcp-fb')) return false;
-        if (line.startsWith('a=rtcp-rsize')) return false;
-        return true;
-      })
-      .join('\r\n');
+  // ---------------------------------------------------------------- verbinding (PeerJS)
+  // Korte koppelcode via een licht online "koppel-hulpje" (PeerJS-broker).
+  // De broker koppelt alleen de twee apparaten; beeld en geluid gaan
+  // rechtstreeks tussen de telefoons (peer-to-peer, privé — de broker ziet
+  // die niet). Optioneel zelf te hosten via window.BABYFOON_PEER.
+  const PEER_PREFIX = 'babyfoon-9m3-'; // naamruimte op de gedeelde broker
+  const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // zonder 0/O/1/I
+  function makeCode(n) {
+    let s = '';
+    const a = (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(new Uint32Array(n)) : null;
+    for (let i = 0; i < n; i++) {
+      const r = a ? a[i] : Math.floor(Math.random() * 4294967296);
+      s += CODE_ALPHABET[r % CODE_ALPHABET.length];
+    }
+    return s;
   }
-
-  function waitIce(pc) {
-    return new Promise((res) => {
-      if (pc.iceGatheringState === 'complete') return res();
-      const to = setTimeout(res, 3000);
-      pc.addEventListener('icegatheringstatechange', function h() {
-        if (pc.iceGatheringState === 'complete') {
-          clearTimeout(to);
-          pc.removeEventListener('icegatheringstatechange', h);
-          res();
-        }
-      });
-    });
+  function peerOptions() {
+    const opts = { config: { iceServers: ICE }, debug: 0 };
+    if (window.BABYFOON_PEER) Object.assign(opts, window.BABYFOON_PEER);
+    return opts;
   }
 
   // ------------------------------------------------------------------ state
   let role = null;
-  let pc = null;
+  let peer = null;
+  let controlConn = null;   // PeerJS DataConnection (besturingskanaal)
+  let mediaPc = null;       // onderliggende RTCPeerConnection (voor statistieken)
   let localStream = null;
   let remoteStream = null;
-  let controlChannel = null;
+  let currentCode = null;
   const lullaby = new LullabyPlayer();
 
   function sendControl(obj) {
-    if (controlChannel && controlChannel.readyState === 'open') {
-      try { controlChannel.send(JSON.stringify(obj)); } catch (e) {}
+    if (controlConn && controlConn.open) {
+      try { controlConn.send(obj); } catch (e) {}
     }
   }
-  // "link"-shim zodat de bedieningslogica los staat van de verbinding.
   const link = {
     sendControl,
     async getStats() {
-      if (!pc) return null;
+      if (!mediaPc) return null;
       const r = { rtt: null };
       try {
-        const stats = await pc.getStats();
+        const stats = await mediaPc.getStats();
         stats.forEach((s) => {
           if (s.type === 'candidate-pair' && s.state === 'succeeded' && s.nominated &&
             typeof s.currentRoundTripTime === 'number') {
@@ -169,55 +158,47 @@
     },
   };
 
-  function setupControl(ch) {
-    controlChannel = ch;
-    ch.onmessage = (ev) => {
-      let m;
-      try { m = JSON.parse(ev.data); } catch (e) { return; }
-      handleControl(m);
-    };
-    ch.onopen = () => {
-      if (role === 'baby') reportBattery();
-    };
+  // Koppel het besturingskanaal (DataConnection) aan de afhandeling.
+  function attachControl(conn) {
+    controlConn = conn;
+    conn.on('data', (d) => { if (d && typeof d === 'object') handleControl(d); });
+    conn.on('close', onPeerDrop);
   }
-
-  function onConnState() {
-    const st = pc.connectionState;
-    if (st === 'connected') {
-      if (role === 'baby') {
-        showScreen('screenBaby');
-        $('bConnDot').classList.remove('off');
-        $('bConn').textContent = T('connectedToParent');
-        startBabyDevice();
-      } else {
-        showScreen('screenParent');
-        $('connDot').classList.remove('off');
-        $('connText').textContent = T('connected');
-        $('placeholder').classList.add('hidden');
-        $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
-        startParentDevice();
-        sendControl({ cmd: 'ping' });
-      }
+  function playTalkback(stream) {
+    let a = $('talkbackAudio');
+    if (!a) {
+      a = document.createElement('audio');
+      a.id = 'talkbackAudio';
+      a.autoplay = true; a.playsInline = true;
+      document.body.appendChild(a);
     }
+    a.srcObject = stream;
+    a.play().catch(() => {});
   }
-
-  function onRemoteTrack(ev) {
+  function babyConnected() {
+    showScreen('screenBaby');
+    $('bConnDot').classList.remove('off');
+    $('bConn').textContent = T('connectedToParent');
+    startBabyDevice();
+  }
+  function parentConnected() {
+    const pcn = $('parentConnecting');
+    if (pcn) pcn.classList.add('hidden');
+    showScreen('screenParent');
+    $('connDot').classList.remove('off');
+    $('connText').textContent = T('connected');
+    $('placeholder').classList.add('hidden');
+    $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+    startParentDevice();
+    sendControl({ cmd: 'ping' });
+  }
+  function onPeerDrop() {
     if (role === 'parent') {
-      remoteStream = ev.streams[0];
-      $('video').srcObject = remoteStream;
-      $('video').play().catch(() => {});
-      setupAnalyser(remoteStream);
-    } else if (ev.track.kind === 'audio') {
-      let a = $('talkbackAudio');
-      if (!a) {
-        a = document.createElement('audio');
-        a.id = 'talkbackAudio';
-        a.autoplay = true;
-        a.playsInline = true;
-        document.body.appendChild(a);
-      }
-      a.srcObject = ev.streams[0];
-      a.play().catch(() => {});
+      $('connDot').classList.add('off');
+      $('connText').textContent = T('connectionLost');
+    } else if (role === 'baby') {
+      $('bConnDot').classList.add('off');
+      $('bConn').textContent = T('connectionLost');
     }
   }
 
@@ -273,6 +254,38 @@
   }
 
   // ------------------------------------------------------------------ koppelen: baby
+  function openBabyPeer() {
+    if (peer) { try { peer.destroy(); } catch (e) {} }
+    const code = makeCode(6);
+    currentCode = code;
+    $('babyCodeText').textContent = '······';
+    peer = new Peer(PEER_PREFIX + code, peerOptions());
+    peer.on('open', () => {
+      $('babyCodeText').textContent = code;
+      $('babyOfferCode').value = code;
+      const url = location.href.split('#')[0] + '#' + code;
+      renderQR('babyQR', url);
+    });
+    peer.on('connection', (conn) => {
+      attachControl(conn);
+      conn.on('open', () => {
+        try {
+          const call = peer.call(conn.peer, localStream);
+          if (call) mediaPc = call.peerConnection || mediaPc;
+        } catch (e) {}
+        babyConnected();
+        reportBattery();
+      });
+    });
+    peer.on('call', (call) => {
+      // terugpraten van de ouder (audio) → afspelen bij de baby
+      call.answer();
+      if (!mediaPc) mediaPc = call.peerConnection || mediaPc;
+      call.on('stream', playTalkback);
+    });
+    peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+    peer.on('error', (err) => onPeerError(err, 'baby'));
+  }
   async function startBaby() {
     role = 'baby';
     showScreen('screenPairBaby');
@@ -288,70 +301,72 @@
       return;
     }
     $('bPreview').srcObject = localStream;
-    pc = new RTCPeerConnection({ iceServers: ICE });
-    localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
-    setupControl(pc.createDataChannel('control', { ordered: true }));
-    pc.ontrack = onRemoteTrack;
-    pc.onconnectionstatechange = onConnState;
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await waitIce(pc);
-    const code = await SignalCodec.pack({ t: 'offer', sdp: slimSdp(pc.localDescription.sdp) });
-    renderQR('babyQR', code);
-    $('babyOfferCode').value = code;
-  }
-  async function babyConnectAnswer() {
-    const code = $('babyAnswerInput').value.trim();
-    if (!code) return toast(T('pasteAnswerFirst'));
-    try {
-      const obj = await SignalCodec.unpack(code);
-      if (obj.t !== 'answer') throw new Error();
-      await pc.setRemoteDescription({ type: 'answer', sdp: obj.sdp });
-      $('bStep1').classList.add('done');
-      $('bStep2').classList.add('done');
-      toast(T('connecting'));
-    } catch (e) {
-      toast(T('invalidAnswer'));
-    }
+    openBabyPeer();
   }
 
   // ------------------------------------------------------------------ koppelen: ouder
-  async function parentAcceptOffer() {
-    const code = $('parentOfferInput').value.trim();
+  async function startParentConnect(rawCode) {
+    let code = (rawCode != null ? rawCode : $('parentOfferInput').value || '').trim();
+    if (code.indexOf('#') >= 0) code = code.slice(code.lastIndexOf('#') + 1).trim();
+    code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
-    let obj;
-    try {
-      obj = await SignalCodec.unpack(code);
-      if (obj.t !== 'offer') throw new Error();
-    } catch (e) {
-      return toast(T('invalidPair'));
-    }
     role = 'parent';
-    pc = new RTCPeerConnection({ iceServers: ICE });
-    pc.ontrack = onRemoteTrack;
-    pc.ondatachannel = (e) => {
-      if (e.channel.label === 'control') setupControl(e.channel);
-    };
-    pc.onconnectionstatechange = onConnState;
-    await pc.setRemoteDescription({ type: 'offer', sdp: obj.sdp });
+    const pcn = $('parentConnecting');
+    if (pcn) pcn.classList.remove('hidden');
     try {
       micStream = await getMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         video: false,
       });
-      micStream.getAudioTracks().forEach((t) => { t.enabled = false; pc.addTrack(t, micStream); });
-    } catch (e) {
-      talkDisabled = true;
+    } catch (e) { talkDisabled = true; }
+    const babyId = PEER_PREFIX + code;
+    peer = new Peer(peerOptions());
+    peer.on('open', () => {
+      const conn = peer.connect(babyId, { reliable: true });
+      attachControl(conn);
+      conn.on('open', () => {
+        parentConnected();
+        if (micStream) {
+          try {
+            micStream.getAudioTracks().forEach((t) => (t.enabled = false));
+            const tcall = peer.call(babyId, micStream);
+            if (tcall && !mediaPc) mediaPc = tcall.peerConnection || mediaPc;
+          } catch (e) {}
+        }
+      });
+    });
+    peer.on('call', (call) => {
+      // videobeeld van de baby
+      call.answer();
+      mediaPc = call.peerConnection || mediaPc;
+      call.on('stream', (s) => {
+        remoteStream = s;
+        $('video').srcObject = s;
+        $('video').play().catch(() => {});
+        setupAnalyser(s);
+      });
+    });
+    peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+    peer.on('error', (err) => onPeerError(err, 'parent'));
+  }
+  function onPeerError(err, r) {
+    const type = err && err.type;
+    if (type === 'unavailable-id' && r === 'baby') {
+      openBabyPeer(); // code net bezet → nieuwe code
+      return;
     }
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    await waitIce(pc);
-    const acode = await SignalCodec.pack({ t: 'answer', sdp: slimSdp(pc.localDescription.sdp) });
-    renderQR('parentQR', acode);
-    $('parentAnswerCode').value = acode;
-    $('parentAnswerBox').classList.remove('hidden');
-    $('pStep1').classList.add('done');
-    $('pStep2').classList.add('active');
+    if (type === 'peer-unavailable') {
+      const pcn = $('parentConnecting');
+      if (pcn) pcn.classList.add('hidden');
+      role = null;
+      toast(T('invalidPair'));
+      return;
+    }
+    if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+      toast(T('connectionLost'));
+      return;
+    }
+    try { console.warn('peer error', type, err); } catch (e) {}
   }
 
   // ================================================================== OUDER-PANEEL
@@ -799,7 +814,7 @@
       const ns = await getMedia({ audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } } });
       const nt = ns.getVideoTracks()[0];
       const ot = localStream.getVideoTracks()[0];
-      const sender = pc.getSenders().find((s) => s.track && s.track.kind === 'video');
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video');
       if (sender) await sender.replaceTrack(nt);
       if (ot) { localStream.removeTrack(ot); ot.stop(); }
       localStream.addTrack(nt);
@@ -846,7 +861,7 @@
     // volgens de huidige status (apply() zet ze eerst terug op de standaard).
     I18n.onChange(() => {
       if (role === 'parent' && parentStarted) {
-        if (pc && pc.connectionState === 'connected') $('connText').textContent = T('connected');
+        if (controlConn && controlConn.open) $('connText').textContent = T('connected');
         $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
         $('talkText').textContent = talking ? T('talkActive') : T('talkIdle');
         $('alarmText').textContent = alarmOn ? T('alarmOn') : T('alarmOff');
@@ -854,33 +869,43 @@
         renderChips();
         renderPlaylist();
       } else if (role === 'baby' && babyStarted) {
-        if (pc && pc.connectionState === 'connected') $('bConn').textContent = T('connectedToParent');
+        if (controlConn && controlConn.open) $('bConn').textContent = T('connectedToParent');
       }
     });
   }
 
   // ------------------------------------------------------------------ wiring
   $('pickBaby').onclick = startBaby;
-  $('pickParent').onclick = () => { role = 'parent'; showScreen('screenPairParent'); };
+  $('pickParent').onclick = () => { role = 'parent'; showScreen('screenPairParent'); $('parentOfferInput').focus(); };
   $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
-  $('copyParentAnswer').onclick = () => copyText($('parentAnswerCode').value);
-  $('babyConnectBtn').onclick = babyConnectAnswer;
-  $('parentGenBtn').onclick = parentAcceptOffer;
+  $('babyNewCode').onclick = () => openBabyPeer();
+  $('parentGenBtn').onclick = () => startParentConnect();
+  $('parentOfferInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') startParentConnect(); });
   // QR groot maken door erop te tikken (veel makkelijker te scannen)
   $('babyQR').onclick = () => openQrZoom($('babyQR').dataset.code);
-  $('parentQR').onclick = () => openQrZoom($('parentQR').dataset.code);
   $('qrZoomClose').onclick = closeQrZoom;
   $('qrZoom').onclick = (e) => { if (e.target === $('qrZoom') || e.target === $('qrZoomClose')) closeQrZoom(); };
-  $('babyScanBtn').onclick = () => {
-    $('babyScanWrap').classList.remove('hidden');
-    startScanner($('babyScanVideo'), (data) => { $('babyScanWrap').classList.add('hidden'); $('babyAnswerInput').value = data; babyConnectAnswer(); });
-  };
   $('parentScanBtn').onclick = () => {
     $('parentScanWrap').classList.remove('hidden');
-    startScanner($('parentScanVideo'), (data) => { $('parentScanWrap').classList.add('hidden'); $('parentOfferInput').value = data; parentAcceptOffer(); });
+    startScanner($('parentScanVideo'), (data) => {
+      $('parentScanWrap').classList.add('hidden');
+      $('parentOfferInput').value = data;
+      startParentConnect(data);
+    });
   };
+
+  // Gescande QR met #code opent de app als ouder en verbindt automatisch.
+  (function autoJoinFromHash() {
+    const h = (location.hash || '').replace(/^#/, '').trim();
+    if (h && /^[A-Za-z0-9]{4,12}$/.test(h)) {
+      role = 'parent';
+      showScreen('screenPairParent');
+      $('parentOfferInput').value = h.toUpperCase();
+      startParentConnect(h);
+    }
+  })();
 
   document.addEventListener('pointerdown', () => {
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
@@ -889,7 +914,7 @@
 
   window.addEventListener('pagehide', () => {
     if (recorder) try { recorder.stop(); } catch (e) {}
-    if (pc) pc.close();
+    if (peer) try { peer.destroy(); } catch (e) {}
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
     if (micStream) micStream.getTracks().forEach((t) => t.stop());
   });

@@ -43,28 +43,15 @@
     <!-- ======================= PAIR: BABY ======================= -->
     <section id="screenPairBaby" class="pair-wrap hidden">
       <div class="pair-head"><div class="logo">🍼</div><h1 data-i18n="pairBabyTitle">Pair Baby Unit</h1></div>
-      <ol class="steps">
-        <li id="bStep1" class="active" data-i18n="pairBabyStep1">Let the parent scan this QR code (or send the pairing code).</li>
-        <li id="bStep2" data-i18n="pairBabyStep2">Scan or paste the parent's answer code.</li>
-      </ol>
       <div class="pair-box">
-        <h4 data-i18n="yourCode">1 · Your pairing code</h4>
+        <h4 data-i18n="roomCodeShare">Room code (share with the parent unit)</h4>
+        <div class="bigcode" id="babyCodeText">······</div>
         <div class="qr-display" id="babyQR"></div>
-        <div class="qr-hint" data-i18n="qrTapZoom">👆 Tap the QR to enlarge it for scanning</div>
-        <textarea class="code" id="babyOfferCode" readonly></textarea>
+        <div class="qr-hint" data-i18n="qrScanHint">Let the parent scan this QR — or type the code above</div>
+        <input type="hidden" id="babyOfferCode" />
         <div class="pair-actions">
           <button class="btn secondary" id="copyBabyOffer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
-        </div>
-      </div>
-      <div class="pair-box">
-        <h4 data-i18n="answerFromParent">2 · Parent's answer</h4>
-        <div id="babyScanWrap" class="hidden">
-          <div class="scanner"><video id="babyScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
-        </div>
-        <textarea class="code" id="babyAnswerInput" data-i18n-ph="phAnswerCode" placeholder="Paste the answer code here…"></textarea>
-        <div class="pair-actions">
-          <button class="btn secondary" id="babyScanBtn" type="button">📷 <span data-i18n="scanQR">Scan QR</span></button>
-          <button class="btn" id="babyConnectBtn" type="button" data-i18n="connect">Connect</button>
+          <button class="btn secondary" id="babyNewCode" type="button">🔄 <span data-i18n="newCode">New code</span></button>
         </div>
       </div>
       <div class="backlink"><a href="#" id="babyBack">← <span data-i18n="back">Back</span></a></div>
@@ -73,29 +60,17 @@
     <!-- ======================= PAIR: PARENT ======================= -->
     <section id="screenPairParent" class="pair-wrap hidden">
       <div class="pair-head"><div class="logo">📺</div><h1 data-i18n="pairParentTitle">Pair Parent Unit</h1></div>
-      <ol class="steps">
-        <li id="pStep1" class="active" data-i18n="pairParentStep1">Scan the baby unit's QR code (or paste the code).</li>
-        <li id="pStep2" data-i18n="pairParentStep2">Let the baby unit scan your answer QR (or send the code).</li>
-      </ol>
       <div class="pair-box">
-        <h4 data-i18n="pairCodeTitle">1 · Baby unit's pairing code</h4>
+        <h4 data-i18n="roomCodeOfBaby">Room code of the baby unit</h4>
         <div id="parentScanWrap" class="hidden">
           <div class="scanner"><video id="parentScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
         </div>
-        <textarea class="code" id="parentOfferInput" data-i18n-ph="phPairCode" placeholder="Paste the pairing code here…"></textarea>
+        <input class="bigcode-input" id="parentOfferInput" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" data-i18n-ph="phCode" placeholder="CODE" />
         <div class="pair-actions">
           <button class="btn secondary" id="parentScanBtn" type="button">📷 <span data-i18n="scanQR">Scan QR</span></button>
-          <button class="btn" id="parentGenBtn" type="button" data-i18n="genAnswer">Generate answer</button>
+          <button class="btn" id="parentGenBtn" type="button" data-i18n="connect">Connect</button>
         </div>
-      </div>
-      <div class="pair-box hidden" id="parentAnswerBox">
-        <h4 data-i18n="yourAnswerCode">2 · Your answer code</h4>
-        <div class="qr-display" id="parentQR"></div>
-        <div class="qr-hint" data-i18n="qrTapZoom">👆 Tap the QR to enlarge it for scanning</div>
-        <textarea class="code" id="parentAnswerCode" readonly></textarea>
-        <div class="pair-actions">
-          <button class="btn secondary" id="copyParentAnswer" type="button">📋 <span data-i18n="copyCode">Copy code</span></button>
-        </div>
+        <div class="connecting-row hidden" id="parentConnecting"><div class="spinner"></div><span data-i18n="connecting">Connecting…</span></div>
       </div>
       <div class="backlink"><a href="#" id="parentBack">← <span data-i18n="back">Back</span></a></div>
     </section>
@@ -264,8 +239,8 @@
 
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
+    <script src="vendor/peerjs.min.js"></script>
     <script src="js/i18n.js"></script>
-    <script src="js/codec.js"></script>
     <script src="js/lullaby.js"></script>
     <script src="js/app.js"></script>
   </body>
