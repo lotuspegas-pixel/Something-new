@@ -1825,3 +1825,26 @@ body.app-mode .connecting-row { color: #8C95A8; }
 }
 .statcard.tap { cursor: pointer; }
 .statcard.tap:hover { border-color: rgba(255,255,255,0.14); }
+
+/* ---- dashboard topbar + title row (match reference) ---- */
+.dash-topbar { max-width: 1200px; margin: 0 auto; padding: 18px 22px 4px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.dash-brand { display: inline-flex; align-items: center; gap: 10px; font: 700 20px 'Quicksand', sans-serif; color: #fff; }
+.dash-brand .tld { color: var(--d-accent, #E8825E); font-weight: 600; }
+.dash-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, #EC8A63, #E0714B); display: grid; place-items: center; box-shadow: 0 5px 14px rgba(224,113,75,.35); }
+.dash-topright { display: flex; align-items: center; gap: 12px; }
+.dash-gear { width: 40px; height: 40px; border-radius: 12px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); color: #8C95A8; display: grid; place-items: center; cursor: pointer; }
+.dash { padding-top: 8px; }
+.dash-side { padding-top: 12px; }
+.dash-titlerow { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.dash-title h1.pu { font: 700 22px 'Quicksand', sans-serif; color: #fff; margin: 0; }
+.dash-status { display: flex; align-items: center; gap: 10px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); border-radius: 14px; padding: 8px 12px; flex-wrap: wrap; }
+.dash-status .dsb-item { font-size: 12.5px; }
+.dash-status .dsb-item + .dsb-item { border-left: 1px solid rgba(255,255,255,.07); padding-left: 12px; }
+.dash-status .dsb-fs { margin-left: 4px; width: 30px; height: 30px; }
+
+/* ---- nursery poster in the video card ---- */
+.vcard-poster { position: absolute; inset: 0; z-index: 0; }
+.vcard-poster svg { width: 100%; height: 100%; display: block; }
+.vcard video { z-index: 1; background: transparent; }
+.vcard .vcard-ph, .vcard .vcard-badge, .vcard .vcard-focus, .vcard .vcard-hd, .vcard .vcard-shade, .vcard .night-veil { z-index: 2; }
+.vcard.privacy .vcard-poster { filter: brightness(.7) blur(2px); }

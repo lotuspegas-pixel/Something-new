@@ -195,12 +195,18 @@
 
     <!-- ======================= PARENT UNIT (dark dashboard) ======================= -->
     <section id="screenParent" class="hidden">
+      <div class="dash-topbar">
+        <div class="dash-brand"><span class="dash-mark"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>BabyPhone<span class="tld">.online</span></div>
+        <div class="dash-topright">
+          <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectParent"></span></span>
+          <button class="dash-gear" data-i18n-title="navSettings" title="Settings"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 3h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 21h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
       <div class="dash">
         <aside class="dash-side">
-          <div class="dash-logo"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></div>
           <nav class="dash-nav">
             <button class="dnav active" data-view="monitor" title="Monitor"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 21h6M12 17v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="navMonitor">Monitor</span></button>
-            <button class="dnav" data-view="talk" title="Talk back"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="talkIdle">Talk back</span></button>
+            <button class="dnav" data-view="talk" title="Talk back"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="talkBack">Talk back</span></button>
             <button class="dnav" data-view="lullabies" title="Lullabies"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="16" r="3" stroke="currentColor" stroke-width="1.7"/></svg><span data-i18n="lullabies">Lullabies</span></button>
             <button class="dnav" data-view="night" title="Night light"><svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span data-i18n="featNight">Night light</span></button>
             <button class="dnav" data-view="alerts" title="Alerts"><svg viewBox="0 0 24 24" fill="none"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="navAlerts">Alerts</span></button>
@@ -210,25 +216,22 @@
         </aside>
 
         <main class="dash-main">
-          <header class="dash-head">
+          <div class="dash-titlerow">
             <div class="dash-title">
               <span class="dash-title-ic"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 20s-7-4.3-7-9.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.5C19 15.7 12 20 12 20z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-              <div><h1>BabyPhone<span class="tld">.online</span></h1><small data-i18n="parentUnitSub">Parent Unit · Monitoring</small></div>
+              <div><h1 class="pu" data-i18n="parentUnit">Parent Unit</h1><small data-i18n="monitoring">Monitoring</small></div>
             </div>
-            <div class="dash-head-right">
-              <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectParent"></span></span>
+            <div class="dash-status">
+              <div class="dsb-item conn"><span class="dot off" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
+              <div class="dsb-item"><small data-i18n="room">Room</small><b id="roomLabel">—</b></div>
+              <div class="dsb-item"><small data-i18n="signal">Signal</small><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
+              <div class="dsb-item"><small data-i18n="latency">Latency</small><b id="rttVal">— ms</b></div>
+              <button class="dsb-fs" id="btnFullscreen" data-i18n-title="fullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
-          </header>
-
-          <div class="dash-statusbar">
-            <div class="dsb-item conn"><span class="dot off" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
-            <div class="dsb-item"><small data-i18n="room">Room</small><b id="roomLabel">—</b></div>
-            <div class="dsb-item"><small data-i18n="signal">Signal</small><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
-            <div class="dsb-item"><small data-i18n="latency">Latency</small><b id="rttVal">— ms</b></div>
-            <button class="dsb-fs" id="btnFullscreen" data-i18n-title="fullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
 
           <div class="vcard" id="screen">
+            <div class="vcard-poster"><svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2740"/><stop offset="1" stop-color="#0a0f18"/></linearGradient><radialGradient id="pLamp"><stop offset="0" stop-color="#ffd39c" stop-opacity=".85"/><stop offset="1" stop-color="#ffd39c" stop-opacity="0"/></radialGradient><radialGradient id="pMoon"><stop offset="0" stop-color="#fdf3d3"/><stop offset="1" stop-color="#ecdba6"/></radialGradient></defs><rect width="320" height="180" fill="url(#pSky)"/><g fill="#fce9ab"><circle cx="70" cy="26" r="1"/><circle cx="104" cy="16" r="1.4"/><circle cx="140" cy="34" r="1"/><circle cx="205" cy="20" r="1.2"/><circle cx="255" cy="14" r="1"/><circle cx="285" cy="40" r="1.1"/></g><g transform="translate(232,32)"><circle r="15" fill="url(#pMoon)"/><circle cx="6" r="14" fill="#0e1626"/></g><ellipse cx="44" cy="126" rx="60" ry="48" fill="url(#pLamp)"/><rect x="34" y="98" width="22" height="12" rx="4" fill="#f0c191"/><rect x="43" y="110" width="4" height="26" fill="#5a4632"/><rect y="150" width="320" height="30" fill="#0b111c"/><g transform="translate(150,64)"><rect x="0" y="18" width="158" height="78" rx="10" fill="#26344b"/><rect x="10" y="54" width="138" height="34" rx="6" fill="#33496a"/><path d="M28 62 q52 -20 100 2 q4 14 4 22 h-108 q0 -12 4 -26 z" fill="#6d829f"/><ellipse cx="118" cy="58" rx="12" ry="9" fill="#e9d9c4"/><g stroke="#182234" stroke-width="3.4" stroke-linecap="round"><line x1="6" y1="18" x2="6" y2="96"/><line x1="34" y1="18" x2="34" y2="50"/><line x1="62" y1="18" x2="62" y2="46"/><line x1="152" y1="18" x2="152" y2="96"/><line x1="124" y1="18" x2="124" y2="50"/></g><rect x="0" y="14" width="158" height="7" rx="3.5" fill="#2e3f5b"/></g></svg></div>
             <video id="video" autoplay playsinline></video>
             <div class="night-veil hidden" id="nightVeil"></div>
             <div class="vcard-badge live"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
@@ -282,18 +285,23 @@
     <!-- ======================= BABY UNIT (dark dashboard) ======================= -->
     <section id="screenBaby" class="hidden">
       <div class="bdash">
-        <header class="dash-head">
+        <div class="dash-topbar">
+          <div class="dash-brand"><span class="dash-mark"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>BabyPhone<span class="tld">.online</span></div>
+          <div class="dash-topright">
+            <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectBaby"></span></span>
+            <button class="dash-gear" data-i18n-title="navSettings" title="Settings"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 3h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 21h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+        <div class="dash-titlerow">
           <div class="dash-title">
             <span class="dash-title-ic baby"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="6" width="14" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M17 10l4-2.5v9L17 14z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-            <div><h1>BabyPhone<span class="tld">.online</span></h1><small><span data-i18n="subtitleBaby">Baby Unit</span> · <span data-i18n="room">Room</span> <b id="bRoomInline">—</b></small></div>
+            <div><h1 class="pu" data-i18n="babyUnit">Baby Unit</h1><small><span data-i18n="room">Room</span> <b id="bRoomInline">—</b></small></div>
           </div>
-          <div class="dash-head-right">
-            <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectBaby"></span></span>
-            <button class="btn-stop" id="bStop" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="#fff"/></svg><span data-i18n="stop">Stop</span></button>
-          </div>
-        </header>
+          <button class="btn-stop" id="bStop" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="#fff"/></svg><span data-i18n="stop">Stop</span></button>
+        </div>
 
         <div class="vcard baby" id="bScreen">
+          <div class="vcard-poster"><svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2740"/><stop offset="1" stop-color="#0a0f18"/></linearGradient><radialGradient id="pLamp"><stop offset="0" stop-color="#ffd39c" stop-opacity=".85"/><stop offset="1" stop-color="#ffd39c" stop-opacity="0"/></radialGradient><radialGradient id="pMoon"><stop offset="0" stop-color="#fdf3d3"/><stop offset="1" stop-color="#ecdba6"/></radialGradient></defs><rect width="320" height="180" fill="url(#pSky)"/><g fill="#fce9ab"><circle cx="70" cy="26" r="1"/><circle cx="104" cy="16" r="1.4"/><circle cx="140" cy="34" r="1"/><circle cx="205" cy="20" r="1.2"/><circle cx="255" cy="14" r="1"/><circle cx="285" cy="40" r="1.1"/></g><g transform="translate(232,32)"><circle r="15" fill="url(#pMoon)"/><circle cx="6" r="14" fill="#0e1626"/></g><ellipse cx="44" cy="126" rx="60" ry="48" fill="url(#pLamp)"/><rect x="34" y="98" width="22" height="12" rx="4" fill="#f0c191"/><rect x="43" y="110" width="4" height="26" fill="#5a4632"/><rect y="150" width="320" height="30" fill="#0b111c"/><g transform="translate(150,64)"><rect x="0" y="18" width="158" height="78" rx="10" fill="#26344b"/><rect x="10" y="54" width="138" height="34" rx="6" fill="#33496a"/><path d="M28 62 q52 -20 100 2 q4 14 4 22 h-108 q0 -12 4 -26 z" fill="#6d829f"/><ellipse cx="118" cy="58" rx="12" ry="9" fill="#e9d9c4"/><g stroke="#182234" stroke-width="3.4" stroke-linecap="round"><line x1="6" y1="18" x2="6" y2="96"/><line x1="34" y1="18" x2="34" y2="50"/><line x1="62" y1="18" x2="62" y2="46"/><line x1="152" y1="18" x2="152" y2="96"/><line x1="124" y1="18" x2="124" y2="50"/></g><rect x="0" y="14" width="158" height="7" rx="3.5" fill="#2e3f5b"/></g></svg></div>
           <video id="bPreview" autoplay playsinline muted></video>
           <div class="vcard-ph hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
           <div class="vcard-focus"><span class="dot ok" id="bConnDot"></span><span data-i18n="cameraActive">Camera</span> <b data-i18n="on2">On</b></div>

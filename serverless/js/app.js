@@ -318,6 +318,7 @@
     if (code.indexOf('#') >= 0) code = code.slice(code.lastIndexOf('#') + 1).trim();
     code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
+    currentCode = code; // toon de kamercode in het ouderdashboard
     role = 'parent';
     const pcn = $('parentConnecting');
     if (pcn) pcn.classList.remove('hidden');
