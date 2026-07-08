@@ -1577,11 +1577,54 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-row + .lp-row { border-top: 1px solid var(--lp-line); }
 .lp-cell { padding: 24px 26px; display: flex; flex-direction: column; gap: 16px; }
 .lp-cell + .lp-cell { border-top: 1px solid var(--lp-line); }
-.lp-cell-top { display: flex; align-items: flex-start; gap: 16px; }
-.lp-cell-ic { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; }
-.lp-cell-ic svg { width: 32px; height: 32px; }
-.lp-cell-ic.baby { background: rgba(232, 130, 94, 0.14); color: var(--lp-accent); }
-.lp-cell-ic.parent { background: rgba(110, 130, 200, 0.16); color: #93A6E6; }
+.lp-cell-top { display: flex; align-items: center; gap: 22px; min-height: 128px; }
+/* illustratie-wrappers: camera links (babyunit), apparaten rechts (ouderunit) */
+.lp-illus { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.lp-illus.baby { flex-basis: 128px; }
+.lp-illus.parent { flex-basis: 168px; }
+.lp-cell-top.rev .lp-cell-txt { flex: 1; }
+
+/* pure-CSS productillustraties (overgenomen uit het referentie-ontwerp) */
+.camera-product {
+  width: 104px; height: 142px; position: relative;
+  border-radius: 52px 52px 30px 30px;
+  background: linear-gradient(155deg, #f8f4ec, #d8d3ca 55%, #fffaf1);
+  box-shadow:
+    inset -11px -12px 22px rgba(255, 255, 255, 0.42),
+    inset 11px 14px 26px rgba(0, 0, 0, 0.18),
+    0 20px 36px rgba(0, 0, 0, 0.28);
+}
+.camera-product::after {
+  content: ""; position: absolute; left: 50%; bottom: -15px;
+  width: 92px; height: 21px; border-radius: 50%;
+  background: linear-gradient(180deg, #f6f1e8, #d4cfc6);
+  transform: translateX(-50%); box-shadow: 0 11px 19px rgba(0, 0, 0, 0.24);
+}
+.camera-lens {
+  position: absolute; left: 50%; top: 24px; width: 60px; height: 60px;
+  border-radius: 50%; transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 36% 38%, rgba(255, 255, 255, 0.7) 0 4px, transparent 5px),
+    radial-gradient(circle at 52% 52%, #08111c 0 11px, #0f1827 12px 23px, #202a38 24px 30px);
+  box-shadow: inset 0 0 0 6px #141b24, 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+.camera-lens::after {
+  content: ""; position: absolute; left: 24px; bottom: -46px;
+  width: 12px; height: 12px; border: 1px solid rgba(0, 0, 0, 0.13); border-radius: 50%;
+}
+.device-outline { position: relative; height: 118px; width: 150px; }
+.laptop-line {
+  position: absolute; left: 8px; bottom: 28px; width: 118px; height: 74px;
+  border: 4px solid rgba(225, 232, 239, 0.88); border-radius: 8px 8px 3px 3px;
+}
+.laptop-line::after {
+  content: ""; position: absolute; left: -12px; right: -19px; bottom: -13px; height: 10px;
+  border: 4px solid rgba(225, 232, 239, 0.88); border-top: 0; border-radius: 0 0 12px 12px;
+}
+.phone-line {
+  position: absolute; right: 6px; bottom: 15px; width: 49px; height: 90px;
+  border: 4px solid rgba(225, 232, 239, 0.88); border-radius: 8px; background: rgba(19, 31, 46, 0.85);
+}
 .lp-cell-txt h3 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0 0 5px; }
 .lp-cell-txt p { color: var(--lp-muted); font-size: 13.5px; font-weight: 600; line-height: 1.45; margin: 0; }
 .lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 14px 18px; border: none; border-radius: 14px; cursor: pointer; font: 800 15px 'Nunito', sans-serif; color: #fff; background: linear-gradient(150deg, #EC8A63, var(--lp-accent-2)); box-shadow: 0 10px 24px rgba(224, 113, 75, 0.32); transition: transform 0.12s; }
@@ -1622,6 +1665,13 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
   .lp-cell-code-row label { flex: 0 0 auto; }
   .lp-cell-qr { flex-direction: row; align-items: center; justify-content: space-between; }
   .lp-qr-btn { align-self: auto; }
+}
+
+/* mobiel: illustraties iets kleiner zodat ze de tekst niet verdringen */
+@media (max-width: 719px) {
+  .lp-illus.baby { flex-basis: 104px; }
+  .lp-illus.parent { flex-basis: 132px; }
+  .device-outline { transform: scale(0.85); transform-origin: center right; }
 }
 
 /* trust */
