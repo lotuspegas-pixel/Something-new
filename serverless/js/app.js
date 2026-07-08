@@ -8,7 +8,24 @@
  * zonder enige server. De QR-code wordt volledig in de browser gemaakt.
  */
 (function () {
-  const ICE = [{ urls: 'stun:stun.l.google.com:19302' }];
+  // Verbindings-servers. STUN ontdekt het publieke adres; TURN is de
+  // terugval-relay wanneer een direct pad onmogelijk is (carrier-grade NAT
+  // op 4G/5G, symmetrische routers). De relay ziet alleen versleuteld
+  // verkeer (DTLS-SRTP) en kan niet meekijken. Het gratis Open Relay
+  // Project is de best-effort standaard; vervang voor productie/Plus door
+  // een eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
+  const ICE = window.BABYFOON_ICE || [
+    { urls: 'stun:stun.l.google.com:19302' },
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turns:openrelay.metered.ca:443?transport=tcp',
+      ],
+      username: 'openrelayproject',
+      credential: 'openrelayproject',
+    },
+  ];
   const $ = (id) => document.getElementById(id);
   const T = (k) => (window.I18n ? window.I18n.t(k) : k);
   // Slaapmuziek-ID → i18n-sleutel (labels worden vertaald weergegeven).
@@ -196,13 +213,76 @@
     sendControl({ cmd: 'ping' });
   }
   function onPeerDrop() {
+    if (shuttingDown) return;
     if (role === 'parent') {
       $('connDot').classList.add('off');
       $('connText').textContent = T('connectionLost');
+      scheduleParentReconnect();
     } else if (role === 'baby') {
+      // De babyunit blijft passief wachten: dezelfde code blijft geldig,
+      // de ouderunit verbindt automatisch opnieuw.
       $('bConnDot').classList.add('off');
       $('bConn').textContent = T('connectionLost');
+      const bl = $('bLatency'); if (bl) bl.textContent = '—';
     }
+  }
+
+  // ------------------------------------------------ herverbinden (met backoff)
+  const RECONNECT_DELAYS = window.BABYFOON_RECONNECT_DELAYS || [2000, 4000, 8000, 15000, 30000];
+  const CONNECT_TIMEOUT = window.BABYFOON_CONNECT_TIMEOUT || 20000;
+  let reconnectAttempt = 0;
+  let reconnectTimer = null;
+  let connectTimer = null;
+  let wasConnected = false;
+  let shuttingDown = false;
+
+  function clearConnectTimers() {
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+  }
+  function setParentStatus(txt) {
+    const el = $('connText'); if (el) el.textContent = txt;
+    const ph = $('phText'); if (ph) ph.textContent = txt;
+  }
+  function setPlaceholderSpinner(on) {
+    const sp = document.querySelector('#placeholder .spinner');
+    if (sp) sp.classList.toggle('hidden', !on);
+    const rb = $('phRetry'); if (rb) rb.classList.toggle('hidden', on);
+  }
+  // Expliciete mislukt-status in plaats van eindeloos "Verbinden…".
+  function connectFailed(msgKey) {
+    clearConnectTimers();
+    const msg = T(msgKey || 'connectFailed');
+    const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
+    const err = $('parentError');
+    if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+    if (parentStarted) {
+      $('connDot').classList.add('off');
+      setParentStatus(msg);
+      $('placeholder').classList.remove('hidden');
+      setPlaceholderSpinner(false);
+    } else {
+      toast(msg);
+    }
+  }
+  function scheduleParentReconnect() {
+    if (shuttingDown || reconnectTimer) return;
+    if (reconnectAttempt >= RECONNECT_DELAYS.length) { connectFailed(); return; }
+    const delay = RECONNECT_DELAYS[reconnectAttempt++];
+    $('connDot').classList.add('off');
+    setParentStatus(T('reconnecting') + ' (' + reconnectAttempt + '/' + RECONNECT_DELAYS.length + ')');
+    if (parentStarted) { $('placeholder').classList.remove('hidden'); setPlaceholderSpinner(true); }
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      startParentConnect(currentCode, true);
+    }, delay);
+  }
+  function connectSucceeded() {
+    clearConnectTimers();
+    reconnectAttempt = 0;
+    wasConnected = true;
+    const err = $('parentError'); if (err) err.classList.add('hidden');
+    setPlaceholderSpinner(true);
   }
 
   // ------------------------------------------------------------------ besturingscommando's
@@ -262,6 +342,7 @@
   }
 
   // ------------------------------------------------------------------ koppelen: baby
+  let babyBrokerAttempt = 0;
   function openBabyPeer() {
     if (peer) { try { peer.destroy(); } catch (e) {} }
     const code = makeCode(6);
@@ -269,6 +350,7 @@
     $('babyCodeText').textContent = '······';
     peer = new Peer(PEER_PREFIX + code, peerOptions());
     peer.on('open', () => {
+      babyBrokerAttempt = 0;
       $('babyCodeText').textContent = code;
       $('babyOfferCode').value = code;
       const url = location.href.split('#')[0] + '#' + code;
@@ -291,7 +373,13 @@
       if (!mediaPc) mediaPc = call.peerConnection || mediaPc;
       call.on('stream', playTalkback);
     });
-    peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+    peer.on('disconnected', () => {
+      // Broker kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
+      // kamercode geldig blijft en de ouderunit kan herverbinden.
+      if (shuttingDown) return;
+      const d = RECONNECT_DELAYS[Math.min(babyBrokerAttempt++, RECONNECT_DELAYS.length - 1)];
+      setTimeout(() => { if (!shuttingDown) { try { peer.reconnect(); } catch (e) {} } }, d);
+    });
     peer.on('error', (err) => onPeerError(err, 'baby'));
   }
   async function startBaby() {
@@ -313,31 +401,45 @@
   }
 
   // ------------------------------------------------------------------ koppelen: ouder
-  async function startParentConnect(rawCode) {
+  async function startParentConnect(rawCode, isRetry) {
     let code = (rawCode != null ? rawCode : $('parentOfferInput').value || '').trim();
     if (code.indexOf('#') >= 0) code = code.slice(code.lastIndexOf('#') + 1).trim();
     code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
     currentCode = code; // toon de kamercode in het ouderdashboard
     role = 'parent';
+    if (!isRetry) { reconnectAttempt = 0; }
+    const err0 = $('parentError'); if (err0) err0.classList.add('hidden');
     const pcn = $('parentConnecting');
     if (pcn) pcn.classList.remove('hidden');
-    try {
-      micStream = await getMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        video: false,
-      });
-    } catch (e) { talkDisabled = true; }
+    // Bij herverbinden: oude peer volledig opruimen en opnieuw beginnen.
+    if (peer) { try { peer.destroy(); } catch (e) {} peer = null; controlConn = null; mediaPc = null; }
+    if (!micStream && !talkDisabled) {
+      try {
+        micStream = await getMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          video: false,
+        });
+      } catch (e) { talkDisabled = true; }
+    }
+    // Nooit eindeloos "Verbinden…": na 20 s expliciet mislukt of opnieuw.
+    clearConnectTimers();
+    connectTimer = setTimeout(() => {
+      if (controlConn && controlConn.open) return;
+      if (wasConnected || isRetry) scheduleParentReconnect();
+      else connectFailed();
+    }, CONNECT_TIMEOUT);
     const babyId = PEER_PREFIX + code;
     peer = new Peer(peerOptions());
     peer.on('open', () => {
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
+        connectSucceeded();
         parentConnected();
         if (micStream) {
           try {
-            micStream.getAudioTracks().forEach((t) => (t.enabled = false));
+            micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
             const tcall = peer.call(babyId, micStream);
             if (tcall && !mediaPc) mediaPc = tcall.peerConnection || mediaPc;
           } catch (e) {}
@@ -365,13 +467,20 @@
       return;
     }
     if (type === 'peer-unavailable') {
+      // Baby (nog) niet bereikbaar. Na een eerdere verbinding proberen we
+      // het opnieuw — de babyunit kan zelf ook aan het herverbinden zijn.
+      if (r === 'parent' && wasConnected) { scheduleParentReconnect(); return; }
+      clearConnectTimers();
       const pcn = $('parentConnecting');
       if (pcn) pcn.classList.add('hidden');
+      const eBox = $('parentError');
+      if (eBox) { eBox.textContent = T('invalidPair'); eBox.classList.remove('hidden'); }
       role = null;
       toast(T('invalidPair'));
       return;
     }
     if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+      if (r === 'parent') { scheduleParentReconnect(); return; }
       toast(T('connectionLost'));
       return;
     }
@@ -799,7 +908,7 @@
       if (!alarmOn) { const c = $('cryAlert'); if (c) c.classList.add('hidden'); }
     };
     // Stop
-    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) location.reload(); };
+    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) { shuttingDown = true; location.reload(); } };
     // Fullscreen
     $('btnFullscreen').onclick = () => {
       const v = $('video');
@@ -860,7 +969,7 @@
     $('tgPrivacy').onclick = toggleShade;
     const shadeBtn = $('tgPrivacyBtn'); if (shadeBtn) shadeBtn.onclick = toggleShade;
 
-    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) location.reload(); };
+    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) { shuttingDown = true; location.reload(); } };
     enableWakeLock();
     reportBattery();
   }
@@ -954,6 +1063,12 @@
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
   $('babyNewCode').onclick = () => openBabyPeer();
   $('parentGenBtn').onclick = () => startParentConnect();
+  if ($('phRetry')) $('phRetry').onclick = () => {
+    reconnectAttempt = 0;
+    setPlaceholderSpinner(true);
+    setParentStatus(T('connecting'));
+    startParentConnect(currentCode, true);
+  };
   $('parentOfferInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') startParentConnect(); });
   // QR groot maken door erop te tikken (veel makkelijker te scannen)
   $('babyQR').onclick = () => openQrZoom($('babyQR').dataset.code);
@@ -985,6 +1100,7 @@
   }, { once: true });
 
   window.addEventListener('pagehide', () => {
+    shuttingDown = true;
     if (recorder) try { recorder.stop(); } catch (e) {}
     if (peer) try { peer.destroy(); } catch (e) {}
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
