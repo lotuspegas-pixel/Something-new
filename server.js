@@ -97,14 +97,16 @@ app.get('/api/qr', async (req, res) => {
   }
 });
 
-// Serverloze variant (statisch gehost — werkt ook als los bestand geopend).
+// Serverloze variant (BabyPhone.online) is de actuele, live site — geserveerd
+// op de root zodat babyphone.online/ direct het donkere ontwerp toont.
 app.use(
-  '/serverless',
   express.static(path.join(__dirname, 'serverless'), { extensions: ['html'] })
 );
 
-// Statische bestanden.
+// Oudere Luna Unit-variant blijft bereikbaar op /legacy/ (rollback-pad, niet
+// meer de standaard); dezelfde WebRTC-signalering hieronder bedient hem nog.
 app.use(
+  '/legacy',
   express.static(path.join(__dirname, 'public'), {
     extensions: ['html'],
     maxAge: '1h',

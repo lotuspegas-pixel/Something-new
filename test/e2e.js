@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const BASE = process.env.BASE_URL || 'http://localhost:3000';
+const BASE = process.env.BASE_URL || 'http://localhost:3000/legacy';
 
 // Zoek een bruikbare Chromium (bijv. een vooraf geïnstalleerde in de omgeving).
 function findExecutable() {

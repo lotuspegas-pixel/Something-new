@@ -18,7 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const BASE = process.env.BASE_URL || 'http://localhost:3000';
+const BASE = process.env.BASE_URL || 'http://localhost:3000/legacy';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function findExecutable() {
