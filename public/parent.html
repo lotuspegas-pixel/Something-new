@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f0eee8" />
+    <title>Luna Unit — Ouder-paneel</title>
+    <link rel="stylesheet" href="css/luna.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%B6%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="panel">
+      <!-- ============================ TOP BAR ============================ -->
+      <div class="topbar">
+        <div class="brand">
+          <div class="round-icon on" id="btnPower" title="Stoppen / verbreken">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <path d="M12 3v7" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+              <path d="M6.5 6.5a8 8 0 1 0 11 0" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <div class="title">Luna Unit</div>
+            <div class="subtitle">Ouder-paneel</div>
+          </div>
+        </div>
+        <div class="topstatus">
+          <div class="pill inset"><span class="dot off breathe" id="connDot"></span><span id="connText">Verbinden…</span></div>
+          <div class="pill" id="clock">--:--</div>
+          <div class="pill" id="babyBatt">🔋 —</div>
+          <div class="pill btn" id="btnNightmode">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="var(--ink)" /></svg>
+            <span>Nachtstand</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================ GRID ============================ -->
+      <div class="grid3">
+        <!-- ---------------------------- LEFT ---------------------------- -->
+        <div class="col col-left">
+          <div class="card">
+            <div class="label">Verbinding</div>
+            <div class="info-row"><span>Kamer</span><span class="v" id="roomLabel">—</span></div>
+            <div class="info-row">
+              <span>Signaal</span>
+              <span class="sig" id="signal"><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div class="info-row"><span>Vertraging</span><span class="v" id="rttVal">—</span></div>
+          </div>
+          <div class="circle-row">
+            <div class="circle-btn" id="btnFlip" title="Wissel camera bij de baby">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                <path d="M4 8a8 8 0 0 1 14-3M20 16a8 8 0 0 1-14 3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M18 3v3h-3M6 21v-3h3" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>WISSEL CAMERA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------------------- CENTER ---------------------------- -->
+        <div class="col col-center">
+          <div class="screen" id="screen">
+            <video id="video" autoplay playsinline></video>
+            <div class="night-veil hidden" id="nightVeil"></div>
+            <div class="snap-flash hidden" id="snapFlash"></div>
+
+            <div class="badge live" id="liveBadge">
+              <span class="rec-dot breathe"></span><span id="liveText">VERBINDEN…</span>
+            </div>
+            <div class="badge db"><span id="dbText">— dB</span></div>
+
+            <div class="placeholder" id="placeholder">
+              <div class="spinner"></div>
+              <div id="phText">Verbinden met babyunit…</div>
+            </div>
+
+            <div class="vu" id="vu"><i></i><i></i><i></i><i></i><i></i></div>
+
+            <div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px">
+              <div class="scr-btn" id="btnSnapshot" title="Foto maken">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+                  <rect x="3" y="7" width="18" height="13" rx="2.5" stroke="#fff" stroke-width="1.6" />
+                  <path d="M8 7l1.5-2.5h5L16 7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" />
+                  <circle cx="12" cy="13.5" r="3.2" stroke="#fff" stroke-width="1.5" />
+                </svg>
+              </div>
+              <div class="scr-btn" id="btnFullscreen" title="Volledig scherm">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </div>
+              <div class="zoom-ctl">
+                <b id="zoomOut">−</b><span id="zoomVal">1.0×</span><b id="zoomIn">+</b>
+              </div>
+            </div>
+
+            <div class="talk-btn" id="btnTalk" title="Terugpraten naar de baby">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                <rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="1.8" />
+                <path d="M5 11a7 7 0 0 0 14 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+              <span id="talkText">Praat tegen baby</span>
+            </div>
+
+            <div class="fs-close hidden" id="btnFsClose">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2" stroke-linecap="round" /></svg>
+            </div>
+          </div>
+
+          <!-- dial + sliders -->
+          <div class="dial-wrap">
+            <div class="dial" id="volDial" title="Volume">
+              <div class="ring1"></div>
+              <div class="ring2">
+                <div class="needle" id="volNeedle"></div>
+                <div class="hub" id="volHub">80</div>
+              </div>
+              <div class="cap">Volume</div>
+            </div>
+            <div class="vsliders">
+              <div class="vslider" id="sBrightness" data-min="30" data-max="130">
+                <div class="rail"></div><div class="knob"></div>
+                <div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="4" stroke="var(--red)" stroke-width="1.6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+              </div>
+              <div class="vslider" id="sNightlight" data-min="0" data-max="100">
+                <div class="rail"></div><div class="knob"></div>
+                <div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11z" fill="var(--red)"/></svg></div>
+              </div>
+              <div class="vslider" id="sSensitivity" data-min="0" data-max="100">
+                <div class="rail"></div><div class="knob"></div>
+                <div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="var(--red)" stroke-width="1.6"/><path d="M5 11a7 7 0 0 0 14 0" stroke="var(--red)" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div class="vlabels">
+            <span></span>
+            <span>HELDERHEID<b class="vlabel-val" id="briReadout">100%</b></span>
+            <span>NACHTLAMP<b class="vlabel-val" id="nlReadout">UIT</b></span>
+            <span>GEVOELIGHEID<b class="vlabel-val" id="sensReadout">55%</b></span>
+          </div>
+        </div>
+
+        <!-- ---------------------------- RIGHT ---------------------------- -->
+        <div class="col col-right">
+          <div class="circle-row">
+            <div class="circle-btn" id="btnRecord" title="Lokaal opnemen">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="12" cy="12" r="7" stroke="var(--ink)" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" fill="var(--red)"/></svg>
+              <span>OPNEMEN</span>
+            </div>
+            <div class="circle-btn" id="btnMute" title="Geluid dempen">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M9 6v12l-5-4H2V10h2l5-4z" fill="var(--ink)"/><path d="M15 9a4 4 0 0 1 0 6" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span>GELUID</span>
+            </div>
+          </div>
+
+          <div class="wide-btn" id="btnAlarm">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+              <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" stroke="var(--red)" stroke-width="1.8" stroke-linejoin="round" />
+              <path d="M10 19a2 2 0 0 0 4 0" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+            <span id="alarmText">ALARM AAN</span>
+          </div>
+          <div class="alert-pill breathe hidden" id="cryAlert">🔔 Huilen gedetecteerd</div>
+
+          <div class="card">
+            <div class="label">Slaapmuziek</div>
+            <div class="chips" id="chips"></div>
+          </div>
+
+          <div class="error-card hidden" id="errorCard">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.2" stroke-linecap="round" /></svg>
+            <span>VERBINDING VERBROKEN — tik om opnieuw te proberen</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="scratch" class="hidden"></canvas>
+    <div class="toast hidden" id="toast"></div>
+
+    <script src="js/common.js"></script>
+    <script src="js/lullaby.js"></script>
+    <script src="js/rtc.js"></script>
+    <script src="js/parent.js"></script>
+  </body>
+</html>
