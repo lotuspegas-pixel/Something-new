@@ -1234,6 +1234,9 @@
     $('parentOfferInput').focus();
     if ($('parentScanBtn')) $('parentScanBtn').click();
   };
+  // Decoratieve QR op het startscherm (er is nog geen actieve kamercode vóór
+  // het koppelen); encodeert de eigen site-URL zodat scannen nooit stukloopt.
+  if ($('homeQrPreview')) QRKit.render('homeQrPreview', location.href.split('#')[0], 4);
   $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
