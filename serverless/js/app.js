@@ -62,6 +62,9 @@
       qr.addData(text);
       qr.make();
       box.innerHTML = qr.createImgTag(cell || 4, 8);
+      // decoratief voor hulptechnologie: de container draagt het label
+      const img = box.querySelector('img');
+      if (img) { img.alt = ''; img.setAttribute('aria-hidden', 'true'); }
     } catch (e) {
       box.innerHTML =
         '<div style="color:#333;font-size:12px;text-align:center;padding:10px">' + T('copyCode') + '</div>';
@@ -1093,6 +1096,26 @@
       startParentConnect(h);
     }
   })();
+
+  // ---------------------------------------------------------- toegankelijkheid
+  // Alle inline SVG's zijn decoratief; knoppen dragen tekst of aria-label.
+  document.querySelectorAll('svg').forEach((s) => s.setAttribute('aria-hidden', 'true'));
+  // Div-gebaseerde schakelaars en kaarten ook met het toetsenbord bedienbaar.
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches &&
+        e.target.matches('[role="switch"], [role="button"]:not(button)')) {
+      e.preventDefault();
+      e.target.click();
+    }
+  });
+  // aria-checked meebewegen met de visuele switch-status.
+  document.addEventListener('click', (e) => {
+    const row = e.target && e.target.closest && e.target.closest('[role="switch"]');
+    if (row) {
+      const sw = row.querySelector('.switch');
+      if (sw) row.setAttribute('aria-checked', sw.classList.contains('on') ? 'true' : 'false');
+    }
+  });
 
   document.addEventListener('pointerdown', () => {
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();

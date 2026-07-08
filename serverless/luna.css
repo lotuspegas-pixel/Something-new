@@ -1853,3 +1853,13 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .vcard video { z-index: 1; background: transparent; }
 .vcard .vcard-ph, .vcard .vcard-badge, .vcard .vcard-focus, .vcard .vcard-hd, .vcard .vcard-shade, .vcard .night-veil { z-index: 2; }
 .vcard.privacy .vcard-poster { filter: brightness(.7) blur(2px); }
+
+/* toegankelijkheid: zichtbare toetsenbordfocus, alleen bij toetsenbordgebruik */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #E8825E;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
