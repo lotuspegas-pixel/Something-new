@@ -890,6 +890,12 @@
   }
 
   function detect() {
+    // Expliciete ?lang= in de URL wint: dat maakt /?lang=de een deelbare en
+    // door zoekmachines indexeerbare taalvariant (zie hreflang in index.html).
+    try {
+      const q = new URLSearchParams(location.search).get('lang');
+      if (q && S[q]) return q;
+    } catch (e) {}
     let saved = null;
     try { saved = localStorage.getItem(STORE_KEY); } catch (e) {}
     if (saved && S[saved]) return saved;
