@@ -58,29 +58,13 @@
     }
     return navigator.mediaDevices.getUserMedia(c);
   }
+  // QR-weergave/zoom/scanner leven in js/qr.js (QRKit); dunne wrappers
+  // houden de bestaande aanroepplekken en appstatus (toast/i18n/getMedia) hier.
   function renderQR(containerId, text, cell) {
-    const box = $(containerId);
-    if (box.dataset) box.dataset.code = text;
-    try {
-      const qr = qrcode(0, 'L');
-      qr.addData(text);
-      qr.make();
-      box.innerHTML = qr.createImgTag(cell || 4, 8);
-      // decoratief voor hulptechnologie: de container draagt het label
-      const img = box.querySelector('img');
-      if (img) { img.alt = ''; img.setAttribute('aria-hidden', 'true'); }
-    } catch (e) {
-      box.innerHTML =
-        '<div style="color:#333;font-size:12px;text-align:center;padding:10px">' + T('copyCode') + '</div>';
-    }
+    QRKit.render(containerId, text, cell, T('copyCode'));
   }
-  // Toon de QR groot op het volledige scherm zodat een camera hem makkelijk leest.
-  function openQrZoom(text) {
-    if (!text) return;
-    renderQR('qrZoomBox', text, 10);
-    $('qrZoom').classList.remove('hidden');
-  }
-  function closeQrZoom() { $('qrZoom').classList.add('hidden'); }
+  function openQrZoom(text) { QRKit.openZoom(text, T('copyCode')); }
+  function closeQrZoom() { QRKit.closeZoom(); }
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -89,46 +73,15 @@
       toast(T('copyFail'));
     }
   }
-  let scannerStop = null;
-  async function startScanner(videoEl, onResult) {
-    stopScanner();
-    let stream;
-    try {
-      stream = await getMedia({ video: { facingMode: 'environment' }, audio: false });
-    } catch (e) {
-      toast(T('scanFail'));
-      return;
-    }
-    videoEl.srcObject = stream;
-    await videoEl.play().catch(() => {});
-    const canvas = $('scratch');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    let stopped = false;
-    scannerStop = () => {
-      stopped = true;
-      stream.getTracks().forEach((t) => t.stop());
-      scannerStop = null;
-    };
-    (function loop() {
-      if (stopped) return;
-      if (videoEl.readyState >= 2 && videoEl.videoWidth) {
-        canvas.width = videoEl.videoWidth;
-        canvas.height = videoEl.videoHeight;
-        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const res = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-        if (res && res.data) {
-          scannerStop();
-          onResult(res.data);
-          return;
-        }
-      }
-      requestAnimationFrame(loop);
-    })();
+  function startScanner(videoEl, onResult) {
+    return QRKit.startScanner(
+      videoEl, $('scratch'),
+      () => getMedia({ video: { facingMode: 'environment' }, audio: false }),
+      onResult,
+      () => toast(T('scanFail'))
+    );
   }
-  function stopScanner() {
-    if (scannerStop) scannerStop();
-  }
+  function stopScanner() { QRKit.stopScanner(); }
   // ---------------------------------------------------------------- verbinding (PeerJS)
   // Korte koppelcode via een licht online "koppel-hulpje" (PeerJS-broker).
   // De broker koppelt alleen de twee apparaten; beeld en geluid gaan
@@ -675,7 +628,7 @@
 
   function renderChips() {
     const box = $('chips');
-    box.innerHTML = '';
+    box.replaceChildren();
     tracks.forEach((t, i) => {
       const c = document.createElement('div');
       c.className = 'chip' + (playing && i === trackIndex ? ' on' : '');
@@ -757,7 +710,7 @@
     const box = $('playlist');
     if (!box) return;
     const list = await loadPlaylist();
-    box.innerHTML = '';
+    box.replaceChildren();
     if (!list.length) {
       const d = document.createElement('div');
       d.className = 'playlist-empty';
@@ -769,8 +722,12 @@
     list.forEach((s, i) => {
       const row = document.createElement('div');
       row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
-      row.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="tt"></span><span class="eq"><i></i><i></i><i></i></span>';
-      row.querySelector('.tt').textContent = s.title;
+      const mk = (cls, txt) => { const el = document.createElement('span'); el.className = cls; if (txt != null) el.textContent = txt; return el; };
+      row.appendChild(mk('n', String(i + 1)));
+      row.appendChild(mk('tt', s.title));
+      const eq = mk('eq');
+      for (let k = 0; k < 3; k++) eq.appendChild(document.createElement('i'));
+      row.appendChild(eq);
       row.onclick = () => parentPlayMusic(i);
       box.appendChild(row);
     });
@@ -861,15 +818,23 @@
   function renderEventLog() {
     const fill = (box, max) => {
       if (!box) return;
-      box.innerHTML = '';
+      box.replaceChildren();
       events.slice(0, max).forEach((e) => {
         const row = document.createElement('div');
         row.className = 'evrow';
-        row.innerHTML = '<span class="ev-ic"><svg viewBox="0 0 24 24" width="15" height="15">' + (EV_ICON[e.kind] || EV_ICON.connect) + '</svg></span>'
-          + '<span class="ev-b"><b></b><small></small></span><span class="ev-t"></span>';
-        row.querySelector('.ev-b b').textContent = e.title;
-        row.querySelector('.ev-b small').textContent = e.sub || '';
-        row.querySelector('.ev-t').textContent = e.time;
+        const ic = document.createElement('span');
+        ic.className = 'ev-ic';
+        // EV_ICON bevat uitsluitend statische literals — nooit invoerdata.
+        ic.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">' + (EV_ICON[e.kind] || EV_ICON.connect) + '</svg>';
+        const body = document.createElement('span');
+        body.className = 'ev-b';
+        const b = document.createElement('b'); b.textContent = e.title;
+        const sm = document.createElement('small'); sm.textContent = e.sub || '';
+        body.append(b, sm);
+        const tm = document.createElement('span');
+        tm.className = 'ev-t';
+        tm.textContent = e.time;
+        row.append(ic, body, tm);
         box.appendChild(row);
       });
     };
