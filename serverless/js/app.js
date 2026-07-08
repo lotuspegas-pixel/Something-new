@@ -14,18 +14,22 @@
   // verkeer (DTLS-SRTP) en kan niet meekijken. Het gratis Open Relay
   // Project is de best-effort standaard; vervang voor productie/Plus door
   // een eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
-  const ICE = window.BABYFOON_ICE || [
-    { urls: 'stun:stun.l.google.com:19302' },
-    {
-      urls: [
-        'turn:openrelay.metered.ca:80',
-        'turn:openrelay.metered.ca:443',
-        'turns:openrelay.metered.ca:443?transport=tcp',
-      ],
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-  ];
+  const ICE = window.BABYFOON_ICE ||
+    ((window.Plus && Plus.isActive() && Plus.config && Plus.config.turn)
+      // Plus: dedicated relay van de eigenaar (betrouwbaarder dan best-effort)
+      ? [{ urls: 'stun:stun.l.google.com:19302' }, Plus.config.turn]
+      : [
+        { urls: 'stun:stun.l.google.com:19302' },
+        {
+          urls: [
+            'turn:openrelay.metered.ca:80',
+            'turn:openrelay.metered.ca:443',
+            'turns:openrelay.metered.ca:443?transport=tcp',
+          ],
+          username: 'openrelayproject',
+          credential: 'openrelayproject',
+        },
+      ]);
   const $ = (id) => document.getElementById(id);
   const T = (k) => (window.I18n ? window.I18n.t(k) : k);
   // Slaapmuziek-ID → i18n-sleutel (labels worden vertaald weergegeven).
@@ -1132,6 +1136,67 @@
   }
 
   // ------------------------------------------------------------------ wiring
+  // ------------------------------------------------------------- Plus (P2.2)
+  (function initPlusUI() {
+    if (!window.Plus) return;
+    const st = $('plusState'), up = $('plusUpgrade'), mg = $('plusManage'), rs = $('plusRestore');
+    const cfg = Plus.config;
+    const paint = () => {
+      if (!st) return;
+      if (Plus.isActive()) {
+        st.textContent = T('plusActive'); st.classList.add('ok'); st.classList.remove('hidden');
+        if (up) up.classList.add('hidden');
+        if (mg && cfg && cfg.portalUrl) mg.classList.remove('hidden');
+        if (rs) rs.classList.add('hidden');
+      } else if (Plus.configured()) {
+        st.classList.add('hidden');
+        if (up) up.classList.remove('hidden');
+        if (rs && cfg.verifyUrl) rs.classList.remove('hidden');
+      } // niet geconfigureerd: rustige "binnenkort"-status, niets kapot
+    };
+    if (up) up.onclick = async () => {
+      const email = prompt(T('plusEmailQ'));
+      if (!email) return;
+      try {
+        const r = await fetch(cfg.checkoutUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) });
+        const d = await r.json();
+        if (d && d.url) location.href = d.url; else toast(T('plusError'));
+      } catch (e) { toast(T('plusError')); }
+    };
+    if (mg) mg.onclick = async () => {
+      const rec = Plus.read();
+      const email = (rec && rec.email) || prompt(T('plusEmailQ'));
+      if (!email) return;
+      try {
+        const r = await fetch(cfg.portalUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) });
+        const d = await r.json();
+        if (d && d.url) location.href = d.url; else toast(T('plusError'));
+      } catch (e) { toast(T('plusError')); }
+    };
+    if (rs) rs.onclick = async () => {
+      const email = prompt(T('plusEmailQ'));
+      if (!email) return;
+      const ok = await Plus.restore(email).catch(() => false);
+      toast(ok ? T('plusActive') : T('plusNotFound'));
+      paint();
+    };
+    // Terug uit Stripe Checkout (?plus_session=…): token ophalen met de sessie.
+    try {
+      const q = new URLSearchParams(location.search);
+      const sess = q.get('plus_session');
+      if (sess && cfg && cfg.verifyUrl) {
+        fetch(cfg.verifyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sess }) })
+          .then((r) => r.json())
+          .then((d) => { if (d && d.token) { Plus.store(d.token); toast(T('plusActive')); paint(); } })
+          .catch(() => {});
+        q.delete('plus_session');
+        const rest = q.toString();
+        history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+      }
+    } catch (e) {}
+    paint();
+  })();
+
   // Zijbalknavigatie: elke knop toont zijn eigen deelweergave.
   const VIEW_IDS = { monitor: 'dviewMonitor', talk: 'dviewTalk', lullabies: 'dviewLullabies', night: 'dviewNight', alerts: 'dviewAlerts', log: 'dviewLog', settings: 'dviewSettings' };
   document.querySelectorAll('.dnav').forEach((b) => {

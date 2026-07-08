@@ -506,6 +506,22 @@
               <div class="set-row"><span data-i18n="zoom">Zoom</span><input type="range" id="setZoom" min="10" max="30" value="10" aria-label="Zoom" /><b id="setZoomVal">1.0×</b></div>
               <div class="set-row"><span data-i18n="room">Room</span><b id="roomLabel2">—</b></div>
             </div>
+            <div class="dpanel plus-panel" id="plusPanel">
+              <h2 class="dpanel-h"><span class="plus-badge">PLUS</span><span data-i18n="plusTitle">BabyPhone Plus</span></h2>
+              <p class="dpanel-sub" data-i18n="plusSub">For nights when it really has to work.</p>
+              <ul class="plus-feats">
+                <li data-i18n="plusFeat1">Dedicated relay — guaranteed connection on any network</li>
+                <li data-i18n="plusFeat2">Watch together: multiple parent devices at once</li>
+                <li data-i18n="plusFeat3">Sleep &amp; sound history</li>
+                <li data-i18n="plusFeat4">Premium lullaby library</li>
+              </ul>
+              <div class="plus-actions">
+                <button class="btn plus-cta hidden" id="plusUpgrade" type="button" data-i18n="plusUpgrade">Upgrade to Plus</button>
+                <button class="btn secondary hidden" id="plusManage" type="button" data-i18n="plusManage">Manage subscription</button>
+                <button class="btn secondary hidden" id="plusRestore" type="button" data-i18n="plusRestore">Restore purchase</button>
+                <span class="plus-state" id="plusState" data-i18n="plusSoon">Coming soon</span>
+              </div>
+            </div>
           </div>
         </main>
       </div>
@@ -607,6 +623,7 @@
     <script src="vendor/peerjs.min.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/lullaby.js"></script>
+    <script src="js/plus.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>

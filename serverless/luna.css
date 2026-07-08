@@ -1890,3 +1890,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .dash .track.on { background: rgba(232, 130, 94, 0.14); border-color: rgba(232, 130, 94, 0.4); color: var(--d-accent); }
 .dash .track .eq i { background: var(--d-accent); }
 .dash .playlist-empty { color: var(--d-muted); background: none; border: 1px dashed var(--d-line); }
+
+/* BabyPhone Plus (Instellingen-weergave) */
+.plus-panel { border-color: rgba(232, 130, 94, 0.35); }
+.plus-badge { display: inline-block; background: linear-gradient(135deg, #EC8A63, #E0714B); color: #fff; font: 800 10.5px 'Nunito', sans-serif; letter-spacing: 0.06em; border-radius: 7px; padding: 3px 8px; margin-right: 9px; vertical-align: 2px; }
+.plus-feats { list-style: none; margin: 0 0 16px; padding: 0; }
+.plus-feats li { position: relative; padding: 6px 0 6px 26px; color: var(--d-text); font-size: 14px; font-weight: 700; }
+.plus-feats li::before { content: '✓'; position: absolute; left: 2px; color: var(--d-ok); font-weight: 900; }
+.plus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.plus-cta { background: linear-gradient(135deg, #EC8A63, #E0714B); border: none; }
+.plus-state { color: var(--d-muted); font-size: 13px; font-weight: 700; }
+.plus-state.ok { color: var(--d-ok); }
