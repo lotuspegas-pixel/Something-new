@@ -140,7 +140,7 @@
   // Koppel het besturingskanaal (DataConnection) aan de afhandeling.
   function attachControl(conn) {
     controlConn = conn;
-    conn.on('data', (d) => { if (d && typeof d === 'object') handleControl(d); });
+    conn.on('data', (d) => { lastControlAt = Date.now(); if (d && typeof d === 'object') handleControl(d); });
     conn.on('close', onPeerDrop);
   }
   function playTalkback(stream) {
@@ -170,6 +170,7 @@
     $('placeholder').classList.add('hidden');
     $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
     startParentDevice();
+    startHeartbeat();
     sendControl({ cmd: 'ping' });
   }
   function onPeerDrop() {
@@ -241,8 +242,45 @@
     clearConnectTimers();
     reconnectAttempt = 0;
     wasConnected = true;
+    lastControlAt = Date.now();
     const err = $('parentError'); if (err) err.classList.add('hidden');
     setPlaceholderSpinner(true);
+  }
+  // Het 'close'-event van het datakanaal blijft bij een onnette verbreking
+  // (wifi weg, batterij leeg, browser gedood) soms uit. Daarom bewaken we
+  // ook de onderliggende RTCPeerConnection-status…
+  function watchMediaPc(pc) {
+    if (!pc || pc.__bfWatched) return;
+    pc.__bfWatched = true;
+    pc.addEventListener('connectionstatechange', () => {
+      if (shuttingDown) return;
+      if (pc.connectionState === 'failed') { onPeerDrop(); return; }
+      if (pc.connectionState === 'disconnected') {
+        // ICE krijgt even om zelf te herstellen; daarna als verbroken behandelen.
+        setTimeout(() => {
+          if (!shuttingDown && pc.connectionState === 'disconnected') onPeerDrop();
+        }, 4000);
+      }
+    });
+  }
+  // …én stuurt de ouder een hartslag over het besturingskanaal. Blijft het
+  // antwoord (batterijstatus) te lang uit, dan geldt dat als verbroken.
+  const HEARTBEAT_TIMEOUT = window.BABYFOON_HEARTBEAT_TIMEOUT || 15000;
+  let lastControlAt = 0;
+  let heartbeatId = null;
+  function startHeartbeat() {
+    if (heartbeatId) return;
+    lastControlAt = Date.now();
+    heartbeatId = setInterval(() => {
+      if (shuttingDown || role !== 'parent' || !wasConnected || reconnectTimer) return;
+      if (controlConn && controlConn.open) {
+        try { controlConn.send({ cmd: 'ping' }); } catch (e) {}
+      }
+      if (Date.now() - lastControlAt > HEARTBEAT_TIMEOUT) {
+        lastControlAt = Date.now(); // niet nogmaals vuren tijdens dezelfde herverbindingspoging
+        onPeerDrop();
+      }
+    }, 4000);
   }
 
   // ------------------------------------------------------------------ besturingscommando's
@@ -329,7 +367,7 @@
       conn.on('open', () => {
         try {
           const call = peer.call(conn.peer, localStream);
-          if (call) mediaPc = call.peerConnection || mediaPc;
+          if (call) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
         } catch (e) {}
         babyConnected();
         reportBattery();
@@ -338,7 +376,7 @@
     peer.on('call', (call) => {
       // terugpraten van de ouder (audio) → afspelen bij de baby
       call.answer();
-      if (!mediaPc) mediaPc = call.peerConnection || mediaPc;
+      if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
       call.on('stream', playTalkback);
     });
     peer.on('disconnected', () => {
@@ -409,7 +447,7 @@
           try {
             micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
             const tcall = peer.call(babyId, micStream);
-            if (tcall && !mediaPc) mediaPc = tcall.peerConnection || mediaPc;
+            if (tcall && !mediaPc) { mediaPc = tcall.peerConnection || mediaPc; watchMediaPc(mediaPc); }
           } catch (e) {}
         }
       });
@@ -418,6 +456,7 @@
       // videobeeld van de baby
       call.answer();
       mediaPc = call.peerConnection || mediaPc;
+      watchMediaPc(mediaPc);
       call.on('stream', (s) => {
         remoteStream = s;
         $('video').srcObject = s;

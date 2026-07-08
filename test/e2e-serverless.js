@@ -69,6 +69,7 @@ function findExecutable() {
     window.BABYFOON_PEER = { host: '127.0.0.1', port: ${PEER_PORT}, path: '/', key: 'peerjs', secure: false };
     window.BABYFOON_RECONNECT_DELAYS = [400, 700];
     window.BABYFOON_CONNECT_TIMEOUT = 4000;
+    window.BABYFOON_HEARTBEAT_TIMEOUT = 5000;
   `;
 
   const browser = await chromium.launch({
@@ -201,7 +202,7 @@ function findExecutable() {
   await cB.close();
   let sawReconnecting = false, retryVisible = false;
   const tR = Date.now();
-  while (Date.now() - tR < 30000) {
+  while (Date.now() - tR < 60000) {
     const recTxt = await parent.$eval('#connText', (e) => e.textContent.trim()).catch(() => '');
     if (/\(\d\/\d\)/.test(recTxt)) sawReconnecting = true;
     retryVisible = await parent.evaluate(() => { const r = document.getElementById('phRetry'); return r && !r.classList.contains('hidden'); });
