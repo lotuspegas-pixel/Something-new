@@ -59,6 +59,7 @@
     <link rel="stylesheet" href="luna.css" />
     <link rel="stylesheet" href="dash.css" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -180,10 +181,9 @@
       <div class="lp">
         <!-- top nav -->
         <header class="lp-nav">
-          <div class="lp-brand">
-            <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>
-            <span class="brand-name">BabyPhone<span class="tld">.online</span></span>
-          </div>
+          <a class="lp-brand" href="./" aria-label="BabyPhone.online">
+            <img class="lp-logo" src="assets/logo.png" alt="BabyPhone.online" width="200" height="52" />
+          </a>
           <div class="lp-nav-right">
             <a href="privacy.html" class="lp-navlink" data-i18n="navPrivacy">Privacy</a>
             <a href="#lp-choose" class="lp-navlink" data-i18n="howTitle">How it works</a>
@@ -215,15 +215,7 @@
             </ul>
           </div>
           <div class="lp-hero-visual" aria-hidden="true">
-            <div class="mini-monitor">
-              <div class="mm-top"><span class="mm-title" data-i18n="subtitleParent">Parent unit</span><span class="mm-live"><i></i><span data-i18n="live">LIVE</span></span></div>
-              <div class="mm-screen"><div class="mm-glow"></div><div class="mm-crib"></div></div>
-              <div class="mm-controls">
-                <div class="mm-btn"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-                <div class="mm-btn on"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11z" fill="#fff"/></svg></div>
-                <div class="mm-btn"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-              </div>
-            </div>
+            <img class="lp-hero-img" src="assets/hero-devices.png" alt="" width="1126" height="694" loading="eager" />
           </div>
         </section>
 
@@ -235,7 +227,7 @@
               <div class="lp-cell">
                 <div class="lp-cell-top">
                   <div class="lp-illus baby" aria-hidden="true">
-                    <div class="camera-product"><span class="camera-lens"></span></div>
+                    <img class="lp-cam-img" src="assets/camera.png" alt="" width="228" height="353" />
                   </div>
                   <div class="lp-cell-txt">
                     <h3 data-i18n="roleBabyTitle">Baby unit</h3>
@@ -313,7 +305,7 @@
 
         <!-- footer -->
         <footer class="lp-footer">
-          <div class="lp-footer-brand"><span class="brand-mark sm"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>BabyPhone<span class="tld">.online</span></div>
+          <div class="lp-footer-brand"><img class="lp-logo foot" src="assets/logo.png" alt="BabyPhone.online" width="170" height="44" /></div>
           <p data-i18n="footPrivacy">Video and sound go directly between your own devices. No recordings are stored.</p>
           <p class="lp-foot-dis" data-i18n="footDisclaimer">An aid, not a replacement for in-person supervision of your baby.</p>
           <nav class="lp-foot-links" aria-label="Legal">
@@ -377,7 +369,7 @@
     <!-- ======================= PARENT UNIT (dark dashboard) ======================= -->
     <section id="screenParent" class="hidden">
       <div class="dash-topbar">
-        <div class="dash-brand"><span class="dash-mark"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>BabyPhone<span class="tld">.online</span></div>
+        <div class="dash-brand"><img class="dash-logo-img" src="assets/logo.png" alt="BabyPhone.online" width="150" height="39" /></div>
         <div class="dash-topright">
           <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectParent"></span></span>
           <button class="dash-gear" data-i18n-title="navSettings" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 3h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 21h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
@@ -557,7 +549,7 @@
     <section id="screenBaby" class="hidden">
       <div class="bdash">
         <div class="dash-topbar">
-          <div class="dash-brand"><span class="dash-mark"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.4 6.4 0 0 0 9.5 9.5z" fill="#fff" opacity=".96"/></svg></span>BabyPhone<span class="tld">.online</span></div>
+          <div class="dash-brand"><img class="dash-logo-img" src="assets/logo.png" alt="BabyPhone.online" width="150" height="39" /></div>
           <div class="dash-topright">
             <span class="lang-pill"><svg class="globe" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSelectBaby"></span></span>
             <button class="dash-gear" data-i18n-title="navSettings" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 3h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 21h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>

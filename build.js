@@ -52,10 +52,12 @@ fs.writeFileSync(path.join(OUT, 'index.html'), html);
 const copies = [
   'privacy.html', 'terms.html', 'refunds.html', 'contact.html', 'accessibility.html',
   'how-it-works.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
-  'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.png',
+  'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.png',
 ];
 for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
 fs.cpSync(path.join(SL, 'music'), path.join(OUT, 'music'), { recursive: true });
+// merk-/product-afbeeldingen (logo, camera, hero) — nodig voor de homepage
+fs.cpSync(path.join(SL, 'assets'), path.join(OUT, 'assets'), { recursive: true });
 
 const kb = (f) => Math.round(fs.statSync(f).size / 1024);
 console.log('Build →', OUT);

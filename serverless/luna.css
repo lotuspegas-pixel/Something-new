@@ -1523,7 +1523,9 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 
 /* nav */
 .lp-nav { display: flex; align-items: center; justify-content: space-between; padding: 8px 2px 6px; }
-.lp-brand { display: flex; align-items: center; gap: 11px; }
+.lp-brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.lp-logo { height: 46px; width: auto; display: block; }
+.lp-logo.foot { height: 40px; }
 .lp .brand-mark { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(150deg, #EC8A63, var(--lp-accent-2)); display: grid; place-items: center; box-shadow: 0 6px 18px rgba(224, 113, 75, 0.4); }
 .lp .brand-mark.sm { width: 26px; height: 26px; border-radius: 9px; }
 .lp .brand-name { font: 700 20px 'Quicksand', sans-serif; color: #fff; }
@@ -1546,8 +1548,11 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-bullets b { display: block; font: 700 15.5px 'Quicksand', sans-serif; color: #fff; }
 .lp-bullets small { display: block; color: var(--lp-muted); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
 
-/* hero device preview */
+/* hero device preview — echte productfoto (camera + tablet + telefoon) */
 .lp-hero-visual { display: flex; justify-content: center; }
+.lp-hero-img { width: 100%; max-width: 560px; height: auto; display: block; filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5)); -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 99%); mask-image: linear-gradient(to bottom, #000 86%, transparent 99%); }
+/* echte camera-illustratie in de babyunit-kaart */
+.lp-cam-img { height: 138px; width: auto; display: block; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45)); }
 .mini-monitor { width: 100%; max-width: 420px; background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 22px; padding: 14px; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45); }
 .mm-top { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; }
 .mm-title { font: 700 12px 'Nunito', sans-serif; color: var(--lp-muted); }

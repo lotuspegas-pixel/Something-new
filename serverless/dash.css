@@ -205,6 +205,7 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .dash-brand { display: inline-flex; align-items: center; gap: 10px; font: 700 20px 'Quicksand', sans-serif; color: #fff; }
 .dash-brand .tld { color: var(--d-accent, #E8825E); font-weight: 600; }
 .dash-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, #EC8A63, #E0714B); display: grid; place-items: center; box-shadow: 0 5px 14px rgba(224,113,75,.35); }
+.dash-logo-img { height: 34px; width: auto; display: block; }
 .dash-topright { display: flex; align-items: center; gap: 12px; }
 .dash-gear { width: 40px; height: 40px; border-radius: 12px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); color: #8C95A8; display: grid; place-items: center; cursor: pointer; }
 .dash { padding-top: 8px; }
