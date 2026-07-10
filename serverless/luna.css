@@ -1363,6 +1363,8 @@ textarea.code:focus { outline: none; }
 .pair-head .unit-badge svg { width: 30px; height: 30px; color: #fff; }
 .pair-head.baby .unit-badge { background: linear-gradient(150deg, #EEA88F, #E08360); }
 .pair-head.parent .unit-badge { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
+.pair-head .unit-badge.cam { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.09); padding: 7px; }
+.pair-head .unit-badge.cam img { width: auto; height: 40px; display: block; filter: drop-shadow(0 7px 12px rgba(0,0,0,.45)); }
 .pair-head h1 { font: 700 22px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
 .pair-head .unit-sub { color: var(--muted); font-size: 13.5px; font-weight: 600; max-width: 300px; }
 .waiting-pill {

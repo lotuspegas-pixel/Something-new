@@ -31,6 +31,7 @@ body.app-mode {
 .dash-title { display: flex; align-items: center; gap: 12px; }
 .dash-title-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(232, 130, 94, 0.14); color: var(--d-accent); display: grid; place-items: center; flex: 0 0 auto; }
 .dash-title-ic.baby { background: rgba(232, 130, 94, 0.14); }
+.dash-title-ic.cam img { width: auto; height: 28px; display: block; filter: drop-shadow(0 4px 7px rgba(0,0,0,.4)); }
 .dash-title h1 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0; }
 .dash-title .tld { color: var(--d-accent); font-weight: 600; }
 .dash-title small { color: var(--d-muted); font-size: 12.5px; font-weight: 700; }
