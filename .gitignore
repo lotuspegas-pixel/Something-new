@@ -10,3 +10,6 @@ npm-debug.log*
 
 # Build output
 dist/
+
+# Delivery artifacts
+*.zip
