@@ -87,7 +87,7 @@ body.app-mode {
 .ameter-bars i { flex: 1; height: 20%; border-radius: 2px; background: linear-gradient(180deg, var(--d-accent), var(--d-accent2)); opacity: 0.35; transition: height 0.08s, opacity 0.08s; }
 .ameter-scale { display: flex; justify-content: space-between; margin-top: 8px; color: var(--d-muted); font: 700 10px 'Nunito', sans-serif; }
 
-.ctrlrow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.ctrlrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .ctrlbtn { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 18px 8px; border-radius: 16px; background: var(--d-surf); border: 1px solid var(--d-line); color: var(--d-text); cursor: pointer; font: 700 12.5px 'Nunito', sans-serif; transition: 0.15s; }
 .ctrlbtn .cb-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--d-surf2); display: grid; place-items: center; color: var(--d-muted); }
 .ctrlbtn:hover { border-color: rgba(255,255,255,0.14); }
@@ -95,6 +95,9 @@ body.app-mode {
 .ctrlbtn.on .cb-ic { background: rgba(255, 255, 255, 0.18); color: #fff; }
 .ctrlbtn.danger .cb-ic { color: var(--d-accent); }
 .ctrlbtn.danger { color: #F1A08A; }
+.ctrlbtn.active { background: linear-gradient(150deg, #E5484D, #C22C31); border-color: transparent; color: #fff; box-shadow: 0 10px 24px rgba(229, 72, 77, 0.35); }
+.ctrlbtn.active .cb-ic { background: rgba(255, 255, 255, 0.18); color: #fff; animation: recPulse 1.4s ease-in-out infinite; }
+@keyframes recPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .statcards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .statcard { background: var(--d-surf); border: 1px solid var(--d-line); border-radius: 16px; padding: 15px; }

@@ -820,6 +820,7 @@
     toast(T('saved'));
   }
   function toggleRecord(stream, btn, prefix) {
+    const label = btn && btn.querySelector('span:not(.cb-ic)');
     if (!stream) return toast(T('noStream'));
     if (recorder) { recorder.stop(); return; }
     if (!window.MediaRecorder) return toast(T('recNotSupported'));
@@ -831,11 +832,13 @@
     recorder.onstop = async () => {
       const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
       btn.classList.remove('active');
+      if (label) label.textContent = T('recordVideo');
       recorder = null;
       await saveBlob(blob, prefix, (blob.type || '').includes('mp4') ? 'mp4' : 'webm');
     };
     recorder.start(1000);
     btn.classList.add('active');
+    if (label) label.textContent = T('stop');
     toast(T('recStarted'));
   }
 
@@ -968,6 +971,8 @@
       const v = $('alSensVal'); if (v) v.textContent = sensitivity + '%';
     };
     setAlarmUI();
+    // Video+audio van de babyunit lokaal opnemen (MediaRecorder, opslaan op eigen apparaat)
+    if ($('btnRecord')) $('btnRecord').onclick = () => toggleRecord(remoteStream, $('btnRecord'), 'babyunit');
     // Instellingen-weergave: volume/helderheid/zoom
     if ($('setVolume')) $('setVolume').oninput = () => {
       volume = +$('setVolume').value; muted = volume === 0;
