@@ -179,7 +179,42 @@ element IDs used by `js/app.js` (pairing, WebRTC signaling, dashboard
 controls) were preserved exactly; only markup around icons/images and
 supporting CSS changed.
 
-## 8. Design system (dark, premium, nocturnal)
+## 8. Local recording (baby unit video + audio)
+
+The parent dashboard's control row has a **Record** button
+(`#btnRecord`, next to Talk back / Lullaby / Night light / Cry alert /
+Stop) that records the live incoming baby-unit stream — video and audio
+together — and saves it straight to the parent's own device. Nothing is
+uploaded; this stays consistent with the app's "no cloud, no recordings
+stored on a server" privacy claim, since the file never leaves the
+browser.
+
+- Uses the browser's native `MediaRecorder` API on `remoteStream` (the
+  same WebRTC stream already rendered in the `<video>` element), so no
+  extra permissions or connections are needed.
+- Picks the best supported codec automatically (`vp9`/`vp8`+`opus`
+  WebM, falling back to MP4 where WebM isn't supported).
+- On stop, saves via the File System Access API (`showSaveFilePicker`)
+  where available, so the user picks the destination folder directly;
+  falls back to a normal browser download (`babyunit-<ISO
+  timestamp>.webm`) everywhere else.
+- The button turns red and its label switches to "Stop" while
+  recording (`.ctrlbtn.active`, with a pulsing icon), and reverts once
+  the file is saved.
+- If the page is closed mid-recording, the existing `pagehide` handler
+  stops the recorder so the in-progress clip is still finalized and
+  saved rather than lost.
+- Fully localized: the "Record" label was added as a new `recordVideo`
+  i18n key across all 30 supported languages (the "Recording
+  started" / "Saved" / "Recording not supported" toast strings already
+  existed from earlier i18n work and were simply wired up).
+
+This reused an existing `toggleRecord()`/`saveBlob()` scaffold in
+`js/app.js` that had been written earlier but never connected to a
+button — the only new code was the UI wiring, the button markup, the
+`.ctrlbtn.active` styling, and the label-swap logic.
+
+## 9. Design system (dark, premium, nocturnal)
 
 Defined in `CLAUDE.md` and implemented via CSS custom properties:
 
@@ -199,7 +234,7 @@ restrained gradients. Explicitly avoids: generic SaaS-template look,
 overly bright colors, childish pastels, cluttered dashboards, "AI landing
 page" clichés.
 
-## 9. Deployment
+## 10. Deployment
 
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
@@ -216,7 +251,7 @@ page" clichés.
   which is designed to run on a serverless function platform (e.g.
   Cloudflare Workers) if/when the paid tier is activated.
 
-## 10. Testing
+## 11. Testing
 
 - `test/e2e-serverless.js` — the main regression suite for the live app: room
   code generation, pairing, live video/audio, playlist sync, battery status,
@@ -231,7 +266,7 @@ page" clichés.
 - CI (`.github/workflows/ci.yml`) runs all of the above on every push and
   pull request against `main`.
 
-## 11. Known follow-ups / not yet done
+## 12. Known follow-ups / not yet done
 
 - Legal pages (`contact.html`, `refunds.html`, `accessibility.html`) still
   contain `<em class="todo">[…]</em>` placeholders for operator legal name,
