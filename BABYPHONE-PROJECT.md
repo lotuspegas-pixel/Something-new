@@ -33,7 +33,7 @@ Core flow:
 - Product/brand name is **always** "BabyPhone.online" — never "Luna Unit" in
   user-facing copy (internal codename only).
 - Design rules are codified in `CLAUDE.md` at the repo root (dark premium
-  nursery aesthetic — see section 8 below).
+  nursery aesthetic — see section 10 below).
 
 ## 3. Repository layout
 
@@ -62,7 +62,7 @@ public/                  ← OLDER app version, now served at /legacy/ (kept for
 functions/                ← entitlement-worker.mjs — Stripe/Plus token issuing (Cloudflare-style worker)
 test/                    ← Playwright e2e suites
   e2e.js                   ← legacy /legacy/ app flow
-  e2e-serverless.js         ← main serverless app flow (20 assertions)
+  e2e-serverless.js         ← main serverless app flow (24 assertions)
   e2e-reconnect.js           ← forced-drop / reconnect-with-backoff flow
 .github/workflows/ci.yml  ← runs the e2e suites on push/PR
 build.js                  ← bundles serverless/ into a single self-contained dist/index.html
@@ -77,7 +77,7 @@ npm install
 npm start                  # Express server on :3000 — serverless/ at /, legacy app at /legacy/
 npm run build              # produces dist/ — one self-contained index.html + assets/, music/, legal pages
 npm run lint                # node -c syntax check on all JS
-npm run test:serverless     # Playwright e2e — main app (20 checks)
+npm run test:serverless     # Playwright e2e — main app (24 checks)
 npm run test:reconnect      # Playwright e2e — forced disconnect/reconnect
 npm test                    # Playwright e2e — legacy app
 ```
@@ -141,7 +141,7 @@ are complete and merged into the working branch.
 
 - Rebuilt the landing page and both dashboards from reference screenshots
   to a dark, premium, "nursery-at-night" aesthetic (see design tokens in
-  section 8) — replacing an earlier generic-SaaS-template look.
+  section 10) — replacing an earlier generic-SaaS-template look.
 - Reworked the homepage **"Choose your role"** section into a single framed
   container (`.lp-framed`) with an internal divider line and a floating
   "or" badge between the Baby-unit and Parent-unit cards, matching a
@@ -214,7 +214,86 @@ This reused an existing `toggleRecord()`/`saveBlob()` scaffold in
 button — the only new code was the UI wiring, the button markup, the
 `.ctrlbtn.active` styling, and the label-swap logic.
 
-## 9. Design system (dark, premium, nocturnal)
+## 9. Connection resilience (reconnect, screen-off camera, older browsers)
+
+Added after a real-world bug report: connections sometimes dropped and the
+"reconnecting…" state got stuck loading forever with no video ever coming
+back. The root cause was a real gap — the app already had a solid
+reconnect system (exponential backoff, a connect timeout, a data-channel
+heartbeat, and `RTCPeerConnection.connectionstate` watching — see
+`scheduleParentReconnect()`, `startHeartbeat()`, `watchMediaPc()` in
+`js/app.js`), but **nothing re-validated that state when the tab/phone came
+back to the foreground**. Mobile browsers freeze `setTimeout` timers and
+suspend camera/mic tracks while a tab is backgrounded or the screen is
+locked, so a phone coming out of sleep could be left showing a stale
+"reconnecting" spinner with no trigger to reassess and act.
+
+This also folds in three related asks: the parent unit reconnecting
+reliably even when backgrounded, the baby unit's camera/mic surviving a
+screen-off phone, and support across older/varied browsers. Two of those
+run into genuine browser-platform limits that are worth being explicit
+about: **a web page cannot execute with zero tabs open** (so "reconnect
+even after the site is fully closed" isn't achievable without adding a
+server-side push-notification relay — deliberately **not** built here, to
+keep the app's fully serverless, no-account design), and **no web API can
+prevent the whole browser app being switched to the background** (Wake
+Lock only keeps the *screen* on; switching to a different app on the phone
+is an OS-level suspension no website can override).
+
+What was built, all client-side, no backend:
+
+- **Foreground-regain watchdog** — a `visibilitychange`/`pageshow`/`focus`
+  listener that, when the page becomes visible again, re-checks real
+  connection health (`RTCPeerConnection.connectionState`, live video track
+  `readyState`, time since the last heartbeat) instead of trusting
+  whatever state a frozen backoff timer left behind, and immediately forces
+  a fresh reconnect attempt if anything looks stale. This is the direct fix
+  for "reconnect blijft laden."
+- **Local connection-lost alert** — a short two/three-tone Web Audio beep
+  plus `navigator.vibrate()` fires the moment a real drop is detected
+  (`onPeerDrop()`) and again if retries are exhausted, so a parent whose
+  phone is screen-off nearby notices immediately rather than discovering
+  later that the spinner had been stuck. Distinct tone pattern from the
+  existing cry-alert sound so the two can't be confused.
+- **Camera/mic auto-recovery** (baby side) — `track.onended` listeners on
+  the local video/audio tracks trigger a silent re-`getUserMedia()` +
+  `RTCRtpSender.replaceTrack()` swap (the same pattern `flipCamera()`
+  already used for manual camera flips), so if the OS kills the camera
+  outright, the app tries to bring it back on its own instead of leaving a
+  frozen frame with no way back. The foreground-regain watchdog also
+  triggers this check on resume.
+- **Hardened wake lock** — the native Screen Wake Lock API is still tried
+  first, but there's now a fallback for browsers that don't have it at all
+  (older Android WebViews, desktop Firefox, Safari before 16.4): a hidden
+  1×1 `<canvas>` fed into a looping muted `<video>` via
+  `canvas.captureStream()` — the classic "keep the screen on by playing
+  video" trick, no external asset needed. The lock is also proactively
+  re-requested every 20s in case a browser/power-saving mode silently
+  released it outside of a visibility change. The baby-unit tip banner
+  (`babyTip`, already shown in all 30 languages) now also says not to
+  switch to another app, since that's the one thing wake lock can't cover.
+- **Proactive browser-support check** — on load, before any role is
+  picked, the app checks for `RTCPeerConnection` and
+  `navigator.mediaDevices.getUserMedia`. If either is missing, a clear,
+  translated "this browser can't run BabyPhone.online" screen
+  (`#browserBlock`) is shown immediately instead of only failing later
+  inside the camera-permission flow. This is a hard floor, not a bug: any
+  browser with WebRTC support works (all evergreen browsers, and most
+  non-ancient ones — roughly 2017+); a browser that never implemented
+  WebRTC at all (e.g. Internet Explorer) genuinely cannot run this app, and
+  no polyfill changes that.
+
+New i18n keys (`unsupportedTitle`, `unsupportedBody`, and the extended
+`babyTip`) were added across all 30 languages, following the same
+script-assisted insertion approach used for `recordVideo`.
+
+Covered by `test/e2e-serverless.js`: a synthetic `ended` event on the
+baby's video track proves the auto-recovery path works and the parent
+keeps receiving video; a dedicated slow-backoff baby/parent pair proves a
+`visibilitychange` event forces an immediate reconnect attempt instead of
+waiting out the scheduled backoff delay.
+
+## 10. Design system (dark, premium, nocturnal)
 
 Defined in `CLAUDE.md` and implemented via CSS custom properties:
 
@@ -234,7 +313,7 @@ restrained gradients. Explicitly avoids: generic SaaS-template look,
 overly bright colors, childish pastels, cluttered dashboards, "AI landing
 page" clichés.
 
-## 10. Deployment
+## 11. Deployment
 
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
@@ -251,13 +330,15 @@ page" clichés.
   which is designed to run on a serverless function platform (e.g.
   Cloudflare Workers) if/when the paid tier is activated.
 
-## 11. Testing
+## 12. Testing
 
 - `test/e2e-serverless.js` — the main regression suite for the live app: room
   code generation, pairing, live video/audio, playlist sync, battery status,
   sidebar views (Lullabies, Settings, Plus panel), sleep timer + baby-tile
-  sync, audio-only ↔ camera-visible sync, wrong-code error handling, and the
-  full reconnect-with-backoff → retry flow. **20/20 checks passing.**
+  sync, audio-only ↔ camera-visible sync, camera/mic auto-recovery after a
+  simulated track `ended` event, wrong-code error handling, the full
+  reconnect-with-backoff → retry flow, and a `visibilitychange`-forced
+  immediate reconnect. **24/24 checks passing.**
 - `test/e2e-reconnect.js` — dedicated forced-disconnect scenario (kills the
   peer connection mid-session, verifies `connectionstatechange` +
   heartbeat-based drop detection trigger reconnection).
@@ -266,7 +347,7 @@ page" clichés.
 - CI (`.github/workflows/ci.yml`) runs all of the above on every push and
   pull request against `main`.
 
-## 12. Known follow-ups / not yet done
+## 13. Known follow-ups / not yet done
 
 - Legal pages (`contact.html`, `refunds.html`, `accessibility.html`) still
   contain `<em class="todo">[…]</em>` placeholders for operator legal name,

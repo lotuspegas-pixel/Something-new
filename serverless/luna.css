@@ -1120,6 +1120,35 @@ button {
   color: #333;
 }
 .qr-zoom .btn { display: inline-flex; }
+/* Scherm voor browsers zonder WebRTC-steun — dezelfde donkere, rustige
+   stijl als de rest van de app (zie CLAUDE.md designtokens). */
+.browser-block {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: radial-gradient(120% 70% at 50% 0%, #16233A 0%, #0D1524 44%, #0A101B 90%) no-repeat #0A101B;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.browser-block-inner {
+  max-width: 440px;
+  text-align: center;
+  background: #151E30;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 32px 28px;
+}
+.browser-block h1 {
+  font: 700 22px 'Quicksand', sans-serif;
+  color: #EDEFF4;
+  margin: 0 0 12px;
+}
+.browser-block p {
+  font: 500 14.5px/1.6 'Nunito', sans-serif;
+  color: #8C95A8;
+  margin: 0;
+}
 textarea.code {
   width: 100%;
   min-height: 70px;

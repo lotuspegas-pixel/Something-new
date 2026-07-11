@@ -630,6 +630,14 @@
       </div>
     </div>
 
+    <!-- Getoond i.p.v. de app als de browser geen WebRTC ondersteunt -->
+    <div class="browser-block hidden" id="browserBlock" role="alertdialog" aria-live="assertive">
+      <div class="browser-block-inner">
+        <h1 data-i18n="unsupportedTitle">This browser can't run BabyPhone.online</h1>
+        <p data-i18n="unsupportedBody">This page needs camera, microphone and video-call support that this browser doesn't have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.</p>
+      </div>
+    </div>
+
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
     <script src="vendor/peerjs.min.js"></script>

@@ -178,6 +178,31 @@ function findExecutable() {
   const priv2 = await parent.$eval('#privVal', (e) => e.textContent.trim());
   check('Beeld terug synct ook ("' + priv2 + '")', priv2 === 'Camera visible');
 
+  // ---- camera-herstel: OS beëindigt het spoor hard → automatisch herstel ----
+  // Simuleert dat het OS de camera geforceerd stopt (bv. na lang op de
+  // achtergrond). Een 'ended'-event wordt niet door track.stop() gevuurd,
+  // dus we dispatchen het zelf op het echte MediaStreamTrack-object —
+  // functioneel identiek aan wat de browser zelf zou vuren.
+  const recovery = await baby.evaluate(async () => {
+    const before = document.getElementById('bPreview').srcObject.getVideoTracks()[0];
+    const beforeId = before && before.id;
+    before.dispatchEvent(new Event('ended'));
+    const start = Date.now();
+    while (Date.now() - start < 6000) {
+      const t = document.getElementById('bPreview').srcObject.getVideoTracks()[0];
+      if (t && t.id !== beforeId && t.readyState === 'live') return { ok: true, beforeId, afterId: t.id };
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return { ok: false, beforeId };
+  });
+  check('Camera herstelt automatisch na "ended"-event', recovery.ok);
+  await sleep(500);
+  const stillLive = await parent.evaluate(() => {
+    const v = document.getElementById('video');
+    return v && v.videoWidth > 0;
+  });
+  check('Ouder blijft beeld ontvangen na camera-herstel', stillLive);
+
   // ---- foutstatus: verkeerde code ----
   const cE = await mk();
   const perr = await cE.newPage();
@@ -214,6 +239,64 @@ function findExecutable() {
   await parent.click('#phRetry'); await sleep(600);
   const retrying = await parent.$eval('#connText', (e) => e.textContent.trim());
   check('Retry-knop start een nieuwe poging ("' + retrying + '")', retrying.length > 0);
+
+  // ---- voorgrond-wacht: verbinding terug in beeld forceert meteen een nieuwe poging ----
+  // Eigen paar met een lange backoff-stap, zodat er een ruime marge is
+  // tussen "meteen door de voorgrond-wacht" en "pas na de normale wachttijd".
+  const INIT_SLOW = INIT + `window.BABYFOON_RECONNECT_DELAYS = [6000];`;
+  const mkSlow = async () => {
+    const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
+    await c.addInitScript(INIT_SLOW);
+    return c;
+  };
+  const cB2 = await mkSlow();
+  const baby2 = await cB2.newPage();
+  await baby2.goto(BASE); await sleep(400);
+  await baby2.click('#pickBaby');
+  let code2 = '';
+  for (let i = 0; i < 40; i++) {
+    code2 = await baby2.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (code2 && code2 !== '······' && code2.length >= 6) break;
+    await sleep(300);
+  }
+  const cP2 = await mkSlow();
+  const parent2 = await cP2.newPage();
+  await parent2.goto(BASE); await sleep(300);
+  await parent2.click('#pickParent');
+  await parent2.fill('#parentOfferInput', code2);
+  await parent2.click('#parentGenBtn');
+  let w2 = 0;
+  const t02 = Date.now();
+  while (Date.now() - t02 < 20000) {
+    w2 = await parent2.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w2 > 0) break;
+    await sleep(300);
+  }
+  check('Voorgrond-wacht-test: live video ("' + w2 + 'px")', w2 > 0);
+  await cB2.close(); // babyunit valt weg → ouder plant een lange (6s) herverbindingspoging
+  let waitingSince = 0;
+  const tW = Date.now();
+  while (Date.now() - tW < 10000) {
+    const txt = await parent2.$eval('#connText', (e) => e.textContent.trim()).catch(() => '');
+    if (/\(\d\/\d\)/.test(txt)) { waitingSince = Date.now(); break; }
+    await sleep(100);
+  }
+  check('Wegval gedetecteerd (backoff gepland)', waitingSince > 0);
+  await parent2.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  let forcedAt = 0;
+  const tF = Date.now();
+  while (Date.now() - tF < 3000) {
+    const connecting = await parent2.evaluate(() => {
+      const pcn = document.getElementById('parentConnecting');
+      return pcn && !pcn.classList.contains('hidden');
+    });
+    if (connecting) { forcedAt = Date.now(); break; }
+    await sleep(50);
+  }
+  const forcedFast = forcedAt > 0 && (forcedAt - waitingSince) < 3000;
+  check('visibilitychange forceert meteen een nieuwe poging (i.p.v. de volle 6s wachttijd)', forcedFast);
+  await cB2.close().catch(() => {});
+  await cP2.close();
 
   await browser.close();
   web.close();

@@ -178,6 +178,7 @@
     if (role === 'parent') {
       $('connDot').classList.add('off');
       $('connText').textContent = T('connectionLost');
+      triggerConnectionLostAlert();
       scheduleParentReconnect();
     } else if (role === 'baby') {
       // De babyunit blijft passief wachten: dezelfde code blijft geldig,
@@ -222,6 +223,10 @@
       setParentStatus(msg);
       $('placeholder').classList.remove('hidden');
       setPlaceholderSpinner(false);
+      // Alleen hoorbaar alarmeren als er eerder echt een verbinding was en
+      // alle pogingen nu uitgeput zijn — niet bij een gewoon mislukte
+      // eerste koppelpoging (verkeerde code e.d.).
+      if (wasConnected) triggerConnectionLostAlert();
     } else {
       toast(msg);
     }
@@ -403,6 +408,7 @@
       return;
     }
     $('bPreview').srcObject = localStream;
+    localStream.getTracks().forEach((t) => watchTrackEnd(t, t.kind));
     openBabyPeer();
   }
 
@@ -594,6 +600,29 @@
         osc.connect(g).connect(audioCtx.destination);
         osc.start(t + i * 0.18);
         osc.stop(t + i * 0.18 + 0.16);
+      });
+    } catch (e) {}
+  }
+  // Verbinding-verloren-melding: hoorbaar + trilling, zodat een ouder met
+  // scherm-uit telefoon meteen merkt dat de verbinding wegviel — losstaand
+  // van de huil-alarm (dalende tonen i.p.v. twee gelijke hoge tonen, zodat
+  // ze niet met elkaar te verwarren zijn).
+  function triggerConnectionLostAlert() {
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+    try {
+      if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      [660, 550, 440].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t + i * 0.22);
+        g.gain.exponentialRampToValueAtTime(0.35, t + i * 0.22 + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.22 + 0.2);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(t + i * 0.22);
+        osc.stop(t + i * 0.22 + 0.21);
       });
     } catch (e) {}
   }
@@ -1085,11 +1114,45 @@
       if (sender) await sender.replaceTrack(nt);
       if (ot) { localStream.removeTrack(ot); ot.stop(); }
       localStream.addTrack(nt);
+      watchTrackEnd(nt, 'video');
       $('bPreview').srcObject = localStream;
       toast(T('cameraSwitched'));
     } catch (e) {
       facing = facing === 'environment' ? 'user' : 'environment';
       toast(T('cannotSwitch'));
+    }
+  }
+  // Herstel van camera/microfoon als het besturingssysteem het spoor hard
+  // beëindigt (bv. na lang op de achtergrond of scherm-uit op sommige
+  // toestellen) — dezelfde aanpak als flipCamera(), maar automatisch
+  // getriggerd in plaats van door een tik van de gebruiker.
+  let recoveringVideo = false, recoveringAudio = false;
+  function watchTrackEnd(track, kind) {
+    track.onended = () => { if (!shuttingDown && role === 'baby') recoverBabyTrack(kind); };
+  }
+  async function recoverBabyTrack(kind) {
+    if (shuttingDown || role !== 'baby' || !localStream) return;
+    if (kind === 'video' ? recoveringVideo : recoveringAudio) return;
+    if (kind === 'video') recoveringVideo = true; else recoveringAudio = true;
+    try {
+      const constraints = kind === 'video'
+        ? { audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } } }
+        : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false };
+      const ns = await getMedia(constraints);
+      const nt = ns.getTracks()[0];
+      const ot = localStream.getTracks().find((t) => t.kind === kind);
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === kind);
+      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      localStream.addTrack(nt);
+      watchTrackEnd(nt, kind);
+      if (kind === 'video') $('bPreview').srcObject = localStream;
+      toast(T('cameraRecovered'));
+    } catch (e) {
+      // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
+      // zodra de voorgrond-wacht (visibilitychange) het weer detecteert.
+    } finally {
+      if (kind === 'video') recoveringVideo = false; else recoveringAudio = false;
     }
   }
   async function reportBattery(once) {
@@ -1107,18 +1170,62 @@
     } catch (e) { setB('N/A', ''); }
   }
   // ------------------------------------------------------------------ wake lock
+  // Houdt het scherm wakker zodat de camera/microfoon niet door het
+  // besturingssysteem wordt uitgeschakeld zodra het scherm op slot gaat.
+  // Native Wake Lock API waar beschikbaar; anders de klassieke "stil
+  // filmpje afspelen"-truc als terugval — dat werkt ook op oudere
+  // Android-webviews, desktop Firefox en Safari vóór 16.4, die de Wake
+  // Lock API niet kennen. (Kan het hele browser-tabblad op de achtergrond
+  // gaan — bv. wisselen naar een andere app — dan is er geen webAPI die
+  // dat kan voorkomen; zie de uitgebreide babyTip-tekst hieronder.)
   let wl = null;
-  async function enableWakeLock() {
+  let noSleepVideo = null;
+  let wakeLockWatchStarted = false;
+  function startNoSleepFallback() {
+    if (noSleepVideo) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1; canvas.height = 1;
+      canvas.getContext('2d').fillRect(0, 0, 1, 1);
+      if (!canvas.captureStream) return;
+      const stream = canvas.captureStream(1);
+      const v = document.createElement('video');
+      v.muted = true; v.loop = true; v.setAttribute('playsinline', '');
+      v.style.cssText = 'position:fixed;left:-1px;top:-1px;width:1px;height:1px;opacity:0.01;pointer-events:none;';
+      v.srcObject = stream;
+      document.body.appendChild(v);
+      v.play().catch(() => {});
+      noSleepVideo = v;
+    } catch (e) {}
+  }
+  function stopNoSleepFallback() {
+    if (!noSleepVideo) return;
+    try { noSleepVideo.pause(); noSleepVideo.remove(); } catch (e) {}
+    noSleepVideo = null;
+  }
+  async function requestWakeLock() {
     try {
       if ('wakeLock' in navigator) {
         wl = await navigator.wakeLock.request('screen');
-        document.addEventListener('visibilitychange', async () => {
-          if (document.visibilityState === 'visible' && !wl) {
-            try { wl = await navigator.wakeLock.request('screen'); } catch (e) {}
-          }
-        });
+        wl.addEventListener('release', () => { wl = null; });
+        stopNoSleepFallback();
+        return;
       }
-    } catch (e) {}
+    } catch (e) { /* bv. tabblad (nog) niet zichtbaar — val terug op de video-truc */ }
+    startNoSleepFallback();
+  }
+  async function enableWakeLock() {
+    await requestWakeLock();
+    if (wakeLockWatchStarted) return;
+    wakeLockWatchStarted = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+    // Periodieke gezondheidscheck: sommige browsers/energiestanden laten de
+    // lock los zonder dat er een zichtbaarheidswijziging plaatsvond.
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && !wl) requestWakeLock();
+    }, 20000);
   }
 
   // ------------------------------------------------------------------ i18n
@@ -1142,6 +1249,21 @@
         if (controlConn && controlConn.open) set('bConn', T('connected'));
       }
     });
+  }
+
+  // ------------------------------------------------------ browser-ondersteuning
+  // Zonder WebRTC (RTCPeerConnection + getUserMedia) kan de app helemaal
+  // niets — toon dat direct en duidelijk, in plaats van pas te falen zodra
+  // iemand een rol kiest. Geen polyfill lost dit op: browsers die deze
+  // API's nooit hebben geïmplementeerd (bv. Internet Explorer) kunnen deze
+  // app niet draaien. Elke browser met WebRTC-steun (alle gangbare
+  // browsers vanaf ~2017: Chrome, Firefox, Safari, Edge, Samsung Internet,
+  // Opera, ook oudere versies) werkt gewoon.
+  const webrtcSupported = !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  if (!webrtcSupported) {
+    const bb = $('browserBlock');
+    if (bb) bb.classList.remove('hidden');
+    return; // de rest van de app (koppelen, dashboards) heeft WebRTC nodig
   }
 
   // ------------------------------------------------------------------ wiring
@@ -1302,6 +1424,42 @@
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     const v = $('video'); if (v) v.play().catch(() => {});
   }, { once: true });
+
+  // ------------------------------------------------ voorgrond-wacht (herstel na scherm-uit/achtergrond)
+  // Mobiele browsers bevriezen timers en kunnen camera/mic onderbreken
+  // zodra het tabblad verborgen is (scherm op slot, even een andere app
+  // ervoor). Een lopende herverbindingspoging kan daardoor "vastzitten" in
+  // een oude staat. Bij terugkeer naar de voorgrond controleren we de
+  // echte status en grijpen we meteen in — in plaats van te wachten op een
+  // wachttijd die intussen zinloos is geworden. Dit is de directe fix voor
+  // "herverbinden blijft laden, geen beeld meer" na scherm-uit.
+  function checkParentHealthOnResume() {
+    if (shuttingDown || role !== 'parent' || !parentStarted) return;
+    // Nog nooit verbonden geweest en geen poging onderweg: laat de normale
+    // flow (of de expliciete mislukt-status met hertik-knop) met rust.
+    if (!wasConnected && !reconnectTimer && !connectTimer) return;
+    const pcOk = mediaPc && mediaPc.connectionState === 'connected';
+    const trackOk = remoteStream && remoteStream.getVideoTracks().some((t) => t.readyState === 'live');
+    const heartbeatOk = (Date.now() - lastControlAt) < HEARTBEAT_TIMEOUT * 2;
+    if (pcOk && trackOk && heartbeatOk && !reconnectTimer) return; // gezond, niets doen
+    clearConnectTimers();
+    reconnectAttempt = 0;
+    startParentConnect(currentCode, true);
+  }
+  function checkBabyHealthOnResume() {
+    if (shuttingDown || role !== 'baby' || !localStream) return;
+    localStream.getTracks().forEach((t) => { if (t.readyState === 'ended') recoverBabyTrack(t.kind); });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkParentHealthOnResume();
+      checkBabyHealthOnResume();
+    }
+  });
+  // Sommige (vooral oudere iOS Safari-)versies vuren visibilitychange niet
+  // altijd betrouwbaar; pageshow/focus als extra vangnet.
+  window.addEventListener('pageshow', () => { checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+  window.addEventListener('focus', () => { checkParentHealthOnResume(); checkBabyHealthOnResume(); });
 
   window.addEventListener('pagehide', () => {
     shuttingDown = true;
