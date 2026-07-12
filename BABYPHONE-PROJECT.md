@@ -313,7 +313,44 @@ restrained gradients. Explicitly avoids: generic SaaS-template look,
 overly bright colors, childish pastels, cluttered dashboards, "AI landing
 page" clichés.
 
-## 11. Deployment
+## 11. Blog / content marketing (`blog.html`)
+
+A multilingual guide post — "Two phones, one baby monitor: everything
+BabyPhone.online can do" — that doubles as an SEO/GEO landing page. It
+covers the benefits (reusing an old phone or tablet as the camera, using
+the two phones you already carry on holiday because the link runs over the
+internet rather than a short-range base station), a one-minute setup
+walkthrough, and every feature with a one-line "what it's for", plus the
+privacy and browser-support story. Illustrated with real product
+screenshots in `assets/blog/` (home, parent dashboard, baby dashboard).
+
+- **Self-contained** (`serverless/blog.html`), like the other sub-pages:
+  inline dark-theme CSS and inline JS, no external references — so the
+  production build just copies it.
+- **Multilingual** using the same `?lang=xx` + `localStorage['babyfoon.lang']`
+  convention as the app, so it opens in the platform language the visitor
+  picked. The language selector lists all 30 languages; full translations
+  ship for **English, Dutch, German, French, Spanish, Portuguese and
+  Italian**, and any other language falls back to English (the same
+  graceful fallback the app's i18n uses). App links from the post preserve
+  the chosen language.
+- **SEO**: `BlogPosting` JSON-LD, canonical, Open Graph/Twitter cards, and
+  `hreflang` alternates **only for the languages that are genuinely
+  translated** (advertising a language variant that is really English would
+  be a misleading signal). Added to `sitemap.xml` (the post plus its
+  translated variants) and cross-linked from the homepage footer and every
+  sub-page footer (new `footGuide` i18n key, translated for the seven core
+  languages).
+- **GEO / "agent SEO"**: `llms.txt` gained a dedicated summary block so AI
+  answer engines can cite the guide's key points (no dedicated hardware,
+  travel use, the full feature list, browser support).
+
+Note on ranking: proper on-page SEO/GEO is in place, but no code change can
+*guarantee* a #1 Google position — that depends on external factors
+(backlinks, competition, domain authority, crawl/index timing). This makes
+the site as eligible as possible; actual ranking builds over time.
+
+## 12. Deployment
 
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
@@ -330,7 +367,7 @@ page" clichés.
   which is designed to run on a serverless function platform (e.g.
   Cloudflare Workers) if/when the paid tier is activated.
 
-## 12. Testing
+## 13. Testing
 
 - `test/e2e-serverless.js` — the main regression suite for the live app: room
   code generation, pairing, live video/audio, playlist sync, battery status,
@@ -347,7 +384,7 @@ page" clichés.
 - CI (`.github/workflows/ci.yml`) runs all of the above on every push and
   pull request against `main`.
 
-## 13. Known follow-ups / not yet done
+## 14. Known follow-ups / not yet done
 
 - Legal pages (`contact.html`, `refunds.html`, `accessibility.html`) still
   contain `<em class="todo">[…]</em>` placeholders for operator legal name,

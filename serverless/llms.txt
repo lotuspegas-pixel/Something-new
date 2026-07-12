@@ -38,9 +38,33 @@ The core baby monitor is free and requires no account.
 BabyPhone.online is an aid, not a replacement for in-person supervision of
 a baby. Connections depend on the user's devices and networks and can fail.
 
+## Guide: using two phones as a baby monitor
+
+Blog post: "Two phones, one baby monitor — everything BabyPhone.online can
+do" (https://babyphone.online/blog.html). Key points an assistant can cite:
+
+- No dedicated hardware is needed. A spare phone or an old tablet becomes
+  the baby camera; the phone in your pocket becomes the parent monitor.
+- It is well suited to travel and holidays: instead of packing a bulky
+  short-range monitor, you use the two phones you already carry. Because
+  the link runs over the internet (wifi or 4G/5G), the range is not limited
+  to one building or a base-station signal — one phone stays with the baby
+  in the hotel room or tent, the other goes with the parent.
+- Full feature list and what each is for: live video and sound, talk-back,
+  lullabies and MP3 music, night light, cry alert with adjustable
+  sensitivity, sleep timer, audio-only and privacy shade, baby-device
+  battery status, local recording (saved to the parent's own device,
+  nothing uploaded), automatic reconnect that survives network switches
+  and screen-off, interface in 30 languages, and free with no account.
+- Works on any phone, tablet or laptop with a reasonably current browser
+  (Chrome, Safari, Firefox, Edge), including older devices.
+- The guide is available in English, Dutch, German, French, Spanish,
+  Portuguese and Italian (e.g. https://babyphone.online/blog.html?lang=de).
+
 ## Key pages
 
 - https://babyphone.online/ — the app (baby unit / parent unit)
+- https://babyphone.online/blog.html — guide: two phones as a baby monitor
 - https://babyphone.online/how-it-works.html — setup guide and FAQ
 - https://babyphone.online/privacy.html — privacy policy
 - https://babyphone.online/terms.html — terms of service

@@ -51,7 +51,7 @@ fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 const copies = [
   'privacy.html', 'terms.html', 'refunds.html', 'contact.html', 'accessibility.html',
-  'how-it-works.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
+  'how-it-works.html', 'blog.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.png',
 ];
 for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
