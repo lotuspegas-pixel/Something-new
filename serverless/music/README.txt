@@ -1,8 +1,8 @@
-HOW TO ADD YOUR OWN CHILDREN'S SONGS
-====================================
+HOW TO ADD YOUR OWN COMFORT SONGS
+==================================
 
-This "music" folder holds the songs that the Music player on the parent
-unit plays for the baby (they play out loud on the baby unit and loop the
+This "music" folder holds the songs that the Music player on the owner
+unit plays for your pet (they play out loud on the pet cam and loop the
 whole playlist until you press Stop).
 
 To add a song:
@@ -22,7 +22,7 @@ Example playlist.json with two songs:
 
 {
   "songs": [
-    { "file": "moonlightlullaby.mp3", "title": "Moonlight Lullaby" },
+    { "file": "moonlightlullaby.mp3", "title": "Moonlight Comfort" },
     { "file": "myfilename.mp3", "title": "My Song Title" }
   ]
 }
@@ -32,5 +32,5 @@ Example playlist.json with two songs:
    playlist automatically.
 
 Tips:
-- Use plain file names without spaces or accents (e.g. lullaby_2.mp3).
+- Use plain file names without spaces or accents (e.g. comfort_2.mp3).
 - MP3 format works best across phones and computers.

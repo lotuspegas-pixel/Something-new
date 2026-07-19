@@ -1,9 +1,9 @@
 {
   "songs": [
-    { "file": "moonlightlullaby.mp3", "title": "Moonlight Lullaby" },
+    { "file": "moonlightlullaby.mp3", "title": "Moonlight Comfort" },
     { "file": "thequietbetweenheartbeats.mp3", "title": "The Quiet Between Heartbeats" },
-    { "file": "sleepybaby.mp3", "title": "Sleepy Baby" },
-    { "file": "sleepybaby_version_2.mp3", "title": "Sleepy Baby II" },
+    { "file": "sleepybaby.mp3", "title": "Sleepy Paws" },
+    { "file": "sleepybaby_version_2.mp3", "title": "Sleepy Paws II" },
     { "file": "softsleepnoise.mp3", "title": "Soft Sleep Noise" }
   ]
 }
