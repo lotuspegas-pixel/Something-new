@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A101B" />
+  <title>Accessibility Statement — BabyPhone.online</title>
+  <meta name="description" content="Accessibility statement for BabyPhone.online: our conformance target (WCAG 2.1 AA), known limitations, and how to report accessibility problems." />
+  <link rel="canonical" href="https://babyphone.online/accessibility.html" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <style>
+    :root { --bg:#0A101B; --surface:#151E30; --line:rgba(255,255,255,.07); --accent:#E8825E; --ok:#4ED08A; --text:#EDEFF4; --muted:#8C95A8; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:radial-gradient(120% 70% at 50% 0%, #16233A 0%, #0D1524 44%, #0A101B 90%) no-repeat #0A101B; color:var(--text); font:16px/1.65 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .wrap { max-width:760px; margin:0 auto; padding:28px 22px 80px; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:4px 0 26px; }
+    .brand { display:inline-flex; align-items:center; gap:9px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
+    .brand .mark { display:inline-flex; width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,#EC8A63,#E0714B); align-items:center; justify-content:center; }
+    .brand .tld { color:var(--accent); }
+    .back { color:var(--muted); text-decoration:none; font-size:14px; }
+    .back:hover { color:var(--text); }
+    main { background:rgba(21,30,48,.65); border:1px solid var(--line); border-radius:20px; padding:34px 34px 26px; }
+    h1 { font-size:27px; line-height:1.25; margin:0 0 4px; }
+    .updated { color:var(--muted); font-size:13.5px; margin:0 0 22px; }
+    h2 { font-size:18px; margin:30px 0 8px; }
+    p, li { color:#C6CCDA; font-size:15px; }
+    ul { padding-left:22px; }
+    a { color:var(--accent); }
+    .todo { color:var(--accent); font-style:normal; }
+    footer { color:var(--muted); font-size:13.5px; padding-top:26px; text-align:center; }
+    footer a { color:var(--muted); margin:0 8px; }
+    @media (max-width:600px) { main { padding:24px 18px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./"><img src="assets/logo.png" alt="BabyPhone.online" style="height:34px;width:auto;display:block" /></a>
+      <a class="back" href="./">← Back to the app</a>
+    </header>
+    <main>
+      <h1>Accessibility Statement</h1>
+      <p class="updated">Last updated: 8 July 2026 · Prepared in line with the European Accessibility Act</p>
+
+      <h2>Our commitment</h2>
+      <p>BabyPhone.online is built for tired parents — often operating it one-handed, in the dark, at 3 a.m. Accessibility is core to that: the app should work with a screen reader, with a keyboard, with reduced vision, and with shaky hands.</p>
+
+      <h2>Conformance target</h2>
+      <p>We aim to conform to the <b>Web Content Accessibility Guidelines (WCAG) 2.1, level AA</b>. Measures currently in place include:</p>
+      <ul>
+        <li>Accessible names (<code>aria-label</code>) on all icon-only controls (microphone, camera, fullscreen, settings, and monitor buttons).</li>
+        <li>Visible keyboard focus indicators on all interactive elements.</li>
+        <li>Large touch targets and high-contrast text on the dark interface.</li>
+        <li>Status information (connection, battery, sound level) conveyed as text, not color alone.</li>
+        <li>Support for browser zoom up to 200% without loss of function.</li>
+      </ul>
+
+      <h2>Known limitations</h2>
+      <ul>
+        <li>The live audio level meter is a visual indicator; sound events are also logged as text in the event log, but real-time non-visual alerting is limited to the (audible) cry alert.</li>
+        <li>The QR scanner requires a camera; the room code can always be typed instead.</li>
+        <li>Some of the 30 interface languages have partially translated interface strings; untranslated strings appear in English.</li>
+      </ul>
+
+      <h2>Feedback and contact</h2>
+      <p>If you hit an accessibility barrier, tell us: <em class="todo">[contact email]</em>, subject "Accessibility". We aim to respond within 5 business days and to fix confirmed barriers in the next release. If you are not satisfied with our response, you can contact the supervisory authority in your EU member state.</p>
+    </main>
+    <footer>
+      <a href="./">Home</a>·<a href="blog.html">Guide</a>·<a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="refunds.html">Refunds</a>·<a href="contact.html">Contact</a>
+      <div style="margin-top:8px">© 2026 BabyPhone.online</div>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "babyfoon-web",
+  "version": "1.0.0",
+  "description": "Babyfoon-webapp met live audio en video via WebRTC. Werkt op computer en mobiel (3G/4G/5G/wifi).",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test/e2e.js",
+    "test:serverless": "node test/e2e-serverless.js",
+    "test:reconnect": "node test/e2e-reconnect.js",
+    "build": "node build.js",
+    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done && node --check functions/entitlement-worker.mjs'"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "qrcode": "^1.5.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0",
+    "peer": "^1.0.2"
+  },
+  "license": "MIT"
+}
