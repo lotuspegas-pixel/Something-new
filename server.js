@@ -4,7 +4,7 @@
  * PetCam-webapp — signaling server.
  *
  * Verantwoordelijkheden:
- *  1. Statische frontend serveren (public/).
+ *  1. Statische frontend serveren (serverless/).
  *  2. WebRTC ICE-configuratie leveren (STUN + TURN) zodat verbindingen ook
  *     over 3G/4G/5G en achter strenge NAT/firewalls tot stand komen.
  *  3. Een QR-code genereren voor eenvoudig koppelen tussen babyunit en ouderunit.
@@ -101,16 +101,6 @@ app.get('/api/qr', async (req, res) => {
 // op de root zodat petcam.online/ direct het donkere ontwerp toont.
 app.use(
   express.static(path.join(__dirname, 'serverless'), { extensions: ['html'] })
-);
-
-// Oudere Luna Unit-variant blijft bereikbaar op /legacy/ (rollback-pad, niet
-// meer de standaard); dezelfde WebRTC-signalering hieronder bedient hem nog.
-app.use(
-  '/legacy',
-  express.static(path.join(__dirname, 'public'), {
-    extensions: ['html'],
-    maxAge: '1h',
-  })
 );
 
 // ---------------------------------------------------------------------------

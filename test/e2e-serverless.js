@@ -5,10 +5,10 @@
  *
  * Volledig zelfvoorzienend: start een lokale statische webserver voor
  * `serverless/` én een lokale PeerJS-broker, en drijft twee browsers
- * (babyunit + ouderunit) door de echte flows:
+ * (pet-cam + eigenaarunit) door de echte flows:
  *
  *   pairing met korte code → live video → deelweergaven (zijbalk) →
- *   sleep timer → audio-only-sync → muziek over het datakanaal →
+ *   rusttimer → audio-only-sync → muziek over het datakanaal →
  *   batterij-terugkanaal → foutstatus bij verkeerde code →
  *   reconnect-met-backoff en de expliciete faalstatus + retry-knop.
  *
@@ -86,10 +86,10 @@ function findExecutable() {
     return c;
   };
 
-  // ---- BABY ----
+  // ---- PET-CAM ----
   const cB = await mk();
   const baby = await cB.newPage();
-  baby.on('pageerror', (e) => errs.push('BABY: ' + e.message));
+  baby.on('pageerror', (e) => errs.push('PET-CAM: ' + e.message));
   await baby.goto(BASE); await sleep(400);
   await baby.click('#pickBaby');
   let code = '';
@@ -98,9 +98,9 @@ function findExecutable() {
     if (code && code !== '······' && code.length >= 6) break;
     await sleep(300);
   }
-  check('Baby toont korte 6-tekens code ("' + code + '")', /^[A-Z0-9]{6}$/.test(code));
+  check('Pet-cam toont korte 6-tekens code ("' + code + '")', /^[A-Z0-9]{6}$/.test(code));
 
-  // ---- OUDER ----
+  // ---- EIGENAAR ----
   const cP = await mk();
   const parent = await cP.newPage();
   parent.on('pageerror', (e) => errs.push('PARENT: ' + e.message));
@@ -118,25 +118,25 @@ function findExecutable() {
     if (info.shown && info.w > 0) break;
     await sleep(400);
   }
-  check('Ouder verbindt met de korte code', info.shown);
-  check('Live video bij de ouder (' + info.w + 'px)', info.w > 0);
-  check('Baby schakelt naar live-scherm', await baby.evaluate(() => !document.getElementById('screenBaby').classList.contains('hidden')));
+  check('Eigenaar verbindt met de korte code', info.shown);
+  check('Live video bij de eigenaar (' + info.w + 'px)', info.w > 0);
+  check('Pet-cam schakelt naar live-scherm', await baby.evaluate(() => !document.getElementById('screenBaby').classList.contains('hidden')));
   check('Kamercode zichtbaar in statusbalk', (await parent.$eval('#roomLabel', (e) => e.textContent.trim())) === code);
 
   // ---- playlist / besturingskanaal ----
   await sleep(800);
   const titles = await parent.$$eval('#playlist .track .tt', (els) => els.map((e) => e.textContent.trim())).catch(() => []);
-  check('Playlist geladen bij de ouder (' + titles.length + ' nummers)', titles.length === 5);
+  check('Playlist geladen bij de eigenaar (' + titles.length + ' nummers)', titles.length === 5);
   await parent.evaluate(() => document.querySelector('#playlist .track').click());
   await sleep(1200);
-  check('Muziekcommando bereikt de baby via het datakanaal',
+  check('Muziekcommando bereikt de pet-cam via het datakanaal',
     await baby.evaluate(() => { const a = document.getElementById('musicAudio'); return a && !a.paused && /music\//.test(a.src); }));
   await parent.evaluate(() => document.getElementById('btnMusic').click());
   await sleep(600);
 
   // ---- batterij-terugkanaal ----
   const batt = await parent.$eval('#battVal', (e) => e.textContent.trim()).catch(() => '');
-  check('Batterijstatus van de baby zichtbaar ("' + batt + '")', batt.length > 0 && batt !== '—');
+  check('Batterijstatus van de pet-cam zichtbaar ("' + batt + '")', batt.length > 0 && batt !== '—');
 
   // ---- zijbalk: echte deelweergaven ----
   await parent.click('.dnav[data-view="lullabies"]');
@@ -146,7 +146,7 @@ function findExecutable() {
     chips: document.querySelectorAll('#chips .chip').length,
     tracksVisible: !!document.querySelector('#playlist .track') && getComputedStyle(document.querySelector('#playlist .track')).display !== 'none',
   }));
-  check('Zijbalk opent Lullabies-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 4 && lulla.tracksVisible);
+  check('Zijbalk opent Comfort-sounds-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 4 && lulla.tracksVisible);
   await parent.click('.dnav[data-view="settings"]');
   const setv = await parent.evaluate(() => ({
     act: document.getElementById('dviewSettings').classList.contains('active'),
@@ -161,19 +161,19 @@ function findExecutable() {
   check('Plus-paneel in rustige binnenkort-status (ongeconfigureerd)', plus.soon && plus.up);
   await parent.click('.dnav[data-view="monitor"]');
 
-  // ---- sleep timer: zichtbaar aftellen + baby-tegel ----
+  // ---- rusttimer: zichtbaar aftellen + pet-cam-tegel ----
   await parent.click('#cardSleep'); await sleep(1300);
   const sv = await parent.$eval('#sleepVal', (e) => e.textContent.trim());
-  check('Sleep timer telt zichtbaar af ("' + sv + '")', /^1[34]:[0-5]\d$/.test(sv));
+  check('Rusttimer telt zichtbaar af ("' + sv + '")', /^1[34]:[0-5]\d$/.test(sv));
   const tileSleep = await baby.$eval('#tileSleep', (e) => e.textContent.trim());
-  check('Baby-tegel volgt de sleep timer ("' + tileSleep + '")', tileSleep === '15 min');
+  check('Pet-cam-tegel volgt de rusttimer ("' + tileSleep + '")', tileSleep === '15 min');
   await parent.click('#cardSleep'); await parent.click('#cardSleep'); await parent.click('#cardSleep'); await sleep(400);
 
-  // ---- audio-only op de baby → ouder toont "Audio only" ----
+  // ---- audio-only op de pet-cam → eigenaar toont "Audio only" ----
   await baby.click('#tgAudioOnly'); await sleep(900);
   const priv1 = await parent.$eval('#privVal', (e) => e.textContent.trim());
   const shade = await parent.evaluate(() => document.getElementById('screen').classList.contains('privacy'));
-  check('Audio-only op de baby synct naar de ouder ("' + priv1 + '")', shade && priv1.length > 0 && priv1 !== 'Camera visible');
+  check('Audio-only op de pet-cam synct naar de eigenaar ("' + priv1 + '")', shade && priv1.length > 0 && priv1 !== 'Camera visible');
   await baby.click('#tgAudioOnly'); await sleep(900);
   const priv2 = await parent.$eval('#privVal', (e) => e.textContent.trim());
   check('Beeld terug synct ook ("' + priv2 + '")', priv2 === 'Camera visible');
@@ -201,7 +201,7 @@ function findExecutable() {
     const v = document.getElementById('video');
     return v && v.videoWidth > 0;
   });
-  check('Ouder blijft beeld ontvangen na camera-herstel', stillLive);
+  check('Eigenaar blijft beeld ontvangen na camera-herstel', stillLive);
 
   // ---- foutstatus: verkeerde code ----
   const cE = await mk();
@@ -223,7 +223,7 @@ function findExecutable() {
   check('Verkeerde code: spinner weer verborgen', spinHidden);
   await cE.close();
 
-  // ---- reconnect: baby valt weg → backoff → faalstatus + retry-knop ----
+  // ---- reconnect: pet-cam valt weg → backoff → faalstatus + retry-knop ----
   await cB.close();
   let sawReconnecting = false, retryVisible = false;
   const tR = Date.now();
@@ -234,7 +234,7 @@ function findExecutable() {
     if (retryVisible) break;
     await sleep(250);
   }
-  check('Ouder toont "Opnieuw verbinden… (n/m)" na wegvallen', sawReconnecting);
+  check('Eigenaar toont "Opnieuw verbinden… (n/m)" na wegvallen', sawReconnecting);
   check('Na uitgeputte pogingen: expliciete faalstatus + retry-knop', retryVisible);
   await parent.click('#phRetry'); await sleep(600);
   const retrying = await parent.$eval('#connText', (e) => e.textContent.trim());
@@ -273,7 +273,7 @@ function findExecutable() {
     await sleep(300);
   }
   check('Voorgrond-wacht-test: live video ("' + w2 + 'px")', w2 > 0);
-  await cB2.close(); // babyunit valt weg → ouder plant een lange (6s) herverbindingspoging
+  await cB2.close(); // pet-cam valt weg → eigenaar plant een lange (6s) herverbindingspoging
   let waitingSince = 0;
   const tW = Date.now();
   while (Date.now() - tW < 10000) {

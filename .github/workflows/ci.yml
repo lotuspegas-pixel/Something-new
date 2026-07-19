@@ -30,19 +30,10 @@ jobs:
       - name: Lint (syntax check all JS)
         run: |
           node -c server.js
-          for f in serverless/js/*.js public/js/*.js test/*.js; do
+          for f in serverless/js/*.js test/*.js; do
             [ -e "$f" ] && node -c "$f"
           done
           node --check functions/entitlement-worker.mjs
 
-      - name: E2E — server variant
-        run: |
-          node server.js &
-          SERVER_PID=$!
-          sleep 2
-          npm test
-          npm run test:reconnect
-          kill $SERVER_PID
-
-      - name: E2E — serverless variant (pairing, views, reconnect)
+      - name: E2E — serverless app (pairing, views, reconnect)
         run: npm run test:serverless
