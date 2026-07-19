@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Serverloze babyfoon — Luna Unit.
+ * Serverloze petcam — PetCam.online.
  *
  * Twee apparaten koppelen zichzelf via een QR-code of koppelcode (handmatige
  * WebRTC-signalering). Daarna loopt beeld en geluid rechtstreeks peer-to-peer,
@@ -13,8 +13,8 @@
   // op 4G/5G, symmetrische routers). De relay ziet alleen versleuteld
   // verkeer (DTLS-SRTP) en kan niet meekijken. Het gratis Open Relay
   // Project is de best-effort standaard; vervang voor productie/Plus door
-  // een eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
-  const ICE = window.BABYFOON_ICE ||
+  // een eigen TURN-dienst via window.PETCAM_ICE of window.PETCAM_PEER.
+  const ICE = window.PETCAM_ICE ||
     ((window.Plus && Plus.isActive() && Plus.config && Plus.config.turn)
       // Plus: dedicated relay van de eigenaar (betrouwbaarder dan best-effort)
       ? [{ urls: 'stun:stun.l.google.com:19302' }, Plus.config.turn]
@@ -86,8 +86,8 @@
   // Korte koppelcode via een licht online "koppel-hulpje" (PeerJS-broker).
   // De broker koppelt alleen de twee apparaten; beeld en geluid gaan
   // rechtstreeks tussen de telefoons (peer-to-peer, privé — de broker ziet
-  // die niet). Optioneel zelf te hosten via window.BABYFOON_PEER.
-  const PEER_PREFIX = 'babyfoon-9m3-'; // naamruimte op de gedeelde broker
+  // die niet). Optioneel zelf te hosten via window.PETCAM_PEER.
+  const PEER_PREFIX = 'petcam-'; // naamruimte op de gedeelde broker
   const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // zonder 0/O/1/I
   function makeCode(n) {
     let s = '';
@@ -100,7 +100,7 @@
   }
   function peerOptions() {
     const opts = { config: { iceServers: ICE }, debug: 0 };
-    if (window.BABYFOON_PEER) Object.assign(opts, window.BABYFOON_PEER);
+    if (window.PETCAM_PEER) Object.assign(opts, window.PETCAM_PEER);
     return opts;
   }
 
@@ -190,8 +190,8 @@
   }
 
   // ------------------------------------------------ herverbinden (met backoff)
-  const RECONNECT_DELAYS = window.BABYFOON_RECONNECT_DELAYS || [2000, 4000, 8000, 15000, 30000];
-  const CONNECT_TIMEOUT = window.BABYFOON_CONNECT_TIMEOUT || 20000;
+  const RECONNECT_DELAYS = window.PETCAM_RECONNECT_DELAYS || [2000, 4000, 8000, 15000, 30000];
+  const CONNECT_TIMEOUT = window.PETCAM_CONNECT_TIMEOUT || 20000;
   let reconnectAttempt = 0;
   let reconnectTimer = null;
   let connectTimer = null;
@@ -270,7 +270,7 @@
   }
   // …én stuurt de ouder een hartslag over het besturingskanaal. Blijft het
   // antwoord (batterijstatus) te lang uit, dan geldt dat als verbroken.
-  const HEARTBEAT_TIMEOUT = window.BABYFOON_HEARTBEAT_TIMEOUT || 15000;
+  const HEARTBEAT_TIMEOUT = window.PETCAM_HEARTBEAT_TIMEOUT || 15000;
   let lastControlAt = 0;
   let heartbeatId = null;
   function startHeartbeat() {

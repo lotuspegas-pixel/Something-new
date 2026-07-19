@@ -66,10 +66,10 @@ function findExecutable() {
   const BASE = 'http://127.0.0.1:' + WEB_PORT + '/';
   // Lokale broker + snelle reconnect-tijden zodat de backoff-test vlot loopt.
   const INIT = `
-    window.BABYFOON_PEER = { host: '127.0.0.1', port: ${PEER_PORT}, path: '/', key: 'peerjs', secure: false };
-    window.BABYFOON_RECONNECT_DELAYS = [400, 700];
-    window.BABYFOON_CONNECT_TIMEOUT = 4000;
-    window.BABYFOON_HEARTBEAT_TIMEOUT = 5000;
+    window.PETCAM_PEER = { host: '127.0.0.1', port: ${PEER_PORT}, path: '/', key: 'peerjs', secure: false };
+    window.PETCAM_RECONNECT_DELAYS = [400, 700];
+    window.PETCAM_CONNECT_TIMEOUT = 4000;
+    window.PETCAM_HEARTBEAT_TIMEOUT = 5000;
   `;
 
   const browser = await chromium.launch({
@@ -243,7 +243,7 @@ function findExecutable() {
   // ---- voorgrond-wacht: verbinding terug in beeld forceert meteen een nieuwe poging ----
   // Eigen paar met een lange backoff-stap, zodat er een ruime marge is
   // tussen "meteen door de voorgrond-wacht" en "pas na de normale wachttijd".
-  const INIT_SLOW = INIT + `window.BABYFOON_RECONNECT_DELAYS = [6000];`;
+  const INIT_SLOW = INIT + `window.PETCAM_RECONNECT_DELAYS = [6000];`;
   const mkSlow = async () => {
     const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
     await c.addInitScript(INIT_SLOW);

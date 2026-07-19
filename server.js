@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Babyfoon-webapp — signaling server.
+ * PetCam-webapp — signaling server.
  *
  * Verantwoordelijkheden:
  *  1. Statische frontend serveren (public/).
@@ -97,8 +97,8 @@ app.get('/api/qr', async (req, res) => {
   }
 });
 
-// Serverloze variant (BabyPhone.online) is de actuele, live site — geserveerd
-// op de root zodat babyphone.online/ direct het donkere ontwerp toont.
+// Serverloze variant (PetCam.online) is de actuele, live site — geserveerd
+// op de root zodat petcam.online/ direct het donkere ontwerp toont.
 app.use(
   express.static(path.join(__dirname, 'serverless'), { extensions: ['html'] })
 );
@@ -265,5 +265,5 @@ wss.on('close', () => clearInterval(heartbeat));
 
 server.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`Babyfoon-server draait op http://localhost:${PORT}`);
+  console.log(`PetCam-server draait op http://localhost:${PORT}`);
 });

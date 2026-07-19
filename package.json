@@ -1,7 +1,7 @@
 {
-  "name": "babyfoon-web",
+  "name": "petcam-web",
   "version": "1.0.0",
-  "description": "Babyfoon-webapp met live audio en video via WebRTC. Werkt op computer en mobiel (3G/4G/5G/wifi).",
+  "description": "PetCam-webapp met live audio en video via WebRTC. Werkt op computer en mobiel (3G/4G/5G/wifi).",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

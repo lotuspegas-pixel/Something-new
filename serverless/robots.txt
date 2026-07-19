@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://babyphone.online/sitemap.xml
+Sitemap: https://petcam.online/sitemap.xml

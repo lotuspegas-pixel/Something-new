@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * Slaapliedjes en witte ruis, gegenereerd met de Web Audio API.
- * Geen externe geluidsbestanden nodig. Draait op de babyunit zodat het
- * geluid uit de speaker bij de baby komt (en via de stream naar de ouder).
+ * Kalmerende geluiden en witte ruis, gegenereerd met de Web Audio API.
+ * Geen externe geluidsbestanden nodig. Draait op de pet-cam zodat het
+ * geluid uit de speaker bij het huisdier komt (en via de stream naar de eigenaar).
  */
 class LullabyPlayer {
   constructor() {
@@ -57,7 +57,7 @@ class LullabyPlayer {
       ],
     },
     brahms: {
-      label: 'Wiegelied (Brahms)',
+      label: 'Rustmelodie (Brahms)',
       tempo: 520,
       notes: [
         'E4', 'E4', 'G4', '-', 'E4', 'E4', 'G4', '-',
@@ -85,7 +85,7 @@ class LullabyPlayer {
     witte: { label: 'Witte ruis', type: 'noise', color: 'white' },
   };
 
-  // Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
+  // Vaste volgorde voor de kalmeermuziek-bediening (vorige/volgende).
   static ORDER = ['regen', 'oceaan', 'hartslag', 'witte'];
 
   static list() {

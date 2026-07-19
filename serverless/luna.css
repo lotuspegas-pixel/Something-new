@@ -1,6 +1,6 @@
 /* =========================================================================
-   Luna Unit — neumorfe babyfoon-UI
-   Gebaseerd op het aangeleverde ontwerp. Beige, zachte schaduwen, rood accent.
+   PetCam.online — neumorfe petcam-UI
+   Warme "knus hok"-sfeer: houtskool/umber basis, amber accent.
    Volledig responsief (computer en mobiel).
    ========================================================================= */
 
@@ -39,34 +39,34 @@
 }
 
 :root {
-  /* Rustig, warm, betrouwbaar — nachtblauw + crème + lavendel-accent */
-  --bg: #F4F1EB;            /* warm crème */
-  --bg2: #ECE8DF;
+  /* Rustig, warm, betrouwbaar — houtskool/umber + zand + amber-accent */
+  --bg: #F2ECE0;            /* warm zand */
+  --bg2: #EAE2D3;
   --surface: #FFFFFF;
-  --text: #232734;         /* nachtblauw-slate */
-  --muted: #797682;
-  --ink: #3A3E4C;          /* icoon-lijnen */
-  --nightblue: #2B3350;
-  --accent: #6E6AE6;       /* lavendel */
-  --accent-ink: #4A46C6;
-  --accent-soft: #EDECFC;
-  --mint: #4FB79A;
-  --ok: #3FA98A;
-  --green: #3FA98A;
-  --warm: #E7A085;         /* zachte terracotta (baby) */
-  --warm-soft: #FBEDE7;
-  --red: #E5654C;          /* rustiger koraal — alleen voor alarm/opname */
-  --red-g1: #EC7358;
-  --red-g2: #DB4F3C;
-  --line: rgba(28, 26, 40, 0.08);
-  --sh-sm: 0 1px 2px rgba(24, 22, 40, 0.05);
-  --sh: 0 2px 6px rgba(24, 22, 40, 0.05), 0 14px 34px rgba(24, 22, 40, 0.07);
+  --text: #262019;         /* houtskool-umber */
+  --muted: #8A7F6E;
+  --ink: #40352B;          /* icoon-lijnen */
+  --nightblue: #2B2118;
+  --accent: #E0A458;       /* amber */
+  --accent-ink: #B97A34;
+  --accent-soft: #FBEEDB;
+  --mint: #6FAE7F;
+  --ok: #5BC98A;
+  --green: #5BC98A;
+  --warm: #C97B4A;         /* warme terracotta (petcam) */
+  --warm-soft: #F7E4D2;
+  --red: #E2604A;          /* rustiger koraal — alleen voor alarm/opname */
+  --red-g1: #E8735A;
+  --red-g2: #D14A38;
+  --line: rgba(40, 32, 20, 0.08);
+  --sh-sm: 0 1px 2px rgba(36, 28, 18, 0.05);
+  --sh: 0 2px 6px rgba(36, 28, 18, 0.05), 0 14px 34px rgba(36, 28, 18, 0.07);
   --r: 24px;
   /* zachte diepte (afgezwakt neumorfisme voor de bestaande monitor-controls) */
-  --raised: 6px 6px 14px rgba(176, 180, 196, 0.42), -6px -6px 14px rgba(255, 255, 255, 0.9);
-  --raised-sm: 3px 3px 8px rgba(176, 180, 196, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.85);
-  --pressed: inset 4px 4px 9px rgba(176, 180, 196, 0.5), inset -4px -4px 9px rgba(255, 255, 255, 0.9);
-  --pressed-sm: inset 3px 3px 6px rgba(176, 180, 196, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+  --raised: 6px 6px 14px rgba(196, 186, 172, 0.42), -6px -6px 14px rgba(255, 255, 255, 0.9);
+  --raised-sm: 3px 3px 8px rgba(196, 186, 172, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.85);
+  --pressed: inset 4px 4px 9px rgba(196, 186, 172, 0.5), inset -4px -4px 9px rgba(255, 255, 255, 0.9);
+  --pressed-sm: inset 3px 3px 6px rgba(196, 186, 172, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
 }
 
 * {
@@ -838,7 +838,7 @@ button {
   text-align: center;
 }
 
-/* full-screen nightlight on baby */
+/* full-screen nightlight on pet-cam */
 .nightlight-full {
   position: fixed;
   inset: 0;
@@ -891,7 +891,7 @@ button {
 .circle-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* =========================================================================
-   Serverloze variant — rolkeuze, koppelen, babyweergave (Luna-stijl)
+   Serverloze variant — rolkeuze, koppelen, petweergave
    ========================================================================= */
 .setup-wrap {
   width: min(760px, 100%);
@@ -1126,7 +1126,7 @@ button {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: radial-gradient(120% 70% at 50% 0%, #16233A 0%, #0D1524 44%, #0A101B 90%) no-repeat #0A101B;
+  background: radial-gradient(120% 70% at 50% 0%, #241E17 0%, #17130F 44%, #12110F 90%) no-repeat #12110F;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -1134,19 +1134,19 @@ button {
 .browser-block-inner {
   max-width: 440px;
   text-align: center;
-  background: #151E30;
+  background: #1E1A16;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 20px;
   padding: 32px 28px;
 }
 .browser-block h1 {
   font: 700 22px 'Quicksand', sans-serif;
-  color: #EDEFF4;
+  color: #F2EDE6;
   margin: 0 0 12px;
 }
 .browser-block p {
   font: 500 14.5px/1.6 'Nunito', sans-serif;
-  color: #8C95A8;
+  color: #9C9184;
   margin: 0;
 }
 textarea.code {
@@ -1195,7 +1195,7 @@ textarea.code:focus { outline: none; }
 .backlink { text-align: center; margin-top: 12px; }
 .backlink a { color: var(--muted); font: 700 13px 'Nunito', sans-serif; text-decoration: none; }
 
-/* babyweergave */
+/* petweergave */
 .baby-panel {
   width: min(460px, 100%);
 }
@@ -1242,7 +1242,7 @@ textarea.code:focus { outline: none; }
 .modal h3 { margin: 0 0 16px; font: 700 18px 'Quicksand', sans-serif; }
 
 /* =========================================================================
-   BabyPhone — landing / homepage (mobile-first, rustig & premium)
+   PetCam — landing / homepage (mobile-first, rustig & premium)
    ========================================================================= */
 .home {
   width: 100%;
@@ -1257,9 +1257,9 @@ textarea.code:focus { outline: none; }
 .home-brand { display: flex; align-items: center; gap: 10px; }
 .brand-mark {
   width: 40px; height: 40px; border-radius: 13px; flex: 0 0 auto;
-  background: linear-gradient(150deg, #8A87F0, var(--accent));
+  background: linear-gradient(150deg, #ECBE86, var(--accent));
   display: grid; place-items: center;
-  box-shadow: 0 6px 16px rgba(110, 106, 230, 0.32);
+  box-shadow: 0 6px 16px rgba(224, 164, 88, 0.32);
 }
 .brand-name { font: 700 19px 'Quicksand', sans-serif; letter-spacing: 0.2px; color: var(--text); }
 .brand-name .dot { color: var(--accent); }
@@ -1283,8 +1283,8 @@ textarea.code:focus { outline: none; }
 }
 .cta svg { width: 21px; height: 21px; }
 .cta:active { transform: translateY(1px); }
-.cta.baby { background: linear-gradient(150deg, #EEA88F, #E08360); box-shadow: 0 10px 26px rgba(224, 131, 96, 0.32); }
-.cta.parent { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: 0 10px 26px rgba(110, 106, 230, 0.32); }
+.cta.baby { background: linear-gradient(150deg, #F0CDA0, #C97B4A); box-shadow: 0 10px 26px rgba(201, 123, 74, 0.32); }
+.cta.parent { background: linear-gradient(150deg, #ECBE86, var(--accent)); box-shadow: 0 10px 26px rgba(224, 164, 88, 0.32); }
 
 /* generic section */
 .section { display: flex; flex-direction: column; gap: 16px; }
@@ -1338,7 +1338,7 @@ textarea.code:focus { outline: none; }
 
 /* disclaimer + footer */
 .disclaimer {
-  background: var(--warm-soft); border: 1px solid rgba(231, 160, 133, 0.3);
+  background: var(--warm-soft); border: 1px solid rgba(201, 123, 74, 0.3);
   border-radius: 16px; padding: 14px 16px; display: flex; gap: 11px; align-items: flex-start;
 }
 .disclaimer svg { width: 19px; height: 19px; color: #C56A4B; flex: 0 0 auto; margin-top: 1px; }
@@ -1390,8 +1390,8 @@ textarea.code:focus { outline: none; }
   box-shadow: var(--sh);
 }
 .pair-head .unit-badge svg { width: 30px; height: 30px; color: #fff; }
-.pair-head.baby .unit-badge { background: linear-gradient(150deg, #EEA88F, #E08360); }
-.pair-head.parent .unit-badge { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
+.pair-head.baby .unit-badge { background: linear-gradient(150deg, #F0CDA0, #C97B4A); }
+.pair-head.parent .unit-badge { background: linear-gradient(150deg, #ECBE86, var(--accent)); }
 .pair-head .unit-badge.cam { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.09); padding: 7px; }
 .pair-head .unit-badge.cam img { width: auto; height: 40px; display: block; filter: drop-shadow(0 7px 12px rgba(0,0,0,.45)); }
 .pair-head h1 { font: 700 22px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
@@ -1402,19 +1402,19 @@ textarea.code:focus { outline: none; }
   border-radius: 100px; padding: 9px 16px; font: 800 13px 'Nunito', sans-serif;
 }
 .waiting-pill .spinner {
-  width: 15px; height: 15px; border: 2.5px solid rgba(74,70,198,.25);
+  width: 15px; height: 15px; border: 2.5px solid rgba(185,122,52,.25);
   border-top-color: var(--accent-ink); border-radius: 50%; animation: spin 0.8s linear infinite;
 }
 
 /* =========================================================================
-   BabyPhone designsysteem v3 — toegepast op de hele app
+   PetCam designsysteem v1 — toegepast op de hele app
    (append-overrides: rustig, warm, premium — weg van neumorfisme/gadget)
    ========================================================================= */
 
-/* rustgevende achtergrond met zachte gradient (nachtblauw ↔ crème ↔ lavendel) */
+/* rustgevende achtergrond met zachte gradient (houtskool ↔ zand ↔ amber) */
 body {
   background: radial-gradient(135% 110% at 50% 0%,
-    #F8F5F0 0%, #F2EEE7 46%, #EBE8F4 100%) fixed;
+    #F7F2E9 0%, #F2ECE0 46%, #F0E6D3 100%) fixed;
 }
 
 /* device-shell → schone, grote afgeronde kaart met zachte schaduw */
@@ -1446,9 +1446,9 @@ body {
 /* ronde icoonknop (power/stop) */
 .round-icon { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); }
 .round-icon svg path { stroke: var(--ink); }
-.round-icon.on { background: linear-gradient(150deg, #EC7358, #DB4F3C); border-color: transparent; }
+.round-icon.on { background: linear-gradient(150deg, #E8735A, #D14A38); border-color: transparent; }
 .round-icon.on svg path { stroke: #fff; }
-.baby-panel .round-icon.on { background: linear-gradient(150deg, #EEA88F, #E08360); }
+.baby-panel .round-icon.on { background: linear-gradient(150deg, #F0CDA0, #C97B4A); }
 
 /* kaarten */
 .card { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); border-radius: 22px; }
@@ -1467,7 +1467,7 @@ body {
 /* scherm-omlijsting */
 .screen { box-shadow: var(--sh), 0 0 0 5px var(--surface); border-radius: 26px; }
 .spinner { border-top-color: var(--accent); }
-.talk-btn.on, .scr-btn.on { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
+.talk-btn.on, .scr-btn.on { background: linear-gradient(150deg, #ECBE86, var(--accent)); }
 .vu i { background: var(--mint); }
 .badge .rec-dot { background: var(--red); }
 
@@ -1477,14 +1477,14 @@ body {
 .dial .ring1 { box-shadow: inset 0 1px 3px rgba(30, 28, 50, 0.06); border: 1px solid var(--line); }
 .dial .ring2 { background: var(--surface); box-shadow: var(--sh-sm); }
 .dial .needle { background: var(--accent); }
-.dial .hub { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: var(--sh-sm); }
+.dial .hub { background: linear-gradient(150deg, #ECBE86, var(--accent)); box-shadow: var(--sh-sm); }
 .dial .cap { color: var(--muted); }
 
 /* verticale sliders → rustige lavendel */
 .vslider { background: var(--surface); border: 1px solid var(--line);
   box-shadow: inset 0 1px 3px rgba(30, 28, 50, 0.05); }
 .vslider .rail { background: rgba(120, 116, 135, 0.25); }
-.vslider .knob { background: var(--accent); box-shadow: 0 3px 9px rgba(74, 70, 198, 0.32); }
+.vslider .knob { background: var(--accent); box-shadow: 0 3px 9px rgba(185, 122, 52, 0.32); }
 .vslider .ic svg path, .vslider .ic svg circle, .vslider .ic svg rect { stroke: var(--accent-ink); }
 #sNightlight .ic svg path { fill: var(--accent-ink); stroke: none; }
 .vlabels span { color: var(--muted); }
@@ -1492,16 +1492,16 @@ body {
 
 /* slaapmuziek + playlist → lavendel accent (rood alleen voor alarm) */
 .chip { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
-.chip.on { background: var(--accent-soft); color: var(--accent-ink); border-color: rgba(110, 106, 230, 0.28); box-shadow: none; }
+.chip.on { background: var(--accent-soft); color: var(--accent-ink); border-color: rgba(224, 164, 88, 0.28); box-shadow: none; }
 .music-btn { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
-.music-btn.on { color: var(--accent-ink); border-color: rgba(110, 106, 230, 0.28); }
+.music-btn.on { color: var(--accent-ink); border-color: rgba(224, 164, 88, 0.28); }
 .music-btn .ic-play path { fill: var(--accent-ink); }
 .music-btn .ic-stop rect { fill: var(--accent-ink); }
 .track { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
 .track.on { color: var(--accent-ink); box-shadow: none; background: var(--accent-soft); }
 .track .eq i { background: var(--accent-ink); }
 
-/* babyunit-bediening */
+/* pet-cam-bediening */
 .bctrl { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); border-radius: 16px; color: var(--ink); }
 .bctrl .ic svg { width: 22px; height: 22px; }
 .bctrl.active { border-color: var(--accent); color: var(--accent-ink); box-shadow: var(--sh-sm); }
@@ -1514,35 +1514,35 @@ body {
 /* fix: Night-mode pill erfde .btn (wit op wit); primaire knoppen → lavendel */
 .pill.btn { color: var(--ink); background: var(--surface); box-shadow: var(--sh-sm); }
 .pill.btn svg path { fill: var(--ink); }
-.pill.btn.on { background: linear-gradient(150deg, #8A87F0, var(--accent)); color: #fff; border-color: transparent; }
+.pill.btn.on { background: linear-gradient(150deg, #ECBE86, var(--accent)); color: #fff; border-color: transparent; }
 .pill.btn.on svg path { fill: #fff; }
-.btn { background: linear-gradient(150deg, #8A87F0, var(--accent)); box-shadow: 0 8px 20px rgba(110, 106, 230, 0.28); }
+.btn { background: linear-gradient(150deg, #ECBE86, var(--accent)); box-shadow: 0 8px 20px rgba(224, 164, 88, 0.28); }
 .btn.secondary { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); color: var(--ink); }
 .btn:active { box-shadow: var(--sh-sm); }
 
 /* =========================================================================
-   BabyPhone — LANDING (dark, professioneel) — fase 1
+   PetCam — LANDING (dark, professioneel) — fase 1
    Gescoped op de landing; de app-schermen (body.app-mode) blijven ongemoeid.
    ========================================================================= */
 body:not(.app-mode) {
-  background: radial-gradient(120% 70% at 50% 0%, #16233A 0%, #0D1524 44%, #0A101B 90%) no-repeat;
-  background-color: #0A101B;
+  background: radial-gradient(120% 70% at 50% 0%, #241E17 0%, #17130F 44%, #12110F 90%) no-repeat;
+  background-color: #12110F;
   padding: 0;
   display: block;
   align-items: stretch;
-  color: #EAECF1;
+  color: #F2EDE6;
 }
 body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 
 .lp {
-  --lp-surface: #151E30;
-  --lp-surface-2: #1A2438;
+  --lp-surface: #1E1A16;
+  --lp-surface-2: #241F19;
   --lp-line: rgba(255, 255, 255, 0.07);
-  --lp-text: #EDEFF4;
-  --lp-muted: #8C95A8;
-  --lp-accent: #E8825E;
-  --lp-accent-2: #E0714B;
-  --lp-ok: #4ED08A;
+  --lp-text: #F2EDE6;
+  --lp-muted: #9C9184;
+  --lp-accent: #E8B368;
+  --lp-accent-2: #D6903F;
+  --lp-ok: #5BC98A;
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
@@ -1557,7 +1557,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
 .lp-logo { height: 46px; width: auto; display: block; }
 .lp-logo.foot { height: 40px; }
-.lp .brand-mark { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(150deg, #EC8A63, var(--lp-accent-2)); display: grid; place-items: center; box-shadow: 0 6px 18px rgba(224, 113, 75, 0.4); }
+.lp .brand-mark { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(150deg, #E8B368, var(--lp-accent-2)); display: grid; place-items: center; box-shadow: 0 6px 18px rgba(214, 144, 63, 0.4); }
 .lp .brand-mark.sm { width: 26px; height: 26px; border-radius: 9px; }
 .lp .brand-name { font: 700 20px 'Quicksand', sans-serif; color: #fff; }
 .lp .tld { color: var(--lp-accent); font-weight: 600; }
@@ -1574,7 +1574,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-sub { color: var(--lp-muted); font-size: 17px; line-height: 1.55; font-weight: 600; margin: 16px 0 0; max-width: 440px; }
 .lp-bullets { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
 .lp-bullets li { display: flex; align-items: flex-start; gap: 13px; }
-.lp-b-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(232, 130, 94, 0.12); display: grid; place-items: center; flex: 0 0 auto; }
+.lp-b-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(232, 179, 104, 0.12); display: grid; place-items: center; flex: 0 0 auto; }
 .lp-b-ic svg { width: 21px; height: 21px; color: var(--lp-accent); }
 .lp-bullets b { display: block; font: 700 15.5px 'Quicksand', sans-serif; color: #fff; }
 .lp-bullets small { display: block; color: var(--lp-muted); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
@@ -1582,7 +1582,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 /* hero device preview — echte productfoto (camera + tablet + telefoon) */
 .lp-hero-visual { display: flex; justify-content: center; }
 .lp-hero-img { width: 100%; max-width: 560px; height: auto; display: block; filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5)); -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 99%); mask-image: linear-gradient(to bottom, #000 86%, transparent 99%); }
-/* echte camera-illustratie in de babyunit-kaart */
+/* echte camera-illustratie in de pet-cam-kaart */
 .lp-cam-img { height: 138px; width: auto; display: block; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45)); }
 .mini-monitor { width: 100%; max-width: 420px; background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 22px; padding: 14px; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45); }
 .mm-top { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; }
@@ -1590,7 +1590,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .mm-live { display: inline-flex; align-items: center; gap: 6px; font: 800 10px 'Nunito', sans-serif; letter-spacing: 0.08em; color: var(--lp-accent); }
 .mm-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--lp-accent); box-shadow: 0 0 8px var(--lp-accent); }
 .mm-screen { position: relative; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden;
-  background: radial-gradient(90% 120% at 70% 20%, #3A3122 0%, #1A1B22 60%, #0E1017 100%); }
+  background: radial-gradient(90% 120% at 70% 20%, #3A3122 0%, #241C14 60%, #150F0A 100%); }
 .mm-glow { position: absolute; top: 16%; left: 12%; width: 60px; height: 60px; border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 214, 150, 0.55), transparent 70%); filter: blur(4px); }
 .mm-crib { position: absolute; right: 8%; bottom: 0; width: 55%; height: 46%;
@@ -1600,7 +1600,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .mm-controls { display: flex; justify-content: center; gap: 26px; padding: 14px 0 6px; }
 .mm-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--lp-surface-2); border: 1px solid var(--lp-line); display: grid; place-items: center; }
 .mm-btn svg { width: 20px; height: 20px; color: var(--lp-muted); }
-.mm-btn.on { background: linear-gradient(150deg, #EC8A63, var(--lp-accent-2)); border-color: transparent; box-shadow: 0 8px 20px rgba(224, 113, 75, 0.4); }
+.mm-btn.on { background: linear-gradient(150deg, #E8B368, var(--lp-accent-2)); border-color: transparent; box-shadow: 0 8px 20px rgba(214, 144, 63, 0.4); }
 .mm-btn.on svg { color: #fff; }
 
 /* choose role + connect */
@@ -1614,7 +1614,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-cell { padding: 24px 26px; display: flex; flex-direction: column; gap: 16px; }
 .lp-cell + .lp-cell { border-top: 1px solid var(--lp-line); }
 .lp-cell-top { display: flex; align-items: center; gap: 22px; min-height: 128px; }
-/* illustratie-wrappers: camera links (babyunit), apparaten rechts (ouderunit) */
+/* illustratie-wrappers: camera links (pet-cam), apparaten rechts (eigenaar-scherm) */
 .lp-illus { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
 .lp-illus.baby { flex-basis: 128px; }
 .lp-illus.parent { flex-basis: 168px; }
@@ -1641,8 +1641,8 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
   border-radius: 50%; transform: translateX(-50%);
   background:
     radial-gradient(circle at 36% 38%, rgba(255, 255, 255, 0.7) 0 4px, transparent 5px),
-    radial-gradient(circle at 52% 52%, #08111c 0 11px, #0f1827 12px 23px, #202a38 24px 30px);
-  box-shadow: inset 0 0 0 6px #141b24, 0 5px 10px rgba(0, 0, 0, 0.3);
+    radial-gradient(circle at 52% 52%, #120D0A 0 11px, #1C140F 12px 23px, #2E241A 24px 30px);
+  box-shadow: inset 0 0 0 6px #1D1712, 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 .camera-lens::after {
   content: ""; position: absolute; left: 24px; bottom: -46px;
@@ -1663,13 +1663,13 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 }
 .lp-cell-txt h3 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0 0 5px; }
 .lp-cell-txt p { color: var(--lp-muted); font-size: 13.5px; font-weight: 600; line-height: 1.45; margin: 0; }
-.lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 14px 18px; border: none; border-radius: 14px; cursor: pointer; font: 800 15px 'Nunito', sans-serif; color: #fff; background: linear-gradient(150deg, #EC8A63, var(--lp-accent-2)); box-shadow: 0 10px 24px rgba(224, 113, 75, 0.32); transition: transform 0.12s; }
+.lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 14px 18px; border: none; border-radius: 14px; cursor: pointer; font: 800 15px 'Nunito', sans-serif; color: #fff; background: linear-gradient(150deg, #E8B368, var(--lp-accent-2)); box-shadow: 0 10px 24px rgba(214, 144, 63, 0.32); transition: transform 0.12s; }
 .lp-btn:active { transform: translateY(1px); }
 .lp-btn.sm { width: auto; padding: 13px 18px; flex: 0 0 auto; }
 .lp-btn.full { width: 100%; }
 
 /* zwevend "of"-bolletje op de verdeellijn tussen twee cellen in dezelfde rij */
-.lp-or { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: #101A2C; border: 1px solid var(--lp-line); display: none; align-items: center; justify-content: center; color: var(--lp-muted); font: 700 12px 'Nunito', sans-serif; z-index: 2; }
+.lp-or { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: #1E1A16; border: 1px solid var(--lp-line); display: none; align-items: center; justify-content: center; color: var(--lp-muted); font: 700 12px 'Nunito', sans-serif; z-index: 2; }
 
 .lp-cell-code { justify-content: center; }
 .lp-cell-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
@@ -1690,7 +1690,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-assure { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--lp-line); }
 .lp-assure span { display: inline-flex; align-items: center; gap: 8px; color: var(--lp-muted); font-weight: 700; font-size: 13px; }
 .lp-assure svg { width: 16px; height: 16px; color: var(--lp-ok); }
-.lp-assure .d-ok { width: 8px; height: 8px; border-radius: 50%; background: var(--lp-ok); box-shadow: 0 0 8px rgba(78, 208, 138, 0.6); }
+.lp-assure .d-ok { width: 8px; height: 8px; border-radius: 50%; background: var(--lp-ok); box-shadow: 0 0 8px rgba(91, 201, 138, 0.6); }
 
 /* vanaf tablet: twee kolommen per rij, verdeellijn wordt verticaal en het
    "of"-bolletje verschijnt op het kruispunt */
@@ -1714,7 +1714,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-trust { margin-top: 40px; text-align: center; }
 .lp-trust-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 22px; }
 .lp-trust-item { background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 18px; padding: 20px; text-align: center; }
-.lp-trust-ic { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 13px; background: rgba(232, 130, 94, 0.12); display: grid; place-items: center; }
+.lp-trust-ic { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 13px; background: rgba(232, 179, 104, 0.12); display: grid; place-items: center; }
 .lp-trust-ic svg { width: 23px; height: 23px; color: var(--lp-accent); }
 .lp-trust-item b { display: block; font: 700 15px 'Quicksand', sans-serif; color: #fff; margin-bottom: 4px; }
 .lp-trust-item p { color: var(--lp-muted); font-size: 13px; font-weight: 600; line-height: 1.45; margin: 0; }
@@ -1749,7 +1749,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 /* toegankelijkheid: zichtbare toetsenbordfocus, alleen bij toetsenbordgebruik */
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #E8825E;
+  outline: 2px solid #E8B368;
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

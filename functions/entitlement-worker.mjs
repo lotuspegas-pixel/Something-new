@@ -1,5 +1,5 @@
 /**
- * BabyPhone Plus — entitlement-functie (Cloudflare Worker).
+ * PetCam Plus — entitlement-functie (Cloudflare Worker).
  *
  * Bewust STATELOOS: er is geen database en geen KV. Elke vraag "is dit
  * e-mailadres Plus?" wordt live aan Stripe gesteld en beantwoord met een
@@ -16,9 +16,9 @@
  *   STRIPE_SECRET_KEY   sk_live_…  (of sk_test_…)
  *   STRIPE_PRICE_ID     price_…    (het Plus-abonnement; maak aan met Stripe Tax!)
  *   TOKEN_SECRET        lange willekeurige string (HMAC voor het token)
- *   SITE_URL            https://babyphone.online
+ *   SITE_URL            https://petcam.online
  *
- * Deploy: npx wrangler deploy functions/entitlement-worker.js --name babyphone-billing
+ * Deploy: npx wrangler deploy functions/entitlement-worker.js --name petcam-billing
  */
 
 const CORS = {

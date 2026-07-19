@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * BabyPhone Plus — licht entitlement-systeem, bewust ZONDER accounts.
+ * PetCam Plus — licht entitlement-systeem, bewust ZONDER accounts.
  *
  * De kernbelofte van het product is "geen account, geen server, geen opslag".
  * Betalen mag die belofte niet breken. Daarom:
@@ -15,16 +15,16 @@
  *    volledig gescheiden.
  *
  * Configuratie door de site-eigenaar (onaangepast = Plus-UI toont "binnenkort"):
- *   window.BABYFOON_BILLING = {
- *     checkoutUrl: 'https://billing.babyphone.online/checkout',
- *     verifyUrl:   'https://billing.babyphone.online/verify',
- *     portalUrl:   'https://billing.babyphone.online/portal',
- *     turn: { urls: ['turns:relay.babyphone.online:443'], username: '…', credential: '…' },
+ *   window.PETCAM_BILLING = {
+ *     checkoutUrl: 'https://billing.petcam.online/checkout',
+ *     verifyUrl:   'https://billing.petcam.online/verify',
+ *     portalUrl:   'https://billing.petcam.online/portal',
+ *     turn: { urls: ['turns:relay.petcam.online:443'], username: '…', credential: '…' },
  *   };
  */
 (function () {
-  const KEY = 'babyfoon.plus';
-  const CFG = window.BABYFOON_BILLING || null;
+  const KEY = 'petcam.plus';
+  const CFG = window.PETCAM_BILLING || null;
 
   function read() {
     try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }

@@ -1,4 +1,4 @@
-# BabyPhone Plus — billing (serverless)
+# PetCam Plus — billing (serverless)
 
 Eén Cloudflare Worker (`entitlement-worker.mjs`) is de complete
 betaal-backend. Hij is **stateloos**: geen database, geen KV — elke
@@ -8,27 +8,27 @@ staat. Het factuur-vlak raakt nooit WebRTC-media aan.
 
 ## In gebruik nemen (eenmalig, ±15 minuten)
 
-1. **Stripe**: maak een product "BabyPhone Plus" met een maand- en/of
+1. **Stripe**: maak een product "PetCam Plus" met een maand- en/of
    jaarprijs (bijv. €4/maand of €29/jaar — *prijs nog te bevestigen door de
    eigenaar*). Zet **Stripe Tax** aan voor EU-btw. Noteer de `price_…`-ID.
 2. **Worker deployen**:
    ```sh
-   npx wrangler deploy functions/entitlement-worker.mjs --name babyphone-billing
+   npx wrangler deploy functions/entitlement-worker.mjs --name petcam-billing
    npx wrangler secret put STRIPE_SECRET_KEY   # sk_live_…
    npx wrangler secret put STRIPE_PRICE_ID     # price_…
    npx wrangler secret put TOKEN_SECRET        # lange willekeurige string
-   npx wrangler secret put SITE_URL            # https://babyphone.online
+   npx wrangler secret put SITE_URL            # https://petcam.online
    ```
 3. **Site configureren**: zet vóór de scripts in `serverless/index.html`
    (of in een los config-bestand):
    ```html
    <script>
-     window.BABYFOON_BILLING = {
-       checkoutUrl: 'https://babyphone-billing.<account>.workers.dev/checkout',
-       verifyUrl:   'https://babyphone-billing.<account>.workers.dev/verify',
-       portalUrl:   'https://babyphone-billing.<account>.workers.dev/portal',
+     window.PETCAM_BILLING = {
+       checkoutUrl: 'https://petcam-billing.<account>.workers.dev/checkout',
+       verifyUrl:   'https://petcam-billing.<account>.workers.dev/verify',
+       portalUrl:   'https://petcam-billing.<account>.workers.dev/portal',
        // Optioneel: dedicated TURN-relay voor Plus-gebruikers
-       // turn: { urls: ['turns:relay.babyphone.online:443'], username: '…', credential: '…' },
+       // turn: { urls: ['turns:relay.petcam.online:443'], username: '…', credential: '…' },
      };
    </script>
    ```
