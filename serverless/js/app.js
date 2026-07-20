@@ -172,6 +172,7 @@
     startParentDevice();
     startHeartbeat();
     sendControl({ cmd: 'ping' });
+    sendControl({ cmd: 'getCaps' }); // camera-lijst + LED-ondersteuning opvragen
   }
   function onPeerDrop() {
     if (shuttingDown) return;
@@ -320,6 +321,16 @@
         case 'flip':
           flipCamera();
           break;
+        case 'selectCamera':
+          selectCamera(msg.deviceId);
+          break;
+        case 'torch':
+          setTorch(!!msg.on);
+          break;
+        case 'getCaps':
+          reportCameras();
+          reportTorch();
+          break;
         case 'ping':
           reportBattery(true);
           break;
@@ -339,6 +350,14 @@
       } else if (msg.cmd === 'videoState') {
         remoteVideoOff = !msg.on;
         applyPrivacyUI();
+      } else if (msg.cmd === 'cameraList') {
+        babyCameras = Array.isArray(msg.cameras) ? msg.cameras : [];
+        camActiveId = msg.activeId || '';
+        renderCameraSelect();
+      } else if (msg.cmd === 'torchState') {
+        torchSupported = !!msg.supported;
+        torchLastOn = !!msg.on;
+        renderTorchUI();
       } else if (msg.cmd === 'musicState') {
         musicPlaying = !!msg.playing;
         if (typeof msg.index === 'number') musicIndex = msg.index;
@@ -516,6 +535,11 @@
   let nightlightLevel = 60; // 0..100 — sterkte terwijl het aan is
   let sensitivity = 55;
   let alarmCooldown = 0;
+  // camerakeuze + LED-lampje van de babyunit (gemeld via het besturingskanaal)
+  let babyCameras = [];
+  let camActiveId = '';
+  let torchSupported = false;
+  let torchLastOn = false;
   const tracks = LullabyPlayer.list();
   let trackIndex = 0;
   let playing = false;
@@ -930,6 +954,30 @@
     for (let i = 0; i < 40; i++) m.appendChild(document.createElement('i'));
     amBars = Array.from(m.children);
   }
+  // Camerakeuze tonen zodra de babyunit ≥2 camera's meldt.
+  function renderCameraSelect() {
+    const row = $('rowCamera'), sel = $('camSelect');
+    if (!row || !sel) return;
+    if (!babyCameras || babyCameras.length < 2) { row.classList.add('hidden'); return; }
+    sel.textContent = '';
+    babyCameras.forEach((c, i) => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = (c.label && c.label.trim()) ? c.label : (T('cameraLabel') + ' ' + (i + 1));
+      if (c.id === camActiveId) o.selected = true;
+      sel.appendChild(o);
+    });
+    row.classList.remove('hidden');
+  }
+  // LED-rij alleen tonen als de babyunit torch-ondersteuning meldt.
+  function renderTorchUI() {
+    const row = $('rowLed'), btn = $('ledToggle');
+    if (!row || !btn) return;
+    if (!torchSupported) { row.classList.add('hidden'); return; }
+    row.classList.remove('hidden');
+    btn.classList.toggle('on', torchLastOn);
+    btn.textContent = torchLastOn ? T('on2') : T('off2');
+  }
   function startParentDevice() {
     if (parentStarted) return;
     parentStarted = true;
@@ -1018,6 +1066,14 @@
       applyZoom();
       const v = $('setZoomVal'); if (v) v.textContent = zoom.toFixed(1) + '×';
     };
+    // Camerakeuze: laat de babyunit naar de gekozen camera wisselen.
+    const camSel = $('camSelect');
+    if (camSel) camSel.onchange = () => { camActiveId = camSel.value; sendControl({ cmd: 'selectCamera', deviceId: camSel.value }); };
+    // LED-lampje (zaklamp) van de babyunit aan/uit (optimistisch; de baby bevestigt via torchState).
+    const ledBtn = $('ledToggle');
+    if (ledBtn) ledBtn.onclick = () => { torchLastOn = !ledBtn.classList.contains('on'); renderTorchUI(); sendControl({ cmd: 'torch', on: torchLastOn }); };
+    renderCameraSelect();
+    renderTorchUI();
     const rl2 = $('roomLabel2'); if (rl2) rl2.textContent = currentCode || 'P2P';
     // Stop
     $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) { shuttingDown = true; location.reload(); } };
@@ -1103,6 +1159,8 @@
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) { shuttingDown = true; location.reload(); } };
     enableWakeLock();
     reportBattery();
+    reportCameras();
+    reportTorch();
   }
   async function flipCamera() {
     facing = facing === 'environment' ? 'user' : 'environment';
@@ -1115,8 +1173,11 @@
       if (ot) { localStream.removeTrack(ot); ot.stop(); }
       localStream.addTrack(nt);
       watchTrackEnd(nt, 'video');
+      torchOn = false;
       $('bPreview').srcObject = localStream;
       toast(T('cameraSwitched'));
+      reportCameras();
+      reportTorch();
     } catch (e) {
       facing = facing === 'environment' ? 'user' : 'environment';
       toast(T('cannotSwitch'));
@@ -1146,7 +1207,7 @@
       if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, kind);
-      if (kind === 'video') $('bPreview').srcObject = localStream;
+      if (kind === 'video') { $('bPreview').srcObject = localStream; torchOn = false; reportCameras(); reportTorch(); }
       toast(T('cameraRecovered'));
     } catch (e) {
       // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
@@ -1154,6 +1215,63 @@
     } finally {
       if (kind === 'video') recoveringVideo = false; else recoveringAudio = false;
     }
+  }
+  // ---- camerakeuze & LED-lampje (bestuurd vanaf de ouderunit) ----
+  // De babyunit somt zijn eigen camera's op en meldt ze aan de ouder; de
+  // ouder kiest er een. Het LED-lampje (zaklamp) op ondersteunde toestellen
+  // gaat via de torch-capability van het videospoor. Sterkte is geen web-
+  // capability: torch is enkel aan/uit.
+  let torchOn = false;
+  async function reportCameras() {
+    if (role !== 'baby' || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const cams = devs.filter((d) => d.kind === 'videoinput').map((d) => ({ id: d.deviceId, label: d.label || '' }));
+      let activeId = '';
+      const vt = localStream && localStream.getVideoTracks()[0];
+      if (vt && vt.getSettings) { try { activeId = vt.getSettings().deviceId || ''; } catch (e) {} }
+      sendControl({ cmd: 'cameraList', cameras: cams, activeId: activeId });
+    } catch (e) {}
+  }
+  function reportTorch() {
+    if (role !== 'baby') return;
+    let supported = false;
+    const vt = localStream && localStream.getVideoTracks()[0];
+    if (vt && vt.getCapabilities) { try { supported = !!vt.getCapabilities().torch; } catch (e) {} }
+    if (!supported) torchOn = false;
+    sendControl({ cmd: 'torchState', supported: supported, on: torchOn });
+  }
+  async function selectCamera(deviceId) {
+    if (role !== 'baby' || !localStream || !deviceId) return;
+    try {
+      const ns = await getMedia({ audio: false, video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } } });
+      const nt = ns.getVideoTracks()[0];
+      const ot = localStream.getVideoTracks()[0];
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video');
+      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      localStream.addTrack(nt);
+      watchTrackEnd(nt, 'video');
+      torchOn = false; // nieuw spoor → LED weer uit
+      $('bPreview').srcObject = localStream;
+      toast(T('cameraSwitched'));
+    } catch (e) {
+      toast(T('cannotSwitch'));
+    }
+    reportCameras();
+    reportTorch();
+  }
+  async function setTorch(on) {
+    if (role !== 'baby' || !localStream) return;
+    const vt = localStream.getVideoTracks()[0];
+    try {
+      await vt.applyConstraints({ advanced: [{ torch: !!on }] });
+      torchOn = !!on;
+      toast(torchOn ? T('ledOn') : T('ledOff'));
+    } catch (e) {
+      torchOn = false;
+    }
+    reportTorch();
   }
   async function reportBattery(once) {
     const setB = (txt, sub) => { const b1 = $('bBatt'); if (b1) b1.textContent = txt; const s = $('bBattSub'); if (s && sub != null) s.textContent = sub; };
@@ -1245,6 +1363,8 @@
         renderChips();
         renderPlaylist();
         renderEventLog();
+        renderCameraSelect();
+        renderTorchUI();
       } else if (role === 'baby' && babyStarted) {
         if (controlConn && controlConn.open) set('bConn', T('connected'));
       }

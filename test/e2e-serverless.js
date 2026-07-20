@@ -298,6 +298,56 @@ function findExecutable() {
   await cB2.close().catch(() => {});
   await cP2.close();
 
+  // ---- camerakeuze + LED-lampje (babyunit met 2 camera's en torch-steun) ----
+  // De babyunit-context simuleert twee camera's en torch-ondersteuning, zodat
+  // de volledige keten baby → besturingskanaal → ouder-UI getest wordt.
+  const capInit = INIT + `
+    navigator.mediaDevices.enumerateDevices = async () => ([
+      { kind: 'videoinput', deviceId: 'cam-a', label: 'Back camera' },
+      { kind: 'videoinput', deviceId: 'cam-b', label: 'Front camera' },
+    ]);
+    try { MediaStreamTrack.prototype.getCapabilities = function () { return { torch: true }; }; } catch (e) {}
+    try { MediaStreamTrack.prototype.applyConstraints = function () { return Promise.resolve(); }; } catch (e) {}
+  `;
+  const mkCap = async () => { const c = await browser.newContext({ permissions: ['camera', 'microphone'] }); await c.addInitScript(capInit); return c; };
+  const cB3 = await mkCap();
+  const baby3 = await cB3.newPage();
+  baby3.on('pageerror', (e) => errs.push('BABY3: ' + e.message));
+  await baby3.goto(BASE); await sleep(400);
+  await baby3.click('#pickBaby');
+  let code3 = '';
+  for (let i = 0; i < 40; i++) {
+    code3 = await baby3.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (code3 && code3 !== '······' && code3.length >= 6) break;
+    await sleep(300);
+  }
+  const cP3 = await mkCap();
+  const parent3 = await cP3.newPage();
+  parent3.on('pageerror', (e) => errs.push('PARENT3: ' + e.message));
+  await parent3.goto(BASE); await sleep(300);
+  await parent3.click('#pickParent');
+  await parent3.fill('#parentOfferInput', code3);
+  await parent3.click('#parentGenBtn');
+  // wachten tot verbonden, dan de Instellingen-weergave openen (daar staan de rijen)
+  const t03 = Date.now();
+  while (Date.now() - t03 < 20000) {
+    const w = await parent3.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w > 0) break;
+    await sleep(300);
+  }
+  await parent3.click('.dnav[data-view="settings"]');
+  const camRow = await parent3.waitForSelector('#rowCamera:not(.hidden)', { timeout: 20000 }).then(() => true).catch(() => false);
+  check('Camerakeuze verschijnt bij ≥2 camera’s', camRow);
+  const camOpts = await parent3.$$eval('#camSelect option', (els) => els.length).catch(() => 0);
+  check('Camerakeuze toont beide camera’s (' + camOpts + ')', camOpts === 2);
+  const ledRow = await parent3.waitForSelector('#rowLed:not(.hidden)', { timeout: 20000 }).then(() => true).catch(() => false);
+  check('LED-rij verschijnt bij torch-ondersteuning', ledRow);
+  await parent3.click('#ledToggle');
+  const ledOn = await parent3.waitForFunction(() => document.getElementById('ledToggle').classList.contains('on'), { timeout: 8000 }).then(() => true).catch(() => false);
+  check('LED-knop schakelt naar aan', ledOn);
+  await cB3.close().catch(() => {});
+  await cP3.close();
+
   await browser.close();
   web.close();
   console.log(errs.length ? '\nPAGINAFOUTEN:\n' + errs.join('\n') : '\nGEEN PAGINAFOUTEN');

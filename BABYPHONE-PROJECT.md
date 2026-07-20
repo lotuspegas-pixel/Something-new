@@ -33,7 +33,7 @@ Core flow:
 - Product/brand name is **always** "BabyPhone.online" — never "Luna Unit" in
   user-facing copy (internal codename only).
 - Design rules are codified in `CLAUDE.md` at the repo root (dark premium
-  nursery aesthetic — see section 10 below).
+  nursery aesthetic — see section 11 below).
 
 ## 3. Repository layout
 
@@ -141,7 +141,7 @@ are complete and merged into the working branch.
 
 - Rebuilt the landing page and both dashboards from reference screenshots
   to a dark, premium, "nursery-at-night" aesthetic (see design tokens in
-  section 10) — replacing an earlier generic-SaaS-template look.
+  section 11) — replacing an earlier generic-SaaS-template look.
 - Reworked the homepage **"Choose your role"** section into a single framed
   container (`.lp-framed`) with an internal divider line and a floating
   "or" badge between the Baby-unit and Parent-unit cards, matching a
@@ -214,7 +214,48 @@ This reused an existing `toggleRecord()`/`saveBlob()` scaffold in
 button — the only new code was the UI wiring, the button markup, the
 `.ctrlbtn.active` styling, and the label-swap logic.
 
-## 9. Connection resilience (reconnect, screen-off camera, older browsers)
+## 9. Camera selection & LED light (parent-controlled)
+
+Two device controls the parent can drive on the baby device, both routed
+over the existing control channel and surfaced in the parent's **Settings**
+view (they appear only when the baby device actually reports the
+capability).
+
+- **Camera selection**: the baby unit enumerates its own cameras
+  (`navigator.mediaDevices.enumerateDevices()`, video inputs) and reports
+  the list + the active device to the parent (`cameraList`). If there are
+  two or more cameras, the parent sees a **Camera** dropdown; picking one
+  sends `selectCamera` and the baby switches via
+  `getUserMedia({video:{deviceId}})` + `RTCRtpSender.replaceTrack()` — the
+  same swap pattern already used by `flipCamera()`/recovery. Handy for
+  phones/tablets with multiple back lenses or front/back cameras.
+- **LED light (flashlight)**: where the baby device's camera track exposes
+  the `torch` capability (`getCapabilities().torch`, mainly Android/Chrome),
+  the parent gets an **LED light** toggle that turns the physical
+  flashlight on/off via `applyConstraints({advanced:[{torch}]})`. The row
+  is shown only when the baby reports torch support, so it never appears as
+  a dead control on devices (e.g. iOS Safari) that can't do it. Note:
+  torch is on/off only — brightness/strength is not a web capability, so
+  there's no strength slider for the physical LED (the separate "Night
+  light" feature already gives an adjustable soft glow on the baby device's
+  *screen*).
+
+Both re-report after a camera switch or track recovery (torch support and
+the active camera can change with the lens), and the parent re-requests the
+capability list on connect (`getCaps`). New i18n keys (`cameraLabel`,
+`ledLight`, `ledOn`, `ledOff`) ship for the seven core languages with
+English fallback. Covered by `test/e2e-serverless.js` with a baby context
+that simulates two cameras and torch support, asserting the selector and
+LED toggle appear and the toggle round-trips.
+
+Not built (deliberately): LiDAR/depth-based movement tracking of the child.
+Browsers expose no API for a device's LiDAR or depth sensor — it is not
+reachable from a web page at all — so this was left out rather than faked.
+The equivalent goal (movement monitoring, also without video) would be
+achievable via camera-frame motion analysis; that remains a possible future
+addition.
+
+## 10. Connection resilience (reconnect, screen-off camera, older browsers)
 
 Added after a real-world bug report: connections sometimes dropped and the
 "reconnecting…" state got stuck loading forever with no video ever coming
@@ -293,7 +334,7 @@ keeps receiving video; a dedicated slow-backoff baby/parent pair proves a
 `visibilitychange` event forces an immediate reconnect attempt instead of
 waiting out the scheduled backoff delay.
 
-## 10. Design system (dark, premium, nocturnal)
+## 11. Design system (dark, premium, nocturnal)
 
 Defined in `CLAUDE.md` and implemented via CSS custom properties:
 
@@ -313,7 +354,7 @@ restrained gradients. Explicitly avoids: generic SaaS-template look,
 overly bright colors, childish pastels, cluttered dashboards, "AI landing
 page" clichés.
 
-## 11. Blog / content marketing (`blog.html`)
+## 12. Blog / content marketing (`blog.html`)
 
 A multilingual guide post — "Two phones, one baby monitor: everything
 BabyPhone.online can do" — that doubles as an SEO/GEO landing page. It
@@ -350,7 +391,7 @@ Note on ranking: proper on-page SEO/GEO is in place, but no code change can
 (backlinks, competition, domain authority, crawl/index timing). This makes
 the site as eligible as possible; actual ranking builds over time.
 
-## 12. Deployment
+## 13. Deployment
 
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
@@ -367,7 +408,7 @@ the site as eligible as possible; actual ranking builds over time.
   which is designed to run on a serverless function platform (e.g.
   Cloudflare Workers) if/when the paid tier is activated.
 
-## 13. Testing
+## 14. Testing
 
 - `test/e2e-serverless.js` — the main regression suite for the live app: room
   code generation, pairing, live video/audio, playlist sync, battery status,
@@ -384,7 +425,7 @@ the site as eligible as possible; actual ranking builds over time.
 - CI (`.github/workflows/ci.yml`) runs all of the above on every push and
   pull request against `main`.
 
-## 14. Known follow-ups / not yet done
+## 15. Known follow-ups / not yet done
 
 - Legal pages (`contact.html`, `refunds.html`, `accessibility.html`) still
   contain `<em class="todo">[…]</em>` placeholders for operator legal name,
