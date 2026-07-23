@@ -51,7 +51,7 @@ fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 const copies = [
   'privacy.html', 'terms.html', 'refunds.html', 'contact.html', 'accessibility.html',
-  'how-it-works.html', 'blog.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
+  'how-it-works.html', 'blog.html', 'robots.txt', 'ads.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.png',
 ];
 for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
@@ -64,8 +64,11 @@ console.log('Build →', OUT);
 console.log('  index.html', kb(path.join(OUT, 'index.html')) + ' KB (zelfstandig)');
 console.log('  bijpagina’s + SEO:', copies.length, 'bestanden; music/:', fs.readdirSync(path.join(OUT, 'music')).length, 'items');
 
-// Sanity: geen externe script/style-verwijzingen meer in index.html
-const extTags = html.match(/<(?:script[^>]*\bsrc|link[^>]*rel="stylesheet"[^>]*\bhref)="(?!data:)[^"]+"/gi) || [];
+// Sanity: geen externe script/style-verwijzingen meer in index.html.
+// Uitzondering: het Google AdSense-script móét extern van googlesyndication
+// geladen worden (advertenties kun je niet inline meebundelen).
+const extTags = (html.match(/<(?:script[^>]*\bsrc|link[^>]*rel="stylesheet"[^>]*\bhref)="(?!data:)[^"]+"/gi) || [])
+  .filter((t) => !/googlesyndication\.com/i.test(t));
 if (extTags.length) {
   console.error('Externe verwijzingen over:', extTags.join(' | '));
   process.exit(1);

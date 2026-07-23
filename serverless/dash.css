@@ -231,6 +231,10 @@ body.app-mode .connecting-row { color: #8C95A8; }
 /* ---- nursery poster in the video card ---- */
 .vcard-poster { position: absolute; inset: 0; z-index: 0; }
 .vcard-poster svg { width: 100%; height: 100%; display: block; }
+/* Achtergrond wanneer de camera offline is (geen beeld): een echte foto
+   bovenop de SVG-illustratie. Ontbreekt assets/offline-bg.webp, dan haalt
+   onerror de <img> weg en valt het terug op de SVG hieronder. */
+.vcard-poster-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 .vcard video { z-index: 1; background: transparent; }
 .vcard .vcard-ph, .vcard .vcard-badge, .vcard .vcard-focus, .vcard .vcard-hd, .vcard .vcard-shade, .vcard .night-veil { z-index: 2; }
 .vcard.privacy .vcard-poster { filter: brightness(.7) blur(2px); }
