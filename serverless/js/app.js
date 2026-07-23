@@ -319,7 +319,7 @@
           break;
         }
         case 'flip':
-          flipCamera();
+          babyCycleCamera();
           break;
         case 'selectCamera':
           selectCamera(msg.deviceId);
@@ -1066,6 +1066,10 @@
       applyZoom();
       const v = $('setZoomVal'); if (v) v.textContent = zoom.toFixed(1) + '×';
     };
+    // Snelknop "Wissel camera" op de monitor: stuurt een flip-commando naar
+    // de babyunit (voor/achter of volgende lens). De camerakeuze-lijst in de
+    // Instellingen blijft beschikbaar voor het kiezen van een specifieke lens.
+    if ($('btnFlipCam')) $('btnFlipCam').onclick = () => { sendControl({ cmd: 'flip' }); toast(T('switchCamera')); };
     // Camerakeuze: laat de babyunit naar de gekozen camera wisselen.
     const camSel = $('camSelect');
     if (camSel) camSel.onchange = () => { camActiveId = camSel.value; sendControl({ cmd: 'selectCamera', deviceId: camSel.value }); };
@@ -1156,6 +1160,10 @@
     $('tgPrivacy').onclick = toggleShade;
     const shadeBtn = $('tgPrivacyBtn'); if (shadeBtn) shadeBtn.onclick = toggleShade;
 
+    // Zichtbare "Wissel camera"-knop op de babyunit (voor/achter of volgende lens)
+    const flipCam = $('tgFlipCam');
+    if (flipCam) flipCam.onclick = () => babyCycleCamera();
+
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) { shuttingDown = true; location.reload(); } };
     enableWakeLock();
     reportBattery();
@@ -1181,6 +1189,32 @@
     } catch (e) {
       facing = facing === 'environment' ? 'user' : 'environment';
       toast(T('cannotSwitch'));
+    }
+  }
+  // Wissel van camera op de babyunit. Bij toestellen met meer dan twee
+  // camera's (bv. meerdere achterlenzen) rouleren we per deviceId; anders
+  // klappen we simpelweg tussen voor- en achtercamera (facingMode). Wordt
+  // aangeroepen door de zichtbare "Wissel camera"-knop op de babyunit én
+  // door het 'flip'-commando dat de ouderunit op afstand kan sturen.
+  async function babyCycleCamera() {
+    if (role !== 'baby' || !localStream) return;
+    let cams = [];
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      cams = devs.filter((d) => d.kind === 'videoinput' && d.deviceId);
+    } catch (e) {}
+    if (cams.length >= 2) {
+      let curId = '';
+      const vt = localStream.getVideoTracks()[0];
+      if (vt && vt.getSettings) { try { curId = vt.getSettings().deviceId || ''; } catch (e) {} }
+      const idx = cams.findIndex((c) => c.deviceId === curId);
+      const next = cams[(idx + 1 + cams.length) % cams.length] || cams[0];
+      // Val terug op een voor/achter-flip als die specifieke camera niet
+      // geopend kan worden (bv. verouderd deviceId of 'exact' geweigerd).
+      const ok = await selectCamera(next.deviceId, { silentFail: true });
+      if (!ok) await flipCamera();
+    } else {
+      await flipCamera();
     }
   }
   // Herstel van camera/microfoon als het besturingssysteem het spoor hard
@@ -1241,8 +1275,13 @@
     if (!supported) torchOn = false;
     sendControl({ cmd: 'torchState', supported: supported, on: torchOn });
   }
-  async function selectCamera(deviceId) {
-    if (role !== 'baby' || !localStream || !deviceId) return;
+  // opts.silentFail onderdrukt de foutmelding zodat babyCycleCamera netjes
+  // kan terugvallen op flipCamera() zonder eerst "Kan niet wisselen" te tonen.
+  // Geeft true terug als de camera echt gewisseld is.
+  async function selectCamera(deviceId, opts) {
+    opts = opts || {};
+    if (role !== 'baby' || !localStream || !deviceId) return false;
+    let ok = false;
     try {
       const ns = await getMedia({ audio: false, video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } } });
       const nt = ns.getVideoTracks()[0];
@@ -1255,11 +1294,13 @@
       torchOn = false; // nieuw spoor → LED weer uit
       $('bPreview').srcObject = localStream;
       toast(T('cameraSwitched'));
+      ok = true;
     } catch (e) {
-      toast(T('cannotSwitch'));
+      if (!opts.silentFail) toast(T('cannotSwitch'));
     }
     reportCameras();
     reportTorch();
+    return ok;
   }
   async function setTorch(on) {
     if (role !== 'baby' || !localStream) return;

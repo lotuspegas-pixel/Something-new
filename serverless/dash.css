@@ -87,7 +87,7 @@ body.app-mode {
 .ameter-bars i { flex: 1; height: 20%; border-radius: 2px; background: linear-gradient(180deg, var(--d-accent), var(--d-accent2)); opacity: 0.35; transition: height 0.08s, opacity 0.08s; }
 .ameter-scale { display: flex; justify-content: space-between; margin-top: 8px; color: var(--d-muted); font: 700 10px 'Nunito', sans-serif; }
 
-.ctrlrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.ctrlrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 12px; }
 .ctrlbtn { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 18px 8px; border-radius: 16px; background: var(--d-surf); border: 1px solid var(--d-line); color: var(--d-text); cursor: pointer; font: 700 12.5px 'Nunito', sans-serif; transition: 0.15s; }
 .ctrlbtn .cb-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--d-surf2); display: grid; place-items: center; color: var(--d-muted); }
 .ctrlbtn:hover { border-color: rgba(255,255,255,0.14); }
@@ -155,6 +155,13 @@ body.app-mode {
 .btgl-t { flex: 1; }
 .btgl-t b { display: block; font: 700 14px 'Nunito', sans-serif; color: var(--d-text); }
 .btgl-t small { color: var(--d-muted); font-size: 12px; font-weight: 600; }
+/* Actieknop-variant van een .btgl-rij (bv. "Wissel camera") — een echte
+   <button>, dus reset de knop-stijlen zodat hij op de rijen lijkt. */
+button.btgl { width: 100%; margin: 0; text-align: left; background: none; color: inherit; font: inherit; cursor: pointer; }
+button.btgl:hover { background: var(--d-surf2); }
+button.btgl:hover .btgl-ic { color: #fff; }
+.btgl-arrow { flex: 0 0 auto; color: var(--d-muted); display: grid; place-items: center; }
+button.btgl:hover .btgl-arrow { color: var(--d-text); }
 .switch { width: 44px; height: 26px; border-radius: 100px; background: var(--d-surf2); border: 1px solid var(--d-line); position: relative; cursor: pointer; flex: 0 0 auto; transition: background 0.2s; }
 .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #7C879B; transition: 0.2s; }
 .switch.on { background: linear-gradient(150deg, #EC8A63, var(--d-accent2)); border-color: transparent; }

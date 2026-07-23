@@ -345,6 +345,23 @@ function findExecutable() {
   await parent3.click('#ledToggle');
   const ledOn = await parent3.waitForFunction(() => document.getElementById('ledToggle').classList.contains('on'), { timeout: 8000 }).then(() => true).catch(() => false);
   check('LED-knop schakelt naar aan', ledOn);
+  // Zichtbare "Wissel camera"-knoppen op beide units (het gebrek hieraan was
+  // de klacht: de functie was nergens te vinden).
+  const babyFlipVisible = await baby3.evaluate(() => {
+    const b = document.getElementById('tgFlipCam');
+    if (!b) return false;
+    const r = b.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  check('Babyunit toont een zichtbare "Wissel camera"-knop', babyFlipVisible);
+  await parent3.click('.dnav[data-view="monitor"]');
+  const parentFlipVisible = await parent3.evaluate(() => {
+    const b = document.getElementById('btnFlipCam');
+    if (!b) return false;
+    const r = b.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  check('Ouderunit toont een zichtbare "Wissel camera"-knop op de monitor', parentFlipVisible);
   await cB3.close().catch(() => {});
   await cP3.close();
 
