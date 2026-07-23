@@ -1,87 +1,55 @@
-# COSMOS — An Emergent Universe
+# Card Studio — Digital Business Card Studio
 
-A living particle simulation that runs entirely in your terminal.  
-No dependencies. Just Python 3 and a universe full of potential.
+A visual business-card design tool with LinkedIn auto-fill, print-ready export, and a
+QR-code-powered digital business card / networking layer.
 
+This repository is being built in phases. **This PR delivers Phase 1 — Foundation:**
+
+- Project scaffold: Next.js (App Router) + TypeScript + Tailwind CSS v4
+- Design system: color/type/motion tokens, dark mode, hand-rolled shadcn/ui-style
+  primitives (button, card, badge, tabs, dialog, separator)
+- Marketing/landing page: hero, feature walkthrough, pricing section
+- Static template gallery: 8 templates across 4 categories, each with a distinct font
+  pairing, live-rendered preview (no images), and a full-size preview dialog
+
+No editor, auth, export engine, or QR/digital-card layer yet — those are later phases.
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack) + TypeScript + React 19
+- Tailwind CSS v4 (CSS-based theme, no `tailwind.config.js`)
+- Hand-rolled shadcn/ui-style components (Radix UI primitives + CVA) — the `shadcn`
+  CLI's registry (`ui.shadcn.com`) isn't reachable from this environment, so components
+  were added by hand following the same conventions (`components.json` is still present
+  for anyone running the CLI from an environment that can reach it)
+- next-themes for dark mode, Framer Motion for scroll/hover motion
+- next/font/google for all typefaces (Fraunces + Inter site-wide; Manrope, Playfair
+  Display, Space Grotesk, and IBM Plex Mono for template previews only)
+
+## Getting started
+
+```bash
+npm install
+npm run dev
 ```
-python3 cosmos.py
+
+Open http://localhost:3000. The template gallery is at `/templates`.
+
+```bash
+npm run build   # production build
+npm run lint    # eslint
 ```
 
----
+## Notes for the next phase
 
-## What it is
-
-COSMOS is a real-time physics simulation rendered in ASCII.  
-Four types of matter interact through gravity and electromagnetism,
-producing structures, orbits, and patterns that no one — including the author —
-can fully predict.
-
-A philosophical **Oracle** watches the simulation and speaks as the universe evolves.  
-The universe is **saved** when you quit and **continues** where it left off next session,
-accumulating time like a living thing.
+- `lib/templates.ts` defines the template data model (`CardLayoutConfig`,
+  `CardFieldSample`) that the Phase 2 canvas editor should extend rather than replace.
+- `components/ui/button.tsx` is marked `"use client"` because the installed
+  `@radix-ui/react-slot@1.3.1` calls `React.createContext` without its own `"use client"`
+  directive — if it's ever imported into a Server Component without that boundary, the
+  build fails during page-data collection. Worth re-checking on a Radix upgrade.
 
 ---
 
-## Particle types
-
-| Symbol | Type   | Behaviour                                      |
-|--------|--------|------------------------------------------------|
-| `●`    | Normal | Attracts by mass; repels/attracts by charge    |
-| `◎`    | Dark   | Strong gravitational pull; no EM charge        |
-| `★`    | Light  | Radiative repulsion between light particles    |
-| `▓`    | Void   | Slowly absorbs any particle that touches it    |
-
----
-
-## Controls
-
-| Key | Action                        |
-|-----|-------------------------------|
-| `g` | Toggle gravity                |
-| `e` | Toggle electromagnetic force  |
-| `n` | Spawn a new particle cluster  |
-| `b` | Big Bang — restart universe   |
-| `p` | Pause / resume                |
-| `?` | Cycle oracle wisdom           |
-| `h` | Help overlay                  |
-| `q` | Quit (state is saved)         |
-
----
-
-## The nebula
-
-The shifting background is a two-octave pseudo-noise field evolving in real time —  
-a visual representation of the quantum foam between particles.  
-The character density at any point reflects the interference of sine waves in three dimensions.
-
----
-
-## The Oracle
-
-The Oracle draws from 28 philosophical fragments, cycling every 14 seconds.  
-Each message appears with a typing animation.  
-When notable events occur — void absorption, high kinetic energy, new matter condensing —  
-a secondary event message appears below the Oracle.
-
----
-
-## State persistence
-
-`~/.cosmos_universe.json` stores:
-- Full particle positions, velocities, types
-- Cumulative born/died counts across all sessions
-- Universe age (`t`)
-- Session count
-
-The universe is never truly reset unless you run **Big Bang** (`b`)  
-or delete the save file.
-
----
-
-## Technical notes
-
-- Pure Python 3 standard library only (`curses`, `math`, `json`, `random`)
-- ~30 fps render loop via `curses`
-- O(n²) force calculations — smooth for n < 200 particles
-- Wrap-around boundary conditions (toroidal space)
-- Speed cap of 9 units/step prevents numerical explosion
+This repo also contains `cosmos.py`, an unrelated terminal particle-simulation toy
+predating this project — left untouched.
