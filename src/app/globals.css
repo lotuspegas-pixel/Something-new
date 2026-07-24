@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme — warm neutral canvas with an ink-blue primary. */
+    --background: 40 33% 98%;
+    --foreground: 224 20% 12%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 224 8% 42%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 12%;
+    --primary: 232 60% 22%;
+    --primary-foreground: 40 33% 98%;
+    --accent: 22 92% 55%;
+    --accent-foreground: 0 0% 100%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 232 60% 40%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Dark theme is a first-class option (design brief §3). */
+    --background: 228 24% 7%;
+    --foreground: 40 20% 96%;
+    --muted: 228 16% 15%;
+    --muted-foreground: 40 8% 65%;
+    --card: 228 20% 10%;
+    --card-foreground: 40 20% 96%;
+    --primary: 40 33% 96%;
+    --primary-foreground: 228 24% 9%;
+    --accent: 22 92% 58%;
+    --accent-foreground: 0 0% 100%;
+    --border: 228 14% 20%;
+    --input: 228 14% 22%;
+    --ring: 40 33% 80%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Accessibility: always show a visible keyboard focus ring (WCAG, §3). */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-grid {
+    background-image: radial-gradient(
+      hsl(var(--muted-foreground) / 0.12) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+  /* Injected card SVGs carry mm dimensions for export; scale them to the host box on screen. */
+  .card-svg-host svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Subtle sheen used on skeletons / template previews. */
+  .shimmer::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.06),
+      transparent
+    );
+    animation: shimmer 1.8s infinite;
+  }
+}

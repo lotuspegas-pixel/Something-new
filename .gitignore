@@ -1,3 +1,23 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+
+# Local data + env
+.data/
+.env
+.env*.local
+
+# Prisma
+prisma/*.db
+
+# Misc
+.DS_Store
+*.log
+
+# Python (legacy files kept in repo history)
 __pycache__/
 *.pyc
 *.pyo
