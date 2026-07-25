@@ -279,3 +279,132 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .plus-cta { background: linear-gradient(135deg, #EC8A63, #E0714B); border: none; }
 .plus-state { color: var(--d-muted); font-size: 13px; font-weight: 700; }
 .plus-state.ok { color: var(--d-ok); }
+
+/* =========================================================================
+   LIQUID GLASS — dashboards (Parent Unit + Baby Unit)
+   Zelfde glastokens als luna.css (daar gedefinieerd op :root).
+   ========================================================================= */
+body.app-mode {
+  background: radial-gradient(circle at center, var(--lg-bg-1) 0%, var(--lg-bg-2) 45%, var(--lg-bg-3) 100%) no-repeat fixed;
+  background-color: var(--lg-bg-3);
+}
+
+/* kaarten / panelen */
+.dpanel,
+.statcard,
+.evlog,
+.ameter,
+.bcard,
+.bstat,
+.btile,
+.dash-side,
+.dash-status,
+.dash-statusbar,
+.bpair-code,
+.plus-panel {
+  background-color: var(--lg-fill);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+}
+.dpanel { border-radius: 22px; }
+.statcard, .bcard, .bstat, .btile, .evlog, .ameter { border-radius: 18px; }
+.dash-side { border-radius: 22px; }
+
+/* topbalk als zwevende glasstrook. Let op: .dash-topbar is een gecentreerde
+   1200px-container, dus een rand-tot-rand balk zou afgekapt lijken — vandaar
+   een echte zwevende pil met marge en ronde hoeken. */
+.dash-topbar {
+  background-color: rgba(255, 255, 255, 0.045);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge-soft);
+  border-radius: 20px;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+  margin: 14px auto 0;
+  padding: 12px 18px;
+  width: calc(100% - 28px);
+}
+
+/* bedieningsknoppen: helderder glas, accent-status blijft ongewijzigd */
+.ctrlbtn,
+.btgl,
+.pillbtn,
+.dash-gear,
+.dsb-fs,
+.cam-select,
+.talk-big,
+.musicbtn,
+.btn-stop {
+  background-color: var(--lg-fill-2);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+}
+.ctrlbtn .cb-ic,
+.btgl-ic,
+.dash-title-ic {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge-soft);
+}
+
+/* actieve/aan-status: gekleurd glas i.p.v. vlakke vulling */
+.ctrlbtn.on,
+.talk-big.on {
+  background-image: var(--lg-sheen), linear-gradient(150deg, #EC8A63, var(--d-accent2));
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 30px rgba(224, 113, 75, 0.34), var(--lg-inset);
+}
+.ctrlbtn.active {
+  background-image: var(--lg-sheen), linear-gradient(150deg, #E5484D, #C22C31);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 30px rgba(229, 72, 77, 0.36), var(--lg-inset);
+}
+.btn-stop {
+  background-image: var(--lg-sheen), linear-gradient(150deg, #EC8A63, var(--d-accent2));
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* zijbalk-navigatie */
+.dnav.active {
+  background-color: rgba(232, 130, 94, 0.16);
+  background-image: var(--lg-sheen);
+  border: 1px solid rgba(232, 130, 94, 0.28);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+}
+
+/* videokaart: frame van glas, beeld zelf blijft ondoorzichtig */
+.vcard {
+  border: 1px solid var(--lg-edge);
+  box-shadow: var(--lg-shadow), var(--lg-inset);
+}
+/* overlays óp het beeld — hier is echte doorkijk juist het effect */
+.vcard-badge,
+.vcard-focus,
+.vcard-hd,
+.vcard-shade {
+  background-color: rgba(8, 16, 30, 0.5);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge-soft);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+}
+
+/* scheidingslijnen subtieler op glas */
+.set-row { border-bottom-color: var(--lg-edge-soft); }
+
+/* Terugval zonder backdrop-filter: dekkender maken voor leesbaarheid. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .dpanel, .statcard, .evlog, .ameter, .bcard, .bstat, .btile, .dash-side,
+  .dash-status, .dash-statusbar, .bpair-code, .plus-panel, .dash-topbar,
+  .ctrlbtn, .btgl, .pillbtn, .dash-gear, .dsb-fs, .cam-select, .talk-big, .musicbtn {
+    background-color: rgba(19, 30, 51, 0.94);
+  }
+}

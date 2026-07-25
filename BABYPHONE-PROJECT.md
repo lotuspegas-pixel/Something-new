@@ -354,6 +354,43 @@ restrained gradients. Explicitly avoids: generic SaaS-template look,
 overly bright colors, childish pastels, cluttered dashboards, "AI landing
 page" clichés.
 
+### Liquid Glass (v4)
+
+The whole site — landing, pairing screens, both dashboards, legal pages and
+the blog — is styled as **liquid glass** on a single nocturnal backdrop.
+
+- **Background** (site-wide, fixed so it doesn't scroll):
+  `radial-gradient(circle at center, #08172D 0%, #041022 45%, #020615 100%)`.
+  `theme-color` and the PWA manifest were aligned to it (`#041022` /
+  `#020615`).
+- **Glass tokens** live on `:root` in `luna.css` (`--lg-fill`, `--lg-edge`,
+  `--lg-sheen`, `--lg-inset`, `--lg-shadow`, `--lg-blur`) and are reused by
+  `dash.css`, so landing and app share one system. The recipe per surface:
+  a translucent white fill, a diagonal specular sheen, a hairline border,
+  `backdrop-filter: blur(22px) saturate(165%)`, an inset top highlight and a
+  soft drop shadow.
+- Applied as an **append-override block** at the end of `luna.css` and
+  `dash.css`, so it restyles existing surfaces without touching structure or
+  element IDs.
+- **Depth rule:** glass panes are never nested. `.lp-framed` sits inside
+  `.lp-choose`, so it is an outline only — stacking two translucent fills
+  turns the panel milky.
+- The dashboard topbar is a **floating glass pill** (rounded, inset margin)
+  rather than a full-bleed bar, because `.dash-topbar` is a centered
+  1200px container and an edge-to-edge background would look cut off.
+- **Legibility guardrails:** a `@supports not (backdrop-filter…)` fallback
+  makes fills near-opaque on browsers without backdrop blur; the pairing
+  screens got explicit light text colours, since their base tokens still
+  come from the original light theme and would otherwise render dark text
+  on a dark glass card.
+- Video imagery stays opaque — only the chrome around and on top of it
+  (badges, focus pill, HD pill) is glass, where see-through is the point.
+
+The homepage hero is a real nursery photo (`assets/hero-nursery.jpg`) whose
+dark cloud vignette blends into the backdrop; the social preview
+(`og-image.jpg`) is a 1200×630 crop of the same image. Both are JPEG —
+as photographs they are ~200 KB instead of ~1.5 MB as PNG.
+
 ## 12. Blog / content marketing (`blog.html`)
 
 A multilingual guide post — "Two phones, one baby monitor: everything

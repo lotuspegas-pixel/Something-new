@@ -6,7 +6,7 @@
     <meta name="google-adsense-account" content="ca-pub-2692421969904984" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2692421969904984" crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A101B" />
+  <meta name="theme-color" content="#041022" />
   <title>Accessibility Statement — BabyPhone.online</title>
   <meta name="description" content="Accessibility statement for BabyPhone.online: our conformance target (WCAG 2.1 AA), known limitations, and how to report accessibility problems." />
   <link rel="canonical" href="https://babyphone.online/accessibility.html" />
@@ -15,7 +15,7 @@
   <style>
     :root { --bg:#0A101B; --surface:#151E30; --line:rgba(255,255,255,.07); --accent:#E8825E; --ok:#4ED08A; --text:#EDEFF4; --muted:#8C95A8; }
     * { box-sizing: border-box; }
-    body { margin:0; background:radial-gradient(120% 70% at 50% 0%, #16233A 0%, #0D1524 44%, #0A101B 90%) no-repeat #0A101B; color:var(--text); font:16px/1.65 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { margin:0; background:radial-gradient(circle at center, #08172D 0%, #041022 45%, #020615 100%) no-repeat fixed #020615; color:var(--text); font:16px/1.65 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     .wrap { max-width:760px; margin:0 auto; padding:28px 22px 80px; }
     header { display:flex; align-items:center; justify-content:space-between; padding:4px 0 26px; }
     .brand { display:inline-flex; align-items:center; gap:9px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
@@ -23,7 +23,8 @@
     .brand .tld { color:var(--accent); }
     .back { color:var(--muted); text-decoration:none; font-size:14px; }
     .back:hover { color:var(--text); }
-    main { background:rgba(21,30,48,.65); border:1px solid var(--line); border-radius:20px; padding:34px 34px 26px; }
+    main { background-color:rgba(255,255,255,.055); background-image:linear-gradient(160deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.04) 34%, rgba(255,255,255,0) 62%); border:1px solid rgba(255,255,255,.14); border-radius:26px; padding:34px 34px 26px; -webkit-backdrop-filter:blur(22px) saturate(165%); backdrop-filter:blur(22px) saturate(165%); box-shadow:0 18px 46px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.22); }
+    @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) { main { background-color:rgba(19,30,51,.94); } }
     h1 { font-size:27px; line-height:1.25; margin:0 0 4px; }
     .updated { color:var(--muted); font-size:13.5px; margin:0 0 22px; }
     h2 { font-size:18px; margin:30px 0 8px; }
