@@ -1,0 +1,82 @@
+BabyPhone.online — uploaden naar Hostinger
+==========================================
+
+INHOUD VAN DE DOWNLOAD
+----------------------
+De download bestaat uit 3 zip-bestanden, omdat het geheel te groot is voor
+een enkele bijlage. Ze horen bij elkaar:
+
+  1. BabyPhoneOnline-WEBSITE.zip   de complete website
+  2. BabyPhoneOnline-MUZIEK-1.zip  slaapliedjes (deel 1)
+  3. BabyPhoneOnline-MUZIEK-2.zip  slaapliedjes (deel 2)
+
+Pak ze alle drie uit in DEZELFDE map. Deel 2 en 3 vullen samen de map
+"music" aan die naast index.html hoort te staan.
+
+Na het uitpakken ziet de map er zo uit:
+
+  index.html          <- de complete app (alles zit hierin)
+  .htaccess           <- serverinstellingen, zie hieronder
+  privacy.html, terms.html, refunds.html, contact.html,
+  accessibility.html, how-it-works.html, blog.html
+  robots.txt, sitemap.xml, llms.txt, ads.txt, manifest.webmanifest
+  favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png,
+  og-image.jpg
+  assets/             <- afbeeldingen, merkbestanden, stylesheet
+  fonts/              <- lettertypes
+  music/              <- 5 slaapliedjes + playlist.json
+
+
+UPLOADEN
+--------
+1. Log in op Hostinger en open hPanel.
+2. Ga naar "Bestandsbeheer" (File Manager).
+3. Open de map  public_html
+4. Verwijder eventuele bestaande bestanden daarin (bijv. een standaard
+   index.html of default.php van Hostinger).
+5. Upload de HELE INHOUD van de uitgepakte map naar public_html.
+   Let op: de inhoud zelf, niet de map eromheen. index.html moet
+   rechtstreeks in public_html staan, dus:
+       public_html/index.html          GOED
+       public_html/website/index.html  FOUT
+
+
+BELANGRIJK: HTTPS IS VERPLICHT
+------------------------------
+Browsers geven ALLEEN toegang tot camera en microfoon via https://.
+Zonder HTTPS start de babyunit niet — dan blijft het scherm leeg.
+
+In hPanel: Beveiliging -> SSL -> installeer het gratis SSL-certificaat
+voor je domein. Dat is bij Hostinger gratis en duurt een paar minuten.
+
+Het meegeleverde .htaccess-bestand stuurt bezoekers daarna automatisch
+door van http:// naar https://.
+
+Ziet je bestandsbeheer het .htaccess-bestand niet? Zet in File Manager
+"verborgen bestanden tonen" aan (bestanden die met een punt beginnen zijn
+standaard verborgen).
+
+
+CONTROLEREN OF ALLES WERKT
+--------------------------
+1. Open https://jouwdomein.nl — je ziet de homepage.
+2. Klik "Start baby unit" op telefoon 1, geef toestemming voor camera
+   en microfoon. Je krijgt een kamercode en een QR-code.
+3. Open https://jouwdomein.nl op telefoon 2, klik "Connect as parent"
+   en scan de QR of typ de code.
+4. Je ziet en hoort nu live beeld en geluid.
+
+Test met twee APARTE apparaten. Twee tabbladen op hetzelfde toestel
+delen dezelfde camera en geven een misleidend resultaat.
+
+
+GOED OM TE WETEN
+----------------
+- Er is geen database, PHP of Node.js nodig. Het is een statische site;
+  gewone webhosting volstaat.
+- Beeld en geluid gaan rechtstreeks tussen de twee apparaten (WebRTC).
+  Ze passeren jouw server niet en worden nergens opgeslagen.
+- Beide apparaten moeten de site tegelijk geopend hebben. Een browser
+  kan geen verbinding onderhouden als de site helemaal gesloten is.
+- Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
+  index.html is bewust één zelfstandig bestand.
