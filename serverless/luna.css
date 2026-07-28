@@ -2035,3 +2035,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .phone-line { background: rgba(110, 159, 222, 0.16); }
 .lp-hero-text h1 .accent,
 .lp .tld { color: var(--brand-pink); }
+
+/* het merkteken (baby) staat nu op de plekken van het oude camera-icoon:
+   drop-shadows afstemmen op de lichte achtergrond */
+.lp-cam-img { filter: drop-shadow(0 12px 20px rgba(12, 47, 99, 0.18)); }
+.pair-head .unit-badge.cam img { filter: drop-shadow(0 6px 10px rgba(12, 47, 99, 0.22)); }
+.pair-head .unit-badge.cam { padding: 6px; }

@@ -503,3 +503,4 @@ body.app-mode .bigcode-input {
   color: #fff;
   box-shadow: 0 10px 30px rgba(47, 143, 240, 0.32);
 }
+.dash-title-ic.cam img { filter: drop-shadow(0 3px 6px rgba(12, 47, 99, 0.2)); }
