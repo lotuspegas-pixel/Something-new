@@ -9,62 +9,60 @@
     font-weight: 700;
   }
   html, body { margin: 0; padding: 0; background: transparent; }
-  #stage { width: max-content; height: 400px; display: flex; align-items: center; gap: 34px; padding: 0; }
+  #stage { width: max-content; height: 540px; display: flex; align-items: center; gap: 40px; }
   .mark { flex: 0 0 auto; }
   .word {
     font-family: 'Quicksand', sans-serif;
     font-weight: 700;
-    font-size: 132px;
-    letter-spacing: -1px;
+    font-size: 140px;
+    letter-spacing: -2px;
     line-height: 1;
     white-space: nowrap;
-    position: relative;
   }
-  .pink { color: #FF6F9E; }
+  .pink { color: #FF8DB2; }
   .blue { color: #2F8FF0; }
-  /* hartje boven de i van Online */
   .i-wrap { position: relative; }
-  /* het hartje vervangt de punt van de i */
-  .dot { position: absolute; left: 50%; transform: translateX(-50%); top: -6px; width: 30px; height: 27px; }
+  .dot { position: absolute; left: 50%; transform: translateX(-50%); top: -4px; width: 30px; height: 27px; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <!-- ingebakerde baby -->
-  <svg class="mark" width="360" height="380" viewBox="0 0 360 380" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- lichaam / doek -->
-    <path d="M180 150c78 0 138 56 138 128 0 60-62 96-138 96S42 338 42 278c0-72 60-128 138-128z"
-          fill="#5FAEFF" stroke="#0C2F63" stroke-width="11" stroke-linejoin="round"/>
+  <svg class="mark" width="430" height="520" viewBox="0 0 430 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- ============ ingebakerd lichaam ============ -->
+    <path d="M222 214c94 0 168 70 168 154 0 76-74 132-168 132S54 444 54 368c0-84 74-154 168-154z"
+          fill="#5AAEF5" stroke="#134A87" stroke-width="14" stroke-linejoin="round"/>
     <!-- lichte baan in de doek -->
-    <path d="M63 322c44-72 118-124 208-146 18 14 33 32 42 52-92 16-166 62-214 132-14-10-26-23-36-38z"
-          fill="#A8D6FF"/>
-    <!-- doekrand diagonaal -->
-    <path d="M305 176c-96 20-176 74-224 152" stroke="#0C2F63" stroke-width="11" stroke-linecap="round"/>
-    <!-- oren -->
-    <ellipse cx="52" cy="132" rx="21" ry="26" fill="#FFFDF8" stroke="#0C2F63" stroke-width="11"/>
-    <ellipse cx="252" cy="132" rx="21" ry="26" fill="#FFFDF8" stroke="#0C2F63" stroke-width="11"/>
-    <!-- hoofd -->
-    <circle cx="152" cy="126" r="104" fill="#FFFDF8" stroke="#0C2F63" stroke-width="11"/>
+    <path d="M62 424c26-92 112-166 226-196 20 14 38 33 50 55-108 26-190 96-232 186-20-13-34-27-44-45z"
+          fill="#A6D6FA"/>
+    <!-- vouwlijn van de doek -->
+    <path d="M288 228C174 258 88 332 62 424" stroke="#134A87" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- ============ hoofd ============ -->
+    <ellipse cx="62" cy="196" rx="25" ry="30" fill="#FBFCFE" stroke="#134A87" stroke-width="14"/>
+    <circle cx="180" cy="180" r="120" fill="#FBFCFE" stroke="#134A87" stroke-width="14"/>
     <!-- krulletje -->
-    <path d="M150 24c0-16 13-24 24-19 12 5 14 20 4 28" stroke="#0C2F63" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <path d="M166 62c-4-23 10-38 29-38 18 0 30 15 28 32-2 14-12 23-24 26"
+          stroke="#134A87" stroke-width="14" stroke-linecap="round" fill="#FBFCFE"/>
+
     <!-- gesloten oogjes -->
-    <path d="M96 118c8-13 26-13 34 0" stroke="#0C2F63" stroke-width="10" stroke-linecap="round" fill="none"/>
-    <path d="M176 118c8-13 26-13 34 0" stroke="#0C2F63" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M124 168c10-15 30-15 40 0" stroke="#134A87" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M206 168c10-15 30-15 40 0" stroke="#134A87" stroke-width="12" stroke-linecap="round" fill="none"/>
     <!-- wangen -->
-    <ellipse cx="86" cy="158" rx="19" ry="13" fill="#FBC9D5"/>
-    <ellipse cx="218" cy="158" rx="19" ry="13" fill="#FBC9D5"/>
+    <ellipse cx="114" cy="212" rx="21" ry="13" fill="#FBD3DC"/>
+    <ellipse cx="256" cy="208" rx="21" ry="13" fill="#FBD3DC"/>
     <!-- glimlach -->
-    <path d="M133 160c11 13 30 13 41 0" stroke="#0C2F63" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M160 218c13 15 34 15 46 0" stroke="#134A87" stroke-width="12" stroke-linecap="round" fill="none"/>
     <!-- blauwe slaap-accenten -->
-    <path d="M64 96c7 6 7 15 0 21" stroke="#7CC4FF" stroke-width="9" stroke-linecap="round"/>
-    <path d="M240 96c7 6 7 15 0 21" stroke="#7CC4FF" stroke-width="9" stroke-linecap="round"/>
-    <path d="M152 146c6 5 6 12 0 17" stroke="#7CC4FF" stroke-width="8" stroke-linecap="round"/>
-    <!-- hartje -->
-    <path d="M262 268c-11-13-31-9-31 9 0 16 20 27 31 36 11-9 31-20 31-36 0-18-20-22-31-9z"
-          fill="#FF6F9E" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M92 148c9 8 9 19 0 26" stroke="#6EC1F5" stroke-width="11" stroke-linecap="round"/>
+    <path d="M272 142c9 8 9 19 0 26" stroke="#6EC1F5" stroke-width="11" stroke-linecap="round"/>
+    <path d="M190 196c8 6 8 15 0 21" stroke="#6EC1F5" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- ============ hartje rechtsonder ============ -->
+    <path d="M318 372c-17-20-48-14-48 15 0 26 31 43 48 58 17-15 48-32 48-58 0-29-31-35-48-15z"
+          fill="#FF8DB2" stroke="#FFFFFF" stroke-width="14" stroke-linejoin="round"/>
   </svg>
 
-  <div class="word"><span class="pink">Babyphone</span><span class="blue">.Onl<span class="i-wrap">i<svg class="dot" viewBox="0 0 24 22"><path d="M12 21C6 16.5 1 12.8 1 8.2 1 4.6 3.9 2 7.2 2c2 0 3.8 1 4.8 2.5C13 3 14.8 2 16.8 2 20.1 2 23 4.6 23 8.2c0 4.6-5 8.3-11 12.8z" fill="#FF6F9E"/></svg></span>ne</span>
+  <div class="word"><span class="pink">Babyphone</span><span class="blue">.Onl<span class="i-wrap">i<svg class="dot" viewBox="0 0 24 22"><path d="M12 21C6 16.5 1 12.8 1 8.2 1 4.6 3.9 2 7.2 2c2 0 3.8 1 4.8 2.5C13 3 14.8 2 16.8 2 20.1 2 23 4.6 23 8.2c0 4.6-5 8.3-11 12.8z" fill="#2F8FF0"/></svg></span>ne</span>
   </div>
 </div>
 </body>
