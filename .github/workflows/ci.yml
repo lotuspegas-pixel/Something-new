@@ -33,7 +33,6 @@ jobs:
           for f in serverless/js/*.js public/js/*.js test/*.js; do
             [ -e "$f" ] && node -c "$f"
           done
-          node --check functions/entitlement-worker.mjs
 
       - name: E2E — server variant
         run: |

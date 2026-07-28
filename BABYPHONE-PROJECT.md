@@ -48,18 +48,16 @@ serverless/              ← THE working app (single-page, no server needed)
     lullaby.js             ← playlist / lullaby playback logic
     codec.js               ← SDP/codec helpers
     qr.js                  ← QR generation/scanning glue
-    plus.js                ← Plus/monetization entitlement UI hooks
   vendor/                  ← third-party libs (peerjs, qrcode, jsQR) + LICENSES.md
   assets/                  ← brand assets (logo.png, camera.png, hero-devices.png)
   fonts/                   ← self-hosted Quicksand + Nunito (base64-inlined at build)
   music/                   ← lullaby MP3s + playlist.json
-  privacy.html, terms.html, refunds.html, contact.html,
+  privacy.html, terms.html, contact.html,
   accessibility.html, how-it-works.html   ← legal & support pages
   robots.txt, sitemap.xml, llms.txt, manifest.webmanifest,
   favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png, og-image.png
 
 public/                  ← OLDER app version, now served at /legacy/ (kept for continuity)
-functions/                ← entitlement-worker.mjs — Stripe/Plus token issuing (Cloudflare-style worker)
 test/                    ← Playwright e2e suites
   e2e.js                   ← legacy /legacy/ app flow
   e2e-serverless.js         ← main serverless app flow (24 assertions)
@@ -122,16 +120,13 @@ are complete and merged into the working branch.
   functional views instead of placeholders; finished the sleep timer,
   audio-only mode, and privacy-shade (sound-without-video) sync between
   units.
-- **Monetization scaffold**: Stripe Checkout integration point + entitlement
-  token issuing via `functions/entitlement-worker.mjs`, with a "Plus" upgrade
-  panel wired into the dashboard (`js/plus.js`).
 
 ### P3 — Engineering health
 - **CI**: `.github/workflows/ci.yml` runs the Playwright e2e suites on every
   push/PR, with concurrency cancel-in-progress to avoid double-runs.
 - **Code health**: replaced unsafe `innerHTML` usage with safe DOM
   construction, removed dead `slimSdp` code, split the monolithic script
-  into `app.js` / `codec.js` / `i18n.js` / `lullaby.js` / `qr.js` / `plus.js`,
+  into `app.js` / `codec.js` / `i18n.js` / `lullaby.js` / `qr.js`,
   and made the build reproducible.
 - **i18n parity**: all 30 supported languages now carry all 225 interface
   translation keys (previously several languages had partial coverage that
@@ -441,7 +436,6 @@ the site as eligible as possible; actual ranking builds over time.
   alongside the rest of `dist/`.
 - `server.js` (Express) is only needed for local dev / the legacy `/legacy/`
   app; the production `serverless/` build needs no backend at all except for
-  the optional Plus/Stripe entitlement worker (`functions/entitlement-worker.mjs`),
   which is designed to run on a serverless function platform (e.g.
   Cloudflare Workers) if/when the paid tier is activated.
 
@@ -449,7 +443,7 @@ the site as eligible as possible; actual ranking builds over time.
 
 - `test/e2e-serverless.js` — the main regression suite for the live app: room
   code generation, pairing, live video/audio, playlist sync, battery status,
-  sidebar views (Lullabies, Settings, Plus panel), sleep timer + baby-tile
+  sidebar views (Lullabies, Settings), sleep timer + baby-tile
   sync, audio-only ↔ camera-visible sync, camera/mic auto-recovery after a
   simulated track `ended` event, wrong-code error handling, the full
   reconnect-with-backoff → retry flow, and a `visibilitychange`-forced
@@ -464,16 +458,28 @@ the site as eligible as possible; actual ranking builds over time.
 
 ## 15. Known follow-ups / not yet done
 
-- Legal pages (`contact.html`, `refunds.html`, `accessibility.html`) still
   contain `<em class="todo">[…]</em>` placeholders for operator legal name,
   address, KvK/VAT numbers, and support email — must be filled in with real
   business details before going live commercially.
-- Stripe Checkout is scaffolded (`js/plus.js` + `functions/entitlement-worker.mjs`)
-  but needs real Stripe keys/price IDs and a deployed worker endpoint to go
-  live.
 - Some of the 30 interface languages may still have edge-case untranslated
   strings falling back to English (flagged in the accessibility statement).
 - The exact production deployment pipeline (GitHub → Hostinger auto-deploy)
   connects to a repo (`lotuspegas-pixel/Babyphone-online`) that may be
   separate from this source repo (`lotuspegas-pixel/Something-new`) —
   worth confirming so pushes here reliably reach production.
+
+## Free service and contact form
+
+The product is free to use in full: there are no accounts, subscriptions or
+payments anywhere. The former Plus panel, `js/plus.js`, the Stripe entitlement
+worker and `refunds.html` have all been removed, along with their wording in
+the legal pages and the 30-language string table.
+
+`contact.html` carries a real contact form (name, email, optional phone,
+message up to 20,000 characters). It posts to `contact-send.php`, which mails
+the message to info@babyphone.online. The handler validates every field, blocks
+mail-header injection, and defends against spam with a honeypot field, a
+minimum fill-in time and a per-IP rate limit (five messages an hour). It stores
+no names, addresses, phone numbers or messages — only a one-way hash of the IP
+with a timestamp, which expires after an hour. This is the one part of the site
+that needs PHP; everything else is static.

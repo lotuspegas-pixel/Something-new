@@ -11,7 +11,7 @@
     "test:serverless": "node test/e2e-serverless.js",
     "test:reconnect": "node test/e2e-reconnect.js",
     "build": "node build.js",
-    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done && node --check functions/entitlement-worker.mjs'"
+    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'"
   },
   "engines": {
     "node": ">=18"

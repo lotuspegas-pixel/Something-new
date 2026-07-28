@@ -17,7 +17,8 @@ Na het uitpakken ziet de map er zo uit:
 
   index.html          <- de complete app (alles zit hierin)
   .htaccess           <- serverinstellingen, zie hieronder
-  privacy.html, terms.html, refunds.html, contact.html,
+  contact-send.php    <- verstuurt het contactformulier
+  privacy.html, terms.html, contact.html,
   accessibility.html, how-it-works.html, blog.html
   robots.txt, sitemap.xml, llms.txt, ads.txt, manifest.webmanifest
   favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png,
@@ -72,11 +73,32 @@ delen dezelfde camera en geven een misleidend resultaat.
 
 GOED OM TE WETEN
 ----------------
-- Er is geen database, PHP of Node.js nodig. Het is een statische site;
-  gewone webhosting volstaat.
+- Er is geen database of Node.js nodig; gewone webhosting volstaat. PHP is
+  alleen nodig voor het contactformulier (zie onderaan).
 - Beeld en geluid gaan rechtstreeks tussen de twee apparaten (WebRTC).
   Ze passeren jouw server niet en worden nergens opgeslagen.
 - Beide apparaten moeten de site tegelijk geopend hebben. Een browser
   kan geen verbinding onderhouden als de site helemaal gesloten is.
 - Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
   index.html is bewust één zelfstandig bestand.
+
+CONTACTFORMULIER
+----------------
+Op contact.html staat een formulier dat rechtstreeks mailt naar
+info@babyphone.online. Dat werkt via contact-send.php, dus PHP moet
+aanstaan (dat is bij Hostinger standaard zo).
+
+Controleer na het uploaden even:
+1. Open https://jouwdomein.nl/contact.html
+2. Vul het formulier in en verstuur het.
+3. Je hoort binnen een minuut een mail te krijgen op info@babyphone.online.
+
+Komt er niets binnen, kijk dan in hPanel bij E-mail of het adres
+info@babyphone.online echt bestaat op dit domein. Belangrijk voor de
+aflevering: mail die door een website wordt verstuurd komt sneller in de
+inbox (in plaats van in spam) als de SPF- en DKIM-records van je domein
+goed staan. Hostinger zet die normaal automatisch klaar bij hun e-mail;
+controleer ze in hPanel onder DNS als berichten in de spammap belanden.
+
+Het formulier slaat niets op. Naam, e-mailadres, telefoonnummer en bericht
+gaan alleen de mail in.
