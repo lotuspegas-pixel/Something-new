@@ -483,3 +483,38 @@ minimum fill-in time and a per-IP rate limit (five messages an hour). It stores
 no names, addresses, phone numbers or messages — only a one-way hash of the IP
 with a timestamp, which expires after an hour. This is the one part of the site
 that needs PHP; everything else is static.
+
+## No advertising, no tracking, no cookies
+
+Google AdSense used to load unconditionally in the `<head>` of six pages. A
+privacy audit found that this both required prior consent under Article 11.7a
+of the Dutch Telecommunications Act — which was never asked — and contradicted
+the site's own promise of "no trackers, no ads". AdSense has now been removed
+entirely, at the owner's decision, together with `ads.txt` and the publisher
+meta tag.
+
+The consequence is a genuinely clean position: the site makes **no third-party
+requests at all**, sets **no cookies at all**, and needs **no cookie banner**.
+The only thing ever written to a visitor's device is their own language choice
+(`babyfoon.lang`), which is exempt as a strictly necessary preference. Measured
+across all seven pages: zero external requests, zero cookies, zero storage on
+load. The privacy policy, terms and `llms.txt` were rewritten to match, and the
+"no accounts, no trackers, no ads" claim is true again.
+
+## Access control on the baby unit
+
+A security audit reproduced a serious flaw: the baby unit answered *every*
+incoming connection, so anyone who knew the room code silently received live
+video and audio and could operate the camera, night light and torch, while the
+real parent was never told. The 6-character code was also a static, reusable
+bearer secret in a 2^30 space on a public broker.
+
+The baby unit no longer auto-answers. Every incoming peer must present a
+128-bit capability token carried in the QR code and the deep link. Scanning the
+QR therefore still connects instantly. Typing the code by hand does not: the
+baby unit shows a blocking Allow/Deny dialog on its own screen, and no media or
+control is granted until someone there approves. A second viewer always needs
+approval, control messages from un-handshaked peers are ignored, talk-back is
+answered only for the approved peer, and after three refusals further requests
+are dropped. Approving once hands the token to that parent, so later reconnects
+are seamless.

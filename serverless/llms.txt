@@ -26,17 +26,18 @@ networks (4G/5G), interface available in 30 languages.
 Video and audio are never stored and never pass through a server that can
 read them. Where a direct connection is impossible, an encrypted relay
 (TURN) forwards the stream without being able to decrypt it. There are no
-accounts and no visitor analytics. The site is funded by advertising:
-Google AdSense runs on every page except the guide, and Google places
-advertising cookies on the visitor's device, which requires consent under
-EU and Dutch rules. Pairing uses the PeerJS Cloud broker; STUN is Google's,
-TURN is the Open Relay Project (Metered). Full policy:
+accounts, no visitor analytics, no advertising and no tracking. The
+site sets no cookies at all; the only thing stored on the device is the
+visitor's own language choice.
+
+Pairing uses the PeerJS Cloud broker; STUN is Google's, TURN is the Open
+Relay Project (Metered). None of them can see or hear the stream. Full policy:
 https://babyphone.online/privacy.html
 
 ## Pricing
 
 BabyPhone.online is completely free. There is no paid tier, no
-subscription, no account and nothing to buy — advertising pays for it.
+subscription, no account and nothing to buy.
 
 ## Safety
 

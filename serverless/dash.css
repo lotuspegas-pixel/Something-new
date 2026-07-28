@@ -775,3 +775,303 @@ body.app-mode .pillbtn.on {
 .approve-box p { font-size: clamp(14px, 3.6vw, 15px); line-height: 1.55; color: #2B4E80; margin: 0 0 20px; }
 .approve-actions { display: flex; gap: 10px; }
 .approve-actions .btn { flex: 1 1 0; min-height: 48px; border-radius: 999px; }
+
+/* ===========================================================================
+   QA-PASS — ÉÉN PRODUCT, TWEE UNITS
+   ---------------------------------------------------------------------------
+   Deze sectie is toegevoegd na een gemeten UX/visuele controle op 320–1920px
+   in het Engels, Nederlands en Duits, mét een echt verbonden sessie (dus niet
+   alleen met .hidden-klassen geschoven).
+
+   Belangrijk: dash.css wordt geladen VÓÓR assets/brand-theme.css. Alles hier
+   heeft daarom bewust een hogere specificiteit (meestal `body.app-mode …`) en
+   waar de brandtheme zelf `!important` gebruikt, gebruiken we dat ook. Dat is
+   geen luiheid maar een noodzaak van de laadvolgorde.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1. HOEKRADII — van 14 losse waarden naar één schaal
+
+   Gemeten vóór deze fix stonden er veertien verschillende hoekradii door
+   elkaar op kaartniveau: 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 26, 28 en
+   30px. De babyunit gebruikte overal 18px (en 12px voor de tip), de ouderunit
+   22–28px. Twee schermen van hetzelfde product zagen er daardoor uit alsof ze
+   uit twee ontwerpen kwamen — precies de klacht.
+
+   Nu vier tokens, gekozen naar de rol van het vlak:
+     28px  beeld/hero  — de videokaart op beide units
+     24px  paneel      — alle kaarten en containers
+     16px  bediening   — knoppen, navigatie-items, statusstroken
+     12px  icoonvlak   — de kleine gekleurde vierkantjes achter een icoon
+   --------------------------------------------------------------------------- */
+/* Let op: de tokens staan op body en niet op .dash/.bdash. De topbalk van de
+   ouderunit is namelijk een broer van .dash, geen kind — met tokens op .dash
+   erfde die niets en viel border-radius terug op 0px (gemeten: 0px i.p.v.
+   24px op 390px). */
+body.app-mode {
+  --qa-r-hero: 28px;
+  --qa-r-panel: 24px;
+  --qa-r-control: 16px;
+  --qa-r-chip: 12px;
+}
+
+/* beeld/hero — de babyunit stond op 30px, de ouderunit op 28px (22px onder
+   680px). Beide volgen nu dezelfde waarde op élke breedte. */
+body.app-mode #dviewMonitor .vcard,
+body.app-mode .bdash .vcard.baby { border-radius: var(--qa-r-hero); }
+
+/* paneelvlakken */
+body.app-mode .dash-topbar,
+body.app-mode .dash-titlerow,
+body.app-mode .dash-side,
+body.app-mode #dviewMonitor .ctrlrow,
+body.app-mode #dviewMonitor .statcards,
+body.app-mode #dviewMonitor .ameter,
+body.app-mode .bdash .bcard,
+body.app-mode .bdash .bstat,
+body.app-mode .bdash .btile { border-radius: var(--qa-r-panel); }
+body.app-mode .dpanel,
+body.app-mode .evlog { border-radius: var(--qa-r-panel) !important; }
+body.app-mode .pair-wrap .pair-box { border-radius: var(--qa-r-panel); }
+
+/* bedieningsvlakken (knoppen en strookjes ter hoogte van een knop) */
+body.app-mode #dviewMonitor .ctrlbtn,
+body.app-mode .dash .dnav,
+body.app-mode .dash-status,
+body.app-mode .bdash .btn-stop,
+body.app-mode .dash .musicbtn,
+body.app-mode .dash .cam-select,
+body.app-mode .bdash .btip { border-radius: var(--qa-r-control); }
+
+/* icoonvlakken: waren 10, 11 en 12px door elkaar */
+body.app-mode .cb-ic,
+body.app-mode .btgl-ic,
+body.app-mode .btile .bt-ic,
+body.app-mode .evrow .ev-ic,
+body.app-mode .icon-btn,
+body.app-mode .dash-gear,
+body.app-mode .dsb-fs,
+body.app-mode .ameter-mode { border-radius: var(--qa-r-chip); }
+
+/* ---------------------------------------------------------------------------
+   2. TYPOGRAFIE — dezelfde rol, dezelfde tekststijl
+
+   Gemeten: de statuskaart op de ouderunit gebruikt kop 11,5px/700 in het
+   gedempte blauw en waarde 16px Quicksand; dezelfde kaart op de babyunit
+   gebruikte kop 13px in marineblauw, waarde 26px en subtekst 12px. Naast
+   elkaar op één bureaublad ogen dat twee producten. De babyunit volgt nu de
+   ouderunit, want dat is het scherm waar de referentiescreenshots op staan.
+   --------------------------------------------------------------------------- */
+body.app-mode .bdash .bstat-h {
+  font: 700 11.5px 'Nunito', sans-serif;
+  color: #557aa9 !important;
+  margin-bottom: 10px;
+}
+body.app-mode .bdash .bstat b,
+body.app-mode .bdash .bstat b.big { font: 700 16px 'Quicksand', sans-serif; }
+/* de kamercode blijft herkenbaar door de letterafstand, niet door een
+   afwijkende tekengrootte */
+body.app-mode .bdash .bstat b.code { letter-spacing: 3px; }
+body.app-mode .bdash .bstat small { font-size: 11.5px; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   3. AAN/UIT OP DE BABYUNIT WAS ONLEESBAAR
+
+   Gemeten: "Aan" (huil-alarm) en "Uit" (nachtlampje) werden allebei getekend
+   als 12px/700 in rgb(85,122,169) — exact dezelfde stijl. De groene aan-kleur
+   uit `.btile small.ok` werd overschreven door `.btile small{color:… !important}`
+   in de brandtheme. Op een babyfoon moet je in één oogopslag zien wat aan
+   staat; dit was dus een functioneel probleem, geen cosmetisch.
+
+   De tegel leest nu als de statuskaart van de ouderunit: klein gedempt label
+   bovenaan, grote waarde eronder, en de aan-stand krijgt de merkgroene kleur
+   plus een zacht vlak zodat het ook zonder kleurwaarneming opvalt.
+   --------------------------------------------------------------------------- */
+body.app-mode .bdash .btile b {
+  font: 700 11.5px 'Nunito', sans-serif;
+  color: #557aa9 !important;
+  margin-bottom: 2px;
+}
+body.app-mode .bdash .btile small {
+  display: inline-block;
+  font: 700 16px 'Quicksand', sans-serif;
+  color: var(--bp-navy, #0C2F63) !important;
+}
+body.app-mode .bdash .btile small.ok {
+  color: #1F9D6B !important;
+  background: rgba(31, 157, 107, 0.12);
+  border-radius: 999px;
+  padding: 2px 12px;
+}
+
+/* ---------------------------------------------------------------------------
+   4. BEDIENINGSKNOPPEN OUDERUNIT LIEPEN UIT HUN KNOP (900–1120px)
+
+   Gemeten op 1024px (en/nl/de): de zeven knoppen in de rechterkolom waren
+   66px hoog terwijl hun inhoud 75px vroeg — het label stak 10px onder de knop
+   uit en botste op de knop eronder; "Stop" viel zelfs buiten de kaart. Oorzaak:
+   de brandtheme zet de knoppen op `flex:1 1 0` in een kolom die op die breedte
+   maar 498px hoog is, terwijl `.ctrlbtn` uit dit bestand nog `flex-direction:
+   column` heeft (icoon bóven het label).
+
+   De brandtheme zet daar al `justify-content:flex-start` en `text-align:left`
+   — dat is de opmaak van een rij, niet van een tegel. We maken het dus echt
+   een rij: icoon links, label ernaast. Dan is 58px genoeg, past het op elke
+   breedte in die kolom, en zijn alle knoppen even hoog.
+   --------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  body.app-mode #dviewMonitor .ctrlbtn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  body.app-mode #dviewMonitor .ctrlbtn .cb-ic { flex: 0 0 auto; }
+  body.app-mode #dviewMonitor .ctrlbtn > span:not(.cb-ic) { flex: 1 1 auto; min-width: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   5. HET VIJFDE SLAAPLIEDJE WAS ONBEREIKBAAR
+
+   Gemeten: `.playlist` staat op `max-height:176px; overflow-y:auto`, maar de
+   vijf nummers vragen 212px. In de zijbalkweergave "Slaapliedjes" is er
+   verticaal onbeperkt ruimte (het paneel eindigt ruim boven de vouw), dus vier
+   nummers waren zichtbaar en "Soft Sleep Noise" alleen te vinden door in een
+   lijst zonder zichtbare scrollbalk te scrollen. De hoogtebeperking hoort bij
+   de compacte oude paneelweergave, niet bij deze pagina.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash .dview .playlist {
+  max-height: none;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------------------
+   6. AANRAAKDOELEN ONDER 44px
+
+   Gemeten (alle breedtes, alle talen): tandwiel 34–40px, volledig-schermknop
+   30×30, kopieerknop 36×36, pil-schakelaars 34px hoog, de taalkiezer 21px
+   hoog binnen een pil die er veel groter uitziet, en de schuifregelaars 16px
+   hoog. Op een telefoon die je 's nachts met één hand bedient is dat te klein.
+
+   Waar de kaart het toelaat groeit het vlak zelf; waar dat de opmaak zou
+   oprekken (de volledig-schermknop in de smalle statusbalk) vergroten we
+   alleen het aanraakgebied met een pseudo-element, zodat het beeld gelijk
+   blijft maar de vinger raak heeft.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash-topbar .dash-gear { width: 44px; height: 44px; }
+body.app-mode .bdash .icon-btn { width: 44px; height: 44px; }
+body.app-mode .dash .pillbtn { min-height: 44px; padding: 8px 20px; }
+body.app-mode .dash .musicbtn { min-height: 44px; }
+body.app-mode .bdash .btn-stop { min-height: 44px; }
+body.app-mode .bdash .vcard-shade { min-height: 44px; }
+
+/* Taalkiezer: de pil ís de knop, dus laat het <select> de pil helemaal vullen.
+   Let op de selector: de topbalk staat bij de ouderunit náást .dash (niet
+   erin), dus `.dash .lang-pill` raakte hem niet — vandaar `.dash-topbar`. */
+body.app-mode .dash-topbar .lang-pill,
+body.app-mode .dash .lang-pill,
+body.app-mode .bdash .lang-pill { min-height: 44px; padding-top: 0; padding-bottom: 0; }
+/* Een <select> rekt niet mee met align-self:stretch (Chromium behandelt het
+   als vervangen element), dus de hoogte staat hier expliciet. */
+body.app-mode .dash-topbar .lang-pill .lang-select,
+body.app-mode .dash .lang-pill .lang-select,
+body.app-mode .bdash .lang-pill .lang-select { align-self: stretch; min-height: 44px; padding-top: 0; padding-bottom: 0; }
+
+/* volledig-schermknop: beeld blijft klein, aanraakgebied wordt 44×44 */
+body.app-mode .dash-status .dsb-fs { position: relative; width: 36px; height: 36px; }
+body.app-mode .dash-status .dsb-fs::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 44px; height: 44px; transform: translate(-50%, -50%);
+}
+
+/* schuifregelaars: het spoor blijft dun, het aanraakvlak wordt 44px hoog */
+body.app-mode .dash .set-row input[type="range"] { height: 44px; }
+
+/* zijbalk op smalle schermen: minder binnenmarge zodat de zeven navigatie-
+   knoppen zo breed mogelijk worden (gemeten 43px → 44px op 360px). Onder
+   340px passen zeven doelen van 44px niet naast elkaar; dat is een grens van
+   het aantal items, niet van deze opmaak — zie het rapport. */
+@media (max-width: 460px) {
+  body.app-mode .dash-side { padding-left: 4px; padding-right: 4px; }
+  body.app-mode .dash-nav { gap: 2px; }
+  body.app-mode .dash .dnav { min-width: 40px; }
+}
+
+/* ---------------------------------------------------------------------------
+   7. HET WOORDMERK IN DE TOPBALK WERD AFGEKAPT
+
+   Gemeten: `.bp-wordmark` staat op `overflow:hidden` (nodig, anders duwt hij
+   de balk uit het scherm) mét `white-space:nowrap`. Op 320px werd er 24px
+   afgesneden en op 360px 5px — je las dus "Babyphone.Onlin". Er is geen
+   ellipsis, het is een harde knip midden in een letter.
+
+   Bovendien snijdt `line-height:1` de staarten van de "y" en de "p" eraf
+   (gemeten inhoud 18px in een vak van 16px, op élke breedte).
+
+   Onder 400px valt het woordmerk daarom netjes weg en draagt het merkicoon
+   het merk — exact wat de landingspagina onder 520px al doet. Boven die grens
+   krijgt de tekst genoeg regelhoogte om heel te blijven.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash-topbar .bp-wordmark { line-height: 1.35; }
+@media (max-width: 399px) {
+  body.app-mode .dash-topbar .bp-wordmark { display: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   8. DE VIDEOKAART LAG OVER DE BEDIENINGSKNOPPEN HEEN (901–1270px)
+
+   Gemeten breedte van de videokaart tegenover de kolom waar hij in hoort:
+
+        960px  kolom 574px  →  kaart 729px  (147px te breed, 141px overlap)
+       1024px  kolom 638px  →  kaart 729px  ( 91px te breed,  77px overlap)
+       1200px  kolom 768px  →  kaart 853px  ( 85px te breed,  71px overlap)
+
+   Oorzaak: de brandtheme geeft `#dviewMonitor .vcard` zowel `aspect-ratio:16/9`
+   als `min-height:410px` (480px boven 1120px). Via de verhouding dwingt die
+   minimumhoogte ook een minimumbréédte af (410 × 16/9 = 729px). De rasterkolom
+   is `minmax(0, 1fr)` en groeit dus niet mee — de kaart stak simpelweg buiten
+   haar kolom.
+
+   En omdat .vcard `position:relative` heeft en .ctrlrow niet, tekent het beeld
+   bovenop de knoppen: op 1024px waren de icoonvlakken van "Terugpraten",
+   "Slaapliedje", "Nachtlampje", "Huil-alarm" en "Opnemen" onzichtbaar én niet
+   aanklikbaar, want de videolaag ving de klik.
+
+   De minimumhoogte kan weg: `aspect-ratio` levert vanzelf een grote kaart
+   zodra de kolom breed is (1280px → 477px hoog, praktisch de oude 480px). De
+   ondergrens onder 680px blijft staan; die vangt een ánder probleem op
+   (WebKit dat aspect-ratio negeert) en zit in een eigen mediaquery.
+   --------------------------------------------------------------------------- */
+@media (min-width: 681px) {
+  body.app-mode #dviewMonitor .vcard { min-height: 0; }
+}
+/* Restrisico: rond 960px rekte het raster de rij uit, waarna aspect-ratio de
+   bréédte uit die hoogte terugrekende en de kaart alsnog 28px te breed werd.
+   Een harde bovengrens op de kolombreedte sluit dat af — gemeten over
+   768–1920px is er nu nergens nog overlap. */
+body.app-mode #dviewMonitor .vcard { max-width: 100%; }
+
+/* ---------------------------------------------------------------------------
+   9. HET CAMERABEELD OP DE BABYUNIT DUWDE DE KOPPELKAART ONDER DE VOUW
+
+   Gemeten op 1280×900: de videokaart van de babyunit is 1246×623px, terwijl
+   dezelfde kaart op de ouderunit 848×477px is. De babyunit heeft geen zijkolom,
+   dus `aspect-ratio:16/8` over de volle breedte levert een beeld op dat hoger
+   is dan het monitorbeeld van de ouder — op één bureaublad naast elkaar zien
+   het daardoor twee verschillende producten.
+
+   Het kost ook onnodig veel pagina: op een laptopscherm van 900px stond de
+   koppelkaart (kamercode + QR, nodig om er een tweede ouderapparaat bij te
+   zetten) op y=955 en was de pagina 1565px hoog. Na de begrenzing staat de
+   kaart op y=810 en is de pagina 1417px — één scherm minder scrollen.
+
+   De hoogte volgt nu dezelfde bovengrens als de ouderunit. De kaart blijft
+   schermvullend breed (het beeld is `object-fit:cover`, dus er wordt alleen
+   iets meer boven en onder weggesneden — het richten van de camera blijft
+   prima werken).
+   --------------------------------------------------------------------------- */
+@media (min-width: 861px) {
+  body.app-mode .bdash .vcard.baby { max-height: clamp(300px, 38vw, 480px); }
+}
