@@ -1075,3 +1075,30 @@ body.app-mode #dviewMonitor .vcard { max-width: 100%; }
 @media (min-width: 861px) {
   body.app-mode .bdash .vcard.baby { max-height: clamp(300px, 38vw, 480px); }
 }
+
+/* ---------------------------------------------------------------------------
+   10. TAALNAAM ONNODIG AFGEKORT OP KLEINE SCHERMEN
+
+   De taalkeuze staat op `max-width: clamp(56px, 18vw, 150px)`; op 320px is dat
+   58px en las je "De…" in plaats van "Deutsch". Die krappe bovengrens was
+   nodig zolang het woordmerk ernaast stond. Sinds punt 7 verdwijnt het
+   woordmerk onder 400px, dus die ruimte is er nu wel: gemeten is er binnen de
+   topbalk 276px beschikbaar, waarvan merkicoon (26) + tandwiel (44) + marges
+   ongeveer 90px gebruiken.
+   --------------------------------------------------------------------------- */
+@media (max-width: 399px) {
+  body.app-mode .dash-topbar .lang-pill .lang-select { max-width: 140px; }
+}
+
+/* ---------------------------------------------------------------------------
+   11. RAFELIGE LAATSTE RIJ BEDIENINGSKNOPPEN OP TELEFOON
+
+   Zeven knoppen in een raster van drie kolommen geven 3 + 3 + 1: "Stoppen"
+   stond alleen naast twee gaten. Door de enige destructieve knop de volle
+   breedte te geven wordt het 3 + 3 + balk — netter, en de knop die je bewust
+   moet raken is meteen de grootste. Werkt ook in de tweekoloms-variant onder
+   380px (2 + 2 + 2 + balk).
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  body.app-mode #dviewMonitor .ctrlrow .ctrlbtn.danger { grid-column: 1 / -1; }
+}

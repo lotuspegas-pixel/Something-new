@@ -2135,7 +2135,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 399px) {
   .lp-row-roles .lp-cell-top { flex-direction: column; align-items: flex-start; gap: 12px; min-height: 0; }
   .lp-row-roles .lp-cell-top.rev { flex-direction: column-reverse; align-items: flex-start; }
-  .lp-row-roles .lp-illus { flex: 0 0 auto; width: 96px; height: 84px; }
+  /* De illustratie is een vaste doos van 122×112px met daarin een <img> van
+     112px hoog. Alleen de doos verkleinen liet het plaatje eroverheen lopen —
+     gemeten dekte het de kop "Eltern-Einheit" af. Doos én afbeelding schalen
+     daarom samen. */
+  .lp-row-roles .lp-illus { flex: 0 0 auto; width: 104px; height: 92px; }
+  .lp-row-roles .lp-illus img { max-width: 100%; max-height: 100%; height: auto; width: auto; }
   .lp-row-roles .lp-cell-txt { width: 100%; }
 }
 
@@ -2145,11 +2150,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    Gemeten 72×39px ("Privacy") tot 160×39px op alle breedtes ≥760px. Deze
    links staan alleen op grotere schermen, maar tablets zijn ook aanraak-
    apparaten. Hoogte naar 44px; de tekst blijft op dezelfde plek staan.
+
+   Let op de mediaquery: de brandtheme verbergt deze links onder 760px met
+   `display:none` in een mediaquery. Een `display`-regel zónder mediaquery
+   heeft een hogere specificiteit en zou ze daar dus terugtoveren — gemeten
+   gevolg was 244px extra horizontale overflow in de kop op 320px. Daarom
+   geldt deze regel alleen op de breedtes waar de links echt bestaan.
    --------------------------------------------------------------------------- */
-.lp-nav .lp-navlink {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
+@media (min-width: 760px) {
+  .lp-nav .lp-navlink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
 
 /* ---------------------------------------------------------------------------
