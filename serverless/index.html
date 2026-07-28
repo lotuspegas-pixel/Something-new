@@ -679,5 +679,34 @@
     <script src="js/qr.js"></script>
     <script src="js/plus.js"></script>
     <script src="js/app.js"></script>
+    <script>
+      /* Hero-animatie automatisch starten.
+         iOS staat autoplay soms niet toe (o.a. in Energiebesparingsmodus) en
+         tekent dan een grijze afspeelknop over de video. De video blijft daarom
+         onzichtbaar tot hij echt speelt — je ziet dan de poster eronder — en we
+         proberen het opnieuw zodra de pagina weer zichtbaar wordt of de bezoeker
+         voor het eerst iets doet. Puur presentatie; raakt de babyfoon niet. */
+      (function () {
+        var v = document.querySelector('.bp-hero-motion');
+        if (!v) return;
+        var show = function () { v.classList.add('is-playing'); };
+        var hide = function () { v.classList.remove('is-playing'); };
+        v.addEventListener('playing', show);
+        v.addEventListener('pause', hide);
+        v.addEventListener('ended', hide);
+        var tryPlay = function () {
+          var p = v.play();
+          if (p && p.catch) p.catch(function () { /* geblokkeerd: poster blijft staan */ });
+        };
+        if (!v.paused && !v.ended) show();
+        tryPlay();
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) tryPlay();
+        });
+        ['pointerdown', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+          window.addEventListener(ev, tryPlay, { once: true, passive: true });
+        });
+      })();
+    </script>
   </body>
 </html>

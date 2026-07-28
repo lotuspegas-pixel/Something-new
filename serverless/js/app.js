@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Serverloze babyfoon — Luna Unit.
+ * Serverloze babyfoon — BabyPhone.online.
  *
  * Twee apparaten koppelen zichzelf via een QR-code of koppelcode (handmatige
  * WebRTC-signalering). Daarna loopt beeld en geluid rechtstreeks peer-to-peer,

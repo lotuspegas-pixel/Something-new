@@ -1,7 +1,7 @@
 /* =========================================================================
-   Luna Unit — neumorfe babyfoon-UI
-   Gebaseerd op het aangeleverde ontwerp. Beige, zachte schaduwen, rood accent.
-   Volledig responsief (computer en mobiel).
+   BabyPhone.online — basis, landingspagina en koppelschermen.
+   Licht merkpalet (roze/blauw/marine), Liquid Glass, volledig responsief
+   (computer en mobiel).
    ========================================================================= */
 
 @font-face {
@@ -2061,3 +2061,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 719px) {
   .lp-baby-img { height: 112px; }
 }
+
+/* ---------------------------------------------------------------------------
+   Hero-animatie: nooit een afspeelknop over de hero
+
+   iOS blokkeert autoplay in bepaalde situaties (o.a. Energiebesparingsmodus)
+   en tekent dan een grijze afspeelknop over de video. Daarom staat de poster
+   nu altijd als achtergrond onder de video en blijft de video zelf onzichtbaar
+   totdat hij daadwerkelijk speelt (zie het script in index.html). Lukt
+   autoplay niet, dan zie je een verzorgd stilstaand beeld in plaats van een
+   afspeelknop; lukt het wel, dan faadt de animatie er zacht overheen.
+   --------------------------------------------------------------------------- */
+.lp .lp-hero-visual {
+  background-image: url("assets/brand/hero-signal-poster.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.lp .bp-hero-motion { opacity: 0; transition: opacity 0.6s ease; }
+.lp .bp-hero-motion.is-playing { opacity: 1; }

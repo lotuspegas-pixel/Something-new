@@ -567,3 +567,30 @@ body.app-mode .bigcode-input {
 .vcard > .vcard-poster,
 .vcard > .vcard-ph,
 .vcard > .night-veil { border-radius: inherit; }
+
+/* ---------------------------------------------------------------------------
+   Bedieningsknoppen ouderunit: alles in één oogopslag
+
+   De brandtheme maakt van .ctrlrow onder 680px een horizontaal scrollende
+   strip (overflow-x + scroll-snap, vaste tegels van 112px). Van de 7 knoppen
+   waren er zo maar ~3 zichtbaar; "Stop" viel buiten beeld en je moest zijwaarts
+   scrollen om erbij te komen. Voor een babyfoon moet elke bedieningsknop
+   direct bereikbaar zijn, dus terug naar een raster dat doorloopt op meerdere
+   rijen: 7 knoppen passen in 3 kolommen zonder scrollen.
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  #dviewMonitor.dview .ctrlrow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+  #dviewMonitor.dview .ctrlbtn {
+    flex: 1 1 auto;
+    min-height: 82px;
+    scroll-snap-align: none;
+  }
+}
+@media (max-width: 380px) {
+  #dviewMonitor.dview .ctrlrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
