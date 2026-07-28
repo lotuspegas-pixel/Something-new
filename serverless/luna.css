@@ -2054,3 +2054,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 719px) {
   .lp-parent-img { height: 112px; }
 }
+
+/* baby-unit illustratie: geüploade icon i.p.v. het oude camera-mark (landscape formaat) */
+.lp-baby-img { width: 118px; height: auto; max-width: 100%; display: block;
+  filter: drop-shadow(0 12px 20px rgba(12, 47, 99, 0.18)); }
+@media (max-width: 719px) {
+  .lp-baby-img { width: 100px; }
+}
