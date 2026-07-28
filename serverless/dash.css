@@ -216,7 +216,7 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .dash-brand { display: inline-flex; align-items: center; gap: 10px; font: 700 20px 'Quicksand', sans-serif; color: #fff; }
 .dash-brand .tld { color: var(--d-accent, #E8825E); font-weight: 600; }
 .dash-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, #EC8A63, #E0714B); display: grid; place-items: center; box-shadow: 0 5px 14px rgba(224,113,75,.35); }
-.dash-logo-img { height: 34px; width: auto; display: block; }
+.dash-logo-img { height: 52px; width: auto; display: block; }
 .dash-topright { display: flex; align-items: center; gap: 12px; }
 .dash-gear { width: 40px; height: 40px; border-radius: 12px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); color: #8C95A8; display: grid; place-items: center; cursor: pointer; }
 .dash { padding-top: 8px; }
@@ -378,9 +378,10 @@ body.app-mode {
 /* actieve/aan-status: gekleurd glas i.p.v. vlakke vulling */
 .ctrlbtn.on,
 .talk-big.on {
-  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-blue-soft), var(--brand-blue));
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 12px 26px rgba(47, 143, 240, 0.3), var(--lg-inset);
+  background: var(--brand-blue);
+  background-image: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 8px 18px rgba(47, 143, 240, 0.26);
   color: #fff;
 }
 .ctrlbtn.active {
@@ -389,8 +390,9 @@ body.app-mode {
   box-shadow: 0 12px 30px rgba(229, 72, 77, 0.36), var(--lg-inset);
 }
 .btn-stop {
-  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink));
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--brand-pink);
+  background-image: none;
+  border-color: var(--brand-pink);
   color: #fff;
 }
 
@@ -451,7 +453,7 @@ body.app-mode {
 }
 .dash-title h1 { color: var(--brand-navy); }
 .dash-title .tld { color: var(--brand-pink); }
-.dash-logo { background: linear-gradient(150deg, var(--brand-blue-soft), var(--brand-blue)); }
+.dash-logo { background: var(--brand-blue); }
 
 /* videokaart: lichte kaart, het beeld zelf blijft uiteraard ongemoeid */
 .vcard { background: linear-gradient(180deg, #EAF3FF 0%, #DCEBFB 100%); }
@@ -467,8 +469,10 @@ body.app-mode {
 
 /* alarm-/opnamestatus in merkroze i.p.v. rood-oranje */
 .ctrlbtn.active {
-  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink));
-  box-shadow: 0 12px 26px rgba(255, 111, 158, 0.32), var(--lg-inset);
+  background: var(--brand-pink);
+  background-image: none;
+  border-color: var(--brand-pink);
+  box-shadow: 0 8px 18px rgba(255, 111, 158, 0.28);
   color: #fff;
 }
 .ctrlbtn.danger { color: var(--brand-pink-hover); }
@@ -476,7 +480,7 @@ body.app-mode {
 .btn-stop { color: #fff; }
 
 /* Plus-paneel */
-.plus-badge { background: linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink)); color: #fff; }
+.plus-badge { background: var(--brand-pink); color: #fff; }
 .plus-feats li::before { color: var(--brand-blue); }
 
 /* schuifregelaars in merkblauw */
@@ -499,8 +503,8 @@ body.app-mode .bigcode-input {
   box-shadow: inset 0 2px 8px rgba(12, 47, 99, 0.08);
 }
 .talk-big.on {
-  background: linear-gradient(135deg, var(--brand-blue-soft), var(--brand-blue));
+  background: var(--brand-blue);
   color: #fff;
-  box-shadow: 0 10px 30px rgba(47, 143, 240, 0.32);
+  box-shadow: 0 8px 18px rgba(47, 143, 240, 0.26);
 }
 .dash-title-ic.cam img { filter: drop-shadow(0 3px 6px rgba(12, 47, 99, 0.2)); }
