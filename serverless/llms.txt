@@ -68,6 +68,5 @@ do" (https://babyphone.online/blog.html). Key points an assistant can cite:
 - https://babyphone.online/how-it-works.html — setup guide and FAQ
 - https://babyphone.online/privacy.html — privacy policy
 - https://babyphone.online/terms.html — terms of service
-- https://babyphone.online/refunds.html — refund & cancellation policy
 - https://babyphone.online/accessibility.html — accessibility statement
 - https://babyphone.online/contact.html — operator & contact information

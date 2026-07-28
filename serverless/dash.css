@@ -594,3 +594,157 @@ body.app-mode .bigcode-input {
 @media (max-width: 380px) {
   #dviewMonitor.dview .ctrlrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ===========================================================================
+   ÉÉN CONTAINERGEOMETRIE VOOR BEIDE UNITS
+
+   .dash-topbar staat bij de ouderunit náást .dash en bij de babyunit ín
+   .bdash. Daardoor rekende width:100% tegen een andere ouder: bij de
+   ouderunit stak de balk (incl. tandwielknop) buiten de inhoudkaarten en
+   liep de pagina horizontaal over; bij de babyunit was hij juist smaller.
+   Ook verschilden de maxbreedtes (1520 vs 1320).
+
+   Hieronder krijgen container én topbalk overal exact dezelfde linker- en
+   rechterrand, en schalen ze mee met het scherm.
+   =========================================================================== */
+:root { --app-max: 1320px; --app-gutter: 34px; }
+@media (max-width: 680px) { :root { --app-gutter: 20px; } }
+
+body.app-mode .dash,
+body.app-mode .bdash {
+  width: min(var(--app-max), calc(100% - var(--app-gutter)));
+  max-width: none;
+  margin-inline: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* ouderunit: topbalk is een broer van .dash → zelfde breedte als de container */
+#screenParent > .dash-topbar {
+  width: min(var(--app-max), calc(100% - var(--app-gutter)));
+  margin-inline: auto;
+}
+/* babyunit: topbalk zit ín .bdash → vult die exact */
+.bdash > .dash-topbar { width: 100%; margin-left: 0; margin-right: 0; }
+
+/* ---------------------------------------------------------------------------
+   Topbalk schaalt mee met het scherm
+
+   De inhoud (merk + taalkeuze + tandwiel) vroeg 407px terwijl er op een
+   360px-scherm maar 308px beschikbaar was, en min-width:auto verhinderde
+   krimpen — vandaar dat het tandwiel buiten de balk stak en de pagina
+   horizontaal meescrolde. Alles hieronder schaalt vloeiend mee; de taalnaam
+   kort af in plaats van de balk op te rekken.
+   --------------------------------------------------------------------------- */
+#screenParent > .dash-topbar,
+.bdash > .dash-topbar {
+  gap: clamp(8px, 2vw, 14px);
+  padding-left: clamp(12px, 3vw, 18px);
+  padding-right: clamp(12px, 3vw, 18px);
+  flex-wrap: nowrap;
+}
+.dash-topbar .dash-brand { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.dash-topbar .dash-topright { flex: 0 1 auto; min-width: 0; gap: clamp(6px, 1.6vw, 12px); }
+.dash-topbar .bp-brand-icon { width: clamp(26px, 7vw, 42px); height: auto; flex: 0 0 auto; }
+.dash-topbar .bp-wordmark { font-size: clamp(13px, 3.6vw, 20px); min-width: 0; overflow: hidden; }
+.dash-topbar .lang-pill { min-width: 0; padding-left: clamp(8px, 2vw, 14px); padding-right: clamp(8px, 2vw, 14px); }
+.dash-topbar .lang-pill .lang-select {
+  max-width: clamp(56px, 18vw, 150px);
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.dash-topbar .dash-gear { flex: 0 0 auto; width: clamp(34px, 9vw, 40px); height: clamp(34px, 9vw, 40px); }
+
+/* ---------------------------------------------------------------------------
+   Geen loze scrollruimte onderaan op mobiel
+
+   .dash en .bdash stonden op min-height:100vh. Op iOS is 100vh de hoogte
+   inclusief de browserbalken, dus groter dan wat je ziet: onderaan de
+   babyunit kon je doorscrollen zonder dat er nog iets kwam. dvh volgt het
+   werkelijk zichtbare gebied; browsers zonder dvh houden de 100vh hierboven.
+   --------------------------------------------------------------------------- */
+@supports (min-height: 100dvh) {
+  body.app-mode .dash,
+  body.app-mode .bdash { min-height: 100dvh; }
+  body.content-page { min-height: 100dvh; }
+}
+
+/* ===========================================================================
+   ÉÉN STATUSTAAL VOOR ALLE BEDIENINGEN
+
+   UIT      = neutrale witte kaart met grijsblauw icoon
+   AAN      = merkblauw met witte tekst en wit icoonvlak
+   OPNEMEN  = roze met pulserend icoon (bewust anders dan "aan")
+   STOPPEN  = roze (destructief)
+
+   Nodig omdat de brandtheme alleen .ctrlbtn.active kende en niet .ctrlbtn.on
+   — precies de klasse die terugpraten, slaapliedje, nachtlampje en het
+   huil-alarm gebruiken. Die vier gaven dus géén enkele visuele terugkoppeling.
+   Daarnaast kleurde de theme de eerste knop altijd blauw, waardoor
+   "Terugpraten" permanent aan leek te staan.
+   =========================================================================== */
+
+/* eerste knop niet meer standaard oplichten — alleen als hij écht aan staat */
+body.app-mode #dviewMonitor .ctrlbtn:first-child:not(.on):not(.active) {
+  color: var(--bp-navy, #0C2F63) !important;
+  border-color: var(--bp-line, rgba(110, 159, 222, 0.28)) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+body.app-mode #dviewMonitor .ctrlbtn:first-child:not(.on):not(.active) .cb-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(47, 143, 240, 0.12) !important;
+}
+
+/* AAN — geldt voor de bedieningsknoppen én de tegels op de babyunit */
+body.app-mode .ctrlbtn.on,
+body.app-mode .btile.on,
+body.app-mode .bctrl.on,
+body.app-mode .musicbtn.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 12px 28px rgba(47, 143, 240, 0.28) !important;
+}
+body.app-mode .ctrlbtn.on .cb-ic,
+body.app-mode .btile.on .bt-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: #fff !important;
+}
+body.app-mode .ctrlbtn.on b,
+body.app-mode .ctrlbtn.on small,
+body.app-mode .btile.on b,
+body.app-mode .btile.on small,
+body.app-mode .btile.on span { color: #fff !important; }
+
+/* OPNEMEN — roze zodat het niet te verwarren is met een gewone "aan" */
+body.app-mode .ctrlbtn.active {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-pink-soft, #FF8DB2), var(--bp-pink, #FF6F9E)) !important;
+  box-shadow: 0 12px 28px rgba(255, 111, 158, 0.3) !important;
+}
+body.app-mode .ctrlbtn.active .cb-ic {
+  color: var(--bp-pink, #FF6F9E) !important;
+  background: #fff !important;
+}
+
+/* duidelijke, gelijke UIT-staat voor de tegels op de babyunit */
+body.app-mode .btile:not(.on) .bt-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(47, 143, 240, 0.12) !important;
+}
+
+/* zichtbare indruk-terugkoppeling op alle bedieningen */
+body.app-mode .ctrlbtn:active,
+body.app-mode .btile:active,
+body.app-mode .switch:active { transform: scale(0.97); }
+body.app-mode .ctrlbtn,
+body.app-mode .btile { transition: background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.08s ease; }
+
+/* pil-schakelaars (o.a. huil-alarm aan/uit) volgen dezelfde statustaal */
+body.app-mode .pillbtn.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 10px 22px rgba(47, 143, 240, 0.26) !important;
+}

@@ -153,12 +153,13 @@ function findExecutable() {
     room: document.getElementById('roomLabel2').textContent.trim(),
   }));
   check('Settings-weergave toont kamercode', setv.act && setv.room === code);
-  // Plus-paneel: zonder billing-config nette "binnenkort"-status
-  const plus = await parent.evaluate(() => ({
-    soon: !document.getElementById('plusState').classList.contains('hidden'),
-    up: document.getElementById('plusUpgrade').classList.contains('hidden'),
-  }));
-  check('Plus-paneel in rustige binnenkort-status (ongeconfigureerd)', plus.soon && plus.up);
+  // De dienst is volledig gratis: er mag nergens nog een betaal-/Plus-element staan.
+  const geenBetaling = await parent.evaluate(() => {
+    const ids = ['plusPanel', 'plusState', 'plusUpgrade', 'plusManage', 'plusRestore'];
+    const woorden = /(upgrade to plus|manage subscription|restore purchase|babyphone plus)/i;
+    return ids.every((id) => !document.getElementById(id)) && !woorden.test(document.body.innerText);
+  });
+  check('Geen betaal-/Plus-elementen meer aanwezig (dienst is gratis)', geenBetaling);
   await parent.click('.dnav[data-view="monitor"]');
 
   // ---- sleep timer: zichtbaar aftellen + baby-tegel ----

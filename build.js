@@ -37,7 +37,7 @@ const brandCss = fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'ut
 
 // 2. Alle JS inline, in de volgorde van index.html
 const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
-  'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/plus.js', 'js/app.js'];
+  'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/app.js'];
 const inlineScripts = scripts.map((s) => {
   const code = fs.readFileSync(path.join(SL, s), 'utf8').replace(/<\/script/gi, '<\\/script');
   return '<script>\n' + code + '\n</script>';
@@ -60,10 +60,10 @@ fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 const copies = [
-  'privacy.html', 'terms.html', 'refunds.html', 'contact.html', 'accessibility.html',
+  'privacy.html', 'terms.html', 'contact.html', 'accessibility.html',
   'how-it-works.html', 'blog.html', 'robots.txt', 'ads.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.jpg',
-  '.htaccess', 'LEES-DIT-EERST.txt',
+  '.htaccess', 'LEES-DIT-EERST.txt', 'contact-send.php',
 ];
 for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
 fs.cpSync(path.join(SL, 'music'), path.join(OUT, 'music'), { recursive: true });

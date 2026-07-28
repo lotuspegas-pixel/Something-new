@@ -37,6 +37,42 @@
     footer { color:var(--muted); font-size:13.5px; padding-top:26px; text-align:center; }
     footer a { color:var(--muted); margin:0 8px; }
     @media (max-width:600px) { main { padding:24px 18px; } }
+
+    .cform { margin: 18px 0 6px; }
+    .cf-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .cf-row label { font-size: 14px; font-weight: 700; color: var(--text); }
+    .cf-row label small { font-weight: 600; color: var(--muted); }
+    .cf-row label span { color: var(--pink); }
+    .cf-row input, .cf-row textarea {
+      font: inherit; font-size: 15px; color: var(--text);
+      background: rgba(255,255,255,.75); border: 1px solid var(--line);
+      border-radius: 12px; padding: 11px 13px; width: 100%; box-sizing: border-box;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .cf-row textarea { resize: vertical; min-height: 150px; line-height: 1.55; }
+    .cf-row input:focus, .cf-row textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47,143,240,.18);
+    }
+    .cf-row input[aria-invalid="true"], .cf-row textarea[aria-invalid="true"] {
+      border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,111,158,.16);
+    }
+    .cf-count { color: var(--muted); font-size: 12.5px; align-self: flex-end; }
+    /* honeypot: onzichtbaar voor mensen, wel invulbaar voor bots */
+    .cf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .cf-send {
+      font: 700 15px 'Quicksand', -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #fff; background: linear-gradient(135deg, #5FAEFF, var(--accent));
+      border: 0; border-radius: 999px; padding: 13px 26px; cursor: pointer;
+      box-shadow: 0 12px 26px rgba(47,143,240,.26); transition: filter .15s, transform .08s;
+    }
+    .cf-send:hover { filter: brightness(1.05); }
+    .cf-send:active { transform: scale(.98); }
+    .cf-send[disabled] { opacity: .6; cursor: progress; }
+    .cf-status { margin: 12px 0 0; font-size: 14.5px; font-weight: 700; min-height: 1.4em; }
+    .cf-status.ok { color: #2FB37A; }
+    .cf-status.err { color: var(--pink); }
+    @media (max-width: 600px) { .cf-send { width: 100%; } }
   </style>
   <link rel="stylesheet" href="assets/brand-theme.css" />
 </head>
@@ -56,24 +92,108 @@
         <dt>Legal name</dt><dd>Arcana Synthetica (parent company of BabyPhone.online)</dd>
         <dt>Address</dt><dd>Harlingen, The Netherlands</dd>
         <dt>Chamber of Commerce (KvK)</dt><dd>42115786</dd>
-        <dt>VAT ID</dt><dd><em class="todo">[VAT ID]</em></dd>
       </dl>
 
       <h2>Reach us</h2>
       <dl>
         <dt>Support &amp; general questions</dt><dd><a href="mailto:info@babyphone.online">info@babyphone.online</a> — we reply within 2 business days</dd>
         <dt>Privacy requests (GDPR)</dt><dd><a href="mailto:info@babyphone.online">info@babyphone.online</a>, subject "Privacy request"</dd>
-        <dt>Billing &amp; refunds</dt><dd><a href="mailto:info@babyphone.online">info@babyphone.online</a>, subject "Billing" — see the <a href="refunds.html">refund policy</a></dd>
         <dt>Security reports</dt><dd><a href="mailto:info@babyphone.online">info@babyphone.online</a>, subject "Security" — we appreciate responsible disclosure</dd>
       </dl>
+
+
+      <h2>Send us a message</h2>
+      <p>Fill in the form and it goes straight to <a href="mailto:info@babyphone.online">info@babyphone.online</a>. We reply within 2 business days. Your details are only used to answer you — nothing is stored on this website.</p>
+      <form class="cform" id="contactForm" method="post" action="contact-send.php" novalidate>
+        <div class="cf-row">
+          <label for="cfName">Name <span aria-hidden="true">*</span></label>
+          <input type="text" id="cfName" name="name" maxlength="100" autocomplete="name" required />
+        </div>
+        <div class="cf-row">
+          <label for="cfEmail">Email <span aria-hidden="true">*</span></label>
+          <input type="email" id="cfEmail" name="email" maxlength="254" autocomplete="email" required />
+        </div>
+        <div class="cf-row">
+          <label for="cfPhone">Phone <small>(optional)</small></label>
+          <input type="tel" id="cfPhone" name="phone" maxlength="40" autocomplete="tel" />
+        </div>
+        <div class="cf-row">
+          <label for="cfMessage">Message <span aria-hidden="true">*</span></label>
+          <textarea id="cfMessage" name="message" rows="8" maxlength="20000" required></textarea>
+          <small class="cf-count"><span id="cfCount">0</span> / 20,000 characters</small>
+        </div>
+        <div class="cf-hp" aria-hidden="true">
+          <label for="cfWebsite">Leave this field empty</label>
+          <input type="text" id="cfWebsite" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+        <input type="hidden" name="started" id="cfStarted" value="0" />
+        <button type="submit" class="cf-send" id="cfSend">Send message</button>
+        <p class="cf-status" id="cfStatus" role="status" aria-live="polite"></p>
+      </form>
 
       <h2>Dispute resolution</h2>
       <p>EU consumers can use the European Online Dispute Resolution platform: <a href="https://ec.europa.eu/consumers/odr" rel="noopener">ec.europa.eu/consumers/odr</a>. We prefer to solve problems directly — email us first and we will do our best to make it right.</p>
     </main>
     <footer>
-      <a href="./">Home</a>·<a href="blog.html">Guide</a>·<a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="refunds.html">Refunds</a>·<a href="accessibility.html">Accessibility</a>
-      <div style="margin-top:8px">© 2026 BabyPhone.online</div>
+      <a href="./">Home</a>·<a href="blog.html">Guide</a>·<a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="accessibility.html">Accessibility</a>
+      <div style="margin-top:8px">© 2026 BabyPhone.online — part of Arcana Synthetica. All audio files are made by and copyright of Arcana Synthetica.</div>
     </footer>
   </div>
+
+  <script>
+    (function () {
+      var f = document.getElementById('contactForm');
+      if (!f) return;
+      var status = document.getElementById('cfStatus');
+      var send = document.getElementById('cfSend');
+      var msg = document.getElementById('cfMessage');
+      var count = document.getElementById('cfCount');
+      document.getElementById('cfStarted').value = Math.floor(Date.now() / 1000);
+
+      function paint() { count.textContent = msg.value.length.toLocaleString('en-US'); }
+      msg.addEventListener('input', paint); paint();
+
+      function show(text, ok) {
+        status.textContent = text;
+        status.className = 'cf-status ' + (ok ? 'ok' : 'err');
+      }
+      function invalid(el, yes) {
+        if (yes) { el.setAttribute('aria-invalid', 'true'); } else { el.removeAttribute('aria-invalid'); }
+      }
+
+      f.addEventListener('submit', function (e) {
+        var name = f.name_ = document.getElementById('cfName');
+        var mail = document.getElementById('cfEmail');
+        var bad = null;
+        invalid(name, false); invalid(mail, false); invalid(msg, false);
+        if (!name.value.trim()) { invalid(name, true); bad = bad || name; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail.value.trim())) { invalid(mail, true); bad = bad || mail; }
+        if (!msg.value.trim()) { invalid(msg, true); bad = bad || msg; }
+        if (bad) {
+          e.preventDefault();
+          show('Please fill in your name, a valid email address and a message.', false);
+          bad.focus();
+          return;
+        }
+        // Verzenden zonder de pagina te verlaten; zonder JS doet het formulier
+        // gewoon een normale POST naar hetzelfde adres.
+        e.preventDefault();
+        send.disabled = true;
+        show('Sending…', true);
+        fetch(f.action, {
+          method: 'POST',
+          body: new FormData(f),
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' }
+        }).then(function (r) {
+          return r.json().catch(function () { return { ok: r.ok, message: r.ok ? 'Thank you for your message.' : 'Something went wrong.' }; });
+        }).then(function (d) {
+          show(d.message, !!d.ok);
+          if (d.ok) { f.reset(); paint(); document.getElementById('cfStarted').value = Math.floor(Date.now() / 1000); }
+        }).catch(function () {
+          show('Could not reach the server. Please email info@babyphone.online directly.', false);
+        }).then(function () { send.disabled = false; });
+      });
+    })();
+  </script>
 </body>
 </html>
