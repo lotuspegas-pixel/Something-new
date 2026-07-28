@@ -964,6 +964,7 @@
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    approveTitle: '¿Permitir este dispositivo?', approveAsk: 'Un dispositivo ha introducido tu código de sala y quiere ver y escuchar. Permítelo solo si es tu propio dispositivo.', approveExtra: 'Un segundo dispositivo quiere mirar. Ya hay alguien conectado. Permítelo solo si es tu propio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Rechazar', authRefused: 'La unidad del bebé ha rechazado este dispositivo.', switchCameraSub: 'Cámara frontal / trasera',
     qrTapZoom: "👆 Toca el QR para ampliarlo y escanearlo", qrZoomHint: "Apunta la cámara del otro teléfono a este código", roomCodeShare: "Código de sala (compártelo con la unidad de padres)", roomCodeOfBaby: "Código de sala de la unidad del bebé",
     qrScanHint: "Deja que el padre escanee este QR — o escribe el código de arriba", phCode: "CÓDIGO", newCode: "Nuevo código", heroTitle: "Tu bebé, siempre cerca.",
     heroSub: "BabyPhone convierte dos dispositivos en un vigilabebés seguro. Sencillo, privado y directo en tu navegador.", ctaStartBaby: "Iniciar unidad del bebé", ctaConnectParent: "Conectar como padre/madre", navPrivacy: "Privacidad",
@@ -1004,6 +1005,7 @@
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    approveTitle: 'Autoriser cet appareil ?', approveAsk: 'Un appareil a saisi votre code de chambre et veut voir et écouter. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveExtra: 'Un deuxième appareil veut regarder. Quelqu\'un est déjà connecté. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveAllow: 'Autoriser', approveDeny: 'Refuser', authRefused: 'L\'unité bébé a refusé cet appareil.', switchCameraSub: 'Caméra avant / arrière',
     qrTapZoom: "👆 Touchez le QR pour l'agrandir et le scanner", qrZoomHint: "Pointez la caméra de l'autre téléphone vers ce code", roomCodeShare: "Code de la chambre (à partager avec l'unité parents)", roomCodeOfBaby: "Code de la chambre de l'unité bébé",
     qrScanHint: "Faites scanner ce QR par le parent — ou saisissez le code ci-dessus", phCode: "CODE", newCode: "Nouveau code", heroTitle: "Votre bébé, toujours tout près.",
     heroSub: "BabyPhone transforme deux appareils en un babyphone sûr. Simple, privé, directement dans votre navigateur.", ctaStartBaby: "Démarrer l'unité bébé", ctaConnectParent: "Se connecter comme parent", navPrivacy: "Confidentialité",
@@ -1124,6 +1126,7 @@
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    approveTitle: 'Permitir este dispositivo?', approveAsk: 'Um dispositivo introduziu o seu código de sala e quer ver e ouvir. Permita apenas se for o seu próprio dispositivo.', approveExtra: 'Um segundo dispositivo quer assistir. Já há alguém ligado. Permita apenas se for o seu próprio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Recusar', authRefused: 'A unidade do bebé recusou este dispositivo.', switchCameraSub: 'Câmara frontal / traseira',
     qrTapZoom: "👆 Toque no QR para ampliá-lo e escanear", qrZoomHint: "Aponte a câmera do outro telefone para este código", roomCodeShare: "Código da sala (compartilhe com a unidade dos pais)", roomCodeOfBaby: "Código da sala da unidade do bebê",
     qrScanHint: "Deixe o responsável escanear este QR — ou digite o código acima", phCode: "CÓDIGO", newCode: "Novo código", heroTitle: "Seu bebê, sempre por perto.",
     heroSub: "O BabyPhone transforma dois aparelhos em uma babá eletrônica segura. Simples, privada e direto no navegador.", ctaStartBaby: "Iniciar unidade do bebê", ctaConnectParent: "Conectar como responsável", navPrivacy: "Privacidade",
@@ -1164,6 +1167,7 @@
     mediaError: "Câmera/microfone indisponíveis. Use https ou abra no Chrome/Firefox.",
   });
   Object.assign(S.ru, {
+    approveTitle: 'Разрешить это устройство?', approveAsk: 'Устройство ввело код вашей комнаты и хочет смотреть и слушать. Разрешайте только если это ваше устройство.', approveExtra: 'Второе устройство хочет смотреть. Кто-то уже подключён. Разрешайте только если это ваше устройство.', approveAllow: 'Разрешить', approveDeny: 'Отклонить', authRefused: 'Детский блок отклонил это устройство.', switchCameraSub: 'Передняя / задняя камера',
     qrTapZoom: "👆 Нажмите на QR, чтобы увеличить его", qrZoomHint: "Наведите камеру другого телефона на этот код", roomCodeShare: "Код комнаты (поделитесь с родительским блоком)", roomCodeOfBaby: "Код комнаты детского блока",
     qrScanHint: "Пусть родитель отсканирует этот QR — или введите код выше", phCode: "КОД", newCode: "Новый код", heroTitle: "Ваш малыш всегда рядом.",
     heroSub: "BabyPhone превращает два устройства в безопасную радионяню. Просто, приватно и прямо в браузере.", ctaStartBaby: "Запустить детский блок", ctaConnectParent: "Подключиться как родитель", navPrivacy: "Приватность",
@@ -1244,6 +1248,7 @@
     mediaError: "کیمرہ/مائیک دستیاب نہیں۔ https استعمال کریں یا Chrome/Firefox میں کھولیں۔",
   });
   Object.assign(S.id, {
+    approveTitle: 'Izinkan perangkat ini?', approveAsk: 'Sebuah perangkat memasukkan kode ruangan Anda dan ingin melihat dan mendengar. Izinkan hanya jika itu perangkat Anda sendiri.', approveExtra: 'Perangkat kedua ingin ikut melihat. Seseorang sudah terhubung. Izinkan hanya jika itu perangkat Anda sendiri.', approveAllow: 'Izinkan', approveDeny: 'Tolak', authRefused: 'Unit bayi menolak perangkat ini.', switchCameraSub: 'Kamera depan / belakang',
     qrTapZoom: "👆 Ketuk QR untuk memperbesar agar mudah dipindai", qrZoomHint: "Arahkan kamera ponsel satunya ke kode ini", roomCodeShare: "Kode kamar (bagikan ke unit orang tua)", roomCodeOfBaby: "Kode kamar unit bayi",
     qrScanHint: "Minta orang tua memindai QR ini — atau ketik kode di atas", phCode: "KODE", newCode: "Kode baru", heroTitle: "Bayi Anda, selalu dekat.",
     heroSub: "BabyPhone mengubah dua perangkat menjadi monitor bayi yang aman. Sederhana, privat, langsung di browser.", ctaStartBaby: "Mulai unit bayi", ctaConnectParent: "Hubungkan sebagai orang tua", navPrivacy: "Privasi",
@@ -1284,6 +1289,7 @@
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    approveTitle: 'Dieses Gerät zulassen?', approveAsk: 'Ein Gerät hat deinen Raumcode eingegeben und möchte mitsehen und mithören. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveExtra: 'Ein zweites Gerät möchte mitsehen. Es ist bereits jemand verbunden. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveAllow: 'Zulassen', approveDeny: 'Ablehnen', authRefused: 'Die Babyeinheit hat dieses Gerät abgelehnt.', switchCameraSub: 'Vordere / hintere Kamera',
     qrTapZoom: "👆 Tippe auf den QR-Code, um ihn zu vergrößern", qrZoomHint: "Richte die Kamera des anderen Handys auf diesen Code", roomCodeShare: "Raumcode (mit der Elterneinheit teilen)", roomCodeOfBaby: "Raumcode der Babyeinheit",
     qrScanHint: "Lass die Eltern diesen QR scannen — oder tippe den Code oben ein", phCode: "CODE", newCode: "Neuer Code", heroTitle: "Dein Baby, immer ganz nah.",
     heroSub: "BabyPhone macht aus zwei Geräten ein sicheres Babyfon. Einfach, privat und direkt im Browser.", ctaStartBaby: "Babyeinheit starten", ctaConnectParent: "Als Eltern verbinden", navPrivacy: "Datenschutz",
@@ -1444,6 +1450,7 @@
     mediaError: "కెమెరా/మైక్ అందుబాటులో లేవు. https వాడండి లేదా Chrome/Firefox లో తెరవండి.",
   });
   Object.assign(S.tr, {
+    approveTitle: 'Bu cihaza izin verilsin mi?', approveAsk: 'Bir cihaz oda kodunuzu girdi ve izlemek ve dinlemek istiyor. Yalnızca kendi cihazınızsa izin verin.', approveExtra: 'İkinci bir cihaz izlemek istiyor. Zaten bağlı biri var. Yalnızca kendi cihazınızsa izin verin.', approveAllow: 'İzin ver', approveDeny: 'Reddet', authRefused: 'Bebek ünitesi bu cihazı reddetti.', switchCameraSub: 'Ön / arka kamera',
     qrTapZoom: "👆 Taramak için QR'a dokunup büyütün", qrZoomHint: "Diğer telefonun kamerasını bu koda doğrultun", roomCodeShare: "Oda kodu (ebeveyn ünitesiyle paylaşın)", roomCodeOfBaby: "Bebek ünitesinin oda kodu",
     qrScanHint: "Bu QR'ı ebeveyne taratın — veya yukarıdaki kodu yazın", phCode: "KOD", newCode: "Yeni kod", heroTitle: "Bebeğiniz, her zaman yakınınızda.",
     heroSub: "BabyPhone iki cihazı güvenli bir bebek telsizine dönüştürür. Basit, gizli ve doğrudan tarayıcınızda.", ctaStartBaby: "Bebek ünitesini başlat", ctaConnectParent: "Ebeveyn olarak bağlan", navPrivacy: "Gizlilik",
@@ -1604,6 +1611,7 @@
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    approveTitle: 'Consentire questo dispositivo?', approveAsk: 'Un dispositivo ha inserito il tuo codice stanza e vuole guardare e ascoltare. Consenti solo se è il tuo dispositivo.', approveExtra: 'Un secondo dispositivo vuole guardare. Qualcuno è già collegato. Consenti solo se è il tuo dispositivo.', approveAllow: 'Consenti', approveDeny: 'Rifiuta', authRefused: 'L\'unità bambino ha rifiutato questo dispositivo.', switchCameraSub: 'Fotocamera anteriore / posteriore',
     qrTapZoom: "👆 Tocca il QR per ingrandirlo e scansionarlo", qrZoomHint: "Punta la fotocamera dell'altro telefono su questo codice", roomCodeShare: "Codice stanza (condividilo con l'unità genitori)", roomCodeOfBaby: "Codice stanza dell'unità bimbo",
     qrScanHint: "Fai scansionare questo QR al genitore — o digita il codice sopra", phCode: "CODICE", newCode: "Nuovo codice", heroTitle: "Il tuo bimbo, sempre vicino.",
     heroSub: "BabyPhone trasforma due dispositivi in un baby monitor sicuro. Semplice, privato e direttamente nel browser.", ctaStartBaby: "Avvia unità bimbo", ctaConnectParent: "Connettiti come genitore", navPrivacy: "Privacy",
@@ -1764,6 +1772,7 @@
     mediaError: "دوربین/میکروفون در دسترس نیست. از https استفاده کنید یا در Chrome/Firefox باز کنید.",
   });
   Object.assign(S.pl, {
+    approveTitle: 'Zezwolić temu urządzeniu?', approveAsk: 'Urządzenie wpisało Twój kod pokoju i chce oglądać i słuchać. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveExtra: 'Drugie urządzenie chce oglądać. Ktoś jest już połączony. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveAllow: 'Zezwól', approveDeny: 'Odrzuć', authRefused: 'Jednostka dziecięca odrzuciła to urządzenie.', switchCameraSub: 'Kamera przednia / tylna',
     qrTapZoom: "👆 Dotknij kodu QR, aby go powiększyć", qrZoomHint: "Skieruj aparat drugiego telefonu na ten kod", roomCodeShare: "Kod pokoju (udostępnij jednostce rodzica)", roomCodeOfBaby: "Kod pokoju jednostki dziecka",
     qrScanHint: "Pozwól rodzicowi zeskanować ten QR — albo wpisz kod powyżej", phCode: "KOD", newCode: "Nowy kod", heroTitle: "Twoje dziecko, zawsze blisko.",
     heroSub: "BabyPhone zamienia dwa urządzenia w bezpieczną nianię elektroniczną. Prosto, prywatnie, wprost w przeglądarce.", ctaStartBaby: "Uruchom jednostkę dziecka", ctaConnectParent: "Połącz jako rodzic", navPrivacy: "Prywatność",
@@ -1972,6 +1981,7 @@
     mediaError: "Kyamara/makirufo ba ya samuwa. Yi amfani da https ko buɗe a Chrome/Firefox.",
   });
   Object.assign(S.ro, {
+    approveTitle: 'Permiteți acest dispozitiv?', approveAsk: 'Un dispozitiv a introdus codul camerei și dorește să vadă și să asculte. Permiteți doar dacă este dispozitivul dvs.', approveExtra: 'Un al doilea dispozitiv dorește să privească. Cineva este deja conectat. Permiteți doar dacă este dispozitivul dvs.', approveAllow: 'Permite', approveDeny: 'Refuză', authRefused: 'Unitatea pentru bebeluș a refuzat acest dispozitiv.', switchCameraSub: 'Cameră față / spate',
     qrTapZoom: "👆 Atinge codul QR pentru a-l mări", qrZoomHint: "Îndreaptă camera celuilalt telefon spre acest cod", roomCodeShare: "Codul camerei (împarte-l cu unitatea părinților)", roomCodeOfBaby: "Codul camerei unității bebelușului",
     qrScanHint: "Lasă părintele să scaneze acest QR — sau tastează codul de mai sus", phCode: "COD", newCode: "Cod nou", heroTitle: "Bebelușul tău, mereu aproape.",
     heroSub: "BabyPhone transformă două dispozitive într-un monitor sigur pentru bebeluși. Simplu, privat, direct în browser.", ctaStartBaby: "Pornește unitatea bebelușului", ctaConnectParent: "Conectează-te ca părinte", navPrivacy: "Confidențialitate",

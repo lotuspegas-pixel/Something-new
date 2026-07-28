@@ -1102,3 +1102,24 @@ body.app-mode #dviewMonitor .vcard { max-width: 100%; }
 @media (max-width: 680px) {
   body.app-mode #dviewMonitor .ctrlrow .ctrlbtn.danger { grid-column: 1 / -1; }
 }
+
+/* ---------------------------------------------------------------------------
+   Zijbalknavigatie: aanraakdoelen van 44px, óók op de smalste telefoons
+
+   Zeven items naast elkaar passen op 320px niet met 44px per doel: er is maar
+   ~276px beschikbaar, en 7×44 plus tussenruimte vraagt ruim 300px. Ze werden
+   daardoor 40px breed. In plaats van ze horizontaal te laten scrollen (waarbij
+   twee items buiten beeld verdwijnen) breekt de rij nu netjes af over twee
+   regels: vier en drie, met ruim 60px per doel.
+   --------------------------------------------------------------------------- */
+@media (max-width: 400px) {
+  body.app-mode .dash-nav {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  body.app-mode .dash .dnav {
+    flex: 1 1 calc(25% - 4px);
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
