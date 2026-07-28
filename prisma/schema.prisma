@@ -1,0 +1,113 @@
+// Digital Business Card Studio — data model (Build Spec §6).
+// Production backend: PostgreSQL. The app runs without a database via a JSON
+// file-store fallback (see src/lib/store.ts); wire these models in when
+// DATABASE_URL is configured.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  linkedInId String?  @unique
+  name       String?
+  photoUrl   String?
+  createdAt  DateTime @default(now())
+
+  cards       Card[]
+  teamMembers TeamMember[]
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  userId      String
+  templateId  String
+  slug        String   @unique
+  // Free-form contact fields + layout element data.
+  fields      Json
+  // Colors/fonts/background style config.
+  styleConfig Json
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  links    Link[]
+  scans    ScanEvent[]
+  leads    LeadCapture[]
+
+  @@index([userId])
+}
+
+model Template {
+  id           String @id @default(cuid())
+  name         String
+  category     String
+  previewImage String?
+  layoutConfig Json
+}
+
+model Link {
+  id     String @id @default(cuid())
+  cardId String
+  label  String
+  url    String
+  order  Int    @default(0)
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model ScanEvent {
+  id            String   @id @default(cuid())
+  cardId        String
+  timestamp     DateTime @default(now())
+  referrer      String?
+  // Coarse country/region only — never precise location (§4.7, GDPR).
+  roughLocation String?
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model LeadCapture {
+  id            String   @id @default(cuid())
+  cardId        String
+  submittedName String?
+  submittedEmail String?
+  note          String?
+  timestamp     DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  // Brand lock: fixed logo/colors for brand-locked templates (§5.4).
+  brandConfig Json
+  createdAt   DateTime     @default(now())
+  members     TeamMember[]
+}
+
+model TeamMember {
+  id     String @id @default(cuid())
+  teamId String
+  userId String
+  role   String @default("member") // owner | admin | member
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
