@@ -530,3 +530,40 @@ body.app-mode .bigcode-input {
   #dviewMonitor.dview .vcard { min-height: 64vw; }
   .bdash .vcard.baby { min-height: 43vw; }
 }
+
+/* ---------------------------------------------------------------------------
+   Babyunit op laptop/desktop: koppelkaart vult haar hoogte
+
+   .bgrid is een 2-koloms grid met de standaard align-items:stretch, dus de
+   koppelkaart krijgt de hoogte van de togglelijst ernaast (388px) terwijl haar
+   inhoud maar ~220px is. Dat liet ruim 165px dode ruimte onderin achter.
+
+   De QR-rij groeit nu mee en centreert zichzelf in de restruimte, en de QR is
+   op deze schermen groter — dat vult de kaart én maakt de code makkelijker
+   scanbaar vanaf de ouderunit.
+   --------------------------------------------------------------------------- */
+@media (min-width: 861px) {
+  .bcard.bpair { display: flex; flex-direction: column; }
+  .bcard.bpair .bpair-qrrow { flex: 1 1 auto; }
+  .bcard.bpair .bpair-qr { width: 164px; height: 164px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Videobeeld binnen de afgeronde hoeken houden
+
+   De brandtheme geeft .vcard een backdrop-filter. Daardoor krijgt de kaart een
+   eigen compositielaag en clipt `overflow: hidden` de <video> niet meer langs
+   de border-radius: het beeld stak vierkant uit alle vier de hoeken. Achter een
+   ondoorzichtig videopaneel valt er ook niets te vervagen, dus de filter kan
+   hier weg. De radius wordt daarnaast doorgegeven aan de lagen die tot de rand
+   doorlopen, zodat het ook goed gaat op engines die anders samenstellen.
+   --------------------------------------------------------------------------- */
+.dash .vcard,
+.bdash .vcard {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.vcard > video,
+.vcard > .vcard-poster,
+.vcard > .vcard-ph,
+.vcard > .night-veil { border-radius: inherit; }
