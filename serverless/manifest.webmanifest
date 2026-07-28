@@ -4,8 +4,8 @@
   "description": "Baby monitor in your browser — no app, no account, nothing stored.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#020615",
-  "theme_color": "#041022",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "icons": [
     {
       "src": "icon-192.png",

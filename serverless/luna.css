@@ -1768,31 +1768,47 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    (ondoorzichtige) surfaces overschrijft zonder de structuur te raken.
    ========================================================================= */
 :root {
-  /* achtergrond (opgegeven merkkleuren) */
-  --lg-bg-1: #08172D;
-  --lg-bg-2: #041022;
-  --lg-bg-3: #020615;
-  /* glaslagen: van subtiel (achtergrondkaart) tot uitgesproken (bedieningen) */
-  --lg-fill: rgba(255, 255, 255, 0.055);
-  --lg-fill-2: rgba(255, 255, 255, 0.085);
-  --lg-fill-3: rgba(255, 255, 255, 0.12);
-  --lg-edge: rgba(255, 255, 255, 0.14);
-  --lg-edge-soft: rgba(255, 255, 255, 0.09);
+  /* ---- merkkleuren (logo) ---- */
+  --brand-pink: #FF6F9E;        /* "Babyphone" — belangrijkste call-to-action */
+  --brand-pink-soft: #FF8DB2;   /* pastelroze nuance */
+  --brand-pink-hover: #E95E8B;
+  --brand-blue: #2F8FF0;        /* ".Online" — primaire knoppen */
+  --brand-blue-soft: #5FAEFF;   /* lichte delen babydoek */
+  --brand-blue-hover: #2479D8;
+  --brand-navy: #0C2F63;        /* contouren baby — donkere tekst */
+  --brand-muted: #6E9FDE;       /* onderschrift, randen, subtiele iconen */
+  --brand-tint-blue: #F5FAFF;   /* lichte achtergrond, blauwe zweem */
+  --brand-tint-pink: #FFF5F8;   /* lichte achtergrond, roze zweem */
+
+  /* achtergrond: wit met een zachte roze/blauwe waas */
+  --lg-bg-1: #FFFFFF;
+  --lg-bg-2: var(--brand-tint-pink);
+  --lg-bg-3: var(--brand-tint-blue);
+  /* glaslagen op licht: melkwit glas i.p.v. doorschijnend wit op zwart */
+  --lg-fill: rgba(255, 255, 255, 0.62);
+  --lg-fill-2: rgba(255, 255, 255, 0.78);
+  --lg-fill-3: rgba(255, 255, 255, 0.9);
+  --lg-edge: rgba(110, 159, 222, 0.26);
+  --lg-edge-soft: rgba(110, 159, 222, 0.16);
   /* specular: lichte bovenrand + zachte glans, kern van de liquid-glass-look */
-  --lg-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 34%, rgba(255, 255, 255, 0) 62%);
-  --lg-inset: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-  --lg-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
-  --lg-shadow-sm: 0 8px 22px rgba(0, 0, 0, 0.38);
+  --lg-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.45) 34%, rgba(255, 255, 255, 0) 62%);
+  --lg-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(110, 159, 222, 0.08);
+  --lg-shadow: 0 18px 44px rgba(12, 47, 99, 0.13);
+  --lg-shadow-sm: 0 8px 22px rgba(12, 47, 99, 0.1);
   --lg-blur: blur(22px) saturate(165%);
   --lg-blur-sm: blur(14px) saturate(150%);
 }
 
-/* de nachtelijke achtergrond — zowel landing als app-schermen */
+/* lichte merk-achtergrond — zowel landing als app-schermen */
 body,
 body:not(.app-mode),
 .browser-block {
-  background: radial-gradient(circle at center, var(--lg-bg-1) 0%, var(--lg-bg-2) 45%, var(--lg-bg-3) 100%) no-repeat fixed;
-  background-color: var(--lg-bg-3);
+  background:
+    radial-gradient(80% 55% at 12% 0%, var(--brand-tint-pink) 0%, rgba(255, 245, 248, 0) 60%),
+    radial-gradient(85% 60% at 92% 8%, var(--brand-tint-blue) 0%, rgba(245, 250, 255, 0) 62%),
+    linear-gradient(180deg, #FFFFFF 0%, var(--brand-tint-blue) 100%) no-repeat fixed;
+  background-color: #FFFFFF;
+  color: var(--brand-navy);
 }
 
 /* herbruikbare glasbasis */
@@ -1840,18 +1856,23 @@ body:not(.app-mode),
   backdrop-filter: var(--lg-blur-sm);
   box-shadow: var(--lg-shadow-sm), var(--lg-inset);
 }
-.lp-or { background-color: rgba(10, 20, 38, 0.72); }
+.lp-or { background-color: #FFFFFF; color: var(--brand-muted); }
 
 /* scheidingslijnen subtieler op glas */
 .lp-row + .lp-row,
 .lp-cell + .lp-cell { border-color: var(--lg-edge-soft); }
 
-/* primaire actie: gekleurd glas met glans (accent blijft leidend) */
+/* primaire actie = de call-to-action: merkroze glas met glans */
 .lp-btn,
 .btn:not(.secondary) {
-  background-image: var(--lg-sheen), linear-gradient(150deg, #EC8A63, #E0714B);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 14px 34px rgba(224, 113, 75, 0.34), var(--lg-inset);
+  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink));
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 14px 30px rgba(255, 111, 158, 0.34), var(--lg-inset);
+  color: #fff;
+}
+.lp-btn:hover,
+.btn:not(.secondary):hover {
+  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-pink), var(--brand-pink-hover));
 }
 /* secundaire actie: neutraal glas */
 .btn.secondary,
@@ -1862,36 +1883,41 @@ body:not(.app-mode),
   -webkit-backdrop-filter: var(--lg-blur-sm);
   backdrop-filter: var(--lg-blur-sm);
   box-shadow: var(--lg-shadow-sm), var(--lg-inset);
-  color: var(--lp-text, #EDEFF4);
+  color: var(--brand-navy);
 }
+.btn.secondary:hover,
+.lp-qr-btn:hover { border-color: rgba(47, 143, 240, 0.45); color: var(--brand-blue); }
 
 /* invoervelden als verzonken glas */
 .lp-code-input,
 .bigcode-input,
 .bigcode {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.75);
   border: 1px solid var(--lg-edge);
   -webkit-backdrop-filter: var(--lg-blur-sm);
   backdrop-filter: var(--lg-blur-sm);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  color: #EDEFF4;
+  box-shadow: inset 0 2px 8px rgba(12, 47, 99, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: var(--brand-navy);
 }
+.lp-code-input::placeholder,
+.bigcode-input::placeholder { color: var(--brand-muted); opacity: .75; }
 
 /* Koppelschermen: de basis-tokens (--text/--accent-ink) komen nog uit het
    oude lichte thema. Op de donkere glaskaart moeten die licht worden,
    anders valt donkere tekst weg tegen een donkere achtergrond. */
-.pair-wrap { color: #EDEFF4; }
+.pair-wrap { color: var(--brand-navy); }
 .pair-head h1,
 .bigcode,
-.waiting-pill { color: #EDEFF4; }
+.waiting-pill { color: var(--brand-navy); }
+.bigcode { color: var(--brand-blue); }
 .pair-head .unit-sub,
 .pair-box h4,
 .qr-hint,
 .backlink a,
-.connecting-row { color: #8C95A8; }
+.connecting-row { color: var(--brand-muted); }
 .waiting-pill .spinner {
-  border-color: rgba(255, 255, 255, 0.22);
-  border-top-color: #E8825E;
+  border-color: rgba(47, 143, 240, 0.25);
+  border-top-color: var(--brand-blue);
 }
 
 /* koppelscherm-badge en wachtpil */
@@ -1909,14 +1935,14 @@ body:not(.app-mode),
 .lp-hero-img {
   border-radius: 26px;
   border: 1px solid var(--lg-edge-soft);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), var(--lg-inset);
+  box-shadow: 0 26px 60px rgba(12, 47, 99, 0.22), var(--lg-inset);
   -webkit-mask-image: none;
   mask-image: none;
 }
 
 /* footer als rustige glasstrook */
 .lp-footer {
-  background-color: rgba(255, 255, 255, 0.035);
+  background-color: rgba(255, 255, 255, 0.5);
   background-image: var(--lg-sheen);
   border: 1px solid var(--lg-edge-soft);
   border-radius: 24px;
@@ -1932,6 +1958,80 @@ body:not(.app-mode),
   .lg-pane, .lp-choose, .lp-framed, .lp-trust, .pair-box, .browser-block-inner,
   .lp .lang-pill, .lp-qr-preview, .lp-b-ic, .lp-trust-ic, .btn.secondary,
   .lp-qr-btn, .waiting-pill, .lp-footer {
-    background-color: rgba(19, 30, 51, 0.92);
+    background-color: #FFFFFF;
   }
 }
+
+/* =========================================================================
+   LICHT MERKTHEMA — logo-kleuren toegepast op landing, koppelschermen
+   en de losse schermen. Alleen kleur/afwerking: geen structuurwijziging.
+   ========================================================================= */
+.lp {
+  --lp-surface: rgba(255, 255, 255, 0.62);
+  --lp-surface-2: rgba(255, 255, 255, 0.82);
+  --lp-line: rgba(110, 159, 222, 0.26);
+  --lp-text: var(--brand-navy);
+  --lp-muted: var(--brand-muted);
+  --lp-accent: var(--brand-pink);
+  --lp-accent-2: var(--brand-pink-hover);
+  --lp-ok: #2FB37A;
+}
+body:not(.app-mode) { color: var(--brand-navy); }
+
+/* koppen en tekst */
+.lp-hero-text h1,
+.lp-h2,
+.lp-cell-txt b,
+.lp-trust-item b,
+.lp-bullets b { color: var(--brand-navy); }
+.lp-sub,
+.lp-cell-txt small,
+.lp-trust-item p,
+.lp-bullets small,
+.lp-foot-dis,
+.lp-foot-ver,
+.lp-qr-text,
+.lp-assure { color: var(--brand-muted); }
+.lp-navlink { color: var(--brand-muted); }
+.lp-navlink:hover { color: var(--brand-blue); }
+.lp-foot-links a { color: var(--brand-muted); }
+.lp-foot-links a:hover { color: var(--brand-blue); }
+
+/* merkiconen: blauw voor rustige info, roze voor het hart van de actie */
+.lp-b-ic svg,
+.lp-trust-ic svg { color: var(--brand-blue); }
+.lp .lang-pill .globe,
+.lp .lang-pill .lang-select { color: var(--brand-navy); }
+
+/* "Verbind"-knop op de landing (secundaire actie) in merkblauw */
+.lp-row-connect .lp-btn,
+.lp-qr-btn.primary {
+  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-blue-soft), var(--brand-blue));
+  box-shadow: 0 14px 30px rgba(47, 143, 240, 0.32), var(--lg-inset);
+}
+.lp-row-connect .lp-btn:hover {
+  background-image: var(--lg-sheen), linear-gradient(150deg, var(--brand-blue), var(--brand-blue-hover));
+}
+
+/* koppelscherm-badges: zacht merkverloop i.p.v. koraal */
+.pair-head.baby .unit-badge { background: linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink)); }
+.pair-head.parent .unit-badge { background: linear-gradient(150deg, var(--brand-blue-soft), var(--brand-blue)); }
+.pair-error { color: var(--brand-pink-hover); }
+
+/* scherm voor browsers zonder WebRTC */
+.browser-block h1 { color: var(--brand-navy); }
+.browser-block p { color: var(--brand-muted); }
+
+/* toetsenbordfocus in merkblauw i.p.v. koraal */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+[tabindex]:focus-visible { outline-color: var(--brand-blue); }
+
+/* elementen die nog een vaste lichte kleur hadden (onzichtbaar op wit) */
+.lp-cell-txt h3 { color: var(--brand-navy); }
+.lp-cell-txt p { color: var(--brand-muted); }
+.laptop-line,
+.laptop-line::after,
+.phone-line { border-color: var(--brand-muted); }
+.phone-line { background: rgba(110, 159, 222, 0.16); }
+.lp-hero-text h1 .accent,
+.lp .tld { color: var(--brand-pink); }
