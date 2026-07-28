@@ -20,13 +20,20 @@ const SL = path.join(__dirname, 'serverless');
 const OUT = path.resolve(process.argv[2] || path.join(__dirname, 'dist'));
 
 // 1. CSS (basis + dashboards) met lettertypes als base64 data-URI's
+const inlineFont = (file) =>
+  `url(data:font/woff2;base64,${fs.readFileSync(path.join(SL, 'fonts', file)).toString('base64')})`;
+
 const cssFiles = ['luna.css', 'dash.css'];
 const css = cssFiles.map((f) =>
-  fs.readFileSync(path.join(SL, f), 'utf8').replace(/url\(['"]?fonts\/([^'")]+)['"]?\)/g, (m, file) => {
-    const b64 = fs.readFileSync(path.join(SL, 'fonts', file)).toString('base64');
-    return `url(data:font/woff2;base64,${b64})`;
-  })
+  fs.readFileSync(path.join(SL, f), 'utf8')
+    .replace(/url\(['"]?fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
 ).join('\n');
+
+// brand-theme.css staat in assets/, dus zijn url()'s zijn relatief aan die map:
+// ../fonts/... wordt ingesloten, brand/... wordt herschreven naar assets/brand/...
+const brandCss = fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8')
+  .replace(/url\(['"]?\.\.\/fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
+  .replace(/url\(['"]?(brand\/[^'")]+)['"]?\)/g, (m, p) => `url("assets/${p}")`);
 
 // 2. Alle JS inline, in de volgorde van index.html
 const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
@@ -38,7 +45,10 @@ const inlineScripts = scripts.map((s) => {
 
 // 3. index.html samenstellen (functie-replacements zodat $ letterlijk blijft)
 let html = fs.readFileSync(path.join(SL, 'index.html'), 'utf8');
-html = html.replace(/<link rel="stylesheet" href="luna\.css"[^>]*>\s*<link rel="stylesheet" href="dash\.css"[^>]*>/, () => '<style>\n' + css + '\n</style>');
+html = html.replace(
+  /<link rel="stylesheet" href="luna\.css"[^>]*>\s*<link rel="stylesheet" href="dash\.css"[^>]*>\s*<link rel="stylesheet" href="assets\/brand-theme\.css"[^>]*>/,
+  () => '<style>\n' + css + '\n' + brandCss + '\n</style>'
+);
 html = html.replace(
   /<script src="vendor\/qrcode\.js"><\/script>[\s\S]*?<script src="js\/app\.js"><\/script>/,
   () => inlineScripts
@@ -58,6 +68,9 @@ for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
 fs.cpSync(path.join(SL, 'music'), path.join(OUT, 'music'), { recursive: true });
 // merk-/product-afbeeldingen (logo, camera, hero) — nodig voor de homepage
 fs.cpSync(path.join(SL, 'assets'), path.join(OUT, 'assets'), { recursive: true });
+// lettertypes: index.html heeft ze inline, maar de bijpagina's laden assets/brand-theme.css
+// van schijf en die verwijst naar ../fonts/ — zonder deze map vallen ze terug op systeemfonts
+fs.cpSync(path.join(SL, 'fonts'), path.join(OUT, 'fonts'), { recursive: true });
 
 const kb = (f) => Math.round(fs.statSync(f).size / 1024);
 console.log('Build →', OUT);

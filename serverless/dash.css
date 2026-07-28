@@ -462,7 +462,8 @@ body.app-mode {
 .vcard-poster { background: linear-gradient(180deg, var(--brand-tint-blue) 0%, #E6F0FC 100%); }
 .poster-cam { filter: drop-shadow(0 14px 26px rgba(12, 47, 99, 0.22)); }
 .poster-label { color: var(--brand-muted); }
-.vcard-ph:not(.hidden) { background: linear-gradient(180deg, var(--brand-tint-blue) 0%, #E6F0FC 100%); }
+/* dekkend, in de navy van de brandtheme: verbergt de poster eronder tijdens verbinden */
+.vcard-ph:not(.hidden) { background: linear-gradient(145deg, #0C2F63, #143F77 52%, #0A244D); }
 
 /* pillen óp het beeld blijven donker glas — daar ligt video onder */
 .vcard-badge .rec-dot { background: var(--brand-pink); box-shadow: 0 0 8px var(--brand-pink); }

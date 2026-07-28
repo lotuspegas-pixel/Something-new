@@ -106,11 +106,12 @@
     @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) { ul.features li, .lang-pill, .cta { background-color:#FFFFFF; } }
     @media (max-width:600px) { h1 { font-size:27px; } .lede { font-size:17px; } .wrap { padding:18px 16px 70px; } }
   </style>
+  <link rel="stylesheet" href="assets/brand-theme.css" />
 </head>
-<body>
+<body class="content-page">
   <div class="wrap">
     <header>
-      <a class="brand" href="./" id="brandLink"><img src="assets/logo.png" alt="BabyPhone.online" /></a>
+      <a class="brand bp-brand-lockup" href="./" id="brandLink" aria-label="BabyPhone.online"><img class="bp-brand-icon" src="assets/brand/babyphone-icon.png" alt="" width="300" height="327" /><span class="bp-wordmark" aria-hidden="true"><span>Babyphone</span><span>.Online</span></span></a>
       <div class="head-right">
         <span class="lang-pill"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.7"/></svg><span id="langSel"></span></span>
         <a class="back" href="./" id="backLink" data-b="backToApp">← Back to the app</a>
