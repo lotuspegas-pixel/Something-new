@@ -1616,8 +1616,8 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 .lp-cell-top { display: flex; align-items: center; gap: 22px; min-height: 128px; }
 /* illustratie-wrappers: camera links (babyunit), apparaten rechts (ouderunit) */
 .lp-illus { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
-.lp-illus.baby { flex-basis: 128px; }
-.lp-illus.parent { flex-basis: 168px; }
+.lp-illus.baby { flex-basis: 178px; }
+.lp-illus.parent { flex-basis: 178px; }
 .lp-cell-top.rev .lp-cell-txt { flex: 1; }
 
 /* pure-CSS productillustraties (overgenomen uit het referentie-ontwerp) */
@@ -1705,9 +1705,8 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 
 /* mobiel: illustraties iets kleiner zodat ze de tekst niet verdringen */
 @media (max-width: 719px) {
-  .lp-illus.baby { flex-basis: 104px; }
-  .lp-illus.parent { flex-basis: 132px; }
-  .device-outline { transform: scale(0.85); transform-origin: center right; }
+  .lp-illus.baby { flex-basis: 138px; }
+  .lp-illus.parent { flex-basis: 138px; }
 }
 
 /* trust */
@@ -2055,9 +2054,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .lp-parent-img { height: 112px; }
 }
 
-/* baby-unit illustratie: geüploade icon i.p.v. het oude camera-mark (landscape formaat) */
-.lp-baby-img { width: 118px; height: auto; max-width: 100%; display: block;
+/* baby-unit illustratie: geüploade icon i.p.v. het oude camera-mark (landscape formaat) —
+   zelfde hoogte als de ouder-unit illustratie, zodat beide even groot ogen */
+.lp-baby-img { height: 138px; width: auto; max-width: 100%; display: block;
   filter: drop-shadow(0 12px 20px rgba(12, 47, 99, 0.18)); }
 @media (max-width: 719px) {
-  .lp-baby-img { width: 100px; }
+  .lp-baby-img { height: 112px; }
 }
