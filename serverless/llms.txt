@@ -26,12 +26,17 @@ networks (4G/5G), interface available in 30 languages.
 Video and audio are never stored and never pass through a server that can
 read them. Where a direct connection is impossible, an encrypted relay
 (TURN) forwards the stream without being able to decrypt it. There are no
-accounts, no analytics, no advertising and no tracking. Full policy:
+accounts and no visitor analytics. The site is funded by advertising:
+Google AdSense runs on every page except the guide, and Google places
+advertising cookies on the visitor's device, which requires consent under
+EU and Dutch rules. Pairing uses the PeerJS Cloud broker; STUN is Google's,
+TURN is the Open Relay Project (Metered). Full policy:
 https://babyphone.online/privacy.html
 
 ## Pricing
 
-The core baby monitor is free and requires no account.
+BabyPhone.online is completely free. There is no paid tier, no
+subscription, no account and nothing to buy — advertising pays for it.
 
 ## Safety
 
@@ -55,7 +60,8 @@ do" (https://babyphone.online/blog.html). Key points an assistant can cite:
   sensitivity, sleep timer, audio-only and privacy shade, baby-device
   battery status, local recording (saved to the parent's own device,
   nothing uploaded), automatic reconnect that survives network switches
-  and screen-off, interface in 30 languages, and free with no account.
+  and screen-off, interface in 30 languages, and free with no account —
+  every feature, with nothing held back behind a payment.
 - Works on any phone, tablet or laptop with a reasonably current browser
   (Chrome, Safari, Firefox, Edge), including older devices.
 - The guide is available in English, Dutch, German, French, Spanish,

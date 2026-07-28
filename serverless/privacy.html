@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
     <!-- Google AdSense -->
     <meta name="google-adsense-account" content="ca-pub-2692421969904984" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2692421969904984" crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#FFFFFF" />
   <title>Privacy Policy — BabyPhone.online</title>
@@ -31,12 +30,28 @@
     p, li { color:#2B4E80; font-size:15px; }
     ul { padding-left:22px; }
     a { color:var(--accent); }
+    code { font-size:13.5px; background:rgba(110,159,222,.12); border-radius:6px; padding:1px 5px; overflow-wrap:anywhere; }
     .keybox { border:1px solid rgba(47,179,122,.35); background:rgba(47,179,122,.09); -webkit-backdrop-filter:blur(14px) saturate(150%); backdrop-filter:blur(14px) saturate(150%); border-radius:14px; padding:16px 18px; margin:18px 0; }
     .keybox b { color:var(--ok); }
     .todo { color:var(--pink); font-style:normal; }
     footer { color:var(--muted); font-size:13.5px; padding-top:26px; text-align:center; }
     footer a { color:var(--muted); margin:0 8px; }
     @media (max-width:600px) { main { padding:24px 18px; } }
+
+    /* Toestemmingsvraag voor advertentiecookies (js/consent.js) */
+    .ck-wrap { position: fixed; inset: auto 0 0 0; z-index: 9999; display: flex; justify-content: center; padding: 16px; }
+    .ck-box { width: min(560px, 100%); background: #fff; color: #0C2F63; border: 1px solid rgba(110,159,222,.28);
+      border-radius: 20px; padding: 18px 20px; box-shadow: 0 24px 60px rgba(12,47,99,.28); text-align: left; }
+    .ck-text { margin: 0 0 14px; font-size: 14.5px; line-height: 1.55; color: #2B4E80; }
+    .ck-actions { display: flex; gap: 10px; }
+    .ck-btn { flex: 1 1 0; min-height: 46px; border-radius: 999px; cursor: pointer;
+      font: 700 15px 'Quicksand', -apple-system, "Segoe UI", Roboto, Arial, sans-serif; border: 1px solid transparent; }
+    /* weigeren en accepteren even groot en even opvallend — anders is de
+       toestemming juridisch niet geldig */
+    .ck-no { background: #fff; color: #0C2F63; border-color: rgba(110,159,222,.5); }
+    .ck-yes { background: linear-gradient(135deg,#5FAEFF,#2F8FF0); color: #fff; }
+    .ck-link { display: inline-block; margin-top: 12px; font-size: 13px; color: #2F8FF0; }
+    @media (max-width: 460px) { .ck-actions { flex-direction: column; } }
   </style>
   <link rel="stylesheet" href="assets/brand-theme.css" />
 </head>
@@ -48,55 +63,79 @@
     </header>
     <main>
       <h1>Privacy Policy</h1>
-      <p class="updated">Last updated: 22 July 2026 · Applies to babyphone.online</p>
+      <p class="updated">Last updated: 28 July 2026 · Applies to babyphone.online</p>
 
       <div class="keybox">
-        <p style="margin:0"><b>The short version:</b> your baby's video and audio stream <b>directly between your own two devices</b> (peer-to-peer, via WebRTC). The stream is <b>never stored, never recorded by us, and never passes through or is seen by our servers</b>. There are no accounts, no ads, and no tracking.</p>
+        <p style="margin:0"><b>The short version:</b> your baby's video and audio stream <b>directly between your own two devices</b> (peer-to-peer, via WebRTC). The stream is <b>never stored, never recorded by us, and never passes through or is seen by our servers</b>. There are no accounts, no logins and no visitor analytics, and the service is completely free. It is paid for by advertising: this site loads Google AdSense, and Google stores and reads cookies and similar identifiers on your device for that. Sections 4 and 6 explain exactly what that means and how to control it.</p>
       </div>
 
       <h2>1. Who we are</h2>
-      <p>BabyPhone.online is operated by Arcana Synthetica, Harlingen, The Netherlands, registered with the Dutch Chamber of Commerce under number 42115786 ("we"). We are the data controller for the limited processing described below. Contact: <a href="mailto:info@babyphone.online">info@babyphone.online</a>.</p>
+      <p>BabyPhone.online is operated by Arcana Synthetica, Harlingen, The Netherlands, registered with the Dutch Chamber of Commerce under number 42115786 ("we"). We are the data controller for the processing described in this policy. Contact: <a href="mailto:info@babyphone.online">info@babyphone.online</a>. We are not required to appoint a Data Protection Officer, so questions go straight to that address.</p>
 
       <h2>2. What BabyPhone.online does</h2>
-      <p>BabyPhone.online turns two of your own devices into a baby monitor inside the browser. One device (the baby unit) captures camera and microphone; the other (the parent unit) shows the live stream. The connection between the two devices is made with WebRTC and is encrypted end-to-end in transit (DTLS-SRTP).</p>
+      <p>BabyPhone.online turns two of your own devices into a baby monitor inside the browser. One device (the baby unit) captures camera and microphone; the other (the parent unit) shows the live stream. The connection between the two devices is made with WebRTC and is encrypted in transit (DTLS-SRTP). The service is free of charge; there is nothing to buy, no account and no subscription.</p>
 
-      <h2>3. What data is processed — and what is not</h2>
+      <h2>3. What we process — and what we do not</h2>
       <ul>
-        <li><b>Video and audio:</b> streamed directly from your baby unit to your parent unit. We do not receive, store, record, or have any access to this stream. If you use the local recording feature, recordings are saved only on your own device.</li>
-        <li><b>Room code:</b> a random 6-character code used to pair your two devices. It identifies a session, not a person, and expires when you close the app.</li>
-        <li><b>Language preference:</b> stored in your browser's localStorage on your own device. It never leaves your device.</li>
+        <li><b>Video and audio:</b> streamed directly from your baby unit to your parent unit. We do not receive, store, record, or have any access to this stream. If you use the recording feature, the recording is written to the device you are recording on and is never uploaded to us.</li>
+        <li><b>Room code:</b> a random 6-character code used to pair your two devices. It identifies a session, not a person, and stops working when you close the app. It passes through the pairing broker described in section 5.</li>
+        <li><b>Language preference:</b> when — and only when — you pick a language yourself, your browser stores that choice on your own device under the name <code>babyfoon.lang</code>. It contains nothing but a language code such as <code>nl</code>, it never leaves your device, and it is not sent to us or to anyone else.</li>
         <li><b>No accounts, no profiles:</b> we do not ask for your name, email address, or any registration to use the monitor.</li>
-        <li><b>No analytics, no advertising, no tracking cookies.</b></li>
+        <li><b>No visitor analytics:</b> we do not use Google Analytics or any other statistics or tracking tool of our own.</li>
+        <li><b>No selling, no profiling:</b> we do not sell or trade personal data, and we take no automated decisions about you.</li>
       </ul>
 
-      <h2>4. Connection helpers (third parties)</h2>
-      <p>To let your two devices find each other, the app uses a small set of connection helpers. These services help establish the connection but do not receive your video or audio:</p>
+      <h2>4. Cookies and what is stored on your device</h2>
+      <p>We set no cookies of our own. The only thing <em>we</em> put on your device is the language preference described above. Under Dutch law (Article 11.7a of the Telecommunications Act) that counts as strictly necessary for a function you asked for, so it needs no consent — it is simply your own setting, and clearing your browser storage removes it.</p>
+      <p>The advertising described in section 6 is different. Google places and reads cookies and similar identifiers on your device for ads, and that is <b>not</b> strictly necessary for the baby monitor to work. Under Dutch and EU rules those may only be placed with your prior consent, and you may refuse or withdraw at any time. This is true even for non-personalised ads, which still use cookies for things like counting how often an ad is shown.</p>
+      <p>How to keep them off your device today: block third-party cookies in your browser, use private/incognito mode, or use an ad or tracker blocker. Your baby monitor keeps working normally either way — refusing ads never disables any feature. Note that the guide page (<a href="blog.html">blog.html</a>) carries no advertising at all.</p>
+
+      <h2>5. Connection helpers (third parties)</h2>
+      <p>To let your two devices find each other, the app uses a small set of connection helpers. These services help establish the connection; none of them can watch or listen to your baby:</p>
       <ul>
-        <li><b>Pairing broker (PeerJS):</b> exchanges the technical connection details ("signaling") between your two devices when you enter the room code. It processes your IP address and the room code for the duration of pairing.</li>
-        <li><b>STUN/TURN servers:</b> help your devices connect across different networks (e.g. wifi to 4G/5G). STUN only sees your IP address. If a direct connection is impossible, an encrypted TURN relay may forward the <em>encrypted</em> stream — the relay cannot decrypt or view it.</li>
+        <li><b>Pairing broker — PeerJS Cloud (<code>0.peerjs.com</code>):</b> exchanges the technical connection details ("signalling") between your two devices when you enter the room code. It sees your IP address and your room code for as long as the app is open. It never sees video or audio.</li>
+        <li><b>STUN — Google (<code>stun.l.google.com</code>):</b> tells your device what its public IP address is, so the two devices can describe themselves to each other. It only sees an IP address.</li>
+        <li><b>TURN — the Open Relay Project, operated by Metered (<code>openrelay.metered.ca</code>):</b> a fallback used only when a direct connection is impossible (for example on some mobile networks). It sees your IP address and forwards the <em>encrypted</em> stream; it holds no decryption key and cannot view or record it.</li>
       </ul>
-      <p>Legal basis for this processing: performance of the service you request (Art. 6(1)(b) GDPR) and our legitimate interest in providing a reliable connection (Art. 6(1)(f) GDPR).</p>
+      <p>Legal basis: performing the service you asked for (Art. 6(1)(b) GDPR). Nothing here is stored beyond the length of your session, and none of it is used for advertising.</p>
 
-      <h2>5. Children</h2>
-      <p>BabyPhone.online is a tool for parents and legal guardians to monitor their own child. It is operated by the parent/guardian and is not directed at children as users. We do not knowingly collect any personal data from children — the video/audio of your child streams only between your own devices and is never received by us.</p>
+      <h2>6. Advertising (Google AdSense)</h2>
+      <p>BabyPhone.online is free, and advertising is how it pays for itself. Every page except the guide loads the Google AdSense script from <code>pagead2.googlesyndication.com</code>. Our AdSense publisher ID is <code>ca-pub-2692421969904984</code>.</p>
+      <p>What this means in practice: when the script runs, Google receives your IP address, the page you are on, your browser and device type, and it stores and reads cookies and similar identifiers on your device. Google uses these to select and measure ads and to detect fraud, and — where you have allowed it — to personalise the ads you see. For this processing Google (Google Ireland Limited, with Google LLC in the United States) acts as a controller in its own right alongside us.</p>
+      <p>The legal basis for storing and reading those identifiers, and for the advertising processing that follows, is your <b>consent</b> (Art. 6(1)(a) GDPR and Art. 11.7a of the Dutch Telecommunications Act). You are free to refuse; refusing costs you nothing and blocks no feature. You can withdraw consent at any time, and you can also manage what Google shows you at <a href="https://myadcenter.google.com" rel="noopener">myadcenter.google.com</a> and read how Google uses this data at <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">policies.google.com/technologies/partner-sites</a>. Section 4 lists the browser-side ways to block ad cookies in the meantime.</p>
+      <p>We do not give Google your email address, your room code, your recordings, or any part of your baby's video or audio. Those never leave your own devices in a form anyone else can read.</p>
 
-      <h2>6. Contact form</h2>
-      <p>If you use the contact form on our <a href="contact.html">contact page</a>, the name, email address, optional phone number and message you type are sent by email to <a href="mailto:info@babyphone.online">info@babyphone.online</a> and are <b>not stored on this website or in any database</b>. We use them for one purpose only: to answer you. The legal basis is our legitimate interest in replying to your question (Art. 6(1)(f) GDPR). We keep the resulting email correspondence for as long as needed to handle your question and then delete it, at the latest 12 months after our last reply.</p>
-      <p>To keep the form from being abused for spam, the server briefly keeps a one-way hash of your IP address (not the IP itself, and not reversible) together with a timestamp, purely to count submissions. That record expires automatically after one hour.</p>
+      <h2>7. Hosting and server logs</h2>
+      <p>The website is served by our hosting provider. Like every web server, it writes standard access logs — your IP address, the time, the page requested, and your browser type — which are used only to keep the site running and to defend against abuse, never to build a profile of you. The legal basis is our legitimate interest in a secure, working website (Art. 6(1)(f) GDPR). These logs are kept only briefly by the provider and then deleted; the provider handles them on our instructions.</p>
 
-      <h2>7. Retention</h2>
-      <p>We store nothing about your monitoring sessions, so there is nothing to retain or delete. Subscription records (if you purchase Plus) are kept as long as legally required for tax and bookkeeping purposes (7 years in the Netherlands).</p>
+      <h2>8. Contact form</h2>
+      <p>If you use the contact form on our <a href="contact.html">contact page</a>, the name, email address, optional phone number and message you type are sent by email to <a href="mailto:info@babyphone.online">info@babyphone.online</a> and are <b>not stored on this website or in any database</b>. We use them for one purpose only: to answer you. The legal basis is our legitimate interest in replying to your question (Art. 6(1)(f) GDPR). Your message is delivered and kept in our mailbox by our email provider, who handles it on our instructions and for no other purpose. We keep the resulting correspondence for as long as needed to handle your question and then delete it, at the latest 12 months after our last reply.</p>
+      <p>To keep the form from being abused for spam, the server briefly keeps a one-way hash of your IP address (not the IP itself, and not reversible) together with a timestamp, purely to count submissions. That record expires automatically after one hour. Nothing else about the submission is written to disk.</p>
 
-      <h2>8. Your rights</h2>
-      <p>Under the GDPR you have the right to access, rectify, erase, restrict, or object to processing of your personal data, and the right to data portability. Because we hold no data about your monitoring sessions, these rights mainly apply to subscription data. To exercise them, contact <a href="mailto:info@babyphone.online">info@babyphone.online</a>. You also have the right to lodge a complaint with the Dutch Data Protection Authority (Autoriteit Persoonsgegevens).</p>
+      <h2>9. Children</h2>
+      <p>BabyPhone.online exists to watch a baby, so let us be plain about it. The image and the sound of your child are personal data of your child. They are captured by your device and shown on your other device, and they travel between the two encrypted. We never receive them, never store them and cannot play them back — there is no server of ours in the middle of that stream, and we could not hand the footage to anyone even if we were asked.</p>
+      <p>You, the parent or legal guardian, decide when the camera is on, who gets the room code and whether to record. Keep the room code to yourself: while your session is open, anyone who has it can connect. If you record, the file sits on your own device and it is yours to keep or delete.</p>
+      <p>The service is meant to be set up and used by adults. It is not aimed at children as users, we never knowingly collect personal data directly from a child, and we never ask any visitor for their age. The advertising in section 6 is not directed at children and we do not tell Google anything about your child.</p>
 
-      <h2>9. Changes</h2>
+      <h2>10. Transfers outside the EU</h2>
+      <p>Some of the third parties above are based in, or route traffic through, the United States: Google (advertising and STUN), the PeerJS Cloud pairing broker, and the Open Relay TURN service. Where they receive data outside the European Economic Area, the transfer relies on the safeguards those providers publish — the EU-US Data Privacy Framework and/or the European Commission's Standard Contractual Clauses. Your baby's video and audio are not part of any of these transfers.</p>
+
+      <h2>11. Retention</h2>
+      <p>We store nothing about your monitoring sessions — no room codes, no session records, no stream — so there is nothing there to retain or delete. The only things with a lifetime are: the spam-protection hash from the contact form (one hour), email correspondence (deleted at the latest 12 months after our last reply), and hosting access logs (kept briefly by our provider). Advertising cookies have their own lifetimes, set by Google.</p>
+
+      <h2>12. Your rights</h2>
+      <p>Under the GDPR you have the right to ask us for a copy of your personal data, to have it corrected or erased, to have its use restricted, to object to processing based on legitimate interest, and to receive it in a portable form. Where we rely on your consent — that is, for advertising — you may withdraw it at any time, and withdrawing is as easy as giving it.</p>
+      <p>In practice we hold almost nothing about you: the only data we can look up is email you have sent us. To exercise any right, email <a href="mailto:info@babyphone.online">info@babyphone.online</a> with the subject "Privacy request" and we will reply within one month. Rights concerning the advertising data Google holds are best exercised with Google directly, using the links in section 6.</p>
+      <p>If you are unhappy with how we handle it, you have the right to lodge a complaint with the Dutch Data Protection Authority, the Autoriteit Persoonsgegevens (<a href="https://autoriteitpersoonsgegevens.nl" rel="noopener">autoriteitpersoonsgegevens.nl</a>), or with the supervisory authority in your own EU country.</p>
+
+      <h2>13. Changes</h2>
       <p>We will post any changes to this policy on this page with an updated date. Material changes will be announced in the app.</p>
     </main>
     <footer>
-      <a href="./">Home</a>·<a href="blog.html">Guide</a>·<a href="terms.html">Terms</a>·<a href="accessibility.html">Accessibility</a>·<a href="contact.html">Contact</a>
+      <a href="./">Home</a>·<a href="blog.html">Guide</a>·<a href="terms.html">Terms</a>·<a href="accessibility.html">Accessibility</a>·<a href="contact.html">Contact</a>·<a href="#" onclick="event.preventDefault();window.BPOConsent&&window.BPOConsent.open()">Cookie settings</a>
       <div style="margin-top:8px">© 2026 BabyPhone.online — part of Arcana Synthetica. All audio files are made by and copyright of Arcana Synthetica.</div>
     </footer>
   </div>
+  <script src="js/consent.js" defer></script>
 </body>
 </html>

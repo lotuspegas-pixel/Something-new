@@ -95,6 +95,24 @@
     }
     return s;
   }
+  // Capability-token: 128 bit willekeur die in de QR-code en de deellink zit.
+  // De korte kamercode dient alleen om elkaar te vínden op de broker; dit token
+  // is het eigenlijke toegangsbewijs. Wie alleen de code intypt (zonder QR)
+  // komt er niet zomaar in: de babyunit vraagt dan eerst om toestemming.
+  function makeToken() {
+    const a = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+    else for (let i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+    return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  // Vergelijking in constante tijd: geen timinglek over het token.
+  function sameToken(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+    let d = 0;
+    for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return d === 0;
+  }
+
   function peerOptions() {
     const opts = { config: { iceServers: ICE }, debug: 0 };
     if (window.BABYFOON_PEER) Object.assign(opts, window.BABYFOON_PEER);
@@ -109,6 +127,12 @@
   let localStream = null;
   let remoteStream = null;
   let currentCode = null;
+  // --- toegangscontrole ---
+  let sessionToken = '';    // babyunit: het geheim uit de QR-code
+  let approvedPeer = '';    // babyunit: id van de toegelaten ouderunit
+  let pendingApproval = null; // babyunit: verzoek dat op toestemming wacht
+  let deniedCount = 0;      // babyunit: teller tegen eindeloos vragen
+  let parentToken = '';     // ouderunit: token uit QR/deellink (leeg = handmatig)
   const lullaby = new LullabyPlayer();
 
   function sendControl(obj) {
@@ -288,6 +312,21 @@
 
   // ------------------------------------------------------------------ besturingscommando's
   function handleControl(msg) {
+    // Toegang geweigerd door de babyunit: meteen stoppen met proberen.
+    if (msg && msg.cmd === 'authDenied' && role === 'parent') {
+      shuttingDown = true;
+      clearConnectTimers();
+      const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
+      const err = $('parentError');
+      if (err) { err.textContent = T('authRefused'); err.classList.remove('hidden'); }
+      toast(T('authRefused'));
+      try { if (peer) peer.destroy(); } catch (e) {}
+      return;
+    }
+    if (msg && msg.cmd === 'authOk') {
+      if (role === 'parent' && msg.token) parentToken = String(msg.token);
+      return;
+    }
     if (role === 'baby') {
       switch (msg.cmd) {
         case 'lullaby': {
@@ -375,27 +414,24 @@
     const code = makeCode(6);
     currentCode = code;
     $('babyCodeText').textContent = '······';
+    if (!sessionToken) sessionToken = makeToken();
     peer = new Peer(PEER_PREFIX + code, peerOptions());
     peer.on('open', () => {
       babyBrokerAttempt = 0;
       $('babyCodeText').textContent = code;
       $('babyOfferCode').value = code;
-      const url = location.href.split('#')[0] + '#' + code;
+      // De QR draagt code + token; het invoerveld toont alleen de korte code.
+      const url = location.href.split('#')[0] + '#' + code + '.' + sessionToken;
       renderQR('babyQR', url);
     });
-    peer.on('connection', (conn) => {
-      attachControl(conn);
-      conn.on('open', () => {
-        try {
-          const call = peer.call(conn.peer, localStream);
-          if (call) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
-        } catch (e) {}
-        babyConnected();
-        reportBattery();
-      });
-    });
+    // Elke inkomende verbinding moet zich eerst legitimeren. Zonder deze poort
+    // kreeg iedereen die de kamercode kende meteen live beeld, geluid én
+    // bediening van de camera — ook een tweede, ongenode kijker, zonder dat de
+    // echte ouder daar iets van merkte.
+    peer.on('connection', (conn) => gateIncoming(conn));
     peer.on('call', (call) => {
-      // terugpraten van de ouder (audio) → afspelen bij de baby
+      // Terugpraten van de ouder (audio) → alleen van de toegelaten ouderunit.
+      if (!approvedPeer || call.peer !== approvedPeer) { try { call.close(); } catch (e) {} return; }
       call.answer();
       if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
       call.on('stream', playTalkback);
@@ -409,6 +445,81 @@
     });
     peer.on('error', (err) => onPeerError(err, 'baby'));
   }
+  // --------------------------------------------------------- toegangscontrole
+  // Laat een ouderunit pas toe als die het token uit de QR-code meestuurt.
+  // Wie de code handmatig intypte heeft dat token niet; dan beslist de ouder
+  // bij de babyunit zelf of het apparaat erbij mag.
+  function gateIncoming(conn) {
+    let settled = false;
+    const finish = () => { settled = true; if (pendingApproval && pendingApproval.conn === conn) hideApproval(); };
+    const deny = (reason) => {
+      if (settled) return;
+      finish();
+      try { conn.send({ cmd: 'authDenied', reason: reason }); } catch (e) {}
+      setTimeout(() => { try { conn.close(); } catch (e) {} }, 200);
+    };
+    const allow = () => {
+      if (settled) return;
+      finish();
+      approvedPeer = conn.peer;
+      deniedCount = 0;
+      attachControl(conn);
+      // Token meegeven: eenmaal toegestaan hoeft de ouder na een wegval niet
+      // opnieuw op "Toestaan" te wachten.
+      try { conn.send({ cmd: 'authOk', token: sessionToken }); } catch (e) {}
+      try {
+        const call = peer.call(conn.peer, localStream);
+        if (call) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
+      } catch (e) {}
+      babyConnected();
+      reportBattery();
+    };
+    // Niets sturen binnen 20 s = geen geldige ouderunit.
+    const timer = setTimeout(() => deny('timeout'), 20000);
+    conn.on('close', () => { clearTimeout(timer); finish(); });
+    conn.on('data', (d) => {
+      if (settled || !d || typeof d !== 'object' || d.cmd !== 'hello') return;
+      clearTimeout(timer);
+      const heeftToken = sessionToken && sameToken(String(d.token || ''), sessionToken);
+      // Token klopt én er kijkt nog niemand mee → meteen door (QR-koppeling).
+      if (heeftToken && !approvedPeer) return allow();
+      // Anders: expliciet toestemming vragen op het apparaat van de baby.
+      if (deniedCount >= 3) return deny('blocked');
+      askApproval(conn, allow, deny, !!approvedPeer);
+    });
+  }
+
+  function hideApproval() {
+    pendingApproval = null;
+    const box = $('babyApproval');
+    if (box) box.classList.add('hidden');
+  }
+
+  function askApproval(conn, allow, deny, alReedsKijker) {
+    const box = $('babyApproval');
+    if (!box) return deny('no-ui'); // zonder dialoog nooit stilzwijgend toelaten
+    // Al een verzoek open? Nieuwe aanvrager afwijzen i.p.v. de dialoog kapen.
+    if (pendingApproval) return deny('busy');
+    pendingApproval = { conn: conn, allow: allow, deny: deny };
+    // Hier koppelen (en niet bij het opstarten van de ouderunit): deze dialoog
+    // hoort bij de babyunit, dus de knoppen moeten ook daar werken.
+    const yes = $('btnApproveYes'), no = $('btnApproveNo');
+    if (yes) yes.onclick = () => answerApproval(true);
+    if (no) no.onclick = () => answerApproval(false);
+    const txt = $('babyApprovalText');
+    if (txt) txt.textContent = T(alReedsKijker ? 'approveExtra' : 'approveAsk');
+    box.classList.remove('hidden');
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+  }
+
+  function answerApproval(ok) {
+    const p = pendingApproval;
+    if (!p) return;
+    hideApproval();
+    if (ok) p.allow();
+    else { deniedCount++; p.deny('refused'); }
+  }
+
   async function startBaby() {
     role = 'baby';
     showScreen('screenPairBaby');
@@ -432,6 +543,11 @@
   async function startParentConnect(rawCode, isRetry) {
     let code = (rawCode != null ? rawCode : $('parentOfferInput').value || '').trim();
     if (code.indexOf('#') >= 0) code = code.slice(code.lastIndexOf('#') + 1).trim();
+    // Een gescande QR of gedeelde link bevat "CODE.token"; handmatig getypt is
+    // het alleen de code — dan volgt straks een toestemmingsvraag bij de baby.
+    const dot = code.indexOf('.');
+    if (dot > 0) { parentToken = code.slice(dot + 1).trim(); code = code.slice(0, dot); }
+    else if (!isRetry) { parentToken = ''; }
     code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
     currentCode = code; // toon de kamercode in het ouderdashboard
@@ -463,6 +579,9 @@
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
+        // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
+        // de babyunit eerst toestemming op het eigen scherm.
+        try { conn.send({ cmd: 'hello', token: parentToken }); } catch (e) {}
         connectSucceeded();
         parentConnected();
         if (micStream) {
@@ -1132,7 +1251,7 @@
     // kamercode + QR ook op het babydashboard tonen
     const code = currentCode || '';
     ['babyDashCode', 'bRoom', 'bRoomInline'].forEach((id) => { const el = $(id); if (el) el.textContent = code; });
-    if (code) renderQR('babyDashQR', location.href.split('#')[0] + '#' + code, 3);
+    if (code) renderQR('babyDashQR', location.href.split('#')[0] + '#' + code + '.' + sessionToken, 3);
     const cp = $('copyBabyDash'); if (cp) cp.onclick = () => copyText(code);
 
     const swCam = $('swCam'), swMic = $('swMic'), swAO = $('swAudioOnly'), swPriv = $('swPrivacy');

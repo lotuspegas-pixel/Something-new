@@ -80,6 +80,19 @@ function findExecutable() {
   let fail = false;
   const check = (n, c) => { console.log((c ? '✅' : '❌') + ' ' + n); if (!c) fail = true; };
   const errs = [];
+  // De babyunit vraagt toestemming zodra iemand alleen de kamercode intypt
+  // (zonder het token uit de QR). Hier bevestigen we dat als de ouder.
+  const approve = async (p) => {
+    for (let i = 0; i < 40; i++) {
+      const zichtbaar = await p.evaluate(() => {
+        const b = document.getElementById('babyApproval');
+        return !!b && !b.classList.contains('hidden');
+      });
+      if (zichtbaar) { await p.click('#btnApproveYes'); return true; }
+      await sleep(250);
+    }
+    return false;
+  };
   const mk = async () => {
     const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
     await c.addInitScript(INIT);
@@ -108,6 +121,8 @@ function findExecutable() {
   await parent.click('#pickParent');
   await parent.fill('#parentOfferInput', code);
   await parent.click('#parentGenBtn');
+  const goedgekeurd = await approve(baby);
+  check('Babyunit vraagt toestemming bij handmatige code (en die is gegeven)', goedgekeurd);
   let info = {};
   const t0 = Date.now();
   while (Date.now() - t0 < 25000) {
@@ -266,6 +281,7 @@ function findExecutable() {
   await parent2.click('#pickParent');
   await parent2.fill('#parentOfferInput', code2);
   await parent2.click('#parentGenBtn');
+  await approve(baby2);
   let w2 = 0;
   const t02 = Date.now();
   while (Date.now() - t02 < 20000) {
@@ -329,6 +345,7 @@ function findExecutable() {
   await parent3.click('#pickParent');
   await parent3.fill('#parentOfferInput', code3);
   await parent3.click('#parentGenBtn');
+  await approve(baby3);
   // wachten tot verbonden, dan de Instellingen-weergave openen (daar staan de rijen)
   const t03 = Date.now();
   while (Date.now() - t03 < 20000) {

@@ -748,3 +748,30 @@ body.app-mode .pillbtn.on {
   background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
   box-shadow: 0 10px 22px rgba(47, 143, 240, 0.26) !important;
 }
+
+/* ---------------------------------------------------------------------------
+   Toestemmingsvraag op de babyunit
+
+   Verschijnt wanneer iemand alleen de kamercode heeft ingetypt (dus zonder het
+   token uit de QR-code). Zo kan niemand ongemerkt meekijken: de ouder bij de
+   baby beslist zelf. Bewust een blokkerende laag over het hele scherm, want
+   dit is een veiligheidsvraag die niet gemist mag worden.
+   --------------------------------------------------------------------------- */
+.approve-wrap {
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(6, 20, 44, 0.55);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.approve-wrap.hidden { display: none; }
+.approve-box {
+  width: min(420px, 100%);
+  background: #fff; color: var(--bp-navy, #0C2F63);
+  border-radius: 22px; padding: clamp(20px, 5vw, 28px);
+  box-shadow: 0 30px 80px rgba(12, 47, 99, 0.35);
+  text-align: center;
+}
+.approve-box h2 { font: 800 clamp(18px, 4.6vw, 22px) 'Quicksand', sans-serif; margin: 0 0 10px; }
+.approve-box p { font-size: clamp(14px, 3.6vw, 15px); line-height: 1.55; color: #2B4E80; margin: 0 0 20px; }
+.approve-actions { display: flex; gap: 10px; }
+.approve-actions .btn { flex: 1 1 0; min-height: 48px; border-radius: 999px; }

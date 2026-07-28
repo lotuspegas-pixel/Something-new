@@ -55,6 +55,9 @@
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
+  # HTTPS is al verplicht (301 hierboven) — vertel de browser dat ook, zodat
+  # camera/microfoon nooit per ongeluk over onbeveiligd http lopen.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   # Camera en microfoon expliciet toestaan voor deze site zelf
   Header always set Permissions-Policy "camera=(self), microphone=(self), display-capture=(self)"
 </IfModule>

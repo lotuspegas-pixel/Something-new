@@ -36,7 +36,7 @@ const brandCss = fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'ut
   .replace(/url\(['"]?(brand\/[^'")]+)['"]?\)/g, (m, p) => `url("assets/${p}")`);
 
 // 2. Alle JS inline, in de volgorde van index.html
-const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
+const scripts = ['js/consent.js', 'vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
   'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/app.js'];
 const inlineScripts = scripts.map((s) => {
   const code = fs.readFileSync(path.join(SL, s), 'utf8').replace(/<\/script/gi, '<\\/script');
@@ -50,7 +50,7 @@ html = html.replace(
   () => '<style>\n' + css + '\n' + brandCss + '\n</style>'
 );
 html = html.replace(
-  /<script src="vendor\/qrcode\.js"><\/script>[\s\S]*?<script src="js\/app\.js"><\/script>/,
+  /<script src="js\/consent\.js"><\/script>\s*<script src="vendor\/qrcode\.js"><\/script>[\s\S]*?<script src="js\/app\.js"><\/script>/,
   () => inlineScripts
 );
 
@@ -72,6 +72,9 @@ fs.cpSync(path.join(SL, 'assets'), path.join(OUT, 'assets'), { recursive: true }
 // lettertypes: index.html heeft ze inline, maar de bijpagina's laden assets/brand-theme.css
 // van schijf en die verwijst naar ../fonts/ — zonder deze map vallen ze terug op systeemfonts
 fs.cpSync(path.join(SL, 'fonts'), path.join(OUT, 'fonts'), { recursive: true });
+// de bijpagina's laden js/consent.js van schijf (index.html heeft het inline)
+fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
+fs.copyFileSync(path.join(SL, 'js', 'consent.js'), path.join(OUT, 'js', 'consent.js'));
 
 const kb = (f) => Math.round(fs.statSync(f).size / 1024);
 console.log('Build →', OUT);

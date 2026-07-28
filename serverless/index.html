@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <!-- Google AdSense -->
     <meta name="google-adsense-account" content="ca-pub-2692421969904984" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2692421969904984" crossorigin="anonymous"></script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -169,7 +168,7 @@
           "name": "How much does BabyPhone.online cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The core baby monitor — live video, sound, talk-back and lullabies — is free, with no account required."
+            "text": "BabyPhone.online is completely free — every feature, no account, nothing to buy."
           }
         },
         {
@@ -177,7 +176,7 @@
           "name": "Do I need to create an account?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. There are no accounts, no registration, and no tracking. Pairing works with a temporary room code that expires when you close the app."
+            "text": "No. There are no accounts and no registration. Pairing works with a temporary room code that expires when you close the app."
           }
         }
       ]
@@ -342,7 +341,7 @@
             <a href="privacy.html" data-i18n="navPrivacy">Privacy</a>
             <a href="terms.html" data-i18n="footTerms">Terms</a>
             <a href="accessibility.html" data-i18n="footAccessibility">Accessibility</a>
-            <a href="contact.html" data-i18n="footContact">Contact</a>
+            <a href="contact.html" data-i18n="footContact">Contact</a><a href="#" class="lp-foot-link" onclick="event.preventDefault();window.BPOConsent&&window.BPOConsent.open()">Cookie settings</a>
           </nav>
           <div class="lp-foot-ver">© 2026 BabyPhone.online — part of Arcana Synthetica. All audio files are made by and copyright of Arcana Synthetica.</div>
         </footer>
@@ -393,6 +392,19 @@
       </div>
       <div class="backlink"><a href="#" id="parentBack">← <span data-i18n="back">Back</span></a></div>
     </section>
+
+    <!-- Toestemmingsvraag: verschijnt op de babyunit als iemand met alleen de
+         kamercode wil meekijken (dus zonder het token uit de QR-code). -->
+    <div class="approve-wrap hidden" id="babyApproval" role="alertdialog" aria-modal="true" aria-labelledby="babyApprovalTitle">
+      <div class="approve-box">
+        <h2 id="babyApprovalTitle" data-i18n="approveTitle">Allow this device?</h2>
+        <p id="babyApprovalText" data-i18n="approveAsk">A device entered your room code and wants to watch and listen. Only allow this if it is your own device.</p>
+        <div class="approve-actions">
+          <button class="btn secondary" id="btnApproveNo" type="button" data-i18n="approveDeny">Deny</button>
+          <button class="btn" id="btnApproveYes" type="button" data-i18n="approveAllow">Allow</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ======================= PARENT UNIT (dark dashboard) ======================= -->
     <section id="screenParent" class="hidden">
@@ -655,6 +667,7 @@
       </div>
     </div>
 
+    <script src="js/consent.js"></script>
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
     <script src="vendor/peerjs.min.js"></script>
