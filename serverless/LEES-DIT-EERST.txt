@@ -3,15 +3,14 @@ BabyPhone.online — uploaden naar Hostinger
 
 INHOUD VAN DE DOWNLOAD
 ----------------------
-De download bestaat uit 3 zip-bestanden, omdat het geheel te groot is voor
+De download bestaat uit 2 zip-bestanden, omdat het geheel te groot is voor
 een enkele bijlage. Ze horen bij elkaar:
 
   1. BabyPhoneOnline-WEBSITE.zip   de complete website
-  2. BabyPhoneOnline-MUZIEK-1.zip  slaapliedjes (deel 1)
-  3. BabyPhoneOnline-MUZIEK-2.zip  slaapliedjes (deel 2)
+  2. BabyPhoneOnline-MUZIEK.zip    de slaapliedjes
 
-Pak ze alle drie uit in DEZELFDE map. Deel 2 en 3 vullen samen de map
-"music" aan die naast index.html hoort te staan.
+Pak ze allebei uit in DEZELFDE map. De tweede vult de map "music" aan die
+naast index.html hoort te staan.
 
 Na het uitpakken ziet de map er zo uit:
 
@@ -20,12 +19,12 @@ Na het uitpakken ziet de map er zo uit:
   contact-send.php    <- verstuurt het contactformulier
   privacy.html, terms.html, contact.html,
   accessibility.html, how-it-works.html, blog.html
-  robots.txt, sitemap.xml, llms.txt, ads.txt, manifest.webmanifest
+  robots.txt, sitemap.xml, llms.txt, manifest.webmanifest
   favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png,
   og-image.jpg
   assets/             <- afbeeldingen, merkbestanden, stylesheet
   fonts/              <- lettertypes
-  music/              <- 5 slaapliedjes + playlist.json
+  music/              <- 4 slaapliedjes + playlist.json
 
 
 UPLOADEN
