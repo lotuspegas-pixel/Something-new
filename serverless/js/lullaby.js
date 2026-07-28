@@ -78,15 +78,15 @@ class LullabyPlayer {
     },
   };
 
+  // Regen en witte ruis zijn er bewust uit: die klonken te veel als ruis en
+  // niet als rustgevende slaapmuziek.
   static SOUNDS = {
-    regen: { label: 'Regen', type: 'rain' },
     oceaan: { label: 'Oceaan', type: 'ocean' },
     hartslag: { label: 'Hartslag', type: 'heartbeat' },
-    witte: { label: 'Witte ruis', type: 'noise', color: 'white' },
   };
 
   // Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
-  static ORDER = ['regen', 'oceaan', 'hartslag', 'witte'];
+  static ORDER = ['oceaan', 'hartslag'];
 
   static list() {
     return LullabyPlayer.ORDER.map((id) => ({

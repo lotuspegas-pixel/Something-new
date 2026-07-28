@@ -1123,3 +1123,71 @@ body.app-mode #dviewMonitor .vcard { max-width: 100%; }
     min-height: 44px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Slaapliedjes direct onder de bedieningsknoppen
+
+   De playlist stond alleen in de zijbalkweergave "Slaapliedjes". Nu staat hij
+   ook op het monitorscherm, zodat je een nummer kunt kiezen zonder van
+   weergave te wisselen — met een knop om de lijst te herhalen.
+   --------------------------------------------------------------------------- */
+.mplayer {
+  background: var(--d-surf);
+  border: 1px solid var(--d-line);
+  border-radius: 24px;
+  padding: 14px 16px;
+}
+.mplayer-h {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+  font: 700 13px 'Quicksand', sans-serif; color: var(--d-text);
+}
+.mrepeat {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 44px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  font: 700 12.5px 'Nunito', sans-serif;
+  background: rgba(255, 255, 255, 0.75); color: var(--bp-navy, #0C2F63);
+  border: 1px solid var(--bp-line, rgba(110, 159, 222, 0.28));
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+body.app-mode .mrepeat.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 10px 22px rgba(47, 143, 240, 0.26) !important;
+}
+#monitorPlaylist { max-height: none; }
+@media (max-width: 460px) {
+  .mrepeat span { display: none; }   /* alleen het pictogram op smalle schermen */
+  .mrepeat { padding: 0 12px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Plaats voor de slaapliedjes in het monitorraster
+
+   #dviewMonitor is een grid met benoemde gebieden. Een nieuw blok zónder
+   gebied wordt automatisch achteraan geplaatst — de speler kwam daardoor
+   onder de statuskaarten terecht in plaats van direct onder de knoppen.
+   Hieronder krijgt hij een eigen rij, meteen na "controls".
+   --------------------------------------------------------------------------- */
+body.app-mode #dviewMonitor.dview.active {
+  grid-template-areas:
+    "video controls"
+    "audio controls"
+    "music music"
+    "stats stats"
+    "events events";
+}
+body.app-mode #dviewMonitor .mplayer { grid-area: music; }
+
+@media (max-width: 900px) {
+  body.app-mode #dviewMonitor.dview.active {
+    grid-template-areas:
+      "video"
+      "audio"
+      "controls"
+      "music"
+      "stats"
+      "events";
+  }
+}

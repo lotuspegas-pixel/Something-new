@@ -83,6 +83,7 @@
       brightness: 'Brightness',
       nightlight: 'Night‑light',
       sensitivity: 'Sensitivity',
+      repeatList: 'Repeat',
       approveTitle: 'Allow this device?',
       approveAsk: 'A device entered your room code and wants to watch and listen. Only allow this if it is your own device.',
       approveExtra: 'A second device wants to watch along. Someone is already connected. Only allow this if it is your own device.',
@@ -964,6 +965,7 @@
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    repeatList: 'Repetir',
     approveTitle: '¿Permitir este dispositivo?', approveAsk: 'Un dispositivo ha introducido tu código de sala y quiere ver y escuchar. Permítelo solo si es tu propio dispositivo.', approveExtra: 'Un segundo dispositivo quiere mirar. Ya hay alguien conectado. Permítelo solo si es tu propio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Rechazar', authRefused: 'La unidad del bebé ha rechazado este dispositivo.', switchCameraSub: 'Cámara frontal / trasera',
     qrTapZoom: "👆 Toca el QR para ampliarlo y escanearlo", qrZoomHint: "Apunta la cámara del otro teléfono a este código", roomCodeShare: "Código de sala (compártelo con la unidad de padres)", roomCodeOfBaby: "Código de sala de la unidad del bebé",
     qrScanHint: "Deja que el padre escanee este QR — o escribe el código de arriba", phCode: "CÓDIGO", newCode: "Nuevo código", heroTitle: "Tu bebé, siempre cerca.",
@@ -1005,6 +1007,7 @@
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    repeatList: 'Répéter',
     approveTitle: 'Autoriser cet appareil ?', approveAsk: 'Un appareil a saisi votre code de chambre et veut voir et écouter. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveExtra: 'Un deuxième appareil veut regarder. Quelqu\'un est déjà connecté. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveAllow: 'Autoriser', approveDeny: 'Refuser', authRefused: 'L\'unité bébé a refusé cet appareil.', switchCameraSub: 'Caméra avant / arrière',
     qrTapZoom: "👆 Touchez le QR pour l'agrandir et le scanner", qrZoomHint: "Pointez la caméra de l'autre téléphone vers ce code", roomCodeShare: "Code de la chambre (à partager avec l'unité parents)", roomCodeOfBaby: "Code de la chambre de l'unité bébé",
     qrScanHint: "Faites scanner ce QR par le parent — ou saisissez le code ci-dessus", phCode: "CODE", newCode: "Nouveau code", heroTitle: "Votre bébé, toujours tout près.",
@@ -1126,6 +1129,7 @@
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    repeatList: 'Repetir',
     approveTitle: 'Permitir este dispositivo?', approveAsk: 'Um dispositivo introduziu o seu código de sala e quer ver e ouvir. Permita apenas se for o seu próprio dispositivo.', approveExtra: 'Um segundo dispositivo quer assistir. Já há alguém ligado. Permita apenas se for o seu próprio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Recusar', authRefused: 'A unidade do bebé recusou este dispositivo.', switchCameraSub: 'Câmara frontal / traseira',
     qrTapZoom: "👆 Toque no QR para ampliá-lo e escanear", qrZoomHint: "Aponte a câmera do outro telefone para este código", roomCodeShare: "Código da sala (compartilhe com a unidade dos pais)", roomCodeOfBaby: "Código da sala da unidade do bebê",
     qrScanHint: "Deixe o responsável escanear este QR — ou digite o código acima", phCode: "CÓDIGO", newCode: "Novo código", heroTitle: "Seu bebê, sempre por perto.",
@@ -1289,6 +1293,7 @@
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    repeatList: 'Wiederholen',
     approveTitle: 'Dieses Gerät zulassen?', approveAsk: 'Ein Gerät hat deinen Raumcode eingegeben und möchte mitsehen und mithören. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveExtra: 'Ein zweites Gerät möchte mitsehen. Es ist bereits jemand verbunden. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveAllow: 'Zulassen', approveDeny: 'Ablehnen', authRefused: 'Die Babyeinheit hat dieses Gerät abgelehnt.', switchCameraSub: 'Vordere / hintere Kamera',
     qrTapZoom: "👆 Tippe auf den QR-Code, um ihn zu vergrößern", qrZoomHint: "Richte die Kamera des anderen Handys auf diesen Code", roomCodeShare: "Raumcode (mit der Elterneinheit teilen)", roomCodeOfBaby: "Raumcode der Babyeinheit",
     qrScanHint: "Lass die Eltern diesen QR scannen — oder tippe den Code oben ein", phCode: "CODE", newCode: "Neuer Code", heroTitle: "Dein Baby, immer ganz nah.",
@@ -1611,6 +1616,7 @@
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    repeatList: 'Ripeti',
     approveTitle: 'Consentire questo dispositivo?', approveAsk: 'Un dispositivo ha inserito il tuo codice stanza e vuole guardare e ascoltare. Consenti solo se è il tuo dispositivo.', approveExtra: 'Un secondo dispositivo vuole guardare. Qualcuno è già collegato. Consenti solo se è il tuo dispositivo.', approveAllow: 'Consenti', approveDeny: 'Rifiuta', authRefused: 'L\'unità bambino ha rifiutato questo dispositivo.', switchCameraSub: 'Fotocamera anteriore / posteriore',
     qrTapZoom: "👆 Tocca il QR per ingrandirlo e scansionarlo", qrZoomHint: "Punta la fotocamera dell'altro telefono su questo codice", roomCodeShare: "Codice stanza (condividilo con l'unità genitori)", roomCodeOfBaby: "Codice stanza dell'unità bimbo",
     qrScanHint: "Fai scansionare questo QR al genitore — o digita il codice sopra", phCode: "CODICE", newCode: "Nuovo codice", heroTitle: "Il tuo bimbo, sempre vicino.",
@@ -1853,6 +1859,7 @@
     mediaError: "Камера/мікрофон недоступні. Використайте https або відкрийте у Chrome/Firefox.",
   });
   Object.assign(S.nl, {
+    repeatList: 'Herhalen',
     approveTitle: 'Dit apparaat toelaten?', approveAsk: 'Een apparaat heeft je kamercode ingevoerd en wil meekijken en meeluisteren. Sta dit alleen toe als het je eigen apparaat is.', approveExtra: 'Een tweede apparaat wil meekijken. Er is al iemand verbonden. Sta dit alleen toe als het je eigen apparaat is.', approveAllow: 'Toestaan', approveDeny: 'Weigeren', authRefused: 'De babyunit heeft dit apparaat geweigerd.',
     copied: "📋 Gekopieerd", copyFail: "Kopiëren mislukt — selecteer handmatig", scanFail: "Camera voor scannen niet beschikbaar — plak de code", invalidAnswer: "Ongeldige antwoordcode",
     invalidPair: "Ongeldige koppelcode", pasteAnswerFirst: "Plak of scan eerst de antwoordcode", pastePairFirst: "Plak of scan eerst de koppelcode", noImage: "Nog geen beeld",

@@ -310,6 +310,26 @@
     }, 4000);
   }
 
+  // Sessie beëindigen op BEIDE toestellen en terug naar de hoofdpagina.
+  // Belangrijk: de hash (#code.token) moet weg, anders koppelt de pagina bij
+  // het herladen meteen weer opnieuw.
+  function endSession(meldAanPeer) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    if (meldAanPeer) {
+      try { sendControl({ cmd: 'bye' }); } catch (e) {}
+    }
+    try { if (typeof babyStopMusic === 'function') babyStopMusic(); } catch (e) {}
+    try { lullaby.stop(); } catch (e) {}
+    try { if (localStream) localStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    // even wachten zodat het afscheidsbericht het andere toestel nog haalt
+    setTimeout(() => {
+      try { if (peer) peer.destroy(); } catch (e) {}
+      location.replace(location.pathname + location.search);
+    }, meldAanPeer ? 220 : 0);
+  }
+
   // ------------------------------------------------------------------ besturingscommando's
   function handleControl(msg) {
     // Toegang geweigerd door de babyunit: meteen stoppen met proberen.
@@ -323,6 +343,8 @@
       try { if (peer) peer.destroy(); } catch (e) {}
       return;
     }
+    // Andere toestel heeft gestopt → hier ook afsluiten.
+    if (msg && msg.cmd === 'bye') { endSession(false); return; }
     if (msg && msg.cmd === 'authOk') {
       if (role === 'parent' && msg.token) parentToken = String(msg.token);
       return;
@@ -337,7 +359,9 @@
           break;
         }
         case 'music':
+          if (msg.repeat != null) musicRepeat = !!msg.repeat;
           if (msg.action === 'stop') babyStopMusic();
+          else if (msg.action === 'repeat') { /* alleen de stand bijwerken */ }
           else if (msg.action === 'next') babyPlayMusic(musicIndex + 1);
           else if (msg.action === 'prev') babyPlayMusic(musicIndex - 1);
           else babyPlayMusic(msg.index || 0);
@@ -658,6 +682,7 @@
   let torchLastOn = false;
   const tracks = LullabyPlayer.list();
   let trackIndex = 0;
+  let musicRepeat = true;   // playlist herhalen (standaard aan)
   let playing = false;
   let vuBars = [];
 
@@ -890,7 +915,11 @@
       musicAudio = new Audio();
       musicAudio.id = 'musicAudio';
       document.body.appendChild(musicAudio);
-      musicAudio.addEventListener('ended', () => babyPlayMusic(musicIndex + 1));
+      musicAudio.addEventListener('ended', () => {
+        const laatste = musicList && musicIndex >= musicList.length - 1;
+        if (laatste && !musicRepeat) { babyStopMusic(); return; }
+        babyPlayMusic(musicIndex + 1);
+      });
       musicAudio.addEventListener('playing', () => { musicErr = 0; });
       musicAudio.addEventListener('error', () => {
         // sla een ontbrekend/defect bestand over; stop als niets speelt
@@ -914,30 +943,34 @@
   }
 
   // --- ouderunit: bediening + weergave van de playlist ---
+  // De lijst staat op twee plekken: in de zijbalkweergave Slaapliedjes én
+  // direct onder de bedieningsknoppen op het monitorscherm, zodat je een
+  // nummer kunt kiezen zonder van weergave te wisselen.
   async function renderPlaylist() {
-    const box = $('playlist');
-    if (!box) return;
+    const boxes = ['playlist', 'monitorPlaylist'].map($).filter(Boolean);
+    if (!boxes.length) return;
     const list = await loadPlaylist();
-    box.replaceChildren();
-    if (!list.length) {
-      const d = document.createElement('div');
-      d.className = 'playlist-empty';
-      d.textContent = T('musicEmpty');
-      box.appendChild(d);
-      updateMusicUI();
-      return;
-    }
-    list.forEach((s, i) => {
-      const row = document.createElement('div');
-      row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
-      const mk = (cls, txt) => { const el = document.createElement('span'); el.className = cls; if (txt != null) el.textContent = txt; return el; };
-      row.appendChild(mk('n', String(i + 1)));
-      row.appendChild(mk('tt', s.title));
-      const eq = mk('eq');
-      for (let k = 0; k < 3; k++) eq.appendChild(document.createElement('i'));
-      row.appendChild(eq);
-      row.onclick = () => parentPlayMusic(i);
-      box.appendChild(row);
+    boxes.forEach((box) => {
+      box.replaceChildren();
+      if (!list.length) {
+        const d = document.createElement('div');
+        d.className = 'playlist-empty';
+        d.textContent = T('musicEmpty');
+        box.appendChild(d);
+        return;
+      }
+      list.forEach((s, i) => {
+        const row = document.createElement('div');
+        row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
+        const mk = (cls, txt) => { const el = document.createElement('span'); el.className = cls; if (txt != null) el.textContent = txt; return el; };
+        row.appendChild(mk('n', String(i + 1)));
+        row.appendChild(mk('tt', s.title));
+        const eq = mk('eq');
+        for (let k = 0; k < 3; k++) eq.appendChild(document.createElement('i'));
+        row.appendChild(eq);
+        row.onclick = () => parentPlayMusic(i);
+        box.appendChild(row);
+      });
     });
     updateMusicUI();
   }
@@ -948,13 +981,19 @@
     $('musicBtnText').textContent = musicPlaying ? T('musicStop') : T('musicPlay');
     btn.querySelector('.ic-play').classList.toggle('hidden', musicPlaying);
     btn.querySelector('.ic-stop').classList.toggle('hidden', !musicPlaying);
-    $('playlist').querySelectorAll('.track').forEach((r, i) =>
-      r.classList.toggle('on', musicPlaying && i === musicIndex));
+    ['playlist', 'monitorPlaylist'].forEach((id) => {
+      const b = $(id);
+      if (b) b.querySelectorAll('.track').forEach((r, i) =>
+        r.classList.toggle('on', musicPlaying && i === musicIndex));
+    });
+    const bl = $('btnLullaby'); if (bl) bl.classList.toggle('on', musicPlaying);
+    const rb = $('btnRepeat');
+    if (rb) { rb.classList.toggle('on', musicRepeat); rb.setAttribute('aria-pressed', String(musicRepeat)); }
   }
   function parentPlayMusic(i) {
     if (musicPlaying && i === musicIndex) { parentStopMusic(); return; }
     musicIndex = i; musicPlaying = true;
-    sendControl({ cmd: 'music', action: 'play', index: i });
+    sendControl({ cmd: 'music', action: 'play', index: i, repeat: musicRepeat });
     updateMusicUI();
   }
   function parentStopMusic() {
@@ -1124,9 +1163,17 @@
     $('btnTalk').onclick = toggleTalk;
     if ($('talkBig')) $('talkBig').onclick = toggleTalk;
     // Lullaby (eerste slaapliedje aan/uit)
+    // Slaapliedje: start meteen bij nummer 1 van de playlist (of stopt).
     $('btnLullaby').onclick = () => {
-      if (playing) { sendStop(); $('btnLullaby').classList.remove('on'); }
-      else { trackIndex = 0; sendPlay(); $('btnLullaby').classList.add('on'); addEvent('lullaby', T('evLullaby'), tracks[0] ? trackLabel(tracks[0]) : ''); }
+      if (musicPlaying) { parentStopMusic(); return; }
+      parentPlayMusic(0);
+      addEvent('lullaby', T('evLullaby'), (musicList && musicList[0]) ? musicList[0].title : '');
+    };
+    // Playlist herhalen aan/uit
+    if ($('btnRepeat')) $('btnRepeat').onclick = () => {
+      musicRepeat = !musicRepeat;
+      if (musicPlaying) sendControl({ cmd: 'music', action: 'repeat', repeat: musicRepeat });
+      updateMusicUI();
     };
     // Night light (dimt eigen beeld + zet nachtlampje bij de baby)
     const setNightUI = () => {
@@ -1196,7 +1243,7 @@
     renderTorchUI();
     const rl2 = $('roomLabel2'); if (rl2) rl2.textContent = currentCode || 'P2P';
     // Stop
-    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) { shuttingDown = true; location.reload(); } };
+    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) endSession(true); };
     // Fullscreen
     $('btnFullscreen').onclick = () => {
       const v = $('video');
@@ -1280,7 +1327,7 @@
     const flipCam = $('tgFlipCam');
     if (flipCam) flipCam.onclick = () => babyCycleCamera();
 
-    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) { shuttingDown = true; location.reload(); } };
+    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) endSession(true); };
     enableWakeLock();
     reportBattery();
     reportCameras();
@@ -1606,15 +1653,19 @@
     });
   };
 
-  // Gescande QR met #code opent de app als ouder en verbindt automatisch.
+  // Gescande QR opent de app als ouder en verbindt automatisch.
+  // De QR bevat "#CODE.token": de korte kamercode plus het toegangstoken.
+  // Een oudere QR (alleen "#CODE") blijft ook werken; dan vraagt de babyunit
+  // om toestemming, precies zoals bij handmatig intypen.
   (function autoJoinFromHash() {
     const h = (location.hash || '').replace(/^#/, '').trim();
-    if (h && /^[A-Za-z0-9]{4,12}$/.test(h)) {
-      role = 'parent';
-      showScreen('screenPairParent');
-      $('parentOfferInput').value = h.toUpperCase();
-      startParentConnect(h);
-    }
+    if (!h) return;
+    if (!/^[A-Za-z0-9]{4,12}(\.[A-Za-z0-9]{8,64})?$/.test(h)) return;
+    role = 'parent';
+    showScreen('screenPairParent');
+    // In het invoerveld hoort alleen de leesbare code, niet het token.
+    $('parentOfferInput').value = h.split('.')[0].toUpperCase();
+    startParentConnect(h);
   })();
 
   // ---------------------------------------------------------- toegankelijkheid

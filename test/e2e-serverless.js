@@ -141,7 +141,9 @@ function findExecutable() {
   // ---- playlist / besturingskanaal ----
   await sleep(800);
   const titles = await parent.$$eval('#playlist .track .tt', (els) => els.map((e) => e.textContent.trim())).catch(() => []);
-  check('Playlist geladen bij de ouder (' + titles.length + ' nummers)', titles.length === 5);
+  // Regen- en ruisgeluiden zijn eruit: 4 slaapliedjes, 2 gegenereerde geluiden.
+  check('Playlist geladen bij de ouder (' + titles.length + ' nummers)', titles.length === 4);
+  check('Geen regen-/ruisgeluiden meer in de playlist', !titles.some((t) => /noise|rain|regen|ruis/i.test(t)));
   await parent.evaluate(() => document.querySelector('#playlist .track').click());
   await sleep(1200);
   check('Muziekcommando bereikt de baby via het datakanaal',
@@ -161,7 +163,7 @@ function findExecutable() {
     chips: document.querySelectorAll('#chips .chip').length,
     tracksVisible: !!document.querySelector('#playlist .track') && getComputedStyle(document.querySelector('#playlist .track')).display !== 'none',
   }));
-  check('Zijbalk opent Lullabies-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 4 && lulla.tracksVisible);
+  check('Zijbalk opent Lullabies-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 2 && lulla.tracksVisible);
   await parent.click('.dnav[data-view="settings"]');
   const setv = await parent.evaluate(() => ({
     act: document.getElementById('dviewSettings').classList.contains('active'),
