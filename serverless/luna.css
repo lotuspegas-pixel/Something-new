@@ -1847,7 +1847,6 @@ body:not(.app-mode),
 /* iconen-tegels: helderder glas zodat ze los komen van de kaart erachter */
 .lp-b-ic,
 .lp-trust-ic,
-.lp-illus.parent .device-outline,
 .lp-or {
   background-color: var(--lg-fill-2);
   background-image: var(--lg-sheen);
@@ -2048,3 +2047,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .lp-cam-img { filter: drop-shadow(0 12px 20px rgba(12, 47, 99, 0.18)); }
 .pair-head .unit-badge.cam img { filter: drop-shadow(0 6px 10px rgba(12, 47, 99, 0.22)); }
 .pair-head .unit-badge.cam { padding: 6px; }
+
+/* parent-unit illustratie: geüploade icon i.p.v. de oude lijntekening */
+.lp-parent-img { height: 138px; width: auto; display: block; margin-left: auto;
+  filter: drop-shadow(0 12px 20px rgba(12, 47, 99, 0.18)); }
+@media (max-width: 719px) {
+  .lp-parent-img { height: 112px; }
+}
