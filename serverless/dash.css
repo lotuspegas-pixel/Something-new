@@ -509,3 +509,24 @@ body.app-mode .bigcode-input {
   box-shadow: 0 8px 18px rgba(47, 143, 240, 0.26);
 }
 .dash-title-ic.cam img { filter: drop-shadow(0 3px 6px rgba(12, 47, 99, 0.2)); }
+
+/* ---------------------------------------------------------------------------
+   Videokaart mag op smalle schermen nooit inklappen (iOS Safari)
+
+   Alle kinderen van .vcard staan op position:absolute — de video, de poster,
+   de statuspillen. De kaart heeft dus géén inhoud die hoogte oplevert en
+   ontleent haar hoogte volledig aan aspect-ratio. Op desktop is dat geen
+   probleem omdat de brandtheme daar ook een min-height meegeeft (480px/410px),
+   maar onder 680px zet die juist `min-height: 0`. WebKit maakt daar 0px van,
+   waardoor bij de ouderunit het beeld volledig verdwijnt terwijl het geluid
+   gewoon doorloopt.
+
+   Een echte hoogte-ondergrens haalt die afhankelijkheid weg. De waarden liggen
+   net onder wat aspect-ratio oplevert (gemeten 64,7–69,7vw resp. 43,1–45,6vw
+   bij 320–680px), zodat aspect-ratio blijft winnen waar die wél werkt en de
+   weergave daar ongewijzigd blijft.
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  #dviewMonitor.dview .vcard { min-height: 64vw; }
+  .bdash .vcard.baby { min-height: 43vw; }
+}
