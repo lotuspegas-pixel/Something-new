@@ -1,9 +1,15 @@
 {
-  "name": "BabyPhone.online",
+  "id": "/",
+  "name": "BabyPhone.online — free baby monitor",
   "short_name": "BabyPhone",
-  "description": "Baby monitor in your browser — no app, no account, nothing stored.",
+  "description": "A free baby monitor in your browser. Two of your own devices, live video and sound — no app, no account, nothing stored.",
+  "lang": "en",
+  "dir": "auto",
+  "categories": ["utilities", "lifestyle", "parenting"],
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#FFFFFF",
   "theme_color": "#FFFFFF",
   "icons": [

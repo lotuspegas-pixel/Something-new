@@ -125,6 +125,8 @@
       phCode: 'CODE',
       newCode: 'New code',
       heroTitle: 'Your baby, always close.',
+      metaTitle: 'Free Baby Monitor App Online — BabyPhone.online',
+      metaDesc: 'Turn two phones into a free baby monitor with live video and sound. Works in any browser: no app to install, no account, nothing stored.',
       heroSub: 'BabyPhone turns two devices into a safe baby monitor. Simple, private and right in your browser.',
       ctaStartBaby: 'Start baby unit',
       ctaConnectParent: 'Connect as parent',
@@ -885,6 +887,7 @@
   // deze Object.assign-lagen vullen alleen ontbrekende sleutels aan.
   // ------------------------------------------------------------------
   Object.assign(S.zh, {
+    metaTitle: '免费婴儿监护器 — 浏览器里的 BabyPhone.online', metaDesc: '用两台手机组成免费的婴儿监护器，实时视频和声音。无需安装应用、无需注册账号，任何内容都不会被保存，打开浏览器即可使用。',
     qrTapZoom: "👆 点按二维码可放大扫描", qrZoomHint: "用另一部手机的相机对准此码", roomCodeShare: "房间码（分享给父母端）", roomCodeOfBaby: "宝宝端的房间码",
     qrScanHint: "让父母扫描此二维码，或输入上方代码", phCode: "代码", newCode: "新代码", heroTitle: "宝宝，始终在身边。",
     heroSub: "BabyPhone 把两台设备变成安全的婴儿监护器。简单、私密，直接在浏览器中使用。", ctaStartBaby: "启动宝宝端", ctaConnectParent: "以父母身份连接", navPrivacy: "隐私",
@@ -925,6 +928,7 @@
     mediaError: "摄像头/麦克风不可用。请使用 https，或在 Chrome/Firefox 中打开。",
   });
   Object.assign(S.hi, {
+    metaTitle: 'मुफ़्त बेबी मॉनिटर ऐप — BabyPhone.online', metaDesc: 'दो फ़ोन को मुफ़्त बेबी मॉनिटर बनाएँ — लाइव वीडियो और आवाज़ के साथ। कोई ऐप नहीं, कोई अकाउंट नहीं, कुछ भी सहेजा नहीं जाता। सीधे ब्राउज़र में।',
     qrTapZoom: "👆 स्कैन के लिए QR को छूकर बड़ा करें", qrZoomHint: "दूसरे फ़ोन का कैमरा इस कोड की ओर करें", roomCodeShare: "कमरे का कोड (पैरेंट यूनिट से साझा करें)", roomCodeOfBaby: "बेबी यूनिट के कमरे का कोड",
     qrScanHint: "पैरेंट से यह QR स्कैन कराएँ — या ऊपर का कोड लिखें", phCode: "कोड", newCode: "नया कोड", heroTitle: "आपका शिशु, हमेशा पास।",
     heroSub: "BabyPhone दो डिवाइस को सुरक्षित बेबी मॉनिटर बना देता है। सरल, निजी और सीधे ब्राउज़र में।", ctaStartBaby: "बेबी यूनिट शुरू करें", ctaConnectParent: "पैरेंट के रूप में जुड़ें", navPrivacy: "गोपनीयता",
@@ -965,6 +969,7 @@
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    metaTitle: 'Vigilabebés gratis en el navegador — BabyPhone.online', metaDesc: 'Convierte dos móviles en un vigilabebés gratis con vídeo y sonido en directo. Sin app, sin cuenta y sin guardar nada. En cualquier navegador.',
     repeatList: 'Repetir',
     approveTitle: '¿Permitir este dispositivo?', approveAsk: 'Un dispositivo ha introducido tu código de sala y quiere ver y escuchar. Permítelo solo si es tu propio dispositivo.', approveExtra: 'Un segundo dispositivo quiere mirar. Ya hay alguien conectado. Permítelo solo si es tu propio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Rechazar', authRefused: 'La unidad del bebé ha rechazado este dispositivo.', switchCameraSub: 'Cámara frontal / trasera',
     qrTapZoom: "👆 Toca el QR para ampliarlo y escanearlo", qrZoomHint: "Apunta la cámara del otro teléfono a este código", roomCodeShare: "Código de sala (compártelo con la unidad de padres)", roomCodeOfBaby: "Código de sala de la unidad del bebé",
@@ -1007,6 +1012,7 @@
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    metaTitle: 'Babyphone gratuit dans le navigateur — BabyPhone.online', metaDesc: 'Transformez deux téléphones en babyphone gratuit avec image et son en direct. Sans appli, sans compte, rien n’est enregistré. Dans votre navigateur.',
     repeatList: 'Répéter',
     approveTitle: 'Autoriser cet appareil ?', approveAsk: 'Un appareil a saisi votre code de chambre et veut voir et écouter. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveExtra: 'Un deuxième appareil veut regarder. Quelqu\'un est déjà connecté. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveAllow: 'Autoriser', approveDeny: 'Refuser', authRefused: 'L\'unité bébé a refusé cet appareil.', switchCameraSub: 'Caméra avant / arrière',
     qrTapZoom: "👆 Touchez le QR pour l'agrandir et le scanner", qrZoomHint: "Pointez la caméra de l'autre téléphone vers ce code", roomCodeShare: "Code de la chambre (à partager avec l'unité parents)", roomCodeOfBaby: "Code de la chambre de l'unité bébé",
@@ -1049,6 +1055,7 @@
     mediaError: "Caméra/micro indisponibles. Utilisez https ou ouvrez dans Chrome/Firefox.",
   });
   Object.assign(S.ar, {
+    metaTitle: 'جهاز مراقبة الرضيع مجانًا — BabyPhone.online', metaDesc: 'حوّل هاتفين إلى جهاز مراقبة رضيع مجاني بالصوت والفيديو المباشر. بلا تطبيق وبلا حساب، ولا يُحفظ أي شيء. يعمل في أي متصفح.',
     qrTapZoom: "👆 المس رمز QR لتكبيره ومسحه", qrZoomHint: "وجّه كاميرا الهاتف الآخر نحو هذا الرمز", roomCodeShare: "رمز الغرفة (شاركه مع وحدة الوالدين)", roomCodeOfBaby: "رمز غرفة وحدة الرضيع",
     qrScanHint: "دع الوالد يمسح هذا الرمز — أو اكتب الرمز أعلاه", phCode: "الرمز", newCode: "رمز جديد", heroTitle: "طفلك، قريب منك دائمًا.",
     heroSub: "يحوّل BabyPhone جهازين إلى جهاز مراقبة آمن للرضيع. بسيط وخاص ومباشرة في المتصفح.", ctaStartBaby: "تشغيل وحدة الرضيع", ctaConnectParent: "الاتصال كوالد", navPrivacy: "الخصوصية",
@@ -1089,6 +1096,7 @@
     mediaError: "الكاميرا/الميكروفون غير متاحين. استخدم https أو افتح في Chrome/Firefox.",
   });
   Object.assign(S.bn, {
+    metaTitle: 'ফ্রি বেবি মনিটর অ্যাপ — BabyPhone.online', metaDesc: 'দুটি ফোনকে বিনামূল্যের বেবি মনিটরে বদলে নিন — লাইভ ভিডিও ও শব্দ সহ। কোনো অ্যাপ নয়, অ্যাকাউন্ট নয়, কিছুই সংরক্ষণ হয় না।',
     qrTapZoom: "👆 স্ক্যানের জন্য QR-এ চেপে বড় করুন", qrZoomHint: "অন্য ফোনের ক্যামেরা এই কোডের দিকে ধরুন", roomCodeShare: "রুম কোড (অভিভাবক ইউনিটের সাথে শেয়ার করুন)", roomCodeOfBaby: "শিশু ইউনিটের রুম কোড",
     qrScanHint: "অভিভাবককে এই QR স্ক্যান করতে দিন — বা উপরের কোডটি লিখুন", phCode: "কোড", newCode: "নতুন কোড", heroTitle: "আপনার শিশু, সবসময় কাছে।",
     heroSub: "BabyPhone দুটি ডিভাইসকে নিরাপদ বেবি মনিটরে বদলে দেয়। সহজ, ব্যক্তিগত, সরাসরি ব্রাউজারে।", ctaStartBaby: "শিশু ইউনিট চালু করুন", ctaConnectParent: "অভিভাবক হিসেবে যুক্ত হোন", navPrivacy: "গোপনীয়তা",
@@ -1129,6 +1137,7 @@
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    metaTitle: 'Babá eletrônica grátis no navegador — BabyPhone.online', metaDesc: 'Transforme dois celulares em uma babá eletrônica grátis com vídeo e som ao vivo. Sem app, sem conta e sem guardar nada. Direto no navegador.',
     repeatList: 'Repetir',
     approveTitle: 'Permitir este dispositivo?', approveAsk: 'Um dispositivo introduziu o seu código de sala e quer ver e ouvir. Permita apenas se for o seu próprio dispositivo.', approveExtra: 'Um segundo dispositivo quer assistir. Já há alguém ligado. Permita apenas se for o seu próprio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Recusar', authRefused: 'A unidade do bebé recusou este dispositivo.', switchCameraSub: 'Câmara frontal / traseira',
     qrTapZoom: "👆 Toque no QR para ampliá-lo e escanear", qrZoomHint: "Aponte a câmera do outro telefone para este código", roomCodeShare: "Código da sala (compartilhe com a unidade dos pais)", roomCodeOfBaby: "Código da sala da unidade do bebê",
@@ -1171,6 +1180,7 @@
     mediaError: "Câmera/microfone indisponíveis. Use https ou abra no Chrome/Firefox.",
   });
   Object.assign(S.ru, {
+    metaTitle: 'Бесплатная радионяня в браузере — BabyPhone.online', metaDesc: 'Превратите два телефона в бесплатную радионяню с видео и звуком в реальном времени. Без приложения, без аккаунта, ничего не сохраняется.',
     approveTitle: 'Разрешить это устройство?', approveAsk: 'Устройство ввело код вашей комнаты и хочет смотреть и слушать. Разрешайте только если это ваше устройство.', approveExtra: 'Второе устройство хочет смотреть. Кто-то уже подключён. Разрешайте только если это ваше устройство.', approveAllow: 'Разрешить', approveDeny: 'Отклонить', authRefused: 'Детский блок отклонил это устройство.', switchCameraSub: 'Передняя / задняя камера',
     qrTapZoom: "👆 Нажмите на QR, чтобы увеличить его", qrZoomHint: "Наведите камеру другого телефона на этот код", roomCodeShare: "Код комнаты (поделитесь с родительским блоком)", roomCodeOfBaby: "Код комнаты детского блока",
     qrScanHint: "Пусть родитель отсканирует этот QR — или введите код выше", phCode: "КОД", newCode: "Новый код", heroTitle: "Ваш малыш всегда рядом.",
@@ -1212,6 +1222,7 @@
     mediaError: "Камера/микрофон недоступны. Используйте https или откройте в Chrome/Firefox.",
   });
   Object.assign(S.ur, {
+    metaTitle: 'مفت بے بی مانیٹر — BabyPhone.online', metaDesc: 'دو فون کو مفت بے بی مانیٹر بنائیں، لائیو ویڈیو اور آواز کے ساتھ۔ کوئی ایپ نہیں، کوئی اکاؤنٹ نہیں، کچھ محفوظ نہیں ہوتا۔',
     qrTapZoom: "👆 اسکین کے لیے QR کو چھو کر بڑا کریں", qrZoomHint: "دوسرے فون کا کیمرہ اس کوڈ کی طرف کریں", roomCodeShare: "کمرے کا کوڈ (والدین یونٹ سے شیئر کریں)", roomCodeOfBaby: "بے بی یونٹ کے کمرے کا کوڈ",
     qrScanHint: "والدین سے یہ QR اسکین کروائیں — یا اوپر کا کوڈ لکھیں", phCode: "کوڈ", newCode: "نیا کوڈ", heroTitle: "آپ کا بچہ، ہمیشہ قریب۔",
     heroSub: "BabyPhone دو آلات کو محفوظ بے بی مانیٹر بنا دیتا ہے۔ سادہ، نجی اور سیدھا براؤزر میں۔", ctaStartBaby: "بے بی یونٹ شروع کریں", ctaConnectParent: "بطور والدین جڑیں", navPrivacy: "رازداری",
@@ -1252,6 +1263,7 @@
     mediaError: "کیمرہ/مائیک دستیاب نہیں۔ https استعمال کریں یا Chrome/Firefox میں کھولیں۔",
   });
   Object.assign(S.id, {
+    metaTitle: 'Baby monitor gratis di browser — BabyPhone.online', metaDesc: 'Ubah dua ponsel menjadi baby monitor gratis dengan video dan suara langsung. Tanpa aplikasi, tanpa akun, tidak ada yang disimpan.',
     approveTitle: 'Izinkan perangkat ini?', approveAsk: 'Sebuah perangkat memasukkan kode ruangan Anda dan ingin melihat dan mendengar. Izinkan hanya jika itu perangkat Anda sendiri.', approveExtra: 'Perangkat kedua ingin ikut melihat. Seseorang sudah terhubung. Izinkan hanya jika itu perangkat Anda sendiri.', approveAllow: 'Izinkan', approveDeny: 'Tolak', authRefused: 'Unit bayi menolak perangkat ini.', switchCameraSub: 'Kamera depan / belakang',
     qrTapZoom: "👆 Ketuk QR untuk memperbesar agar mudah dipindai", qrZoomHint: "Arahkan kamera ponsel satunya ke kode ini", roomCodeShare: "Kode kamar (bagikan ke unit orang tua)", roomCodeOfBaby: "Kode kamar unit bayi",
     qrScanHint: "Minta orang tua memindai QR ini — atau ketik kode di atas", phCode: "KODE", newCode: "Kode baru", heroTitle: "Bayi Anda, selalu dekat.",
@@ -1293,6 +1305,7 @@
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    metaTitle: 'Kostenloses Babyphone im Browser — BabyPhone.online', metaDesc: 'Mach aus zwei Handys ein kostenloses Babyphone mit Live-Bild und -Ton. Ohne App, ohne Konto, nichts wird gespeichert. Läuft in jedem Browser.',
     repeatList: 'Wiederholen',
     approveTitle: 'Dieses Gerät zulassen?', approveAsk: 'Ein Gerät hat deinen Raumcode eingegeben und möchte mitsehen und mithören. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveExtra: 'Ein zweites Gerät möchte mitsehen. Es ist bereits jemand verbunden. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveAllow: 'Zulassen', approveDeny: 'Ablehnen', authRefused: 'Die Babyeinheit hat dieses Gerät abgelehnt.', switchCameraSub: 'Vordere / hintere Kamera',
     qrTapZoom: "👆 Tippe auf den QR-Code, um ihn zu vergrößern", qrZoomHint: "Richte die Kamera des anderen Handys auf diesen Code", roomCodeShare: "Raumcode (mit der Elterneinheit teilen)", roomCodeOfBaby: "Raumcode der Babyeinheit",
@@ -1335,6 +1348,7 @@
     mediaError: "Kamera/Mikrofon nicht verfügbar. Nutze https oder öffne die Seite in Chrome/Firefox.",
   });
   Object.assign(S.ja, {
+    metaTitle: '無料のベビーモニター — ブラウザで使う BabyPhone.online', metaDesc: 'スマホ2台が無料のベビーモニターに。ライブ映像と音声をそのまま届けます。アプリ不要、登録不要、録画は一切保存されません。ブラウザだけで使えます。',
     qrTapZoom: "👆 QRをタップすると拡大してスキャンできます", qrZoomHint: "もう一方のスマホのカメラをこのコードに向けてください", roomCodeShare: "ルームコード（親機と共有）", roomCodeOfBaby: "赤ちゃん機のルームコード",
     qrScanHint: "このQRを親に読み取ってもらうか、上のコードを入力してください", phCode: "コード", newCode: "新しいコード", heroTitle: "赤ちゃんを、いつもそばに。",
     heroSub: "BabyPhoneは2台の端末を安全なベビーモニターに変えます。シンプルでプライベート、ブラウザだけで使えます。", ctaStartBaby: "赤ちゃん機を開始", ctaConnectParent: "親として接続", navPrivacy: "プライバシー",
@@ -1375,6 +1389,7 @@
     mediaError: "カメラ/マイクを使用できません。httpsを使うか、Chrome/Firefoxで開いてください。",
   });
   Object.assign(S.mr, {
+    metaTitle: 'मोफत बेबी मॉनिटर — BabyPhone.online', metaDesc: 'दोन फोनचे मोफत बेबी मॉनिटरमध्ये रूपांतर करा — थेट व्हिडिओ आणि आवाजासह. अ‍ॅप नाही, खाते नाही, काहीही जतन होत नाही. थेट ब्राउझरमध्ये.',
     qrTapZoom: "👆 स्कॅनसाठी QR ला स्पर्श करून मोठा करा", qrZoomHint: "दुसऱ्या फोनचा कॅमेरा या कोडकडे धरा", roomCodeShare: "खोलीचा कोड (पालक युनिटसोबत शेअर करा)", roomCodeOfBaby: "बाळ युनिटच्या खोलीचा कोड",
     qrScanHint: "पालकांना हा QR स्कॅन करू द्या — किंवा वरचा कोड टाइप करा", phCode: "कोड", newCode: "नवा कोड", heroTitle: "तुमचं बाळ, नेहमी जवळ.",
     heroSub: "BabyPhone दोन उपकरणांना सुरक्षित बेबी मॉनिटर बनवतो. सोपं, खासगी आणि थेट ब्राउझरमध्ये.", ctaStartBaby: "बाळ युनिट सुरू करा", ctaConnectParent: "पालक म्हणून जोडा", navPrivacy: "गोपनीयता",
@@ -1415,6 +1430,7 @@
     mediaError: "कॅमेरा/माइक उपलब्ध नाही. https वापरा किंवा Chrome/Firefox मध्ये उघडा.",
   });
   Object.assign(S.te, {
+    metaTitle: 'ఉచిత బేబీ మానిటర్ — BabyPhone.online', metaDesc: 'రెండు ఫోన్లను ఉచిత బేబీ మానిటర్‌గా మార్చండి — ప్రత్యక్ష వీడియో మరియు శబ్దంతో. యాప్ అవసరం లేదు, ఖాతా అవసరం లేదు, ఏదీ నిల్వ చేయబడదు.',
     qrTapZoom: "👆 స్కాన్ కోసం QR ను తాకి పెద్దది చేయండి", qrZoomHint: "మరో ఫోన్ కెమెరాను ఈ కోడ్ వైపు పెట్టండి", roomCodeShare: "గది కోడ్ (తల్లిదండ్రుల యూనిట్‌తో పంచుకోండి)", roomCodeOfBaby: "పాప యూనిట్ గది కోడ్",
     qrScanHint: "తల్లిదండ్రులతో ఈ QR స్కాన్ చేయించండి — లేదా పై కోడ్ టైప్ చేయండి", phCode: "కోడ్", newCode: "కొత్త కోడ్", heroTitle: "మీ పాప, ఎప్పుడూ దగ్గరే.",
     heroSub: "BabyPhone రెండు పరికరాలను సురక్షిత బేబీ మానిటర్‌గా మారుస్తుంది. సులభం, ప్రైవేట్, నేరుగా బ్రౌజర్‌లో.", ctaStartBaby: "పాప యూనిట్ ప్రారంభించండి", ctaConnectParent: "తల్లి/తండ్రిగా కనెక్ట్ అవ్వండి", navPrivacy: "గోప్యత",
@@ -1455,6 +1471,7 @@
     mediaError: "కెమెరా/మైక్ అందుబాటులో లేవు. https వాడండి లేదా Chrome/Firefox లో తెరవండి.",
   });
   Object.assign(S.tr, {
+    metaTitle: 'Ücretsiz bebek telsizi — tarayıcıda BabyPhone.online', metaDesc: 'İki telefonu canlı görüntü ve sesle ücretsiz bir bebek telsizine dönüştürün. Uygulama yok, hesap yok, hiçbir şey kaydedilmez.',
     approveTitle: 'Bu cihaza izin verilsin mi?', approveAsk: 'Bir cihaz oda kodunuzu girdi ve izlemek ve dinlemek istiyor. Yalnızca kendi cihazınızsa izin verin.', approveExtra: 'İkinci bir cihaz izlemek istiyor. Zaten bağlı biri var. Yalnızca kendi cihazınızsa izin verin.', approveAllow: 'İzin ver', approveDeny: 'Reddet', authRefused: 'Bebek ünitesi bu cihazı reddetti.', switchCameraSub: 'Ön / arka kamera',
     qrTapZoom: "👆 Taramak için QR'a dokunup büyütün", qrZoomHint: "Diğer telefonun kamerasını bu koda doğrultun", roomCodeShare: "Oda kodu (ebeveyn ünitesiyle paylaşın)", roomCodeOfBaby: "Bebek ünitesinin oda kodu",
     qrScanHint: "Bu QR'ı ebeveyne taratın — veya yukarıdaki kodu yazın", phCode: "KOD", newCode: "Yeni kod", heroTitle: "Bebeğiniz, her zaman yakınınızda.",
@@ -1496,6 +1513,7 @@
     mediaError: "Kamera/mikrofon kullanılamıyor. https kullanın veya Chrome/Firefox'ta açın.",
   });
   Object.assign(S.ta, {
+    metaTitle: 'இலவச பேபி மானிட்டர் — BabyPhone.online', metaDesc: 'இரண்டு தொலைபேசிகளை இலவச பேபி மானிட்டராக மாற்றுங்கள் — நேரலை காணொலி மற்றும் ஒலியுடன். செயலி வேண்டாம், கணக்கு வேண்டாம், எதுவும் சேமிக்கப்படாது.',
     qrTapZoom: "👆 ஸ்கேன் செய்ய QR ஐத் தொட்டு பெரிதாக்குங்கள்", qrZoomHint: "மற்றொரு போனின் கேமராவை இந்தக் குறியீட்டை நோக்கி வையுங்கள்", roomCodeShare: "அறை குறியீடு (பெற்றோர் யூனிட்டுடன் பகிரவும்)", roomCodeOfBaby: "குழந்தை யூனிட்டின் அறை குறியீடு",
     qrScanHint: "பெற்றோரை இந்த QR ஐ ஸ்கேன் செய்ய விடுங்கள் — அல்லது மேலே உள்ள குறியீட்டை உள்ளிடுங்கள்", phCode: "குறியீடு", newCode: "புதிய குறியீடு", heroTitle: "உங்கள் குழந்தை, எப்போதும் அருகில்.",
     heroSub: "BabyPhone இரண்டு சாதனங்களைப் பாதுகாப்பான பேபி மானிட்டராக மாற்றுகிறது. எளிமை, தனியுரிமை, நேரடியாக உலாவியில்.", ctaStartBaby: "குழந்தை யூனிட்டைத் தொடங்கு", ctaConnectParent: "பெற்றோராக இணை", navPrivacy: "தனியுரிமை",
@@ -1536,6 +1554,7 @@
     mediaError: "கேமரா/மைக் கிடைக்கவில்லை. https பயன்படுத்துங்கள் அல்லது Chrome/Firefox இல் திறங்கள்.",
   });
   Object.assign(S.vi, {
+    metaTitle: 'Máy báo khóc miễn phí — BabyPhone.online', metaDesc: 'Biến hai điện thoại thành máy báo khóc miễn phí với hình ảnh và âm thanh trực tiếp. Không cần ứng dụng, không cần tài khoản, không lưu gì cả.',
     qrTapZoom: "👆 Chạm vào mã QR để phóng to và quét", qrZoomHint: "Hướng camera của điện thoại kia vào mã này", roomCodeShare: "Mã phòng (chia sẻ với thiết bị của bố mẹ)", roomCodeOfBaby: "Mã phòng của thiết bị bé",
     qrScanHint: "Để bố mẹ quét mã QR này — hoặc nhập mã ở trên", phCode: "MÃ", newCode: "Mã mới", heroTitle: "Bé yêu, luôn thật gần.",
     heroSub: "BabyPhone biến hai thiết bị thành máy báo khóc an toàn. Đơn giản, riêng tư, ngay trong trình duyệt.", ctaStartBaby: "Khởi động thiết bị bé", ctaConnectParent: "Kết nối với vai trò bố mẹ", navPrivacy: "Quyền riêng tư",
@@ -1576,6 +1595,7 @@
     mediaError: "Camera/micro không khả dụng. Dùng https hoặc mở bằng Chrome/Firefox.",
   });
   Object.assign(S.ko, {
+    metaTitle: '무료 베이비 모니터 — 브라우저의 BabyPhone.online', metaDesc: '휴대폰 두 대로 무료 베이비 모니터를 만드세요. 실시간 영상과 소리를 그대로 전달하며, 앱 설치도 계정도 필요 없고 아무것도 저장되지 않습니다.',
     qrTapZoom: "👆 QR을 누르면 크게 보여 스캔하기 쉬워요", qrZoomHint: "다른 휴대폰의 카메라를 이 코드에 비추세요", roomCodeShare: "방 코드(부모 기기와 공유)", roomCodeOfBaby: "아기 기기의 방 코드",
     qrScanHint: "부모가 이 QR을 스캔하게 하거나 위 코드를 입력하세요", phCode: "코드", newCode: "새 코드", heroTitle: "아기와 언제나 가까이.",
     heroSub: "BabyPhone은 두 기기를 안전한 베이비 모니터로 바꿔 줍니다. 간단하고 프라이빗하게, 브라우저에서 바로.", ctaStartBaby: "아기 기기 시작", ctaConnectParent: "부모로 연결", navPrivacy: "개인정보",
@@ -1616,6 +1636,7 @@
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    metaTitle: 'Baby monitor gratis nel browser — BabyPhone.online', metaDesc: 'Trasforma due telefoni in un baby monitor gratuito con video e audio dal vivo. Senza app, senza account, nulla viene salvato. Solo il browser.',
     repeatList: 'Ripeti',
     approveTitle: 'Consentire questo dispositivo?', approveAsk: 'Un dispositivo ha inserito il tuo codice stanza e vuole guardare e ascoltare. Consenti solo se è il tuo dispositivo.', approveExtra: 'Un secondo dispositivo vuole guardare. Qualcuno è già collegato. Consenti solo se è il tuo dispositivo.', approveAllow: 'Consenti', approveDeny: 'Rifiuta', authRefused: 'L\'unità bambino ha rifiutato questo dispositivo.', switchCameraSub: 'Fotocamera anteriore / posteriore',
     qrTapZoom: "👆 Tocca il QR per ingrandirlo e scansionarlo", qrZoomHint: "Punta la fotocamera dell'altro telefono su questo codice", roomCodeShare: "Codice stanza (condividilo con l'unità genitori)", roomCodeOfBaby: "Codice stanza dell'unità bimbo",
@@ -1658,6 +1679,7 @@
     mediaError: "Fotocamera/microfono non disponibili. Usa https o apri in Chrome/Firefox.",
   });
   Object.assign(S.th, {
+    metaTitle: 'เบบี้มอนิเตอร์ฟรี — BabyPhone.online', metaDesc: 'เปลี่ยนโทรศัพท์สองเครื่องให้เป็นเบบี้มอนิเตอร์ฟรี พร้อมภาพและเสียงสด ไม่ต้องติดตั้งแอป ไม่ต้องสมัครสมาชิก และไม่มีการบันทึกข้อมูลใด ๆ',
     qrTapZoom: "👆 แตะ QR เพื่อขยายให้สแกนง่าย", qrZoomHint: "หันกล้องของโทรศัพท์อีกเครื่องมาที่โค้ดนี้", roomCodeShare: "รหัสห้อง (แชร์ให้เครื่องพ่อแม่)", roomCodeOfBaby: "รหัสห้องของเครื่องลูก",
     qrScanHint: "ให้พ่อแม่สแกน QR นี้ — หรือพิมพ์รหัสด้านบน", phCode: "รหัส", newCode: "รหัสใหม่", heroTitle: "ลูกน้อย อยู่ใกล้คุณเสมอ",
     heroSub: "BabyPhone เปลี่ยนอุปกรณ์สองเครื่องให้เป็นเบบี้มอนิเตอร์ที่ปลอดภัย ง่าย เป็นส่วนตัว ใช้ได้ทันทีในเบราว์เซอร์", ctaStartBaby: "เริ่มเครื่องลูก", ctaConnectParent: "เชื่อมต่อในฐานะพ่อแม่", navPrivacy: "ความเป็นส่วนตัว",
@@ -1698,6 +1720,7 @@
     mediaError: "กล้อง/ไมค์ใช้งานไม่ได้ ใช้ https หรือเปิดใน Chrome/Firefox",
   });
   Object.assign(S.gu, {
+    metaTitle: 'મફત બેબી મોનિટર — BabyPhone.online', metaDesc: 'બે ફોનને મફત બેબી મોનિટરમાં ફેરવો — જીવંત વીડિયો અને અવાજ સાથે. કોઈ એપ નહીં, કોઈ ખાતું નહીં, કશું સાચવવામાં આવતું નથી.',
     qrTapZoom: "👆 સ્કેન માટે QR ને દબાવીને મોટું કરો", qrZoomHint: "બીજા ફોનનો કૅમેરો આ કોડ તરફ રાખો", roomCodeShare: "રૂમ કોડ (પેરેન્ટ યુનિટ સાથે શેર કરો)", roomCodeOfBaby: "બેબી યુનિટનો રૂમ કોડ",
     qrScanHint: "પેરેન્ટને આ QR સ્કેન કરવા દો — અથવા ઉપરનો કોડ લખો", phCode: "કોડ", newCode: "નવો કોડ", heroTitle: "તમારું બાળક, હંમેશા નજીક.",
     heroSub: "BabyPhone બે ડિવાઇસને સુરક્ષિત બેબી મોનિટર બનાવે છે. સરળ, ખાનગી અને સીધું બ્રાઉઝરમાં.", ctaStartBaby: "બેબી યુનિટ શરૂ કરો", ctaConnectParent: "પેરેન્ટ તરીકે જોડાઓ", navPrivacy: "ગોપનીયતા",
@@ -1738,6 +1761,7 @@
     mediaError: "કૅમેરો/માઇક ઉપલબ્ધ નથી. https વાપરો અથવા Chrome/Firefox માં ખોલો.",
   });
   Object.assign(S.fa, {
+    metaTitle: 'مانیتور نوزاد رایگان — BabyPhone.online', metaDesc: 'دو گوشی را به مانیتور نوزاد رایگان با تصویر و صدای زنده تبدیل کنید. بدون برنامه، بدون حساب کاربری و بدون ذخیره‌سازی. مستقیم در مرورگر.',
     qrTapZoom: "👆 برای بزرگ‌نمایی و اسکن، روی QR بزنید", qrZoomHint: "دوربین گوشی دیگر را به این کد بگیرید", roomCodeShare: "کد اتاق (با واحد والدین به اشتراک بگذارید)", roomCodeOfBaby: "کد اتاق واحد نوزاد",
     qrScanHint: "بگذارید والد این QR را اسکن کند — یا کد بالا را وارد کنید", phCode: "کد", newCode: "کد جدید", heroTitle: "کودک شما، همیشه نزدیک.",
     heroSub: "BabyPhone دو دستگاه را به یک دوربین مراقبت امن از نوزاد تبدیل می‌کند. ساده، خصوصی و مستقیم در مرورگر.", ctaStartBaby: "شروع واحد نوزاد", ctaConnectParent: "اتصال به‌عنوان والد", navPrivacy: "حریم خصوصی",
@@ -1778,6 +1802,7 @@
     mediaError: "دوربین/میکروفون در دسترس نیست. از https استفاده کنید یا در Chrome/Firefox باز کنید.",
   });
   Object.assign(S.pl, {
+    metaTitle: 'Darmowa niania elektroniczna — BabyPhone.online', metaDesc: 'Zamień dwa telefony w darmową nianię elektroniczną z obrazem i dźwiękiem na żywo. Bez aplikacji, bez konta, nic nie jest zapisywane.',
     approveTitle: 'Zezwolić temu urządzeniu?', approveAsk: 'Urządzenie wpisało Twój kod pokoju i chce oglądać i słuchać. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveExtra: 'Drugie urządzenie chce oglądać. Ktoś jest już połączony. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveAllow: 'Zezwól', approveDeny: 'Odrzuć', authRefused: 'Jednostka dziecięca odrzuciła to urządzenie.', switchCameraSub: 'Kamera przednia / tylna',
     qrTapZoom: "👆 Dotknij kodu QR, aby go powiększyć", qrZoomHint: "Skieruj aparat drugiego telefonu na ten kod", roomCodeShare: "Kod pokoju (udostępnij jednostce rodzica)", roomCodeOfBaby: "Kod pokoju jednostki dziecka",
     qrScanHint: "Pozwól rodzicowi zeskanować ten QR — albo wpisz kod powyżej", phCode: "KOD", newCode: "Nowy kod", heroTitle: "Twoje dziecko, zawsze blisko.",
@@ -1819,6 +1844,7 @@
     mediaError: "Kamera/mikrofon niedostępne. Użyj https lub otwórz w Chrome/Firefox.",
   });
   Object.assign(S.uk, {
+    metaTitle: 'Безкоштовна радіоняня — BabyPhone.online', metaDesc: 'Перетворіть два телефони на безкоштовну радіоняню з відео та звуком у реальному часі. Без застосунку, без акаунта, нічого не зберігається.',
     qrTapZoom: "👆 Торкніться QR, щоб збільшити його", qrZoomHint: "Наведіть камеру іншого телефона на цей код", roomCodeShare: "Код кімнати (поділіться з батьківським блоком)", roomCodeOfBaby: "Код кімнати дитячого блока",
     qrScanHint: "Нехай батьки зісканують цей QR — або введіть код вище", phCode: "КОД", newCode: "Новий код", heroTitle: "Ваше малятко завжди поруч.",
     heroSub: "BabyPhone перетворює два пристрої на безпечну радіоняню. Просто, приватно й одразу в браузері.", ctaStartBaby: "Запустити дитячий блок", ctaConnectParent: "Підключитися як батьки", navPrivacy: "Приватність",
@@ -1859,6 +1885,7 @@
     mediaError: "Камера/мікрофон недоступні. Використайте https або відкрийте у Chrome/Firefox.",
   });
   Object.assign(S.nl, {
+    metaTitle: 'Gratis babyfoon app online — BabyPhone.online', metaDesc: 'Maak van twee telefoons een gratis babyfoon met live beeld en geluid. Geen app installeren, geen account, niets wordt opgeslagen. In je browser.',
     repeatList: 'Herhalen',
     approveTitle: 'Dit apparaat toelaten?', approveAsk: 'Een apparaat heeft je kamercode ingevoerd en wil meekijken en meeluisteren. Sta dit alleen toe als het je eigen apparaat is.', approveExtra: 'Een tweede apparaat wil meekijken. Er is al iemand verbonden. Sta dit alleen toe als het je eigen apparaat is.', approveAllow: 'Toestaan', approveDeny: 'Weigeren', authRefused: 'De babyunit heeft dit apparaat geweigerd.',
     copied: "📋 Gekopieerd", copyFail: "Kopiëren mislukt — selecteer handmatig", scanFail: "Camera voor scannen niet beschikbaar — plak de code", invalidAnswer: "Ongeldige antwoordcode",
@@ -1868,6 +1895,7 @@
     stopParentQ: "Ouderunit stoppen?", stopBabyQ: "Babyunit stoppen?", noMic: "Geen microfoontoegang", mediaError: "Camera/microfoon niet beschikbaar. Gebruik https of open in Chrome/Firefox.",
   });
   Object.assign(S.pa, {
+    metaTitle: 'ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ — BabyPhone.online', metaDesc: 'ਦੋ ਫ਼ੋਨਾਂ ਨੂੰ ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾਓ — ਲਾਈਵ ਵੀਡੀਓ ਅਤੇ ਆਵਾਜ਼ ਨਾਲ। ਕੋਈ ਐਪ ਨਹੀਂ, ਕੋਈ ਖਾਤਾ ਨਹੀਂ, ਕੁਝ ਵੀ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ।',
     qrTapZoom: "👆 ਸਕੈਨ ਲਈ QR ਨੂੰ ਛੂਹ ਕੇ ਵੱਡਾ ਕਰੋ", qrZoomHint: "ਦੂਜੇ ਫ਼ੋਨ ਦਾ ਕੈਮਰਾ ਇਸ ਕੋਡ ਵੱਲ ਕਰੋ", roomCodeShare: "ਕਮਰੇ ਦਾ ਕੋਡ (ਮਾਪੇ ਯੂਨਿਟ ਨਾਲ ਸਾਂਝਾ ਕਰੋ)", roomCodeOfBaby: "ਬੱਚਾ ਯੂਨਿਟ ਦੇ ਕਮਰੇ ਦਾ ਕੋਡ",
     qrScanHint: "ਮਾਪੇ ਤੋਂ ਇਹ QR ਸਕੈਨ ਕਰਵਾਓ — ਜਾਂ ਉੱਪਰਲਾ ਕੋਡ ਲਿਖੋ", phCode: "ਕੋਡ", newCode: "ਨਵਾਂ ਕੋਡ", heroTitle: "ਤੁਹਾਡਾ ਬੱਚਾ, ਹਮੇਸ਼ਾ ਨੇੜੇ।",
     heroSub: "BabyPhone ਦੋ ਡਿਵਾਈਸਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾ ਦਿੰਦਾ ਹੈ। ਸੌਖਾ, ਨਿੱਜੀ ਅਤੇ ਸਿੱਧਾ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ।", ctaStartBaby: "ਬੱਚਾ ਯੂਨਿਟ ਸ਼ੁਰੂ ਕਰੋ", ctaConnectParent: "ਮਾਪੇ ਵਜੋਂ ਜੁੜੋ", navPrivacy: "ਪਰਦੇਦਾਰੀ",
@@ -1908,6 +1936,7 @@
     mediaError: "ਕੈਮਰਾ/ਮਾਈਕ ਉਪਲਬਧ ਨਹੀਂ। https ਵਰਤੋ ਜਾਂ Chrome/Firefox ਵਿੱਚ ਖੋਲ੍ਹੋ।",
   });
   Object.assign(S.sw, {
+    metaTitle: 'Kifuatiliaji cha mtoto bila malipo — BabyPhone.online', metaDesc: 'Geuza simu mbili kuwa kifuatiliaji cha mtoto bila malipo, chenye video na sauti moja kwa moja. Hakuna programu, hakuna akaunti, hakuna kinachohifadhiwa.',
     qrTapZoom: "👆 Gusa QR ili kuikuza kwa kuskani", qrZoomHint: "Elekeza kamera ya simu nyingine kwenye msimbo huu", roomCodeShare: "Msimbo wa chumba (shiriki na kifaa cha mzazi)", roomCodeOfBaby: "Msimbo wa chumba wa kifaa cha mtoto",
     qrScanHint: "Mwache mzazi askani QR hii — au andika msimbo hapo juu", phCode: "MSIMBO", newCode: "Msimbo mpya", heroTitle: "Mtoto wako, karibu kila wakati.",
     heroSub: "BabyPhone hubadilisha vifaa viwili kuwa kifaa salama cha kumtazama mtoto. Rahisi, faragha, moja kwa moja kwenye kivinjari.", ctaStartBaby: "Anzisha kifaa cha mtoto", ctaConnectParent: "Unganisha kama mzazi", navPrivacy: "Faragha",
@@ -1948,6 +1977,7 @@
     mediaError: "Kamera/maikrofoni haipatikani. Tumia https au fungua kwenye Chrome/Firefox.",
   });
   Object.assign(S.ha, {
+    metaTitle: 'Na’urar sa ido kan jariri kyauta — BabyPhone.online', metaDesc: 'Mai da wayoyi biyu zuwa na’urar sa ido kan jariri kyauta mai bidiyo da sauti kai tsaye. Babu manhaja, babu asusu, ba a adana komai.',
     qrTapZoom: "👆 Taɓa QR don girmama shi don sikan", qrZoomHint: "Nuna kyamarar wayar ɗayan zuwa wannan lambar", roomCodeShare: "Lambar ɗaki (raba wa na'urar iyaye)", roomCodeOfBaby: "Lambar ɗakin na'urar jariri",
     qrScanHint: "Bari iyaye su sikan wannan QR — ko rubuta lambar da ke sama", phCode: "LAMBA", newCode: "Sabuwar lamba", heroTitle: "Jaririnka, kusa da kai koyaushe.",
     heroSub: "BabyPhone yana mai da na'urori biyu zuwa ingantaccen na'urar sa ido kan jariri. Mai sauƙi, na sirri, kai tsaye a cikin burauza.", ctaStartBaby: "Fara na'urar jariri", ctaConnectParent: "Haɗa a matsayin iyaye", navPrivacy: "Sirri",
@@ -1988,6 +2018,7 @@
     mediaError: "Kyamara/makirufo ba ya samuwa. Yi amfani da https ko buɗe a Chrome/Firefox.",
   });
   Object.assign(S.ro, {
+    metaTitle: 'Babyphone gratuit în browser — BabyPhone.online', metaDesc: 'Transformă două telefoane într-un babyphone gratuit, cu imagine și sunet live. Fără aplicație, fără cont, nimic nu este stocat.',
     approveTitle: 'Permiteți acest dispozitiv?', approveAsk: 'Un dispozitiv a introdus codul camerei și dorește să vadă și să asculte. Permiteți doar dacă este dispozitivul dvs.', approveExtra: 'Un al doilea dispozitiv dorește să privească. Cineva este deja conectat. Permiteți doar dacă este dispozitivul dvs.', approveAllow: 'Permite', approveDeny: 'Refuză', authRefused: 'Unitatea pentru bebeluș a refuzat acest dispozitiv.', switchCameraSub: 'Cameră față / spate',
     qrTapZoom: "👆 Atinge codul QR pentru a-l mări", qrZoomHint: "Îndreaptă camera celuilalt telefon spre acest cod", roomCodeShare: "Codul camerei (împarte-l cu unitatea părinților)", roomCodeOfBaby: "Codul camerei unității bebelușului",
     qrScanHint: "Lasă părintele să scaneze acest QR — sau tastează codul de mai sus", phCode: "COD", newCode: "Cod nou", heroTitle: "Bebelușul tău, mereu aproape.",
@@ -2038,8 +2069,50 @@
     return (lang[key] != null ? lang[key] : (S.en[key] != null ? S.en[key] : key));
   }
 
+  /**
+   * SEO: houd de <head>-metadata in de gekozen taal.
+   *
+   * De app is één meertalige pagina. Voor zoekmachines betekent dat: de
+   * hreflang-varianten (/?lang=nl, /?lang=de, …) moeten elk hun eigen titel,
+   * omschrijving en zelfverwijzende canonical hebben — anders zien ze allemaal
+   * dezelfde Engelse kop en wordt alleen de Engelse variant geïndexeerd.
+   *
+   * Puur cosmetisch voor de app zelf: raakt geen enkele functie of element-ID
+   * en is volledig in try/catch gevat, zodat een ontbrekende tag nooit iets
+   * kan breken.
+   */
+  function syncHeadMeta() {
+    try {
+      const title = t('metaTitle');
+      const desc = t('metaDesc');
+      if (title) document.title = title;
+
+      const setMeta = (sel, value) => {
+        const el = document.head && document.head.querySelector(sel);
+        if (el && value) el.setAttribute('content', value);
+      };
+      setMeta('meta[name="description"]', desc);
+      setMeta('meta[property="og:title"]', title);
+      setMeta('meta[property="og:description"]', desc);
+      setMeta('meta[name="twitter:title"]', title);
+      setMeta('meta[name="twitter:description"]', desc);
+
+      // Zelfverwijzende canonical + og:url per taalvariant. De basis-URL komt
+      // uit de canonical die al in de HTML staat, zodat lokaal draaien niets
+      // verandert aan wat er in productie wordt uitgeleverd.
+      const link = document.head && document.head.querySelector('link[rel="canonical"]');
+      if (link) {
+        const base = link.getAttribute('href').split('?')[0];
+        const href = current === 'en' ? base : base + '?lang=' + current;
+        link.setAttribute('href', href);
+        setMeta('meta[property="og:url"]', href);
+      }
+    } catch (e) { /* noop */ }
+  }
+
   function apply(root) {
     const scope = root || document;
+    syncHeadMeta();
     scope.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = t(el.getAttribute('data-i18n'));
     });

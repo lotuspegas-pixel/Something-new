@@ -7,23 +7,26 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#FFFFFF" />
-    <meta name="description" content="BabyPhone.online — turn your spare phone, tablet or laptop into a baby monitor. Live video and sound in your browser. No app, no account, nothing stored." />
+    <meta name="description" content="Turn two phones into a free baby monitor with live video and sound. Works in any browser: no app to install, no account, nothing stored." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="BabyPhone" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta property="og:title" content="BabyPhone.online — baby monitor in your browser" />
-    <meta property="og:description" content="Turn your spare phone into a baby monitor. Live video and sound, no app, no account, nothing stored." />
+    <meta name="application-name" content="BabyPhone.online" />
+    <meta property="og:title" content="Free Baby Monitor App Online — BabyPhone.online" />
+    <meta property="og:description" content="Turn two phones into a free baby monitor with live video and sound. Works in any browser: no app to install, no account, nothing stored." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://babyphone.online/" />
     <meta property="og:site_name" content="BabyPhone.online" />
     <meta property="og:image" content="https://babyphone.online/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A baby sleeping in a dark nursery, watched over by BabyPhone.online" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="BabyPhone.online — baby monitor in your browser" />
-    <meta name="twitter:description" content="Turn your spare phone into a baby monitor. Live video and sound, no app, no account, nothing stored." />
+    <meta name="twitter:title" content="Free Baby Monitor App Online — BabyPhone.online" />
+    <meta name="twitter:description" content="Turn two phones into a free baby monitor with live video and sound. Works in any browser: no app to install, no account, nothing stored." />
     <meta name="twitter:image" content="https://babyphone.online/og-image.jpg" />
-    <title>BabyPhone.online — baby monitor in your browser</title>
+    <title>Free Baby Monitor App Online — BabyPhone.online</title>
     <link rel="canonical" href="https://babyphone.online/" />
     <link rel="alternate" hreflang="en" href="https://babyphone.online/" />
     <link rel="alternate" hreflang="zh" href="https://babyphone.online/?lang=zh" />
@@ -80,85 +83,72 @@
         "@type": "PostalAddress",
         "addressLocality": "Harlingen",
         "addressCountry": "NL"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "info@babyphone.online",
+        "url": "https://babyphone.online/contact.html",
+        "availableLanguage": ["en", "nl", "de", "fr", "es", "pt", "it"]
       }
     },
     {
-      "@type": "WebApplication",
+      "@type": "WebSite",
+      "@id": "https://babyphone.online/#website",
+      "name": "BabyPhone.online",
+      "alternateName": ["Babyphone Online", "Baby monitor in your browser"],
+      "url": "https://babyphone.online/",
+      "publisher": { "@id": "https://babyphone.online/#org" },
+      "inLanguage": ["en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur", "id", "de", "ja", "mr", "te", "tr", "ta", "vi", "ko", "it", "th", "gu", "fa", "pl", "uk", "nl", "pa", "sw", "ha", "ro"]
+    },
+    {
+      "@type": ["WebApplication", "SoftwareApplication"],
       "@id": "https://babyphone.online/#app",
       "name": "BabyPhone.online",
+      "alternateName": "Free baby monitor app",
       "url": "https://babyphone.online/",
       "image": "https://babyphone.online/og-image.jpg",
+      "screenshot": "https://babyphone.online/assets/blog/parent.png",
       "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Baby monitor",
       "operatingSystem": "Any (runs in the web browser)",
       "browserRequirements": "Modern browser with camera and microphone access (WebRTC)",
-      "description": "Turn your spare phone, tablet or laptop into a baby monitor. Live video and sound stream directly between your own devices — no app, no account, nothing stored.",
+      "installUrl": "https://babyphone.online/",
+      "description": "A free baby monitor that runs in the web browser. Two of your own devices — a spare phone, tablet or laptop plus the phone in your pocket — become the baby unit and the parent unit, with live video and sound streaming directly between them. No app to install, no account, nothing stored.",
+      "isAccessibleForFree": true,
+      "featureList": [
+        "Live video and sound between two of your own devices",
+        "Talk back: your voice plays on the baby device",
+        "Lullabies and MP3 playback on the baby device",
+        "Night light controlled from the parent device",
+        "Cry alert with adjustable sensitivity and an event log",
+        "Sleep timer, audio-only mode and privacy shade",
+        "Battery status of the baby device",
+        "Record a clip locally on the parent device",
+        "Automatic reconnect over wifi and 4G/5G",
+        "Interface in 30 languages"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "EUR"
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock"
       },
-      "publisher": {
-        "@id": "https://babyphone.online/#org"
-      },
-      "inLanguage": [
-        "en",
-        "zh",
-        "hi",
-        "es",
-        "fr",
-        "ar",
-        "bn",
-        "pt",
-        "ru",
-        "ur",
-        "id",
-        "de",
-        "ja",
-        "mr",
-        "te",
-        "tr",
-        "ta",
-        "vi",
-        "ko",
-        "it",
-        "th",
-        "gu",
-        "fa",
-        "pl",
-        "uk",
-        "nl",
-        "pa",
-        "sw",
-        "ha",
-        "ro"
-      ]
+      "publisher": { "@id": "https://babyphone.online/#org" },
+      "isPartOf": { "@id": "https://babyphone.online/#website" },
+      "inLanguage": ["en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur", "id", "de", "ja", "mr", "te", "tr", "ta", "vi", "ko", "it", "th", "gu", "fa", "pl", "uk", "nl", "pa", "sw", "ha", "ro"]
     },
     {
       "@type": "FAQPage",
       "@id": "https://babyphone.online/#faq",
+      "inLanguage": "en",
       "mainEntity": [
         {
           "@type": "Question",
           "name": "Do I need to install an app?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. BabyPhone.online runs entirely in the web browser on both devices. Open the site, choose Baby unit on one device and Parent unit on the other, and connect with the 6-character room code or QR code."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is my baby's video stored anywhere?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. Video and audio stream directly between your own two devices (peer-to-peer via WebRTC) and are encrypted in transit. Nothing is recorded, stored, or seen by a server."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does it work over 4G/5G and different networks?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. The devices connect directly where possible; when a direct path is impossible (for example on mobile carrier networks), an encrypted relay forwards the stream without being able to view it."
+            "text": "No. BabyPhone.online runs entirely in the web browser on both devices. Open the site, choose Baby unit on one device and Parent unit on the other, and connect with the 6-character room code or the QR code."
           }
         },
         {
@@ -166,7 +156,47 @@
           "name": "How much does BabyPhone.online cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "BabyPhone.online is completely free — every feature, no account, nothing to buy."
+            "text": "Nothing. BabyPhone.online is free to use in full: every feature is included, there is no paid tier, no subscription and no account. It is funded by its maker, not by advertising or by selling data — the site carries no ads and no trackers at all."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is a baby monitor app safe to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends entirely on where the video goes. BabyPhone.online sends video and sound straight from one of your devices to the other (peer-to-peer via WebRTC), encrypted in transit, so there is no cloud account that can be broken into and no recording sitting on someone else's server. The baby unit never answers an incoming connection on its own: a device that scanned the QR code carries a 128-bit token, and anyone who only typed the room code has to be approved on the baby device's own screen first. Whatever monitor you use, it stays an aid and not a replacement for checking on your child in person."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does a baby monitor work without wifi?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "BabyPhone.online needs an internet connection on both devices, but it does not have to be wifi and it does not have to be the same network. The baby device can be on home wifi while the parent device is on 4G or 5G, which is what gives it unlimited range compared with a classic monitor tied to its base station. What it cannot do is work fully offline: with no internet at all on either side, the two devices cannot find each other."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my baby's video stored anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Video and audio stream directly between your own two devices and are encrypted in transit. Nothing is recorded, stored, or seen by a server. If you use the Record button, the clip is saved straight to the parent device and is never uploaded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work over 4G/5G and on different networks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The devices connect directly where possible; when a direct path is impossible (for example on some mobile carrier networks), an encrypted relay forwards the stream without being able to view it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use an old phone as a baby monitor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, and that is the intended use. Any spare phone or tablet with a working camera, a microphone and a reasonably current browser can be the baby unit. It needs no SIM card if it is on wifi. Keep it on its charger, because streaming video all night drains a battery."
           }
         },
         {
@@ -174,7 +204,7 @@
           "name": "Do I need to create an account?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. There are no accounts, no registration, and no tracking. Pairing works with a temporary room code that expires when you close the app."
+            "text": "No. There are no accounts, no registration and no tracking. Pairing works with a temporary room code that stops working once you close the app."
           }
         }
       ]
@@ -306,19 +336,19 @@
           <div class="lp-trust-grid">
             <div class="lp-trust-item">
               <b data-i18n="lpb1t">No storage</b><p data-i18n="lpTrust1">Nothing is stored. No cloud, no recordings.</p>
-              <img class="bp-trust-baby" src="assets/brand/baby-sleeping.png" alt="" width="280" height="273" aria-hidden="true" />
+              <img class="bp-trust-baby" src="assets/brand/baby-sleeping.png" alt="" width="280" height="273" loading="lazy" decoding="async" aria-hidden="true" />
             </div>
             <div class="lp-trust-item">
               <b data-i18n="lpb2t">Direct connection</b><p data-i18n="lpTrust2">A direct, encrypted link between your devices.</p>
-              <img class="bp-trust-baby" src="assets/brand/baby-heart.png" alt="" width="234" height="235" aria-hidden="true" />
+              <img class="bp-trust-baby" src="assets/brand/baby-heart.png" alt="" width="234" height="235" loading="lazy" decoding="async" aria-hidden="true" />
             </div>
             <div class="lp-trust-item">
               <b data-i18n="lpKeyT">You hold the key</b><p data-i18n="lpTrust3">Only devices with the same code can connect.</p>
-              <img class="bp-trust-baby" src="assets/brand/baby-question.png" alt="" width="240" height="240" aria-hidden="true" />
+              <img class="bp-trust-baby" src="assets/brand/baby-question.png" alt="" width="240" height="240" loading="lazy" decoding="async" aria-hidden="true" />
             </div>
             <div class="lp-trust-item">
               <b data-i18n="trust4t">Privacy first</b><p data-i18n="lpTrust4">No accounts, no trackers, no ads.</p>
-              <img class="bp-trust-baby" src="assets/brand/baby-crying.png" alt="" width="256" height="257" aria-hidden="true" />
+              <img class="bp-trust-baby" src="assets/brand/baby-crying.png" alt="" width="256" height="257" loading="lazy" decoding="async" aria-hidden="true" />
             </div>
           </div>
         </section>
@@ -326,7 +356,7 @@
         <!-- footer -->
         <footer class="lp-footer">
           <div class="lp-footer-brand bp-brand-lockup">
-            <img class="lp-logo foot" src="assets/logo.png" alt="BabyPhone.online" width="170" height="44" />
+            <img class="lp-logo foot" src="assets/logo.png" alt="BabyPhone.online" width="170" height="44" loading="lazy" decoding="async" />
             <img class="bp-brand-icon" src="assets/brand/babyphone-icon.png" alt="" width="300" height="327" />
             <span class="bp-wordmark"><span>Babyphone</span><span>.Online</span></span>
           </div>
