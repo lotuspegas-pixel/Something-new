@@ -172,7 +172,14 @@
   function attachControl(conn) {
     controlConn = conn;
     conn.on('data', (d) => { lastControlAt = Date.now(); if (d && typeof d === 'object') handleControl(d); });
-    conn.on('close', onPeerDrop);
+    // Alleen het sluiten van het HUIDIGE kanaal is een wegval. Een oude,
+    // vervangen verbinding meldt zijn 'close' pas even later: bij de ouderunit
+    // gebeurt dat vlak nadat een nieuwe poging is gestart (peer.destroy()), en
+    // bij de babyunit zodra allow() het vorige kanaal opruimt. Zonder deze
+    // controle plande de ouderunit dan een tweede herverbinding bovenop de
+    // lopende poging en zette de babyunit zichzelf op "verbinding verbroken"
+    // terwijl er net weer iemand meekeek.
+    conn.on('close', () => { if (controlConn === conn) onPeerDrop(); });
   }
   function playTalkback(stream) {
     let a = $('talkbackAudio');
@@ -304,6 +311,14 @@
     wasConnected = true;
     lastControlAt = Date.now();
     const err = $('parentError'); if (err) err.classList.add('hidden');
+    // De status stond op "Wacht op toestemming bij de babyunit…" (of op
+    // "Opnieuw verbinden…"). Nu de babyunit ons heeft toegelaten hoort daar
+    // weer "Verbonden" te staan; zonder dit bleef de ouderunit de hele
+    // sessie melden dat hij nog op toestemming wachtte.
+    if (role === 'parent') {
+      const dot = $('connDot'); if (dot) dot.classList.remove('off');
+      setParentStatus(T('connected'));
+    }
     setPlaceholderSpinner(true);
   }
   // Het 'close'-event van het datakanaal blijft bij een onnette verbreking
@@ -446,6 +461,15 @@
           reportTorch();
           break;
         case 'ping':
+          // ALTIJD eerst een kaal antwoord terugsturen. De ouderunit meet
+          // hiermee of de verbinding nog leeft (zie startHeartbeat). Eerder
+          // was reportBattery() het enige antwoord — en dat stuurt niets
+          // zodra de Battery Status API ontbreekt (Safari op iPhone/iPad en
+          // macOS, Firefox, oudere Android-webviews) of een uitzondering
+          // geeft. Op die toestellen bleef de ouderunit stil, zag hij na
+          // HEARTBEAT_TIMEOUT een "wegval" en herverbond hij elke 15
+          // seconden terwijl er niets aan de hand was.
+          sendControl({ cmd: 'pong' });
           reportBattery(true);
           break;
       }
@@ -511,7 +535,10 @@
       // Terugpraten van de ouder (audio) → alleen van de toegelaten ouderunit.
       if (!approvedPeer || call.peer !== approvedPeer) { try { call.close(); } catch (e) {} return; }
       call.answer();
-      if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
+      // Terugpraten is een TWEEDE RTCPeerConnection. Die niet bewaken: als
+      // het talkback-kanaal sneuvelt of netjes sluit, is de videoverbinding
+      // nog gewoon in orde. Zie ook de ouderkant.
+      if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; }
       call.on('stream', playTalkback);
     });
     peer.on('disconnected', () => {
@@ -688,8 +715,14 @@
         if (micStream) {
           try {
             micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
+            // Let op: dit is het talkback-kanaal, een APARTE
+            // RTCPeerConnection naast die van het babybeeld. Nooit bewaken
+            // met watchMediaPc: die verbinding mag legitiem sluiten (de
+            // babyunit weigert hem tot de toegang rond is) zonder dat de
+            // gezonde videoverbinding als wegval geldt. Alleen de PC van
+            // het babybeeld telt — die wordt in peer.on('call') bewaakt.
             const tcall = peer.call(babyId, micStream);
-            if (tcall && !mediaPc) { mediaPc = tcall.peerConnection || mediaPc; watchMediaPc(mediaPc); }
+            if (tcall && !mediaPc) { mediaPc = tcall.peerConnection || mediaPc; }
           } catch (e) {}
         }
       });

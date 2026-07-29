@@ -459,6 +459,93 @@ function findExecutable() {
   check('Beeld komt vanzelf terug na herverbinden (' + (terugNa ? terugNa + 'ms' : 'niet') + ')', terugNa > 0);
   await cB4.close(); await cP4.close();
 
+  // ---- stabiliteit: verbinding blijft staan zonder Battery Status API ----
+  // Gemelde fout: "verbinding valt na een aantal seconden weg, opnieuw
+  // verbinden gaat wel goed". Oorzaak: de babyunit beantwoordde de hartslag
+  // ('ping') alleen door de batterijstand te sturen, en reportBattery() stuurt
+  // niets zodra navigator.getBattery ontbreekt (Safari op iPhone/iPad en
+  // macOS, Firefox, oudere Android-webviews). De ouderunit zag dan elke
+  // HEARTBEAT_TIMEOUT een wegval die er niet was.
+  const INIT_NOBATT = INIT + `
+    try { delete Navigator.prototype.getBattery; } catch (e) {}
+    try { delete navigator.getBattery; } catch (e) {}
+  `;
+  // De ouderunit legt elke statuswijziging vast, zodat we kunnen TELLEN hoe
+  // vaak er een herverbinding gepland wordt in plaats van er één moment uit
+  // te pikken (video.videoWidth blijft na een wegval op de oude waarde staan
+  // en bewijst dus niets).
+  const INIT_WATCH = INIT + `
+    window.__statuses = [];
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('connText');
+      if (!el) return;
+      new MutationObserver(() => window.__statuses.push(el.textContent))
+        .observe(el, { childList: true, characterData: true, subtree: true });
+    });
+  `;
+  const mkWith = async (init) => {
+    const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
+    await c.addInitScript(init);
+    return c;
+  };
+  const cB5 = await mkWith(INIT_NOBATT);
+  const baby5 = await cB5.newPage();
+  baby5.on('pageerror', (e) => errs.push('BABY5: ' + e.message));
+  await baby5.goto(BASE); await sleep(400);
+  // Eerst bewijzen dat de nabootsing werkt — anders zou de test slagen omdat
+  // er niets nagebootst is.
+  const battWeg = await baby5.evaluate(() => !('getBattery' in navigator));
+  check('Stabiliteitstest: babyunit heeft echt geen Battery Status API', battWeg);
+  await baby5.click('#pickBaby');
+  let code5 = '';
+  for (let i = 0; i < 40; i++) {
+    code5 = await baby5.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (/^[A-Z0-9]{6}$/.test(code5)) break;
+    await sleep(300);
+  }
+  const cP5 = await mkWith(INIT_WATCH);
+  const parent5 = await cP5.newPage();
+  parent5.on('pageerror', (e) => errs.push('PARENT5: ' + e.message));
+  await parent5.goto(BASE); await sleep(300);
+  await parent5.click('#pickParent');
+  await parent5.fill('#parentOfferInput', code5);
+  await parent5.click('#parentGenBtn');
+  await approve(baby5);
+  let w5 = 0;
+  const t05 = Date.now();
+  while (Date.now() - t05 < 25000) {
+    w5 = await parent5.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w5 > 0) break;
+    await sleep(300);
+  }
+  check('Stabiliteitstest: eerst gewoon live beeld ("' + w5 + 'px")', w5 > 0);
+  // Vanaf hier tellen. HEARTBEAT_TIMEOUT staat in deze suite op 5s, dus een
+  // kapotte hartslag laat binnen ~10s de eerste herverbinding zien; 30s geeft
+  // ruim marge voor meerdere.
+  await parent5.evaluate(() => { window.__statuses.length = 0; });
+  await sleep(30000);
+  const stabiel = await parent5.evaluate(() => ({
+    wissels: window.__statuses.slice(),
+    tekst: document.getElementById('connText').textContent.trim(),
+    off: document.getElementById('connDot').classList.contains('off'),
+  }));
+  const herverbindingen = stabiel.wissels.filter((s) => /\(\d+\/\d+\)/.test(s)).length;
+  check('Ouderunit plant GEEN herverbinding tijdens 30s rust (' + herverbindingen +
+    'x, statussen: ' + (stabiel.wissels.join(' → ') || 'geen') + ')', herverbindingen === 0);
+  check('Ouderunit blijft op "verbonden" staan ("' + stabiel.tekst + '")', !stabiel.off);
+  // Bewijs dat er ECHT nog beeld binnenkomt: videoWidth houdt na een wegval
+  // zijn oude waarde, currentTime van een live MediaStream loopt alleen door
+  // zolang er frames binnenkomen.
+  const framesLopen = await parent5.evaluate(async () => {
+    const v = document.getElementById('video');
+    if (!v) return false;
+    const a = v.currentTime;
+    await new Promise((r) => setTimeout(r, 1500));
+    return v.currentTime > a;
+  });
+  check('Er komen nog steeds verse frames binnen (currentTime loopt door)', framesLopen);
+  await cB5.close(); await cP5.close();
+
   await browser.close();
   web.close();
   console.log(errs.length ? '\nPAGINAFOUTEN:\n' + errs.join('\n') : '\nGEEN PAGINAFOUTEN');
