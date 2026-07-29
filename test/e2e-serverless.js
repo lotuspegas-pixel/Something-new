@@ -152,8 +152,11 @@ function findExecutable() {
   // ---- playlist / besturingskanaal ----
   await sleep(800);
   const titles = await parent.$$eval('#playlist .track .tt', (els) => els.map((e) => e.textContent.trim())).catch(() => []);
-  // Regen- en ruisgeluiden zijn eruit: 4 slaapliedjes, 2 gegenereerde geluiden.
-  check('Playlist geladen bij de ouder (' + titles.length + ' nummers)', titles.length === 4);
+  // Aantal niet vastspijkeren: lees het uit playlist.json, zodat het toevoegen
+  // van een slaapliedje deze test niet omgooit. Regen- en ruisgeluiden blijven
+  // eruit; die controle staat hieronder.
+  const verwacht = JSON.parse(fs.readFileSync(path.join(ROOT, 'music', 'playlist.json'), 'utf8')).songs.length;
+  check('Playlist geladen bij de ouder (' + titles.length + ' van ' + verwacht + ' nummers)', titles.length === verwacht);
   check('Geen regen-/ruisgeluiden meer in de playlist', !titles.some((t) => /noise|rain|regen|ruis/i.test(t)));
   await parent.evaluate(() => document.querySelector('#playlist .track').click());
   await sleep(1200);

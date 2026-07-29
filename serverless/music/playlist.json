@@ -1,20 +1,13 @@
 {
   "songs": [
-    {
-      "file": "moonlightlullaby.mp3",
-      "title": "Moonlight Lullaby"
-    },
-    {
-      "file": "thequietbetweenheartbeats.mp3",
-      "title": "The Quiet Between Heartbeats"
-    },
-    {
-      "file": "sleepybaby.mp3",
-      "title": "Sleepy Baby"
-    },
-    {
-      "file": "sleepybaby_version_2.mp3",
-      "title": "Sleepy Baby II"
-    }
+    { "file": "moonlightlullaby.mp3",          "title": "Moonlight Lullaby" },
+    { "file": "thequietbetweenheartbeats.mp3", "title": "The Quiet Between Heartbeats" },
+    { "file": "sleepybaby.mp3",                "title": "Sleepy Baby" },
+    { "file": "sleepybaby_version_2.mp3",      "title": "Sleepy Baby II" },
+    { "file": "slaapmaarkleintje.mp3",         "title": "Slaap maar, kleintje" },
+    { "file": "slaapmaarkleintje2.mp3",        "title": "Slaap maar, kleintje II" },
+    { "file": "slaapkleintje.mp3",             "title": "Slaap, kleintje" },
+    { "file": "zachtvoorjeslapen.mp3",         "title": "Zacht voor je slapen" },
+    { "file": "papahoudtdewacht.mp3",          "title": "Papa houdt de wacht" }
   ]
 }
