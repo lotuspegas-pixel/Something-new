@@ -2414,14 +2414,19 @@ body.app-mode .pair-box {
   margin-top: auto;
   min-height: 52px;
 }
+/* Raster in plaats van flex. Reden: .lp-btn erft `width: 100%`, en bij een
+   flexitem met `flex: 0 0 auto` wordt die 100% de flex-basis — de knop nam
+   dan de hele rij en het invoerveld kromp tot 26px (zichtbaar tussen 420 en
+   719px, precies de breedte van een iPhone Plus/Pro Max). In een raster
+   bepaalt de kolom de breedte, dus `width: 100%` kan niets meer kapotmaken. */
 .lp-row-connect .lp-cell-code-row {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
   gap: 10px;
 }
 .lp-row-connect .lp-code-input {
-  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   min-height: 52px;
   padding: 0 12px;
@@ -2430,7 +2435,8 @@ body.app-mode .pair-box {
   letter-spacing: 2px;
 }
 .lp-row-connect .lp-btn.sm {
-  flex: 0 0 auto;
+  width: 100%;
+  min-width: 118px;
   min-height: 52px;
   padding: 0 20px;
   white-space: nowrap;
@@ -2486,9 +2492,7 @@ body.app-mode .pair-box {
 
 /* smalle schermen: knop onder het invoerveld i.p.v. ernaast geperst */
 @media (max-width: 419px) {
-  .lp-row-connect .lp-cell-code-row { flex-wrap: wrap; }
-  .lp-row-connect .lp-code-input { flex: 1 1 100%; }
-  .lp-row-connect .lp-btn.sm { flex: 1 1 100%; }
+  .lp-row-connect .lp-cell-code-row { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* =========================================================================
@@ -2590,4 +2594,38 @@ body.app-mode .pair-box {
     text-align: center;
     font-size: 12px;
   }
+}
+
+/* 6. Taalkiezer in de navigatie: de <select> is zo breed als zijn langste
+      optienaam (30 talen), dus op 320px stak hij 48px buiten het scherm —
+      onzichtbaar omdat de pagina horizontaal afgekapt wordt, maar de knop
+      was daar deels onbereikbaar. Nu een harde bovengrens, en op de
+      allersmalste schermen wijkt het woordmerk (het beeldmerk blijft). */
+@media (max-width: 440px) {
+  .lp-nav { gap: 8px; }
+  .lp-nav .bp-brand-lockup { min-width: 0; flex: 0 1 auto; }
+  .lp-nav-right { flex: 0 0 auto; min-width: 0; }
+  .lp .lang-pill { max-width: 128px; }
+  .lp .lang-pill .lang-select {
+    max-width: 100%;
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+}
+@media (max-width: 360px) {
+  .lp-nav .bp-wordmark { display: none; }
+  .lp .lang-pill { max-width: 168px; }
+}
+
+/* 7. De primaire knoppen kregen in de basisopmaak een roze rand die bij de
+      roze vulling hoort. Het merkthema kleurt de ouderunit-knop blauw maar
+      liet die rand staan, dus zat er een roze randje om een blauwe knop.
+      De vulling bepaalt de vorm; de rand is niet nodig. */
+.lp-btn,
+.btn:not(.secondary) {
+  border-color: transparent;
+}
+.lp-row-roles .lp-cell:nth-child(2) .lp-btn:hover,
+.lp-row-roles .lp-cell:first-child .lp-btn:hover {
+  border-color: transparent;
 }

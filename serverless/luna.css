@@ -1753,7 +1753,7 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 /* toegankelijkheid: zichtbare toetsenbordfocus, alleen bij toetsenbordgebruik */
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #E8825E;
+  outline: 2px solid #2F8FF0;
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
