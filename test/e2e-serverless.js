@@ -70,6 +70,17 @@ function findExecutable() {
     window.BABYFOON_RECONNECT_DELAYS = [400, 700];
     window.BABYFOON_CONNECT_TIMEOUT = 4000;
     window.BABYFOON_HEARTBEAT_TIMEOUT = 5000;
+    window.BABYFOON_AUTH_TIMEOUT_RETRY = 8000;
+    // Alle RTCPeerConnections onthouden, zodat een test een netwerkwegval kan
+    // nabootsen zonder de pagina te herladen: het toestel blijft dan hetzelfde,
+    // precies zoals bij een echte wifi-hapering.
+    (function () {
+      const O = window.RTCPeerConnection;
+      window.__pcs = [];
+      const W = function (...a) { const pc = new O(...a); window.__pcs.push(pc); return pc; };
+      W.prototype = O.prototype;
+      window.RTCPeerConnection = W;
+    })();
   `;
 
   const browser = await chromium.launch({
@@ -384,6 +395,69 @@ function findExecutable() {
   check('Ouderunit toont een zichtbare "Wissel camera"-knop op de monitor', parentFlipVisible);
   await cB3.close().catch(() => {});
   await cP3.close();
+
+  // ---- herverbinden zonder opnieuw toestemming te vragen ----
+  // Gemelde fout: na een wegval vroeg de babyunit opnieuw om toestemming voor
+  // hetzelfde toestel. Dat is onmogelijk te geven als je niet bij de babyunit
+  // staat, dus de ouderunit kwam nooit meer terug. Oorzaak: PeerJS deelt bij
+  // elke herverbinding een nieuw peer-id uit, en daarop werd vergeleken.
+  const cB4 = await mk();
+  const baby4 = await cB4.newPage();
+  baby4.on('pageerror', (e) => errs.push('BABY4: ' + e.message));
+  await baby4.goto(BASE); await sleep(400);
+  await baby4.click('#pickBaby');
+  let code4 = '';
+  for (let i = 0; i < 40; i++) {
+    code4 = await baby4.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (/^[A-Z0-9]{6}$/.test(code4)) break;
+    await sleep(300);
+  }
+  const cP4 = await mk();
+  const parent4 = await cP4.newPage();
+  parent4.on('pageerror', (e) => errs.push('PARENT4: ' + e.message));
+  await parent4.goto(BASE); await sleep(300);
+  await parent4.click('#pickParent');
+  await parent4.fill('#parentOfferInput', code4);
+  await parent4.click('#parentGenBtn');
+  await approve(baby4);
+  let w4 = 0;
+  const t04 = Date.now();
+  while (Date.now() - t04 < 25000) {
+    w4 = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w4 > 0) break;
+    await sleep(300);
+  }
+  check('Herverbind-test: eerst gewoon live beeld ("' + w4 + 'px")', w4 > 0);
+  // Wegval nabootsen. videoWidth blijft daarna op de laatste waarde staan,
+  // dus het element ook leegmaken — anders meet "beeld terug" het oude frame.
+  await parent4.evaluate(() => {
+    window.__pcs.forEach((pc) => { try { pc.close(); } catch (e) {} });
+    const v = document.getElementById('video');
+    if (v) { v.srcObject = null; }
+  });
+  await sleep(500);
+  const wLeeg = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+  check('Herverbind-test: beeld is echt weg na de wegval ("' + wLeeg + 'px")', wLeeg === 0);
+  let opnieuwGevraagd = false, terugNa = 0;
+  const tHerstel = Date.now();
+  while (Date.now() - tHerstel < 30000) {
+    if (!opnieuwGevraagd) {
+      const zichtbaar = await baby4.evaluate(() => {
+        const b = document.getElementById('babyApproval');
+        return !!b && !b.classList.contains('hidden');
+      });
+      if (zichtbaar) opnieuwGevraagd = true;
+    }
+    if (!terugNa) {
+      const w = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+      if (w > 0) terugNa = Date.now() - tHerstel;
+    }
+    if (terugNa && Date.now() - tHerstel > 6000) break;
+    await sleep(250);
+  }
+  check('Babyunit vraagt NIET opnieuw toestemming voor hetzelfde toestel', !opnieuwGevraagd);
+  check('Beeld komt vanzelf terug na herverbinden (' + (terugNa ? terugNa + 'ms' : 'niet') + ')', terugNa > 0);
+  await cB4.close(); await cP4.close();
 
   await browser.close();
   web.close();

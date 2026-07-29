@@ -129,10 +129,20 @@
   let currentCode = null;
   // --- toegangscontrole ---
   let sessionToken = '';    // babyunit: het geheim uit de QR-code
-  let approvedPeer = '';    // babyunit: id van de toegelaten ouderunit
+  let approvedPeer = '';    // babyunit: PeerJS-id van de huidige ouderunit
+  let approvedConn = null;  // babyunit: de levende verbinding met die ouderunit
+  // Babyunit: het TOESTEL dat toestemming heeft. Los van approvedPeer, want
+  // PeerJS geeft bij elke herverbinding een nieuw peer-id uit — daarop
+  // vergelijken betekent dat hetzelfde toestel na een wegval als "tweede
+  // apparaat" wordt gezien en opnieuw om toestemming moet vragen.
+  let approvedDevice = '';
   let pendingApproval = null; // babyunit: verzoek dat op toestemming wacht
   let deniedCount = 0;      // babyunit: teller tegen eindeloos vragen
   let parentToken = '';     // ouderunit: token uit QR/deellink (leeg = handmatig)
+  // Ouderunit: vaste identiteit van dit toestel voor de duur van de pagina.
+  // Blijft staan als de PeerJS-verbinding opnieuw wordt opgebouwd, zodat de
+  // babyunit een herverbinding herkent als hetzelfde, al toegelaten toestel.
+  const deviceId = makeToken();
   const lullaby = new LullabyPlayer();
 
   function sendControl(obj) {
@@ -223,6 +233,7 @@
   function clearConnectTimers() {
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+    clearAuthWatchdog();
   }
   function setParentStatus(txt) {
     const el = $('connText'); if (el) el.textContent = txt;
@@ -265,7 +276,29 @@
       startParentConnect(currentCode, true);
     }, delay);
   }
+  // De babyunit moet ons nog toelaten. Blijft dat antwoord uit, dan is de
+  // verbinding er feitelijk niet — ook al staat het datakanaal open. Zonder
+  // deze bewaking bleef de ouderunit hangen op "Verbonden" zonder beeld.
+  const AUTH_TIMEOUT = window.BABYFOON_AUTH_TIMEOUT || 30000;
+  const AUTH_TIMEOUT_RETRY = window.BABYFOON_AUTH_TIMEOUT_RETRY || 10000;
+  let authTimer = null;
+  function clearAuthWatchdog() {
+    if (authTimer) { clearTimeout(authTimer); authTimer = null; }
+  }
+  function startAuthWatchdog(isRetry) {
+    clearAuthWatchdog();
+    // Bij een eerste koppeling met handmatig ingetypte code loopt er iemand
+    // naar de babyunit om op "Toestaan" te drukken; daar hoort ruimte voor.
+    // Bij herverbinden hoort het antwoord meteen te komen.
+    const wacht = (isRetry || wasConnected) ? AUTH_TIMEOUT_RETRY : AUTH_TIMEOUT;
+    authTimer = setTimeout(() => {
+      authTimer = null;
+      if (shuttingDown) return;
+      scheduleParentReconnect();
+    }, wacht);
+  }
   function connectSucceeded() {
+    clearAuthWatchdog();
     clearConnectTimers();
     reconnectAttempt = 0;
     wasConnected = true;
@@ -276,6 +309,7 @@
   // Het 'close'-event van het datakanaal blijft bij een onnette verbreking
   // (wifi weg, batterij leeg, browser gedood) soms uit. Daarom bewaken we
   // ook de onderliggende RTCPeerConnection-status…
+  const ICE_GRACE = window.BABYFOON_ICE_GRACE || 8000;
   function watchMediaPc(pc) {
     if (!pc || pc.__bfWatched) return;
     pc.__bfWatched = true;
@@ -284,9 +318,14 @@
       if (pc.connectionState === 'failed') { onPeerDrop(); return; }
       if (pc.connectionState === 'disconnected') {
         // ICE krijgt even om zelf te herstellen; daarna als verbroken behandelen.
+        // Een korte wifi-hapering duurt vaak enkele seconden en herstelt vanzelf.
+        // Te snel afbreken betekende: verbinding opnieuw opbouwen terwijl de
+        // oude er zo weer was — wat als "onstabiel beeld" voelt. Deze marge
+        // vangt de gewone haperingen op; een échte wegval wordt alsnog binnen
+        // HEARTBEAT_TIMEOUT opgemerkt.
         setTimeout(() => {
           if (!shuttingDown && pc.connectionState === 'disconnected') onPeerDrop();
-        }, 4000);
+        }, ICE_GRACE);
       }
     });
   }
@@ -334,8 +373,18 @@
   function handleControl(msg) {
     // Toegang geweigerd door de babyunit: meteen stoppen met proberen.
     if (msg && msg.cmd === 'authDenied' && role === 'parent') {
+      // Alleen een échte weigering is definitief. 'busy' (er stond nog een
+      // andere vraag open) en 'timeout' zijn tijdelijk — daarop de verbinding
+      // voorgoed opgeven betekende dat een herverbinding nooit meer lukte.
+      const reden = String((msg && msg.reason) || '');
+      if (reden === 'busy' || reden === 'timeout') {
+        clearAuthWatchdog();
+        scheduleParentReconnect();
+        return;
+      }
       shuttingDown = true;
       clearConnectTimers();
+      clearAuthWatchdog();
       const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
       const err = $('parentError');
       if (err) { err.textContent = T('authRefused'); err.classList.remove('hidden'); }
@@ -346,7 +395,12 @@
     // Andere toestel heeft gestopt → hier ook afsluiten.
     if (msg && msg.cmd === 'bye') { endSession(false); return; }
     if (msg && msg.cmd === 'authOk') {
-      if (role === 'parent' && msg.token) parentToken = String(msg.token);
+      if (role === 'parent') {
+        if (msg.token) parentToken = String(msg.token);
+        // Pas nu staat de verbinding er echt: de babyunit heeft ons toegelaten.
+        clearAuthWatchdog();
+        connectSucceeded();
+      }
       return;
     }
     if (role === 'baby') {
@@ -482,10 +536,15 @@
       try { conn.send({ cmd: 'authDenied', reason: reason }); } catch (e) {}
       setTimeout(() => { try { conn.close(); } catch (e) {} }, 200);
     };
-    const allow = () => {
+    const allow = (toestel) => {
       if (settled) return;
       finish();
+      // Herverbinding van hetzelfde toestel: de oude, dode verbinding opruimen
+      // zodat er nooit twee kanalen naast elkaar blijven staan.
+      if (approvedConn && approvedConn !== conn) { try { approvedConn.close(); } catch (e) {} }
       approvedPeer = conn.peer;
+      approvedConn = conn;
+      if (toestel) approvedDevice = toestel;
       deniedCount = 0;
       attachControl(conn);
       // Token meegeven: eenmaal toegestaan hoeft de ouder na een wegval niet
@@ -500,16 +559,31 @@
     };
     // Niets sturen binnen 20 s = geen geldige ouderunit.
     const timer = setTimeout(() => deny('timeout'), 20000);
-    conn.on('close', () => { clearTimeout(timer); finish(); });
+    conn.on('close', () => {
+      clearTimeout(timer);
+      finish();
+      // Was dit de toegelaten ouderunit? Dan is er vanaf nu geen kijker meer.
+      // approvedDevice blijft wél staan: die toestemming geldt de hele sessie,
+      // zodat hetzelfde toestel zo terug kan komen zonder opnieuw te vragen.
+      if (approvedConn === conn) { approvedConn = null; approvedPeer = ''; }
+    });
     conn.on('data', (d) => {
       if (settled || !d || typeof d !== 'object' || d.cmd !== 'hello') return;
       clearTimeout(timer);
+      const toestel = d.device ? String(d.device) : '';
       const heeftToken = sessionToken && sameToken(String(d.token || ''), sessionToken);
+      // Is er op dit moment werkelijk nog iemand aan het meekijken? Een
+      // verbinding die niet meer open staat telt niet mee.
+      const liveKijker = !!(approvedConn && approvedConn !== conn && approvedConn.open);
+      // Hetzelfde toestel dat eerder is toegelaten en het juiste token heeft:
+      // dit is een herverbinding, geen nieuwe kijker. Nooit opnieuw vragen —
+      // de ouder staat op dat moment per definitie niet bij de babyunit.
+      if (heeftToken && toestel && toestel === approvedDevice) return allow(toestel);
       // Token klopt én er kijkt nog niemand mee → meteen door (QR-koppeling).
-      if (heeftToken && !approvedPeer) return allow();
+      if (heeftToken && !liveKijker) return allow(toestel);
       // Anders: expliciet toestemming vragen op het apparaat van de baby.
       if (deniedCount >= 3) return deny('blocked');
-      askApproval(conn, allow, deny, !!approvedPeer);
+      askApproval(conn, () => allow(toestel), deny, liveKijker);
     });
   }
 
@@ -605,9 +679,12 @@
       conn.on('open', () => {
         // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
         // de babyunit eerst toestemming op het eigen scherm.
-        try { conn.send({ cmd: 'hello', token: parentToken }); } catch (e) {}
-        connectSucceeded();
+        try { conn.send({ cmd: 'hello', token: parentToken, device: deviceId }); } catch (e) {}
+        // Nog niet klaar: connectSucceeded() volgt pas bij 'authOk' van de
+        // babyunit. Tot dan bewaakt de watchdog of dat antwoord echt komt.
+        startAuthWatchdog(isRetry);
         parentConnected();
+        if (!wasConnected) setParentStatus(T('waitingApproval'));
         if (micStream) {
           try {
             micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
