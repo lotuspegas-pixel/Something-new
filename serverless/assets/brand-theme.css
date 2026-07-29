@@ -2362,3 +2362,232 @@ body.app-mode .pair-box {
     background: url("brand/hero-signal-poster.jpg") center / cover no-repeat;
   }
 }
+
+/* =========================================================================
+   VERBINDINGSRIJ — één definitieve opmaak.
+   Reden: deze rij werd eerder in drie lagen (luna.css, dash-overrides en dit
+   thema) tegelijk gestyled, met per cel een andere interne structuur. Daardoor
+   stonden de twee koppen niet op dezelfde hoogte en zat de knop links op een
+   andere lijn dan rechts. Hieronder krijgen beide cellen exact dezelfde opbouw:
+   tekstblok bovenaan, bedieningsrij onderaan (margin-top:auto), gelijke
+   hoogtes. Dit blok staat als laatste in de laatst geladen stylesheet en is
+   dus leidend.
+   ========================================================================= */
+.lp-row-connect .lp-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 22px;
+}
+
+/* tekstblok: identieke typografie links en rechts, zodat de koppen op
+   dezelfde regel beginnen en de hints even hoog aflopen */
+.lp-row-connect .lp-conn-text,
+.lp-row-connect .lp-qr-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+}
+.lp-row-connect .lp-conn-text label,
+.lp-row-connect .lp-qr-text h4 {
+  display: block;
+  margin: 0;
+  color: var(--bp-navy);
+  font: 700 15px 'Quicksand', system-ui, sans-serif;
+  line-height: 1.3;
+}
+.lp-row-connect .lp-conn-text small,
+.lp-row-connect .lp-qr-text small {
+  display: block;
+  margin: 0;
+  color: #557aa9;
+  font: 600 12.5px 'Nunito', system-ui, sans-serif;
+  line-height: 1.45;
+}
+
+/* bedieningsrij: beide cellen duwen hun besturing naar de onderkant, dus
+   de invoerrij links en de scanknop rechts staan gegarandeerd op één lijn */
+.lp-row-connect .lp-cell-code-row,
+.lp-row-connect .lp-qr-btn {
+  margin-top: auto;
+  min-height: 52px;
+}
+.lp-row-connect .lp-cell-code-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 10px;
+}
+.lp-row-connect .lp-code-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 14px;
+  font-size: 17px;
+  letter-spacing: 2px;
+}
+.lp-row-connect .lp-btn.sm {
+  flex: 0 0 auto;
+  min-height: 52px;
+  padding: 0 20px;
+  white-space: nowrap;
+}
+
+/* scanknop: zelfde vorm en hoogte als de invoerrij, met een echt
+   QR-tegeltje in plaats van een los zwevend vierkantje */
+.lp-row-connect .lp-qr-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  height: auto;
+  flex: 0 0 auto;
+  align-self: stretch;
+  padding: 6px 18px 6px 6px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  border: 1px solid var(--bp-line);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--bp-navy);
+  cursor: pointer;
+}
+.lp-row-connect .lp-qr-btn:hover {
+  border-color: var(--bp-blue);
+  color: var(--bp-blue);
+}
+.lp-row-connect .lp-qr-preview {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: none;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--bp-line);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.lp-row-connect .lp-qr-preview svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+  color: var(--bp-navy);
+}
+.lp-qr-btn-label {
+  font: 800 14.5px 'Nunito', system-ui, sans-serif;
+  line-height: 1.2;
+}
+
+/* smalle schermen: knop onder het invoerveld i.p.v. ernaast geperst */
+@media (max-width: 419px) {
+  .lp-row-connect .lp-cell-code-row { flex-wrap: wrap; }
+  .lp-row-connect .lp-code-input { flex: 1 1 100%; }
+  .lp-row-connect .lp-btn.sm { flex: 1 1 100%; }
+}
+
+/* =========================================================================
+   UITLIJNING — drie plekken waar blokken naast elkaar op verschillende
+   hoogtes uitkwamen. Zelfde oorzaak als bij de verbindingsrij: hoogte werd
+   bepaald door de inhoud i.p.v. door een vaste maat.
+   ========================================================================= */
+
+/* 1. Vertrouwenskaarten: de titel werd met margin-top:auto naar beneden
+      geduwd, dus een kaart met één regel tekst kreeg zijn titel 21px lager
+      dan de kaarten met twee regels. Nu staat de titel op een vaste afstand
+      onder de illustratie, zodat alle vier de titels op één lijn staan. */
+.lp .lp-trust-item b {
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.lp .lp-trust-item p {
+  min-height: 2.9em;
+}
+
+/* 2. Vertrouwenskaarten op smalle schermen: de kaart werd een flexrij, maar
+      titel en tekst zijn losse elementen zonder omhulsel — die kwamen dus
+      als twee smalle kolommen naast elkaar te staan. Een expliciet raster
+      zet de illustratie links en de tekst netjes onder elkaar rechts. */
+@media (max-width: 520px) {
+  .lp .lp-trust-item {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 2px;
+    text-align: left;
+  }
+  .lp .lp-trust-item::before { display: none; }
+  .lp .lp-trust-item .bp-trust-baby {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 68px;
+    height: auto;
+    margin: 0;
+    align-self: center;
+  }
+  .lp .lp-trust-item b {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    text-align: left;
+    align-self: end;
+  }
+  .lp .lp-trust-item p {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    min-height: 0;
+    text-align: left;
+    align-self: start;
+  }
+}
+
+/* 3. Rolkaarten op mobiel: beide illustraties kregen dezelfde BREEDTE, maar
+      hun beeldverhoudingen verschillen, dus de ouderillustratie werd 103px
+      hoog tegen 81px voor de baby. Op gelijke hoogte ogen ze even groot. */
+@media (max-width: 719px) {
+  .lp-row-roles .lp-illus { flex: 0 0 auto; width: auto; height: 96px; }
+  .lp-row-roles .lp-illus img {
+    height: 96px;
+    width: auto;
+    max-height: none;
+    max-width: none;
+    object-fit: contain;
+  }
+}
+
+/* 4. Voettekst-watermerk: het brede logo stond op `cover` in een vak van
+      940x160, dus het merk werd bijgesneden en je zag alleen nog een stuk
+      van het woord staan. Met `contain` past het hele beeldmerk erin. */
+.lp-footer::after {
+  background-size: contain;
+  height: 120px;
+  opacity: 0.03;
+}
+
+/* 5. Zekerheidsregel onder de keuzekaarten stond op mobiel in drie vaste
+      kolommen van gelijke breedte; "Direct connection" past daar niet in en
+      brak middenin af. Nu vloeien de drie items en houden ze hun eigen
+      breedte, gecentreerd. */
+@media (max-width: 719px) {
+  .lp-assure {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 18px;
+  }
+  .lp-assure > span {
+    flex: 0 1 auto;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+  }
+}

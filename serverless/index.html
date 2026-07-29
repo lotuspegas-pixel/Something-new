@@ -271,12 +271,14 @@
             </div>
             <div class="lp-row lp-row-connect">
               <div class="lp-cell lp-cell-code">
-                <div class="lp-cell-code-row">
+                <div class="lp-conn-text">
                   <label for="homeCode" data-i18n="connectWithCode">Connect with room code</label>
+                  <small data-i18n="enterCodeHint">Enter the code from your baby unit.</small>
+                </div>
+                <div class="lp-cell-code-row">
                   <input id="homeCode" class="lp-code-input" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" data-i18n-ph="phCode" placeholder="CODE" />
                   <button class="lp-btn primary sm" id="homeConnect" type="button" data-i18n="connect">Connect</button>
                 </div>
-                <small data-i18n="enterCodeHint">Enter the code from your baby unit.</small>
               </div>
               <div class="lp-cell lp-cell-qr">
                 <div class="lp-qr-text">
@@ -284,7 +286,8 @@
                   <small data-i18n="scanQRHint">Scan the baby unit's QR with your camera.</small>
                 </div>
                 <button class="lp-qr-btn" id="homeScan" type="button" data-i18n-title="scanQR" title="Scan QR" aria-label="Scan QR code">
-                  <span class="lp-qr-preview" id="homeQrPreview" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="7.5" y="7.5" width="9" height="9" rx="2.2" stroke="currentColor" stroke-width="1.9"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" opacity=".45"/></svg></span>
+                  <span class="lp-qr-preview" id="homeQrPreview" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="2.5" y="2.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="5.1" y="5.1" width="1.8" height="1.8" rx=".4" fill="currentColor"/><rect x="14.5" y="2.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="17.1" y="5.1" width="1.8" height="1.8" rx=".4" fill="currentColor"/><rect x="2.5" y="14.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="5.1" y="17.1" width="1.8" height="1.8" rx=".4" fill="currentColor"/><rect x="13.4" y="13.4" width="2.2" height="2.2" rx=".5" fill="currentColor"/><rect x="19.3" y="13.4" width="2.2" height="2.2" rx=".5" fill="currentColor"/><rect x="16.35" y="16.35" width="2.2" height="2.2" rx=".5" fill="currentColor"/><rect x="13.4" y="19.3" width="2.2" height="2.2" rx=".5" fill="currentColor"/><rect x="19.3" y="19.3" width="2.2" height="2.2" rx=".5" fill="currentColor"/></svg></span>
+                  <span class="lp-qr-btn-label" data-i18n="scanQR">Scan QR</span>
                 </button>
               </div>
               <span class="lp-or" aria-hidden="true" data-i18n="or">or</span>
