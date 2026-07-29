@@ -88,3 +88,31 @@ if (extTags.length) {
   process.exit(1);
 }
 console.log('  externe script/style-verwijzingen: GEEN ✓');
+
+// Sanity: geen taalconstructies die oudere browsers al bij het INLEZEN laten
+// falen. Eén zo'n teken maakt het hele script ongeldig — de pagina rendert
+// dan wel, maar geen enkele knop werkt. Dat is precies wat er op iOS 12
+// gebeurde. Deze grens is Safari 12 (iOS 12, 2018), het oudste toestel waar
+// we de app op willen laten werken.
+const OUD_BROWSER_VERBOD = [
+  [/\?\.[a-zA-Z_$(\[]/, 'optional chaining (?.) — vanaf Safari 13.1'],
+  [/\?\?[^?]/, 'nullish coalescing (??) — vanaf Safari 13.1'],
+  [/(?:\|\|=|&&=|\?\?=)/, 'logische toewijzing (||= &&= ??=) — vanaf Safari 14'],
+  [/\.replaceAll\(/, 'String.replaceAll — vanaf Safari 13.1'],
+  [/Object\.fromEntries/, 'Object.fromEntries — vanaf Safari 12.1'],
+  [/Promise\.allSettled/, 'Promise.allSettled — vanaf Safari 13'],
+  [/globalThis/, 'globalThis — vanaf Safari 12.1'],
+  [/structuredClone/, 'structuredClone — vanaf Safari 15.4'],
+];
+const jsUitBundel = scripts.map((f) => fs.readFileSync(path.join(SL, f), 'utf8')).join('\n');
+const gevonden = [];
+for (const [re, uitleg] of OUD_BROWSER_VERBOD) {
+  const m = jsUitBundel.match(re);
+  if (m) gevonden.push(uitleg + '  → gevonden: ' + JSON.stringify(m[0]));
+}
+if (gevonden.length) {
+  console.error('Te nieuwe JS-syntaxis voor oude browsers:\n  ' + gevonden.join('\n  '));
+  process.exit(1);
+}
+console.log('  JS-syntaxis geschikt voor Safari 12 (iOS 12): JA ✓');
+

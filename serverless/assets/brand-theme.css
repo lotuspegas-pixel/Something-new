@@ -2677,3 +2677,36 @@ body.app-mode .pair-box {
   .dash-topbar .bp-wordmark { display: none; }
   .dash-topbar .lang-pill .lang-select { min-width: 112px; }
 }
+
+/* =========================================================================
+   COMPATIBILITEIT MET OUDE iOS (Safari 12 / iOS 12, 2018)
+   De eigenschap `inset` bestaat daar niet (pas vanaf Safari 14.1). Een
+   `position: fixed` laag met alleen `inset: 0` klapt dan samen tot zijn
+   inhoudsmaat op een willekeurige plek. Voor sierlagen is dat lelijk, maar
+   voor deze vier is het funest: de toestemmingsvraag, de vergrote QR-code,
+   het blokkeerscherm en de dialogen. Zonder de toestemmingsvraag kun je op
+   zo'n toestel geen ouderunit toelaten.
+   De losse eigenschappen doen exact hetzelfde en werken overal.
+   ========================================================================= */
+.approve-wrap,
+.qr-zoom,
+.browser-block,
+.modal-back {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* Zelfde verhaal binnen het videovenster: het beeld zelf redt zich met
+   width/height 100%, maar deze lagen hebben dat niet en zouden op oude iOS
+   tot een postzegel in de hoek krimpen. */
+.vcard video,
+.vcard .night-veil,
+.vcard-ph,
+.vcard-poster {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

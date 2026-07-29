@@ -1598,8 +1598,15 @@
     $('btnFullscreen').onclick = () => {
       const v = $('video');
       if (v.webkitEnterFullscreen && !document.fullscreenElement) { try { v.webkitEnterFullscreen(); return; } catch (e) {} }
-      if (!document.fullscreenElement) ($('screen').requestFullscreen || $('screen').webkitRequestFullscreen)?.call($('screen'));
-      else (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+      // Geen optional chaining (?.): Safari 12 op iOS 12 kent dat niet en dan
+      // faalt dit hele bestand al bij het inlezen — geen enkele knop werkt meer.
+      if (!document.fullscreenElement) {
+        const fs = $('screen').requestFullscreen || $('screen').webkitRequestFullscreen;
+        if (fs) fs.call($('screen'));
+      } else {
+        const ex = document.exitFullscreen || document.webkitExitFullscreen;
+        if (ex) ex.call(document);
+      }
     };
     document.addEventListener('fullscreenchange', () => { $('screen').classList.toggle('fs', !!document.fullscreenElement); });
     // Sleep timer-kaart (Off → 15 → 30 → 60) met zichtbaar aftellen
