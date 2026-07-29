@@ -48,3 +48,6 @@ jobs:
 
       - name: E2E — tijd tot eerste beeld (snelheidsregressie)
         run: npm run test:timing
+
+      - name: E2E — oude browsers (API's van Safari 12 gesloopt)
+        run: npm run test:oldbrowser
