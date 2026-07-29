@@ -2629,3 +2629,51 @@ body.app-mode .pair-box {
 .lp-row-roles .lp-cell:first-child .lp-btn:hover {
   border-color: transparent;
 }
+
+/* =========================================================================
+   VIDEOVENSTER — breedte en de afbeelding erin.
+   ========================================================================= */
+
+/* 8. Het videovenster was smaller dan alle andere kaarten (367px waar de rest
+      410px is, op een scherm van 430px). Oorzaak: de kaart heeft een
+      `aspect-ratio` en een `min-height`, maar geen vaste breedte. Zolang de
+      browser de kaart uitrekt tot de kolombreedte klopt het; doet hij dat
+      niet — en Safari doet dat hier niet — dan rekent hij andersom en leidt
+      hij de BREEDTE af uit de minimumhoogte: 275 x 4/3 = 367px. Vandaar dat
+      het venster op de iPhone smaller was dan op de testschermen.
+      Met een expliciete breedte staat de inlinemaat vast in elke browser en
+      kan de hoogte alleen nog uit die breedte volgen — nooit omgekeerd. */
+#dviewMonitor .vcard,
+.bdash .vcard,
+.dash .vcard {
+  width: 100%;
+  max-width: 100%;
+  justify-self: stretch;
+}
+
+/* 9. De afbeelding in dat venster ("Offline"-illustratie) werd uitgerekt:
+      dit thema zette een breedte met !important, terwijl de basisopmaak al
+      een hoogte zette. Twee vaste maten op één afbeelding = vervorming
+      (228x353 werd 147x79 getoond). De hoogte volgt nu uit de breedte. */
+.vcard .poster-cam {
+  /* Maat nemen aan de HOOGTE en de breedte laten volgen: de illustratie is
+     staand (228x353), dus alleen zo houdt de kaart precies de vorm van het
+     beeld. object-fit is de vangnetregel als een van beide toch klemt. */
+  width: auto !important;
+  height: clamp(96px, 52%, 280px);
+  max-width: min(46%, 330px);
+  object-fit: contain;
+}
+
+/* 10. Taalkiezer in de dashboardbalk werd op smalle schermen samengeknepen
+       tot 52px, zodat "English" als "En…" en "Nederlands" als "Nede" werd
+       afgekapt. Het merkblok kreeg alle ruimte en de keuzelijst de rest.
+       Nu heeft de keuzelijst voorrang en wijkt het woordmerk. */
+@media (max-width: 600px) {
+  .dash-topbar .lang-pill { flex: 0 0 auto; }
+  .dash-topbar .lang-pill .lang-select { min-width: 104px; }
+}
+@media (max-width: 480px) {
+  .dash-topbar .bp-wordmark { display: none; }
+  .dash-topbar .lang-pill .lang-select { min-width: 112px; }
+}
