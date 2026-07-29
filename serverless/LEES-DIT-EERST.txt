@@ -3,14 +3,17 @@ BabyPhone.online — uploaden naar Hostinger
 
 INHOUD VAN DE DOWNLOAD
 ----------------------
-De download bestaat uit 2 zip-bestanden, omdat het geheel te groot is voor
+De download bestaat uit 4 zip-bestanden, omdat het geheel te groot is voor
 een enkele bijlage. Ze horen bij elkaar:
 
   1. BabyPhoneOnline-WEBSITE.zip   de complete website
-  2. BabyPhoneOnline-MUZIEK.zip    de slaapliedjes
+  2. BabyPhoneOnline-MUZIEK-1.zip  slaapliedjes (deel 1)
+  3. BabyPhoneOnline-MUZIEK-2.zip  slaapliedjes (deel 2)
+  4. BabyPhoneOnline-MUZIEK-3.zip  slaapliedjes (deel 3) + playlist.json
 
-Pak ze allebei uit in DEZELFDE map. De tweede vult de map "music" aan die
-naast index.html hoort te staan.
+Pak ze ALLEMAAL uit in DEZELFDE map. De drie muziekbestanden vullen samen
+de map "music" die naast index.html hoort te staan. Deel 3 bevat
+playlist.json; zonder dat bestand blijft de lijst met slaapliedjes leeg.
 
 Na het uitpakken ziet de map er zo uit:
 
@@ -24,7 +27,7 @@ Na het uitpakken ziet de map er zo uit:
   og-image.jpg
   assets/             <- afbeeldingen, merkbestanden, stylesheet
   fonts/              <- lettertypes
-  music/              <- 4 slaapliedjes + playlist.json
+  music/              <- 9 slaapliedjes + playlist.json
 
 
 UPLOADEN
