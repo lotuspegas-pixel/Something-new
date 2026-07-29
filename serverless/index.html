@@ -706,6 +706,56 @@
         <p data-i18n="unsupportedBody">This page needs camera, microphone and video-call support that this browser doesn't have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.</p>
       </div>
     </div>
+    <!-- Foutmelder voor oude toestellen. Bewust in ouderwets JavaScript (geen
+         pijlfuncties, geen const) zodat dit blok zelf op elke browser leest,
+         en bewust VOOR alle andere scripts zodat het hun inleesfouten opvangt.
+         Faalt een script bij het inlezen, dan blijft de pagina er normaal
+         uitzien maar werkt geen enkele knop; zonder dit blok is er op een iPad
+         geen enkele manier om te zien waaraan dat ligt. -->
+    <script>
+      (function () {
+        function toon(tekst) {
+          try {
+            var d = document.getElementById('bootError');
+            if (!d) {
+              d = document.createElement('div');
+              d.id = 'bootError';
+              d.setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
+                + 'background:#7a1020;color:#fff;font:13px/1.45 -apple-system,system-ui,sans-serif;'
+                + 'padding:12px 14px;max-height:45%;overflow:auto;-webkit-overflow-scrolling:touch');
+              var t = document.createElement('div');
+              t.setAttribute('style', 'font-weight:700;margin-bottom:6px');
+              t.appendChild(document.createTextNode('Deze browser kan de app niet starten'));
+              d.appendChild(t);
+              var p = document.createElement('pre');
+              p.id = 'bootErrorText';
+              p.setAttribute('style', 'margin:0;white-space:pre-wrap;word-break:break-word;font:12px/1.4 ui-monospace,Menlo,monospace');
+              d.appendChild(p);
+              var h = document.createElement('div');
+              h.setAttribute('style', 'margin-top:8px;opacity:.85');
+              h.appendChild(document.createTextNode('Stuur deze tekst door, dan is te zien wat er misgaat.'));
+              d.appendChild(h);
+              (document.body || document.documentElement).appendChild(d);
+            }
+            var pre = document.getElementById('bootErrorText');
+            pre.appendChild(document.createTextNode(tekst + '\n'));
+          } catch (e) {}
+        }
+        window.addEventListener('error', function (e) {
+          // Alleen echte scriptfouten melden. Een plaatje of geluid dat niet
+          // laadt vuurt hetzelfde event af, maar zonder message — dat is geen
+          // reden om een rode balk te tonen.
+          if (!e || !e.message) return;
+          var bron = e.filename ? String(e.filename).split('/').pop() : 'onbekend';
+          var regel = e.lineno ? ' regel ' + e.lineno : '';
+          toon(e.message + '  [' + bron + regel + ']');
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e && e.reason;
+          toon('Niet-afgehandelde fout: ' + (r && r.message ? r.message : String(r)));
+        });
+      })();
+    </script>
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>
     <script src="vendor/peerjs.min.js"></script>

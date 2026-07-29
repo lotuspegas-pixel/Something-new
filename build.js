@@ -89,30 +89,39 @@ if (extTags.length) {
 }
 console.log('  externe script/style-verwijzingen: GEEN ✓');
 
-// Sanity: geen taalconstructies die oudere browsers al bij het INLEZEN laten
-// falen. Eén zo'n teken maakt het hele script ongeldig — de pagina rendert
-// dan wel, maar geen enkele knop werkt. Dat is precies wat er op iOS 12
-// gebeurde. Deze grens is Safari 12 (iOS 12, 2018), het oudste toestel waar
-// we de app op willen laten werken.
-const OUD_BROWSER_VERBOD = [
-  [/\?\.[a-zA-Z_$(\[]/, 'optional chaining (?.) — vanaf Safari 13.1'],
-  [/\?\?[^?]/, 'nullish coalescing (??) — vanaf Safari 13.1'],
-  [/(?:\|\|=|&&=|\?\?=)/, 'logische toewijzing (||= &&= ??=) — vanaf Safari 14'],
-  [/\.replaceAll\(/, 'String.replaceAll — vanaf Safari 13.1'],
-  [/Object\.fromEntries/, 'Object.fromEntries — vanaf Safari 12.1'],
-  [/Promise\.allSettled/, 'Promise.allSettled — vanaf Safari 13'],
-  [/globalThis/, 'globalThis — vanaf Safari 12.1'],
-  [/structuredClone/, 'structuredClone — vanaf Safari 15.4'],
-];
-const jsUitBundel = scripts.map((f) => fs.readFileSync(path.join(SL, f), 'utf8')).join('\n');
-const gevonden = [];
-for (const [re, uitleg] of OUD_BROWSER_VERBOD) {
-  const m = jsUitBundel.match(re);
-  if (m) gevonden.push(uitleg + '  → gevonden: ' + JSON.stringify(m[0]));
+// Sanity: alle JS moet leesbaar zijn voor de oudste browser die we willen
+// bedienen — Safari 12 (iOS 12, 2018), dat ES2018 spreekt. Iets nieuwers is
+// geen fout tijdens het uitvoeren maar bij het INLEZEN: het hele bestand wordt
+// dan ongeldig en er wordt geen enkele knop aangekoppeld. De pagina rendert
+// wel gewoon door, dus je ziet een normale maar volledig dode website.
+//
+// Dit gebeurde echt: eerst een `?.` in app.js en peerjs, daarna een
+// `static NOTE = {}` in lullaby.js. Een eerdere controle met zoekpatronen
+// miste dat tweede geval volledig — daarom staat hier nu een echte parser.
+{
+  let acorn = null;
+  try { acorn = require('acorn'); } catch (e) { /* hieronder afgehandeld */ }
+  if (!acorn) {
+    console.error('acorn ontbreekt; kan de browsercompatibiliteit niet controleren.');
+    console.error('Draai eerst: npm install');
+    process.exit(1);
+  }
+  const stuk = [];
+  for (const f of scripts) {
+    const src = fs.readFileSync(path.join(SL, f), 'utf8');
+    try {
+      acorn.parse(src, { ecmaVersion: 2018 });
+    } catch (e) {
+      const pos = e.pos || 0;
+      const regel = src.slice(0, pos).split('\n').length;
+      stuk.push(f + ' (regel ' + regel + '): ' + e.message + '\n      rond: ' +
+        JSON.stringify(src.slice(Math.max(0, pos - 60), pos + 60).replace(/\n/g, ' ')));
+    }
+  }
+  if (stuk.length) {
+    console.error('Te nieuwe JS-syntaxis voor Safari 12 (iOS 12):\n  ' + stuk.join('\n  '));
+    process.exit(1);
+  }
+  console.log('  JS leesbaar voor Safari 12 (ES2018, ' + scripts.length + ' bestanden): JA ✓');
 }
-if (gevonden.length) {
-  console.error('Te nieuwe JS-syntaxis voor oude browsers:\n  ' + gevonden.join('\n  '));
-  process.exit(1);
-}
-console.log('  JS-syntaxis geschikt voor Safari 12 (iOS 12): JA ✓');
 
