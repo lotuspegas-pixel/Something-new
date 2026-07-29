@@ -1208,13 +1208,19 @@ body.app-mode #dviewMonitor .mplayer { grid-area: music; }
    Let op: assets/brand-theme.css laadt ná dit bestand, dus deze regels hebben
    bewust een hogere specificiteit (body.app-mode … ) om te winnen.
    --------------------------------------------------------------------------- */
-@media (min-width: 341px) {
+/* Grens op 421px en niet op 341px. Reden: het merkblok heeft overflow:hidden
+   en beeldmerk + woordmerk + taalkiezer + tandwiel passen samen pas vanaf
+   ongeveer 412px in de balk. Daaronder werd het woordmerk afgekapt tot
+   "Babyphone.Onlin" — zichtbaar op iPhone SE (375), iPhone 12-15 (390) en
+   veel Androids (360). Het beeldmerk ernaast draagt het merk daar prima, en
+   "Ouderunit"/"Babyunit" staat er direct onder. */
+@media (min-width: 421px) {
   body.app-mode .dash-topbar .bp-wordmark {
     display: inline-flex !important;
     font-size: clamp(12px, 3.4vw, 20px);
   }
 }
-@media (max-width: 340px) {
+@media (max-width: 420px) {
   body.app-mode .dash-topbar .bp-wordmark { display: none !important; }
 }
 

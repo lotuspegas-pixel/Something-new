@@ -950,6 +950,15 @@
   // ICE-onderhandeling die met de videoverbinding zou concurreren.
   function startTalkback() {
     if (talkCall || !micStream || !peer || !currentBabyId) return;
+    // Nooit bellen vóór 'authOk'. De babyunit gooit een gesprek van een nog
+    // niet toegelaten toestel meteen dicht (zie peer.on('call') daar), en dat
+    // dode gesprek bleef daarna in talkCall staan — waardoor de bovenste
+    // controle élke volgende poging afkapte en terugpraten de rest van de
+    // sessie stil bleef, terwijl de knop wél op "aan" stond. Bij een
+    // handmatig ingetypte code staat het ouderdashboard al open terwijl er nog
+    // op "Toestaan" gewacht wordt, dus die knop is daar echt in te drukken.
+    // Zodra 'authOk' binnen is, wordt startTalkback() alsnog aangeroepen.
+    if (!linkApproved) return;
     try {
       micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
       talkCall = peer.call(currentBabyId, micStream, CALL_OPTS);
@@ -958,6 +967,14 @@
       // legitiem sluiten zonder dat de gezonde videoverbinding als wegval
       // geldt. Alleen de PC van het babybeeld telt.
       if (talkCall && !mediaPc) { mediaPc = talkCall.peerConnection || mediaPc; }
+      // Sluit het terugpraatkanaal (van welke kant dan ook), dan moet talkCall
+      // weer leeg — anders blijft er een dood gesprek staan dat een nieuwe
+      // poging blokkeert. Alleen het HUIDIGE gesprek opruimen, net als bij
+      // attachControl: een oude 'close' mag een net gestart gesprek niet wissen.
+      if (talkCall) {
+        const tc = talkCall;
+        tc.on('close', () => { if (talkCall === tc) talkCall = null; });
+      }
       if (talkCall) setTimeout(() => tuneAudioSender(talkCall && talkCall.peerConnection), 1000);
       // De babyunit zet zolang echo-onderdrukking aan op zijn microfoon,
       // anders zingt het rond: ouder → babyspeaker → babymicrofoon → ouder.
