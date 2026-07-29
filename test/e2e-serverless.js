@@ -396,6 +396,208 @@ function findExecutable() {
   await cB3.close().catch(() => {});
   await cP3.close();
 
+  // ---- camera wisselen: er moet écht een ánder toestel actief worden ------
+  // De klacht: "je ziet op de babyunit dat er iets gebeurt, maar daarna
+  // verschijnt hetzelfde camerabeeld weer" (iPad Pro 2022). Twee gedragingen
+  // van iOS/iPadOS veroorzaken dat, en beide worden hier nagebootst:
+  //
+  //   IPAD_SIM  zolang er nog een videospoor van de camera leeft, geeft
+  //             getUserMedia dat toestel terug — wat je ook vraagt. Alleen wie
+  //             het oude spoor éérst stopt, krijgt de gevraagde camera.
+  //   LOCK_SIM  elke andere camera weigert open te gaan; dan moet de
+  //             oorspronkelijke camera terugkomen (beeld nooit zwart) én moet
+  //             de app dat eerlijk melden in plaats van "Camera switched".
+  //
+  // Deze tests draaien op een tweede Chromium met twee nepcamera's, want de
+  // standaardbrowser hierboven heeft er maar één.
+  const browser2 = await chromium.launch({
+    executablePath: findExecutable(),
+    headless: true,
+    args: [
+      '--use-fake-device-for-media-stream=device-count=2',
+      '--use-fake-ui-for-media-stream',
+      '--autoplay-policy=no-user-gesture-required',
+    ],
+  });
+  const IPAD_SIM = `
+    (function () {
+      const real = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      const live = [];
+      navigator.mediaDevices.getUserMedia = async function (c) {
+        let req = c;
+        if (c && c.video && live.length) {
+          req = Object.assign({}, c, { video: { deviceId: { exact: live[0] } } });
+        }
+        const s = await real(req);
+        s.getVideoTracks().forEach(function (t) {
+          let id = '';
+          try { id = (t.getSettings() || {}).deviceId || ''; } catch (e) {}
+          live.push(id);
+          const stop = t.stop.bind(t);
+          t.stop = function () {
+            const i = live.indexOf(id); if (i >= 0) live.splice(i, 1);
+            return stop();
+          };
+        });
+        return s;
+      };
+    })();
+  `;
+  const LOCK_SIM = `
+    (function () {
+      const real = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      let first = '';
+      navigator.mediaDevices.getUserMedia = async function (c) {
+        if (c && c.video && first) {
+          const d = c.video.deviceId;
+          const want = d && (d.exact || d);
+          if (want !== first) throw new DOMException('camera in use', 'NotReadableError');
+        }
+        const s = await real(c);
+        s.getVideoTracks().forEach(function (t) {
+          if (!first) { try { first = (t.getSettings() || {}).deviceId || ''; } catch (e) {} }
+        });
+        return s;
+      };
+    })();
+  `;
+  // Babyunit + ouderunit koppelen op een gegeven browser; extraInit draait
+  // alleen op de babyunit (daar zit de camera).
+  let camPairN = 0;
+  const pairUp = async (br, extraInit) => {
+    const tag = 'CAM' + (++camPairN);
+    const cb = await br.newContext({ permissions: ['camera', 'microphone'] });
+    await cb.addInitScript(INIT + (extraInit || ''));
+    const bp = await cb.newPage();
+    bp.on('pageerror', (e) => errs.push('BABY-' + tag + ': ' + e.message));
+    await bp.goto(BASE); await sleep(400);
+    await bp.click('#pickBaby');
+    let cd = '';
+    for (let i = 0; i < 40; i++) {
+      cd = await bp.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+      if (/^[A-Z0-9]{6}$/.test(cd)) break;
+      await sleep(300);
+    }
+    const cp = await br.newContext({ permissions: ['camera', 'microphone'] });
+    await cp.addInitScript(INIT);
+    const pp = await cp.newPage();
+    pp.on('pageerror', (e) => errs.push('PARENT-' + tag + ': ' + e.message));
+    await pp.goto(BASE); await sleep(300);
+    await pp.click('#pickParent');
+    await pp.fill('#parentOfferInput', cd);
+    await pp.click('#parentGenBtn');
+    await approve(bp);
+    const t = Date.now();
+    while (Date.now() - t < 25000) {
+      const w = await pp.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+      if (w > 0) break;
+      await sleep(300);
+    }
+    return { cb, cp, baby: bp, parent: pp };
+  };
+  // Welk cameratoestel staat er nu echt aan op de babyunit?
+  const camState = (pg) => pg.evaluate(() => {
+    const v = document.getElementById('bPreview');
+    const st = v && v.srcObject;
+    const t = st && st.getVideoTracks()[0];
+    if (!t) return { id: '', label: '', live: false };
+    let id = '';
+    try { id = (t.getSettings() || {}).deviceId || ''; } catch (e) {}
+    return { id: id, label: t.label, live: t.readyState === 'live' };
+  });
+  const flipNote = (pg) => pg.$eval('#flipCamNote', (e) => e.textContent.trim()).catch(() => '(geen melding)');
+  // De toast leegmaken en daarna op de eerstvolgende wachten. De toast bestaat
+  // in élke versie van de app, dus meldingen die híerop worden gecontroleerd
+  // meten echt gedrag en niet enkel of er nieuwe markup aanwezig is.
+  const clearToast = (pg) => pg.evaluate(() => {
+    const t = document.getElementById('toast');
+    if (t) { t.textContent = ''; t.classList.add('hidden'); }
+  });
+  const waitToast = async (pg, ms) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < (ms || 9000)) {
+      const cur = await pg.evaluate(() => {
+        const t = document.getElementById('toast');
+        return t && !t.classList.contains('hidden') ? t.textContent.trim() : '';
+      });
+      if (cur) return cur;
+      await sleep(150);
+    }
+    return '(geen melding)';
+  };
+
+  // 1) twee camera's + iPadOS-gedrag → er moet een ánder deviceId actief worden
+  const sA = await pairUp(browser2, IPAD_SIM);
+  const camBefore = await camState(sA.baby);
+  await sA.baby.click('#tgFlipCam');
+  await sleep(2500);
+  const camAfter = await camState(sA.baby);
+  check(
+    'Camera wisselen levert écht een ánder toestel op ("' + camBefore.label + '" → "' + camAfter.label + '")',
+    !!camBefore.id && !!camAfter.id && camAfter.id !== camBefore.id && camAfter.live
+  );
+  check('Melding klopt bij een geslaagde wissel ("' + (await flipNote(sA.baby)) + '")',
+    (await flipNote(sA.baby)) === 'Camera switched');
+  // Vangrail: de nieuwe camera moet écht beelden leveren — 'readyState: live'
+  // zegt op zichzelf niets. Dit meet op de babyunit zelf of het voorbeeldbeeld
+  // doorloopt op de nieuwe camera, én of het WebRTC-spoor daadwerkelijk is
+  // omgehangen naar dat nieuwe apparaat.
+  //
+  // Bewust NIET gemeten: of de ouderunit na de wissel nog frames binnenkrijgt.
+  // Chromium's tweede nepcamera levert wel beeld aan een <video>, maar voedt de
+  // WebRTC-encoder niet (media-source blijft op 0 fps). Losstaand nagemeten in
+  // een kale RTCPeerConnection-loopback, buiten deze app om: replaceTrack naar
+  // nepcamera 2 → 0 gecodeerde frames, naar een vers spoor van nepcamera 1 → ~50.
+  // Dat is een beperking van de testcamera's, niet van de app; daarop
+  // controleren zou een fout melden die er niet is.
+  const babyFrames = async () => sA.baby.evaluate(() => {
+    const v = document.getElementById('bPreview');
+    return v ? v.currentTime : 0;
+  });
+  const fr1 = await babyFrames();
+  await sleep(1500);
+  const fr2 = await babyFrames();
+  check('Nieuwe camera levert echt beeld op de babyunit (' + fr1.toFixed(2) + 's → ' + fr2.toFixed(2) + 's)',
+    fr2 - fr1 > 0.3);
+  const senderLabel = await sA.baby.evaluate(() => {
+    for (const pc of (window.__pcs || [])) {
+      const s = pc.getSenders && pc.getSenders().find((x) => x.track && x.track.kind === 'video');
+      if (s) return s.track.label;
+    }
+    return '';
+  });
+  check('WebRTC-zender staat op de nieuwe camera ("' + senderLabel + '")', senderLabel === camAfter.label);
+  await sA.cb.close().catch(() => {}); await sA.cp.close().catch(() => {});
+
+  // 2) maar één camera → eigen melding, niet "gewisseld" (browser met 1 nepcamera).
+  // De oude code meldde hier onvoorwaardelijk "Camera switched": de app loog.
+  const sB = await pairUp(browser, '');
+  await clearToast(sB.baby);
+  await sB.baby.click('#tgFlipCam');
+  const toastOne = await waitToast(sB.baby);
+  check('Eén camera krijgt een eigen melding i.p.v. "gewisseld" ("' + toastOne + '")',
+    toastOne === 'This device has only one camera');
+  check('Eén camera: blijvende melding onder de knop ("' + (await flipNote(sB.baby)) + '")',
+    (await flipNote(sB.baby)) === 'This device has only one camera');
+  await sB.cb.close().catch(() => {}); await sB.cp.close().catch(() => {});
+
+  // 3) wisselen lukt echt niet → oorspronkelijke camera terug + eerlijke melding.
+  // De eerste controle is een vangrail bij de nieuwe volgorde (oude spoor éérst
+  // stoppen): dat mag nooit een zwart beeld achterlaten als er daarna geen
+  // enkele camera meer opengaat.
+  const sC = await pairUp(browser2, LOCK_SIM);
+  const lockBefore = await camState(sC.baby);
+  await clearToast(sC.baby);
+  await sC.baby.click('#tgFlipCam');
+  const toastFail = await waitToast(sC.baby);
+  const lockAfter = await camState(sC.baby);
+  check('Mislukte wissel: beeld blijft niet zwart, oorspronkelijke camera komt terug',
+    lockAfter.live && !!lockAfter.id && lockAfter.id === lockBefore.id);
+  check('Mislukte wissel: melding zegt dat er niet gewisseld is ("' + toastFail + '")',
+    toastFail === 'Switching failed — the same camera stayed on');
+  await sC.cb.close().catch(() => {}); await sC.cp.close().catch(() => {});
+  await browser2.close();
+
   // ---- herverbinden zonder opnieuw toestemming te vragen ----
   // Gemelde fout: na een wegval vroeg de babyunit opnieuw om toestemming voor
   // hetzelfde toestel. Dat is onmogelijk te geven als je niet bij de babyunit

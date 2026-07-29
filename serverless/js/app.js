@@ -682,6 +682,12 @@
       return;
     }
     $('bPreview').srcObject = localStream;
+    // Vastleggen met welke camera we begonnen zijn: Safari geeft niet altijd
+    // een deviceId terug via getSettings(), dus dit is straks het houvast bij
+    // wisselen en bij herstel na een wegval.
+    const v0 = trackIdent(localStream.getVideoTracks()[0]);
+    babyCamId = v0.id || '';
+    if (v0.facing === 'user' || v0.facing === 'environment') facing = v0.facing;
     localStream.getTracks().forEach((t) => watchTrackEnd(t, t.kind));
     openBabyPeer();
   }
@@ -1523,52 +1529,244 @@
     reportCameras();
     reportTorch();
   }
-  async function flipCamera() {
-    facing = facing === 'environment' ? 'user' : 'environment';
+  // ---- camerawissel op de babyunit ----------------------------------------
+  // Waarom dit zo omslachtig is: `facingMode` is in de spec een *voorkeur*, geen
+  // eis. iPadOS/Safari mag dus doodleuk dezelfde camera teruggeven. Je ziet dan
+  // wel iets gebeuren (het spoor wordt vervangen, het beeld hapert) maar je
+  // krijgt hetzelfde apparaat terug. Daar bovenop houdt iOS een al geopende
+  // camera vast: vraag je een nieuwe aan terwijl het oude spoor nog leeft, dan
+  // krijg je gegarandeerd het bezette apparaat. Vandaar: altijd op deviceId met
+  // { exact: ... }, altijd het oude spoor éérst stoppen, en achteraf verifiëren
+  // dat er echt een ánder apparaat actief is.
+
+  // Onthoudt welke camera we zelf geopend hebben. Safari geeft lang niet altijd
+  // een deviceId terug via track.getSettings(), dus we vertrouwen niet blind op
+  // de browser om te weten waar we staan.
+  let babyCamId = '';
+  let switchingCam = false;
+
+  function trackIdent(track) {
+    let id = '', fm = '';
+    if (track && track.getSettings) {
+      try { const s = track.getSettings() || {}; id = s.deviceId || ''; fm = s.facingMode || ''; } catch (e) {}
+    }
+    return { id: id, facing: fm, label: (track && track.label) || '' };
+  }
+  // Is dit echt een ánder apparaat? deviceId is het harde bewijs; ontbreekt dat
+  // (Safari), dan zeggen label en facingMode genoeg. Is er niets te vergelijken,
+  // dan vertrouwen we op de 'exact'-constraint: die had moeten falen als de
+  // gevraagde camera niet gegeven kon worden.
+  function sameCamera(a, b) {
+    if (a.id && b.id) return a.id === b.id;
+    if (a.label && b.label) return a.label === b.label;
+    if (a.facing && b.facing) return a.facing === b.facing;
+    return false;
+  }
+  // Voor- of achtercamera afleiden uit het apparaatlabel. Labels zijn
+  // OS-taalafhankelijk, dus dit is een hulpmiddel bij het kiezen van een
+  // kandidaat — nooit het bewijs dat de wissel geslaagd is.
+  function camSideFromLabel(label) {
+    const s = (label || '').toLowerCase();
+    if (/front|facetime|user|selfie|voor|frontal|avant|vorder|anterior|dianteira/.test(s)) return 'user';
+    if (/back|rear|environment|world|achter|arri|hinter|trasera|traseira|posteriore|wide|ultra/.test(s)) return 'environment';
+    return '';
+  }
+  // Eén camera openen. Geeft het videospoor terug, of null als het niet lukt.
+  async function openCam(videoConstraint) {
+    const base = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } };
+    const v = videoConstraint === true ? true : Object.assign({}, base, videoConstraint);
     try {
-      const ns = await getMedia({ audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } } });
-      const nt = ns.getVideoTracks()[0];
-      const ot = localStream.getVideoTracks()[0];
-      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video');
-      if (sender) await sender.replaceTrack(nt);
-      if (ot) { localStream.removeTrack(ot); ot.stop(); }
-      localStream.addTrack(nt);
-      watchTrackEnd(nt, 'video');
-      torchOn = false;
-      $('bPreview').srcObject = localStream;
-      toast(T('cameraSwitched'));
-      reportCameras();
-      reportTorch();
-    } catch (e) {
-      facing = facing === 'environment' ? 'user' : 'environment';
-      toast(T('cannotSwitch'));
+      const ns = await getMedia({ audio: false, video: v });
+      const t = ns.getVideoTracks()[0];
+      if (!t) { ns.getTracks().forEach((x) => { try { x.stop(); } catch (e) {} }); return null; }
+      return t;
+    } catch (e) { return null; }
+  }
+  // Het uitgaande videospoor éérst loskoppelen van de WebRTC-zender, dán pas
+  // stoppen. Omdat we het oude spoor nu moeten stoppen vóórdat de nieuwe camera
+  // wordt aangevraagd (anders geeft iOS de al bezette camera terug), zou de
+  // zender anders seconden lang op een beëindigd spoor blijven staan — precies
+  // de duur van de getUserMedia-aanvraag. replaceTrack(null) is de nette manier
+  // om een zender vast te houden zonder bron. Gemeten in Chromium hervat het
+  // coderen in beide volgordes even goed; dit is dus een voorzorg, geen
+  // noodgreep. Geeft de zender terug, want na replaceTrack(null) is die niet
+  // meer aan zijn spoor terug te vinden.
+  async function detachVideoSender() {
+    const sender = (mediaPc && mediaPc.getSenders)
+      ? mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video')
+      : null;
+    if (sender) { try { await sender.replaceTrack(null); } catch (e) {} }
+    return sender || null;
+  }
+  // Nieuw videospoor in de uitgaande stream hangen (WebRTC-zender, preview,
+  // torch-status) en de bijgehouden camerastatus meebijwerken. `sender` komt uit
+  // detachVideoSender(); na een replaceTrack(null) is de zender namelijk niet
+  // meer op zijn spoor terug te vinden.
+  async function attachVideoTrack(nt, sender) {
+    const ot = localStream.getVideoTracks()[0];
+    const snd = sender || ((mediaPc && mediaPc.getSenders)
+      ? mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video')
+      : null);
+    if (snd) { try { await snd.replaceTrack(nt); } catch (e) {} }
+    if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+    // Het beeld moet de camerastand van vóór de wissel volgen: stond de camera
+    // uit (privacy shade / audio-only), dan blijft die uit.
+    const swCam = $('swCam');
+    if (swCam && !swCam.classList.contains('on')) nt.enabled = false;
+    localStream.addTrack(nt);
+    watchTrackEnd(nt, 'video');
+    torchOn = false; // nieuw spoor → LED weer uit
+    const info = trackIdent(nt);
+    babyCamId = info.id || '';
+    if (info.facing === 'user' || info.facing === 'environment') facing = info.facing;
+    else { const side = camSideFromLabel(info.label); if (side) facing = side; }
+    const pv = $('bPreview'); if (pv) pv.srcObject = localStream;
+    reportCameras();
+    reportTorch();
+  }
+  // Zichtbare, blijvende melding onder de "Wissel camera"-knop. Een toast is na
+  // drie seconden weg; juist bij een mislukte wissel moet de gebruiker het nog
+  // kunnen lezen. Via data-i18n loopt de tekst mee met de taalkeuze.
+  const FLIP_NOTE_DEFAULT = 'switchCameraSub';
+  let flipNoteTimer = 0;
+  function setFlipNote(key, sticky) {
+    const el = $('flipCamNote');
+    clearTimeout(flipNoteTimer);
+    if (!el) return;
+    el.setAttribute('data-i18n', key);
+    el.textContent = T(key);
+    if (!sticky && key !== FLIP_NOTE_DEFAULT) {
+      flipNoteTimer = setTimeout(() => setFlipNote(FLIP_NOTE_DEFAULT, true), 6000);
     }
   }
-  // Wissel van camera op de babyunit. Bij toestellen met meer dan twee
-  // camera's (bv. meerdere achterlenzen) rouleren we per deviceId; anders
-  // klappen we simpelweg tussen voor- en achtercamera (facingMode). Wordt
-  // aangeroepen door de zichtbare "Wissel camera"-knop op de babyunit én
-  // door het 'flip'-commando dat de ouderunit op afstand kan sturen.
-  async function babyCycleCamera() {
-    if (role !== 'baby' || !localStream) return;
-    let cams = [];
+  // Camera's van dit toestel opsommen (alleen die met een bruikbaar deviceId —
+  // zonder id kunnen we niet gericht wisselen).
+  async function listCameras() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
     try {
       const devs = await navigator.mediaDevices.enumerateDevices();
-      cams = devs.filter((d) => d.kind === 'videoinput' && d.deviceId);
-    } catch (e) {}
-    if (cams.length >= 2) {
-      let curId = '';
-      const vt = localStream.getVideoTracks()[0];
-      if (vt && vt.getSettings) { try { curId = vt.getSettings().deviceId || ''; } catch (e) {} }
-      const idx = cams.findIndex((c) => c.deviceId === curId);
-      const next = cams[(idx + 1 + cams.length) % cams.length] || cams[0];
-      // Val terug op een voor/achter-flip als die specifieke camera niet
-      // geopend kan worden (bv. verouderd deviceId of 'exact' geweigerd).
-      const ok = await selectCamera(next.deviceId, { silentFail: true });
-      if (!ok) await flipCamera();
-    } else {
-      await flipCamera();
+      return devs.filter((d) => d.kind === 'videoinput' && d.deviceId);
+    } catch (e) { return []; }
+  }
+  // Terugvaloptie als het wisselen helemaal niet lukt: haal de oorspronkelijke
+  // camera terug, zodat het beeld nooit zwart blijft staan.
+  async function restoreCamera(prev, sender) {
+    let t = null;
+    if (prev.id) t = await openCam({ deviceId: { exact: prev.id } });
+    if (!t && prev.side) t = await openCam({ facingMode: prev.side });
+    if (!t) t = await openCam(true);
+    if (t) await attachVideoTrack(t, sender);
+    return !!t;
+  }
+
+  // Wissel van camera op de babyunit. Wordt aangeroepen door de zichtbare
+  // "Wissel camera"-knop op de babyunit én door het 'flip'-commando dat de
+  // ouderunit op afstand stuurt.
+  //
+  // We mikken op de andere kant (voor ↔ achter) in plaats van blind door de
+  // lijst te rouleren: een iPad Pro meldt meerdere achterlenzen, en van de ene
+  // achtercamera naar de andere springen ziet er voor de gebruiker uit alsof er
+  // niets gebeurt.
+  async function babyCycleCamera() {
+    if (role !== 'baby' || !localStream || switchingCam) return;
+    const oldTrack = localStream.getVideoTracks()[0];
+    if (!oldTrack) return;
+    switchingCam = true;
+    try {
+      const cur = trackIdent(oldTrack);
+      const curId = cur.id || babyCamId || '';
+      const curSide = cur.facing || camSideFromLabel(cur.label) || facing;
+      const wantSide = curSide === 'user' ? 'environment' : 'user';
+      const cams = await listCameras();
+
+      // Is de huidige camera de enige? Dan is er niets te wisselen — dat is een
+      // ander verhaal dan "het wisselen is mislukt" en verdient een eigen tekst.
+      if (cams.length === 1) {
+        setFlipNote('onlyOneCamera', true);
+        toast(T('onlyOneCamera'));
+        return;
+      }
+
+      // Kandidaten op volgorde: eerst de gewenste kant, dan camera's waarvan we
+      // de kant niet uit het label kunnen lezen, dan de rest. De camera waar we
+      // nu op staan valt af.
+      const isCurrent = (d) => (curId ? d.deviceId === curId : (!!cur.label && d.label === cur.label));
+      const others = cams.filter((d) => !isCurrent(d));
+      const wanted = [], unknown = [], rest = [];
+      others.forEach((d) => {
+        const side = camSideFromLabel(d.label);
+        if (side === wantSide) wanted.push(d);
+        else if (!side) unknown.push(d);
+        else rest.push(d);
+      });
+      const queue = wanted.concat(unknown, rest);
+
+      // Zonder bruikbare apparatenlijst valt er niets gericht te kiezen; dan
+      // proberen we alsnog een strikte voor/achter-flip.
+      if (!queue.length) {
+        const ok = await flipCamera();
+        if (!ok) {
+          // Alleen "één camera" melden als we dat écht weten. Bij een lege lijst
+          // (enumerateDevices geweigerd of niet beschikbaar) weten we het niet,
+          // en dan is "wisselen mislukt" het eerlijke antwoord.
+          const only = cams.length === 1;
+          setFlipNote(only ? 'onlyOneCamera' : 'cameraSwitchFailed', true);
+          toast(T(only ? 'onlyOneCamera' : 'cameraSwitchFailed'));
+        }
+        return;
+      }
+
+      // Oude spoor éérst loskoppelen én vrijgeven — anders geeft iOS/iPadOS
+      // gewoon de al bezette camera terug in plaats van de gevraagde.
+      const prev = { id: curId, side: curSide };
+      const sender = await detachVideoSender();
+      try { localStream.removeTrack(oldTrack); } catch (e) {}
+      try { oldTrack.stop(); } catch (e) {}
+
+      let done = false;
+      for (let i = 0; i < queue.length && !done; i++) {
+        const nt = await openCam({ deviceId: { exact: queue[i].deviceId } });
+        if (!nt) continue;
+        // Verifiëren: kregen we écht een ander apparaat? Zo niet, dan dit spoor
+        // netjes opruimen en de volgende kandidaat proberen.
+        if (sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} continue; }
+        await attachVideoTrack(nt, sender);
+        done = true;
+      }
+      if (done) {
+        setFlipNote('cameraSwitched');
+        toast(T('cameraSwitched'));
+      } else {
+        // Niets gelukt: oorspronkelijke camera terughalen, beeld mag niet zwart
+        // blijven — en eerlijk melden dat er niet gewisseld is.
+        await restoreCamera(prev, sender);
+        setFlipNote('cameraSwitchFailed', true);
+        toast(T('cameraSwitchFailed'));
+      }
+    } finally {
+      switchingCam = false;
     }
+  }
+  // Strikte voor/achter-flip. `facingMode: { exact }` is een eis in plaats van
+  // een voorkeur: een toestel zonder die kant geeft nu een fout in plaats van
+  // stilletjes dezelfde camera. Geeft true terug als er echt gewisseld is.
+  async function flipCamera() {
+    if (!localStream) return false;
+    const oldTrack = localStream.getVideoTracks()[0];
+    const cur = trackIdent(oldTrack);
+    const curSide = cur.facing || camSideFromLabel(cur.label) || facing;
+    const wantSide = curSide === 'user' ? 'environment' : 'user';
+    const prev = { id: cur.id || babyCamId || '', side: curSide };
+    const sender = await detachVideoSender();
+    if (oldTrack) {
+      try { localStream.removeTrack(oldTrack); } catch (e) {}
+      try { oldTrack.stop(); } catch (e) {}
+    }
+    let nt = await openCam({ facingMode: { exact: wantSide } });
+    if (nt && oldTrack && sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} nt = null; }
+    if (!nt) { await restoreCamera(prev, sender); return false; }
+    await attachVideoTrack(nt, sender);
+    return true;
   }
   // Herstel van camera/microfoon als het besturingssysteem het spoor hard
   // beëindigt (bv. na lang op de achtergrond of scherm-uit op sommige
@@ -1581,11 +1779,30 @@
   async function recoverBabyTrack(kind) {
     if (shuttingDown || role !== 'baby' || !localStream) return;
     if (kind === 'video' ? recoveringVideo : recoveringAudio) return;
+    // Niet doorheen een lopende camerawissel fietsen: die stopt zelf even het
+    // oude spoor, wat hier anders als "camera weggevallen" gelezen wordt.
+    if (kind === 'video' && switchingCam) return;
     if (kind === 'video') recoveringVideo = true; else recoveringAudio = true;
     try {
-      const constraints = kind === 'video'
-        ? { audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } } }
-        : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false };
+      if (kind === 'video') {
+        // Het weggevallen spoor eerst van de zender halen en opruimen: het is al
+        // 'ended' en de camera moet vrij zijn vóór we opnieuw aanvragen (zie
+        // detachVideoSender).
+        const sender = await detachVideoSender();
+        const ot = localStream.getVideoTracks()[0];
+        if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+        // Eerst dezelfde camera terug die we hadden (deviceId is exact), dan
+        // pas de zwakkere voorkeuren — zo komt de gebruiker niet na een
+        // hapering ineens op een andere lens uit.
+        let nt = babyCamId ? await openCam({ deviceId: { exact: babyCamId } }) : null;
+        if (!nt) nt = await openCam({ facingMode: facing });
+        if (!nt) nt = await openCam(true);
+        if (!nt) throw new Error('no camera');
+        await attachVideoTrack(nt, sender);
+        toast(T('cameraRecovered'));
+        return;
+      }
+      const constraints = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false };
       const ns = await getMedia(constraints);
       const nt = ns.getTracks()[0];
       const ot = localStream.getTracks().find((t) => t.kind === kind);
@@ -1594,7 +1811,6 @@
       if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, kind);
-      if (kind === 'video') { $('bPreview').srcObject = localStream; torchOn = false; reportCameras(); reportTorch(); }
       toast(T('cameraRecovered'));
     } catch (e) {
       // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
@@ -1614,9 +1830,11 @@
     try {
       const devs = await navigator.mediaDevices.enumerateDevices();
       const cams = devs.filter((d) => d.kind === 'videoinput').map((d) => ({ id: d.deviceId, label: d.label || '' }));
-      let activeId = '';
+      // Valt terug op de camera die we zelf geopend hebben: Safari laat
+      // deviceId in track.getSettings() nogal eens weg, en dan zou de ouderunit
+      // de verkeerde regel in de keuzelijst aanwijzen.
       const vt = localStream && localStream.getVideoTracks()[0];
-      if (vt && vt.getSettings) { try { activeId = vt.getSettings().deviceId || ''; } catch (e) {} }
+      const activeId = trackIdent(vt).id || babyCamId || '';
       sendControl({ cmd: 'cameraList', cameras: cams, activeId: activeId });
     } catch (e) {}
   }
@@ -1628,32 +1846,43 @@
     if (!supported) torchOn = false;
     sendControl({ cmd: 'torchState', supported: supported, on: torchOn });
   }
-  // opts.silentFail onderdrukt de foutmelding zodat babyCycleCamera netjes
-  // kan terugvallen op flipCamera() zonder eerst "Kan niet wisselen" te tonen.
+  // De ouderunit kiest gericht één camera uit de gemelde lijst. Zelfde regels
+  // als babyCycleCamera: oude spoor éérst vrijgeven, dan pas de nieuwe camera
+  // aanvragen met { exact: deviceId }, en achteraf verifiëren dat er echt een
+  // ánder apparaat actief werd. opts.silentFail onderdrukt de foutmelding.
   // Geeft true terug als de camera echt gewisseld is.
   async function selectCamera(deviceId, opts) {
     opts = opts || {};
-    if (role !== 'baby' || !localStream || !deviceId) return false;
-    let ok = false;
+    if (role !== 'baby' || !localStream || !deviceId || switchingCam) return false;
+    const oldTrack = localStream.getVideoTracks()[0];
+    const cur = trackIdent(oldTrack);
+    // Al op de gevraagde camera → niets te doen (en zeker niet het spoor
+    // onderbreken voor een wissel naar hetzelfde apparaat).
+    if (cur.id && cur.id === deviceId) { reportCameras(); reportTorch(); return true; }
+    switchingCam = true;
     try {
-      const ns = await getMedia({ audio: false, video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } } });
-      const nt = ns.getVideoTracks()[0];
-      const ot = localStream.getVideoTracks()[0];
-      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video');
-      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
-      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
-      localStream.addTrack(nt);
-      watchTrackEnd(nt, 'video');
-      torchOn = false; // nieuw spoor → LED weer uit
-      $('bPreview').srcObject = localStream;
+      const prev = { id: cur.id || babyCamId || '', side: cur.facing || camSideFromLabel(cur.label) || facing };
+      const sender = await detachVideoSender();
+      if (oldTrack) {
+        try { localStream.removeTrack(oldTrack); } catch (e) {}
+        try { oldTrack.stop(); } catch (e) {}
+      }
+      let nt = await openCam({ deviceId: { exact: deviceId } });
+      if (nt && oldTrack && sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} nt = null; }
+      if (!nt) {
+        await restoreCamera(prev, sender);
+        if (!opts.silentFail) { setFlipNote('cameraSwitchFailed', true); toast(T('cameraSwitchFailed')); }
+        reportCameras();
+        reportTorch();
+        return false;
+      }
+      await attachVideoTrack(nt, sender);
+      setFlipNote('cameraSwitched');
       toast(T('cameraSwitched'));
-      ok = true;
-    } catch (e) {
-      if (!opts.silentFail) toast(T('cannotSwitch'));
+      return true;
+    } finally {
+      switchingCam = false;
     }
-    reportCameras();
-    reportTorch();
-    return ok;
   }
   async function setTorch(on) {
     if (role !== 'baby' || !localStream) return;

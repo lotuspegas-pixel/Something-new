@@ -216,6 +216,7 @@
       noStream: 'No image to record yet',
       cameraSwitched: 'Camera switched',
       cannotSwitch: "Can't switch camera",
+      onlyOneCamera: 'This device has only one camera', cameraSwitchFailed: 'Switching failed — the same camera stayed on',
       soundMuted: 'Sound muted',
       soundOn: 'Sound on',
       stopParentQ: 'Stop the parent unit?',
@@ -888,6 +889,7 @@
   // deze Object.assign-lagen vullen alleen ontbrekende sleutels aan.
   // ------------------------------------------------------------------
   Object.assign(S.zh, {
+    onlyOneCamera: '此设备只有一个摄像头', cameraSwitchFailed: '切换失败——仍是同一个摄像头',
     waitingApproval: '正在等待宝宝端授权…',
     metaTitle: '免费婴儿监护器 — 浏览器里的 BabyPhone.online', metaDesc: '用两台手机组成免费的婴儿监护器，实时视频和声音。无需安装应用、无需注册账号，任何内容都不会被保存，打开浏览器即可使用。',
     qrTapZoom: "👆 点按二维码可放大扫描", qrZoomHint: "用另一部手机的相机对准此码", roomCodeShare: "房间码（分享给父母端）", roomCodeOfBaby: "宝宝端的房间码",
@@ -930,6 +932,7 @@
     mediaError: "摄像头/麦克风不可用。请使用 https，或在 Chrome/Firefox 中打开。",
   });
   Object.assign(S.hi, {
+    onlyOneCamera: 'इस डिवाइस में केवल एक ही कैमरा है', cameraSwitchFailed: 'बदलना विफल — वही कैमरा चालू रहा',
     waitingApproval: 'बेबी यूनिट पर स्वीकृति की प्रतीक्षा…',
     metaTitle: 'मुफ़्त बेबी मॉनिटर ऐप — BabyPhone.online', metaDesc: 'दो फ़ोन को मुफ़्त बेबी मॉनिटर बनाएँ — लाइव वीडियो और आवाज़ के साथ। कोई ऐप नहीं, कोई अकाउंट नहीं, कुछ भी सहेजा नहीं जाता। सीधे ब्राउज़र में।',
     qrTapZoom: "👆 स्कैन के लिए QR को छूकर बड़ा करें", qrZoomHint: "दूसरे फ़ोन का कैमरा इस कोड की ओर करें", roomCodeShare: "कमरे का कोड (पैरेंट यूनिट से साझा करें)", roomCodeOfBaby: "बेबी यूनिट के कमरे का कोड",
@@ -972,6 +975,7 @@
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    onlyOneCamera: 'Este dispositivo solo tiene una cámara', cameraSwitchFailed: 'No se pudo cambiar: siguió la misma cámara',
     waitingApproval: 'Esperando la autorización en la unidad del bebé…',
     metaTitle: 'Vigilabebés gratis en el navegador — BabyPhone.online', metaDesc: 'Convierte dos móviles en un vigilabebés gratis con vídeo y sonido en directo. Sin app, sin cuenta y sin guardar nada. En cualquier navegador.',
     repeatList: 'Repetir',
@@ -1016,6 +1020,7 @@
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    onlyOneCamera: 'Cet appareil n\'a qu\'une seule caméra', cameraSwitchFailed: 'Échec du changement — la même caméra est restée active',
     waitingApproval: 'En attente d\'autorisation sur l\'unité bébé…',
     metaTitle: 'Babyphone gratuit dans le navigateur — BabyPhone.online', metaDesc: 'Transformez deux téléphones en babyphone gratuit avec image et son en direct. Sans appli, sans compte, rien n’est enregistré. Dans votre navigateur.',
     repeatList: 'Répéter',
@@ -1060,6 +1065,7 @@
     mediaError: "Caméra/micro indisponibles. Utilisez https ou ouvrez dans Chrome/Firefox.",
   });
   Object.assign(S.ar, {
+    onlyOneCamera: 'هذا الجهاز يحتوي على كاميرا واحدة فقط', cameraSwitchFailed: 'فشل التبديل — بقيت الكاميرا نفسها',
     waitingApproval: 'في انتظار الموافقة على وحدة الطفل…',
     metaTitle: 'جهاز مراقبة الرضيع مجانًا — BabyPhone.online', metaDesc: 'حوّل هاتفين إلى جهاز مراقبة رضيع مجاني بالصوت والفيديو المباشر. بلا تطبيق وبلا حساب، ولا يُحفظ أي شيء. يعمل في أي متصفح.',
     qrTapZoom: "👆 المس رمز QR لتكبيره ومسحه", qrZoomHint: "وجّه كاميرا الهاتف الآخر نحو هذا الرمز", roomCodeShare: "رمز الغرفة (شاركه مع وحدة الوالدين)", roomCodeOfBaby: "رمز غرفة وحدة الرضيع",
@@ -1102,6 +1108,7 @@
     mediaError: "الكاميرا/الميكروفون غير متاحين. استخدم https أو افتح في Chrome/Firefox.",
   });
   Object.assign(S.bn, {
+    onlyOneCamera: 'এই ডিভাইসে কেবল একটি ক্যামেরা আছে', cameraSwitchFailed: 'বদলানো যায়নি — একই ক্যামেরা চালু থাকল',
     waitingApproval: 'বেবি ইউনিটে অনুমোদনের অপেক্ষায়…',
     metaTitle: 'ফ্রি বেবি মনিটর অ্যাপ — BabyPhone.online', metaDesc: 'দুটি ফোনকে বিনামূল্যের বেবি মনিটরে বদলে নিন — লাইভ ভিডিও ও শব্দ সহ। কোনো অ্যাপ নয়, অ্যাকাউন্ট নয়, কিছুই সংরক্ষণ হয় না।',
     qrTapZoom: "👆 স্ক্যানের জন্য QR-এ চেপে বড় করুন", qrZoomHint: "অন্য ফোনের ক্যামেরা এই কোডের দিকে ধরুন", roomCodeShare: "রুম কোড (অভিভাবক ইউনিটের সাথে শেয়ার করুন)", roomCodeOfBaby: "শিশু ইউনিটের রুম কোড",
@@ -1144,6 +1151,7 @@
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    onlyOneCamera: 'Este dispositivo só tem uma câmara', cameraSwitchFailed: 'Falha ao trocar — a mesma câmara continuou ativa',
     waitingApproval: 'A aguardar aprovação na unidade do bebé…',
     metaTitle: 'Babá eletrônica grátis no navegador — BabyPhone.online', metaDesc: 'Transforme dois celulares em uma babá eletrônica grátis com vídeo e som ao vivo. Sem app, sem conta e sem guardar nada. Direto no navegador.',
     repeatList: 'Repetir',
@@ -1188,6 +1196,7 @@
     mediaError: "Câmera/microfone indisponíveis. Use https ou abra no Chrome/Firefox.",
   });
   Object.assign(S.ru, {
+    onlyOneCamera: 'На этом устройстве только одна камера', cameraSwitchFailed: 'Не удалось переключить — осталась та же камера',
     waitingApproval: 'Ожидание подтверждения на детском блоке…',
     metaTitle: 'Бесплатная радионяня в браузере — BabyPhone.online', metaDesc: 'Превратите два телефона в бесплатную радионяню с видео и звуком в реальном времени. Без приложения, без аккаунта, ничего не сохраняется.',
     approveTitle: 'Разрешить это устройство?', approveAsk: 'Устройство ввело код вашей комнаты и хочет смотреть и слушать. Разрешайте только если это ваше устройство.', approveExtra: 'Второе устройство хочет смотреть. Кто-то уже подключён. Разрешайте только если это ваше устройство.', approveAllow: 'Разрешить', approveDeny: 'Отклонить', authRefused: 'Детский блок отклонил это устройство.', switchCameraSub: 'Передняя / задняя камера',
@@ -1231,6 +1240,7 @@
     mediaError: "Камера/микрофон недоступны. Используйте https или откройте в Chrome/Firefox.",
   });
   Object.assign(S.ur, {
+    onlyOneCamera: 'اس ڈیوائس میں صرف ایک کیمرہ ہے', cameraSwitchFailed: 'تبدیلی ناکام — وہی کیمرہ چلتا رہا',
     waitingApproval: 'بے بی یونٹ پر منظوری کا انتظار…',
     metaTitle: 'مفت بے بی مانیٹر — BabyPhone.online', metaDesc: 'دو فون کو مفت بے بی مانیٹر بنائیں، لائیو ویڈیو اور آواز کے ساتھ۔ کوئی ایپ نہیں، کوئی اکاؤنٹ نہیں، کچھ محفوظ نہیں ہوتا۔',
     qrTapZoom: "👆 اسکین کے لیے QR کو چھو کر بڑا کریں", qrZoomHint: "دوسرے فون کا کیمرہ اس کوڈ کی طرف کریں", roomCodeShare: "کمرے کا کوڈ (والدین یونٹ سے شیئر کریں)", roomCodeOfBaby: "بے بی یونٹ کے کمرے کا کوڈ",
@@ -1273,6 +1283,7 @@
     mediaError: "کیمرہ/مائیک دستیاب نہیں۔ https استعمال کریں یا Chrome/Firefox میں کھولیں۔",
   });
   Object.assign(S.id, {
+    onlyOneCamera: 'Perangkat ini hanya punya satu kamera', cameraSwitchFailed: 'Gagal beralih — kamera yang sama tetap aktif',
     waitingApproval: 'Menunggu persetujuan di unit bayi…',
     metaTitle: 'Baby monitor gratis di browser — BabyPhone.online', metaDesc: 'Ubah dua ponsel menjadi baby monitor gratis dengan video dan suara langsung. Tanpa aplikasi, tanpa akun, tidak ada yang disimpan.',
     approveTitle: 'Izinkan perangkat ini?', approveAsk: 'Sebuah perangkat memasukkan kode ruangan Anda dan ingin melihat dan mendengar. Izinkan hanya jika itu perangkat Anda sendiri.', approveExtra: 'Perangkat kedua ingin ikut melihat. Seseorang sudah terhubung. Izinkan hanya jika itu perangkat Anda sendiri.', approveAllow: 'Izinkan', approveDeny: 'Tolak', authRefused: 'Unit bayi menolak perangkat ini.', switchCameraSub: 'Kamera depan / belakang',
@@ -1316,6 +1327,7 @@
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    onlyOneCamera: 'Dieses Gerät hat nur eine Kamera', cameraSwitchFailed: 'Wechsel fehlgeschlagen — dieselbe Kamera blieb aktiv',
     waitingApproval: 'Warte auf Freigabe am Babyphone…',
     metaTitle: 'Kostenloses Babyphone im Browser — BabyPhone.online', metaDesc: 'Mach aus zwei Handys ein kostenloses Babyphone mit Live-Bild und -Ton. Ohne App, ohne Konto, nichts wird gespeichert. Läuft in jedem Browser.',
     repeatList: 'Wiederholen',
@@ -1360,6 +1372,7 @@
     mediaError: "Kamera/Mikrofon nicht verfügbar. Nutze https oder öffne die Seite in Chrome/Firefox.",
   });
   Object.assign(S.ja, {
+    onlyOneCamera: 'この端末にはカメラが1つしかありません', cameraSwitchFailed: '切り替えに失敗しました — 同じカメラのままです',
     waitingApproval: 'ベビーユニットの許可を待っています…',
     metaTitle: '無料のベビーモニター — ブラウザで使う BabyPhone.online', metaDesc: 'スマホ2台が無料のベビーモニターに。ライブ映像と音声をそのまま届けます。アプリ不要、登録不要、録画は一切保存されません。ブラウザだけで使えます。',
     qrTapZoom: "👆 QRをタップすると拡大してスキャンできます", qrZoomHint: "もう一方のスマホのカメラをこのコードに向けてください", roomCodeShare: "ルームコード（親機と共有）", roomCodeOfBaby: "赤ちゃん機のルームコード",
@@ -1402,6 +1415,7 @@
     mediaError: "カメラ/マイクを使用できません。httpsを使うか、Chrome/Firefoxで開いてください。",
   });
   Object.assign(S.mr, {
+    onlyOneCamera: 'या उपकरणात फक्त एकच कॅमेरा आहे', cameraSwitchFailed: 'बदलणे अयशस्वी — तोच कॅमेरा सुरू राहिला',
     waitingApproval: 'बेबी युनिटवर मंजुरीची प्रतीक्षा…',
     metaTitle: 'मोफत बेबी मॉनिटर — BabyPhone.online', metaDesc: 'दोन फोनचे मोफत बेबी मॉनिटरमध्ये रूपांतर करा — थेट व्हिडिओ आणि आवाजासह. अ‍ॅप नाही, खाते नाही, काहीही जतन होत नाही. थेट ब्राउझरमध्ये.',
     qrTapZoom: "👆 स्कॅनसाठी QR ला स्पर्श करून मोठा करा", qrZoomHint: "दुसऱ्या फोनचा कॅमेरा या कोडकडे धरा", roomCodeShare: "खोलीचा कोड (पालक युनिटसोबत शेअर करा)", roomCodeOfBaby: "बाळ युनिटच्या खोलीचा कोड",
@@ -1444,6 +1458,7 @@
     mediaError: "कॅमेरा/माइक उपलब्ध नाही. https वापरा किंवा Chrome/Firefox मध्ये उघडा.",
   });
   Object.assign(S.te, {
+    onlyOneCamera: 'ఈ పరికరంలో ఒకే కెమెరా ఉంది', cameraSwitchFailed: 'మార్చడం విఫలమైంది — అదే కెమెరా కొనసాగింది',
     waitingApproval: 'బేబీ యూనిట్‌లో ఆమోదం కోసం వేచి ఉంది…',
     metaTitle: 'ఉచిత బేబీ మానిటర్ — BabyPhone.online', metaDesc: 'రెండు ఫోన్లను ఉచిత బేబీ మానిటర్‌గా మార్చండి — ప్రత్యక్ష వీడియో మరియు శబ్దంతో. యాప్ అవసరం లేదు, ఖాతా అవసరం లేదు, ఏదీ నిల్వ చేయబడదు.',
     qrTapZoom: "👆 స్కాన్ కోసం QR ను తాకి పెద్దది చేయండి", qrZoomHint: "మరో ఫోన్ కెమెరాను ఈ కోడ్ వైపు పెట్టండి", roomCodeShare: "గది కోడ్ (తల్లిదండ్రుల యూనిట్‌తో పంచుకోండి)", roomCodeOfBaby: "పాప యూనిట్ గది కోడ్",
@@ -1486,6 +1501,7 @@
     mediaError: "కెమెరా/మైక్ అందుబాటులో లేవు. https వాడండి లేదా Chrome/Firefox లో తెరవండి.",
   });
   Object.assign(S.tr, {
+    onlyOneCamera: 'Bu cihazda yalnızca bir kamera var', cameraSwitchFailed: 'Değiştirilemedi — aynı kamera açık kaldı',
     waitingApproval: 'Bebek ünitesinde onay bekleniyor…',
     metaTitle: 'Ücretsiz bebek telsizi — tarayıcıda BabyPhone.online', metaDesc: 'İki telefonu canlı görüntü ve sesle ücretsiz bir bebek telsizine dönüştürün. Uygulama yok, hesap yok, hiçbir şey kaydedilmez.',
     approveTitle: 'Bu cihaza izin verilsin mi?', approveAsk: 'Bir cihaz oda kodunuzu girdi ve izlemek ve dinlemek istiyor. Yalnızca kendi cihazınızsa izin verin.', approveExtra: 'İkinci bir cihaz izlemek istiyor. Zaten bağlı biri var. Yalnızca kendi cihazınızsa izin verin.', approveAllow: 'İzin ver', approveDeny: 'Reddet', authRefused: 'Bebek ünitesi bu cihazı reddetti.', switchCameraSub: 'Ön / arka kamera',
@@ -1529,6 +1545,7 @@
     mediaError: "Kamera/mikrofon kullanılamıyor. https kullanın veya Chrome/Firefox'ta açın.",
   });
   Object.assign(S.ta, {
+    onlyOneCamera: 'இந்தச் சாதனத்தில் ஒரே ஒரு கேமரா மட்டுமே உள்ளது', cameraSwitchFailed: 'மாற்ற முடியவில்லை — அதே கேமரா தொடர்ந்தது',
     waitingApproval: 'குழந்தை சாதனத்தில் அனுமதிக்காகக் காத்திருக்கிறது…',
     metaTitle: 'இலவச பேபி மானிட்டர் — BabyPhone.online', metaDesc: 'இரண்டு தொலைபேசிகளை இலவச பேபி மானிட்டராக மாற்றுங்கள் — நேரலை காணொலி மற்றும் ஒலியுடன். செயலி வேண்டாம், கணக்கு வேண்டாம், எதுவும் சேமிக்கப்படாது.',
     qrTapZoom: "👆 ஸ்கேன் செய்ய QR ஐத் தொட்டு பெரிதாக்குங்கள்", qrZoomHint: "மற்றொரு போனின் கேமராவை இந்தக் குறியீட்டை நோக்கி வையுங்கள்", roomCodeShare: "அறை குறியீடு (பெற்றோர் யூனிட்டுடன் பகிரவும்)", roomCodeOfBaby: "குழந்தை யூனிட்டின் அறை குறியீடு",
@@ -1571,6 +1588,7 @@
     mediaError: "கேமரா/மைக் கிடைக்கவில்லை. https பயன்படுத்துங்கள் அல்லது Chrome/Firefox இல் திறங்கள்.",
   });
   Object.assign(S.vi, {
+    onlyOneCamera: 'Thiết bị này chỉ có một máy ảnh', cameraSwitchFailed: 'Chuyển đổi thất bại — vẫn là máy ảnh cũ',
     waitingApproval: 'Đang chờ phê duyệt trên thiết bị em bé…',
     metaTitle: 'Máy báo khóc miễn phí — BabyPhone.online', metaDesc: 'Biến hai điện thoại thành máy báo khóc miễn phí với hình ảnh và âm thanh trực tiếp. Không cần ứng dụng, không cần tài khoản, không lưu gì cả.',
     qrTapZoom: "👆 Chạm vào mã QR để phóng to và quét", qrZoomHint: "Hướng camera của điện thoại kia vào mã này", roomCodeShare: "Mã phòng (chia sẻ với thiết bị của bố mẹ)", roomCodeOfBaby: "Mã phòng của thiết bị bé",
@@ -1613,6 +1631,7 @@
     mediaError: "Camera/micro không khả dụng. Dùng https hoặc mở bằng Chrome/Firefox.",
   });
   Object.assign(S.ko, {
+    onlyOneCamera: '이 기기에는 카메라가 하나뿐입니다', cameraSwitchFailed: '전환 실패 — 같은 카메라가 유지되었습니다',
     waitingApproval: '베이비 유닛의 승인을 기다리는 중…',
     metaTitle: '무료 베이비 모니터 — 브라우저의 BabyPhone.online', metaDesc: '휴대폰 두 대로 무료 베이비 모니터를 만드세요. 실시간 영상과 소리를 그대로 전달하며, 앱 설치도 계정도 필요 없고 아무것도 저장되지 않습니다.',
     qrTapZoom: "👆 QR을 누르면 크게 보여 스캔하기 쉬워요", qrZoomHint: "다른 휴대폰의 카메라를 이 코드에 비추세요", roomCodeShare: "방 코드(부모 기기와 공유)", roomCodeOfBaby: "아기 기기의 방 코드",
@@ -1655,6 +1674,7 @@
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    onlyOneCamera: 'Questo dispositivo ha una sola fotocamera', cameraSwitchFailed: 'Cambio non riuscito — è rimasta la stessa fotocamera',
     waitingApproval: 'In attesa di approvazione sull\'unità bambino…',
     metaTitle: 'Baby monitor gratis nel browser — BabyPhone.online', metaDesc: 'Trasforma due telefoni in un baby monitor gratuito con video e audio dal vivo. Senza app, senza account, nulla viene salvato. Solo il browser.',
     repeatList: 'Ripeti',
@@ -1699,6 +1719,7 @@
     mediaError: "Fotocamera/microfono non disponibili. Usa https o apri in Chrome/Firefox.",
   });
   Object.assign(S.th, {
+    onlyOneCamera: 'อุปกรณ์นี้มีกล้องเพียงตัวเดียว', cameraSwitchFailed: 'สลับไม่สำเร็จ — ยังเป็นกล้องเดิม',
     waitingApproval: 'กำลังรอการอนุมัติที่เครื่องเด็ก…',
     metaTitle: 'เบบี้มอนิเตอร์ฟรี — BabyPhone.online', metaDesc: 'เปลี่ยนโทรศัพท์สองเครื่องให้เป็นเบบี้มอนิเตอร์ฟรี พร้อมภาพและเสียงสด ไม่ต้องติดตั้งแอป ไม่ต้องสมัครสมาชิก และไม่มีการบันทึกข้อมูลใด ๆ',
     qrTapZoom: "👆 แตะ QR เพื่อขยายให้สแกนง่าย", qrZoomHint: "หันกล้องของโทรศัพท์อีกเครื่องมาที่โค้ดนี้", roomCodeShare: "รหัสห้อง (แชร์ให้เครื่องพ่อแม่)", roomCodeOfBaby: "รหัสห้องของเครื่องลูก",
@@ -1741,6 +1762,7 @@
     mediaError: "กล้อง/ไมค์ใช้งานไม่ได้ ใช้ https หรือเปิดใน Chrome/Firefox",
   });
   Object.assign(S.gu, {
+    onlyOneCamera: 'આ ઉપકરણમાં ફક્ત એક જ કૅમેરા છે', cameraSwitchFailed: 'બદલવામાં નિષ્ફળ — એ જ કૅમેરા ચાલુ રહ્યો',
     waitingApproval: 'બેબી યુનિટ પર મંજૂરીની રાહ જોવાઈ રહી છે…',
     metaTitle: 'મફત બેબી મોનિટર — BabyPhone.online', metaDesc: 'બે ફોનને મફત બેબી મોનિટરમાં ફેરવો — જીવંત વીડિયો અને અવાજ સાથે. કોઈ એપ નહીં, કોઈ ખાતું નહીં, કશું સાચવવામાં આવતું નથી.',
     qrTapZoom: "👆 સ્કેન માટે QR ને દબાવીને મોટું કરો", qrZoomHint: "બીજા ફોનનો કૅમેરો આ કોડ તરફ રાખો", roomCodeShare: "રૂમ કોડ (પેરેન્ટ યુનિટ સાથે શેર કરો)", roomCodeOfBaby: "બેબી યુનિટનો રૂમ કોડ",
@@ -1783,6 +1805,7 @@
     mediaError: "કૅમેરો/માઇક ઉપલબ્ધ નથી. https વાપરો અથવા Chrome/Firefox માં ખોલો.",
   });
   Object.assign(S.fa, {
+    onlyOneCamera: 'این دستگاه فقط یک دوربین دارد', cameraSwitchFailed: 'تعویض ناموفق بود — همان دوربین فعال ماند',
     waitingApproval: 'در انتظار تأیید در دستگاه نوزاد…',
     metaTitle: 'مانیتور نوزاد رایگان — BabyPhone.online', metaDesc: 'دو گوشی را به مانیتور نوزاد رایگان با تصویر و صدای زنده تبدیل کنید. بدون برنامه، بدون حساب کاربری و بدون ذخیره‌سازی. مستقیم در مرورگر.',
     qrTapZoom: "👆 برای بزرگ‌نمایی و اسکن، روی QR بزنید", qrZoomHint: "دوربین گوشی دیگر را به این کد بگیرید", roomCodeShare: "کد اتاق (با واحد والدین به اشتراک بگذارید)", roomCodeOfBaby: "کد اتاق واحد نوزاد",
@@ -1825,6 +1848,7 @@
     mediaError: "دوربین/میکروفون در دسترس نیست. از https استفاده کنید یا در Chrome/Firefox باز کنید.",
   });
   Object.assign(S.pl, {
+    onlyOneCamera: 'To urządzenie ma tylko jedną kamerę', cameraSwitchFailed: 'Nie udało się przełączyć — została ta sama kamera',
     waitingApproval: 'Czekam na zgodę na jednostce dziecka…',
     metaTitle: 'Darmowa niania elektroniczna — BabyPhone.online', metaDesc: 'Zamień dwa telefony w darmową nianię elektroniczną z obrazem i dźwiękiem na żywo. Bez aplikacji, bez konta, nic nie jest zapisywane.',
     approveTitle: 'Zezwolić temu urządzeniu?', approveAsk: 'Urządzenie wpisało Twój kod pokoju i chce oglądać i słuchać. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveExtra: 'Drugie urządzenie chce oglądać. Ktoś jest już połączony. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveAllow: 'Zezwól', approveDeny: 'Odrzuć', authRefused: 'Jednostka dziecięca odrzuciła to urządzenie.', switchCameraSub: 'Kamera przednia / tylna',
@@ -1868,6 +1892,7 @@
     mediaError: "Kamera/mikrofon niedostępne. Użyj https lub otwórz w Chrome/Firefox.",
   });
   Object.assign(S.uk, {
+    onlyOneCamera: 'На цьому пристрої лише одна камера', cameraSwitchFailed: 'Не вдалося перемкнути — залишилася та сама камера',
     waitingApproval: 'Очікування підтвердження на дитячому блоці…',
     metaTitle: 'Безкоштовна радіоняня — BabyPhone.online', metaDesc: 'Перетворіть два телефони на безкоштовну радіоняню з відео та звуком у реальному часі. Без застосунку, без акаунта, нічого не зберігається.',
     qrTapZoom: "👆 Торкніться QR, щоб збільшити його", qrZoomHint: "Наведіть камеру іншого телефона на цей код", roomCodeShare: "Код кімнати (поділіться з батьківським блоком)", roomCodeOfBaby: "Код кімнати дитячого блока",
@@ -1910,6 +1935,7 @@
     mediaError: "Камера/мікрофон недоступні. Використайте https або відкрийте у Chrome/Firefox.",
   });
   Object.assign(S.nl, {
+    onlyOneCamera: 'Dit toestel heeft maar één camera', cameraSwitchFailed: 'Wisselen mislukt — dezelfde camera bleef aan',
     waitingApproval: 'Wacht op toestemming bij de babyunit…',
     metaTitle: 'Gratis babyfoon app online — BabyPhone.online', metaDesc: 'Maak van twee telefoons een gratis babyfoon met live beeld en geluid. Geen app installeren, geen account, niets wordt opgeslagen. In je browser.',
     repeatList: 'Herhalen',
@@ -1921,6 +1947,7 @@
     stopParentQ: "Ouderunit stoppen?", stopBabyQ: "Babyunit stoppen?", noMic: "Geen microfoontoegang", mediaError: "Camera/microfoon niet beschikbaar. Gebruik https of open in Chrome/Firefox.",
   });
   Object.assign(S.pa, {
+    onlyOneCamera: 'ਇਸ ਡਿਵਾਈਸ ਵਿੱਚ ਸਿਰਫ਼ ਇੱਕ ਹੀ ਕੈਮਰਾ ਹੈ', cameraSwitchFailed: 'ਬਦਲਣਾ ਅਸਫਲ — ਉਹੀ ਕੈਮਰਾ ਚਾਲੂ ਰਿਹਾ',
     waitingApproval: 'ਬੇਬੀ ਯੂਨਿਟ ਉੱਤੇ ਮਨਜ਼ੂਰੀ ਦੀ ਉਡੀਕ…',
     metaTitle: 'ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ — BabyPhone.online', metaDesc: 'ਦੋ ਫ਼ੋਨਾਂ ਨੂੰ ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾਓ — ਲਾਈਵ ਵੀਡੀਓ ਅਤੇ ਆਵਾਜ਼ ਨਾਲ। ਕੋਈ ਐਪ ਨਹੀਂ, ਕੋਈ ਖਾਤਾ ਨਹੀਂ, ਕੁਝ ਵੀ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ।',
     qrTapZoom: "👆 ਸਕੈਨ ਲਈ QR ਨੂੰ ਛੂਹ ਕੇ ਵੱਡਾ ਕਰੋ", qrZoomHint: "ਦੂਜੇ ਫ਼ੋਨ ਦਾ ਕੈਮਰਾ ਇਸ ਕੋਡ ਵੱਲ ਕਰੋ", roomCodeShare: "ਕਮਰੇ ਦਾ ਕੋਡ (ਮਾਪੇ ਯੂਨਿਟ ਨਾਲ ਸਾਂਝਾ ਕਰੋ)", roomCodeOfBaby: "ਬੱਚਾ ਯੂਨਿਟ ਦੇ ਕਮਰੇ ਦਾ ਕੋਡ",
@@ -1963,6 +1990,7 @@
     mediaError: "ਕੈਮਰਾ/ਮਾਈਕ ਉਪਲਬਧ ਨਹੀਂ। https ਵਰਤੋ ਜਾਂ Chrome/Firefox ਵਿੱਚ ਖੋਲ੍ਹੋ।",
   });
   Object.assign(S.sw, {
+    onlyOneCamera: 'Kifaa hiki kina kamera moja tu', cameraSwitchFailed: 'Kubadilisha kumeshindikana — kamera ile ile imebaki',
     waitingApproval: 'Inasubiri idhini kwenye kifaa cha mtoto…',
     metaTitle: 'Kifuatiliaji cha mtoto bila malipo — BabyPhone.online', metaDesc: 'Geuza simu mbili kuwa kifuatiliaji cha mtoto bila malipo, chenye video na sauti moja kwa moja. Hakuna programu, hakuna akaunti, hakuna kinachohifadhiwa.',
     qrTapZoom: "👆 Gusa QR ili kuikuza kwa kuskani", qrZoomHint: "Elekeza kamera ya simu nyingine kwenye msimbo huu", roomCodeShare: "Msimbo wa chumba (shiriki na kifaa cha mzazi)", roomCodeOfBaby: "Msimbo wa chumba wa kifaa cha mtoto",
@@ -2005,6 +2033,7 @@
     mediaError: "Kamera/maikrofoni haipatikani. Tumia https au fungua kwenye Chrome/Firefox.",
   });
   Object.assign(S.ha, {
+    onlyOneCamera: 'Na\'urar nan tana da kyamara ɗaya kawai', cameraSwitchFailed: 'Sauyawa ya gaza — kyamara ɗaya ta ci gaba',
     waitingApproval: 'Ana jiran amincewa a na\'urar jariri…',
     metaTitle: 'Na’urar sa ido kan jariri kyauta — BabyPhone.online', metaDesc: 'Mai da wayoyi biyu zuwa na’urar sa ido kan jariri kyauta mai bidiyo da sauti kai tsaye. Babu manhaja, babu asusu, ba a adana komai.',
     qrTapZoom: "👆 Taɓa QR don girmama shi don sikan", qrZoomHint: "Nuna kyamarar wayar ɗayan zuwa wannan lambar", roomCodeShare: "Lambar ɗaki (raba wa na'urar iyaye)", roomCodeOfBaby: "Lambar ɗakin na'urar jariri",
@@ -2047,6 +2076,7 @@
     mediaError: "Kyamara/makirufo ba ya samuwa. Yi amfani da https ko buɗe a Chrome/Firefox.",
   });
   Object.assign(S.ro, {
+    onlyOneCamera: 'Acest dispozitiv are o singură cameră', cameraSwitchFailed: 'Comutarea a eșuat — a rămas aceeași cameră',
     waitingApproval: 'Se așteaptă aprobarea pe unitatea bebelușului…',
     metaTitle: 'Babyphone gratuit în browser — BabyPhone.online', metaDesc: 'Transformă două telefoane într-un babyphone gratuit, cu imagine și sunet live. Fără aplicație, fără cont, nimic nu este stocat.',
     approveTitle: 'Permiteți acest dispozitiv?', approveAsk: 'Un dispozitiv a introdus codul camerei și dorește să vadă și să asculte. Permiteți doar dacă este dispozitivul dvs.', approveExtra: 'Un al doilea dispozitiv dorește să privească. Cineva este deja conectat. Permiteți doar dacă este dispozitivul dvs.', approveAllow: 'Permite', approveDeny: 'Refuză', authRefused: 'Unitatea pentru bebeluș a refuzat acest dispozitiv.', switchCameraSub: 'Cameră față / spate',
