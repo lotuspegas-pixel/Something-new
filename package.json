@@ -10,6 +10,7 @@
     "test": "node test/e2e.js",
     "test:serverless": "node test/e2e-serverless.js",
     "test:reconnect": "node test/e2e-reconnect.js",
+    "test:timing": "node test/e2e-timing.js",
     "build": "node build.js",
     "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'"
   },

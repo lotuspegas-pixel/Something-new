@@ -45,3 +45,6 @@ jobs:
 
       - name: E2E — serverless variant (pairing, views, reconnect)
         run: npm run test:serverless
+
+      - name: E2E — tijd tot eerste beeld (snelheidsregressie)
+        run: npm run test:timing

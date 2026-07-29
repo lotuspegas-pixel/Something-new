@@ -33,6 +33,18 @@
   const TRACK_I18N = { regen: 'trackRain', oceaan: 'trackOcean', hartslag: 'trackHeartbeat', witte: 'trackWhite' };
   const trackLabel = (tr) => T(TRACK_I18N[tr.id] || tr.id);
 
+  // ------------------------------------------------------------------ meten
+  // Tijdmeting van het koppelen. Staat uit tenzij window.BABYFOON_TRACE aan
+  // staat; dan verzamelt window.BABYFOON_MARKS per stap een tijdstempel in
+  // milliseconden. Zo is "hoe lang duurt het tot er beeld is" een meting en
+  // geen vermoeden — zie test/e2e-timing.js.
+  const TRACE = !!window.BABYFOON_TRACE;
+  if (TRACE) window.BABYFOON_MARKS = [];
+  function mark(name) {
+    if (!TRACE) return;
+    try { window.BABYFOON_MARKS.push({ name: name, t: Math.round(performance.now()) }); } catch (e) {}
+  }
+
   // ------------------------------------------------------------------ helpers
   let toastTimer = null;
   function toast(msg) {
@@ -411,10 +423,18 @@
     if (msg && msg.cmd === 'bye') { endSession(false); return; }
     if (msg && msg.cmd === 'authOk') {
       if (role === 'parent') {
+        mark('authOk');
         if (msg.token) parentToken = String(msg.token);
         // Pas nu staat de verbinding er echt: de babyunit heeft ons toegelaten.
         clearAuthWatchdog();
         connectSucceeded();
+        linkApproved = true;
+        startTalkback(); // doet niets zolang de microfoon nog niet klaar is
+        // Vangnet: komt er (bijv. bij audio-only) helemaal geen videostream,
+        // dan alsnog een microfoon regelen zodat terugpraten blijft werken.
+        if (!micTimer && !micStream && !talkDisabled) {
+          micTimer = setTimeout(() => { micTimer = null; ensureMic(); }, MIC_FALLBACK_DELAY);
+        }
       }
       return;
     }
@@ -530,7 +550,7 @@
     // kreeg iedereen die de kamercode kende meteen live beeld, geluid én
     // bediening van de camera — ook een tweede, ongenode kijker, zonder dat de
     // echte ouder daar iets van merkte.
-    peer.on('connection', (conn) => gateIncoming(conn));
+    peer.on('connection', (conn) => { mark('babyConnIn'); gateIncoming(conn); });
     peer.on('call', (call) => {
       // Terugpraten van de ouder (audio) → alleen van de toegelaten ouderunit.
       if (!approvedPeer || call.peer !== approvedPeer) { try { call.close(); } catch (e) {} return; }
@@ -565,6 +585,7 @@
     };
     const allow = (toestel) => {
       if (settled) return;
+      mark('babyAllow');
       finish();
       // Herverbinding van hetzelfde toestel: de oude, dode verbinding opruimen
       // zodat er nooit twee kanalen naast elkaar blijven staan.
@@ -596,6 +617,7 @@
     });
     conn.on('data', (d) => {
       if (settled || !d || typeof d !== 'object' || d.cmd !== 'hello') return;
+      mark('babyHello');
       clearTimeout(timer);
       const toestel = d.device ? String(d.device) : '';
       const heeftToken = sessionToken && sameToken(String(d.token || ''), sessionToken);
@@ -675,6 +697,7 @@
     else if (!isRetry) { parentToken = ''; }
     code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
+    mark('connectStart');
     currentCode = code; // toon de kamercode in het ouderdashboard
     role = 'parent';
     if (!isRetry) { reconnectAttempt = 0; }
@@ -683,14 +706,16 @@
     if (pcn) pcn.classList.remove('hidden');
     // Bij herverbinden: oude peer volledig opruimen en opnieuw beginnen.
     if (peer) { try { peer.destroy(); } catch (e) {} peer = null; controlConn = null; mediaPc = null; }
-    if (!micStream && !talkDisabled) {
-      try {
-        micStream = await getMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-          video: false,
-        });
-      } catch (e) { talkDisabled = true; }
-    }
+    talkCall = null;
+    linkApproved = false;
+    currentBabyId = PEER_PREFIX + code;
+    // De microfoon voor terugpraten wordt hier NIET meer opgevraagd. Hij is
+    // niet nodig om beeld te krijgen, maar het opvragen duurt op een telefoon
+    // vaak 1–3 seconden — en dat stond vóór het verbinden, dus die tijd telde
+    // een-op-een op bij "tijd tot beeld". Het gebeurt nu pas zodra het beeld
+    // binnen is (zie call.on('stream')), zodat het ook niet met de
+    // ICE-onderhandeling om dezelfde audio-hardware en rekentijd concurreert.
+    if (micTimer) { clearTimeout(micTimer); micTimer = null; }
     // Nooit eindeloos "Verbinden…": na 20 s expliciet mislukt of opnieuw.
     clearConnectTimers();
     connectTimer = setTimeout(() => {
@@ -698,45 +723,43 @@
       if (wasConnected || isRetry) scheduleParentReconnect();
       else connectFailed();
     }, CONNECT_TIMEOUT);
-    const babyId = PEER_PREFIX + code;
+    const babyId = currentBabyId;
     peer = new Peer(peerOptions());
     peer.on('open', () => {
+      mark('peerOpen');
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
+        mark('connOpen');
         // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
         // de babyunit eerst toestemming op het eigen scherm.
         try { conn.send({ cmd: 'hello', token: parentToken, device: deviceId }); } catch (e) {}
+        mark('helloSent');
         // Nog niet klaar: connectSucceeded() volgt pas bij 'authOk' van de
         // babyunit. Tot dan bewaakt de watchdog of dat antwoord echt komt.
         startAuthWatchdog(isRetry);
         parentConnected();
         if (!wasConnected) setParentStatus(T('waitingApproval'));
-        if (micStream) {
-          try {
-            micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
-            // Let op: dit is het talkback-kanaal, een APARTE
-            // RTCPeerConnection naast die van het babybeeld. Nooit bewaken
-            // met watchMediaPc: die verbinding mag legitiem sluiten (de
-            // babyunit weigert hem tot de toegang rond is) zonder dat de
-            // gezonde videoverbinding als wegval geldt. Alleen de PC van
-            // het babybeeld telt — die wordt in peer.on('call') bewaakt.
-            const tcall = peer.call(babyId, micStream);
-            if (tcall && !mediaPc) { mediaPc = tcall.peerConnection || mediaPc; }
-          } catch (e) {}
-        }
+        // Terugpraten volgt na 'authOk' (zie startTalkback): eerst beeld.
       });
     });
     peer.on('call', (call) => {
       // videobeeld van de baby
+      mark('callOffer');
       call.answer();
       mediaPc = call.peerConnection || mediaPc;
       watchMediaPc(mediaPc);
       call.on('stream', (s) => {
+        mark('firstTrack');
         remoteStream = s;
-        $('video').srcObject = s;
-        $('video').play().catch(() => {});
+        const v = $('video');
+        if (TRACE) v.addEventListener('loadedmetadata', () => mark('firstFrame'), { once: true });
+        v.srcObject = s;
+        v.play().catch(() => {});
         setupAnalyser(s);
+        // Beeld binnen: nu pas de terugpraat-microfoon warmdraaien.
+        if (micTimer) { clearTimeout(micTimer); micTimer = null; }
+        ensureMic();
       });
     });
     peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
@@ -772,6 +795,56 @@
   // ================================================================== OUDER-PANEEL
   let micStream = null;
   let talkDisabled = false;
+  let micPromise = null;     // wordt pas gestart als het beeld binnen is
+  let micTimer = null;       // vangnet als er geen videostream komt
+  const MIC_FALLBACK_DELAY = window.BABYFOON_MIC_DELAY || 3000;
+  let currentBabyId = '';    // PeerJS-id van de babyunit waarmee we praten
+  let talkCall = null;       // terugpraat-MediaConnection (pas na goedkeuring)
+  let linkApproved = false;  // babyunit heeft ons toegelaten ('authOk')
+  // De microfoon één keer opvragen, zonder erop te wachten. Wie er wél op moet
+  // wachten (de Talk back-knop) gebruikt de promise; het verbinden zelf niet.
+  function ensureMic() {
+    if (micStream) return Promise.resolve(micStream);
+    if (talkDisabled) return Promise.resolve(null);
+    if (!micPromise) {
+      micPromise = getMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false,
+      }).then((s) => {
+        micStream = s;
+        mark('micReady');
+        applyTalkAvailability();
+        // Kwam de microfoon pas ná de goedkeuring binnen? Dan nu alsnog.
+        if (linkApproved) startTalkback();
+        return s;
+      }, () => {
+        talkDisabled = true;
+        mark('micReady');
+        applyTalkAvailability();
+        return null;
+      });
+    }
+    return micPromise;
+  }
+  function applyTalkAvailability() {
+    const b = $('btnTalk');
+    if (b) b.style.opacity = talkDisabled ? 0.5 : '';
+  }
+  // Terugpraatkanaal opzetten. Bewust ná 'authOk': de babyunit weigert een
+  // gesprek van een niet-toegelaten toestel toch, en het scheelt een tweede
+  // ICE-onderhandeling die met de videoverbinding zou concurreren.
+  function startTalkback() {
+    if (talkCall || !micStream || !peer || !currentBabyId) return;
+    try {
+      micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
+      talkCall = peer.call(currentBabyId, micStream);
+      // Terugpraten is een APARTE RTCPeerConnection naast die van het
+      // babybeeld. Nooit bewaken met watchMediaPc: die verbinding mag
+      // legitiem sluiten zonder dat de gezonde videoverbinding als wegval
+      // geldt. Alleen de PC van het babybeeld telt.
+      if (talkCall && !mediaPc) { mediaPc = talkCall.peerConnection || mediaPc; }
+    } catch (e) {}
+  }
   let audioCtx = null;
   let analyser = null;
   let talking = false;
@@ -1248,7 +1321,7 @@
     parentStarted = true;
     vuBars = $('vu') ? Array.from($('vu').querySelectorAll('i')) : [];
     buildAudioMeter();
-    if (talkDisabled) { $('btnTalk').style.opacity = 0.5; }
+    applyTalkAvailability();
     const rl = $('roomLabel'); if (rl) rl.textContent = currentCode || 'P2P';
     applyVolume(); applyVideoFilter();
     renderChips(); renderPlaylist();
@@ -1264,7 +1337,14 @@
       if (tb) { tb.classList.toggle('on', talking); $('talkBigText').textContent = talking ? T('talkActive') : T('tapToTalk'); }
     };
     const toggleTalk = () => {
-      if (!micStream) return toast(T('noMic'));
+      // De microfoon wordt niet meer vóór het verbinden opgehaald. Is hij er
+      // nog niet, dan wachten we hier even — niet meteen "geen microfoon".
+      if (!micStream) {
+        if (talkDisabled) return toast(T('noMic'));
+        ensureMic().then((s) => { if (s) { startTalkback(); toggleTalk(); } else toast(T('noMic')); });
+        return;
+      }
+      startTalkback();
       talking = !talking;
       micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
       setTalkUI();

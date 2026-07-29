@@ -77,6 +77,7 @@ npm run build              # produces dist/ — one self-contained index.html + 
 npm run lint                # node -c syntax check on all JS
 npm run test:serverless     # Playwright e2e — main app (24 checks)
 npm run test:reconnect      # Playwright e2e — forced disconnect/reconnect
+npm run test:timing         # Playwright e2e — time to first picture
 npm test                    # Playwright e2e — legacy app
 ```
 
@@ -448,6 +449,16 @@ the site as eligible as possible; actual ranking builds over time.
   simulated track `ended` event, wrong-code error handling, the full
   reconnect-with-backoff → retry flow, and a `visibilitychange`-forced
   immediate reconnect. **24/24 checks passing.**
+- `test/e2e-timing.js` — measures **time to first picture** and guards against
+  the "video only appears after 3–5 seconds" regression. `js/app.js` carries a
+  trace facility (off unless `window.BABYFOON_TRACE` is set) that timestamps
+  every pairing step into `window.BABYFOON_MARKS`; the test prints that
+  timeline and asserts three things: first pixels arrive within the threshold,
+  the picture arrives *before* the talk-back microphone even when
+  `getUserMedia` is made artificially slow (the load-independent regression
+  guard), and a device without a capability token gets **0 media tracks and 0
+  pixels** while approval is pending or refused — proving the speed-up did not
+  come from weakening access control.
 - `test/e2e-reconnect.js` — dedicated forced-disconnect scenario (kills the
   peer connection mid-session, verifies `connectionstatechange` +
   heartbeat-based drop detection trigger reconnection).
@@ -518,3 +529,43 @@ approval, control messages from un-handshaked peers are ignored, talk-back is
 answered only for the approved peer, and after three refusals further requests
 are dropped. Approving once hands the token to that parent, so later reconnects
 are seamless.
+
+## Time to first picture
+
+A user reported that video used to appear the instant a QR code was scanned and
+now took 3–5 seconds. Measurement, not guesswork, found the cause: the parent
+unit asked for the **talk-back microphone** with `await getUserMedia(...)`
+*before* it created its `Peer` and connected. On a phone that call routinely
+takes 1–3 seconds (permission plumbing plus audio hardware start-up), and every
+millisecond of it was added straight onto the time before anything else began.
+
+`js/app.js` now carries a trace facility (inactive unless
+`window.BABYFOON_TRACE` is set) that timestamps each pairing step —
+`connectStart`, `peerOpen`, `connOpen`, `helloSent`, `authOk`, `callOffer`,
+`firstTrack`, `firstFrame` — into `window.BABYFOON_MARKS`. Measured against a
+local broker with `getUserMedia` slowed to a phone-like 3 s, median time to the
+first pixels dropped from **3.9 s to 1.2 s**; with a 1.5 s microphone, from
+**2.36 s to 1.25 s**. The saving is the whole microphone wait.
+
+The fix is only about ordering, not about doing less:
+
+- The microphone is no longer awaited before connecting. It is requested once
+  the first remote media stream has arrived (`call.on('stream')`), with a
+  fallback timer for the case where no stream ever comes (audio-only). Pressing
+  **Talk back** before it is ready waits for it instead of reporting "no
+  microphone".
+- The talk-back call is placed after `authOk` rather than at data-channel open.
+  The baby unit rejected it before approval anyway, and it removes a second ICE
+  negotiation that was competing with the video connection.
+
+Two other suspects were measured and cleared. The **access-control round trip**
+(`hello` → `authOk`) costs 12–35 ms locally; a measurement-only build in which
+the baby unit called back immediately, without the handshake, was not
+measurably faster (1.39 s vs 1.46 s median — inside the noise). The consent
+dialog therefore stays exactly as it was. The **ICE server list** does not block
+either: PeerJS trickles candidates, so gathering STUN/TURN candidates never
+delays the offer.
+
+Guarded by `test/e2e-timing.js` (see section 14), which fails on the old
+behaviour and also proves that an unapproved device receives 0 media tracks and
+0 pixels.
