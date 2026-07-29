@@ -131,6 +131,93 @@
     return opts;
   }
 
+  // ------------------------------------------------------------------ geluid
+  // Een babyfoon is géén telefoongesprek. De spraakbewerking die browsers
+  // standaard op een microfoon zetten is afgestemd op praten en werkt hier
+  // juist tegen ons:
+  //   • autoGainControl draait in een stille kamer de versterking helemaal
+  //     open, blaast de ruisvloer op en klapt bij het eerste geluidje weer
+  //     dicht — dat hoor je als pompen en kraken.
+  //   • noiseSuppression is een spraakfilter: het poetst precies de zachte,
+  //     niet-spraakachtige geluiden weg die je bij een baby wél wilt horen
+  //     (ademhalen, draaien, zuchten) en laat op de opgeblazen ruisvloer
+  //     "musical noise" achter — het typische gekraak.
+  //   • echoCancellation zet de volledige spraakketen aan, inclusief de
+  //     niet-lineaire onderdrukking die het slaapliedje uit de eigen speaker
+  //     wegduikt en de microfoon daarbij dichtknijpt.
+  // De babyunit neemt daarom onbewerkt op. Zodra de ouder terugpraat is er
+  // wél een echopad (ouder → babyspeaker → babymicrofoon → ouder); alleen
+  // dán zetten we de echo-onderdrukking tijdelijk aan.
+  // channelCount/sampleRate zijn "ideal": zonder spraakbewerking geeft Chrome
+  // de ruwe apparaatstand terug (soms 2 kanalen op 44,1 kHz). Dat is geen
+  // probleem — het opus-fmtp hieronder dwingt het transport toch naar mono.
+  const MIC_MONITOR = {
+    echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+    channelCount: 1, sampleRate: 48000,
+  };
+  const MIC_DUPLEX = {
+    echoCancellation: true, noiseSuppression: false, autoGainControl: false,
+    channelCount: 1,
+  };
+  // De ouder práát wél: daar is de spraakbewerking juist op zijn plaats.
+  const MIC_TALKBACK = {
+    echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+    channelCount: 1,
+  };
+
+  // Opus staat standaard op "telefoongesprek": krappe bitrate, en de browser
+  // mag stilte weglaten. Voor een babyfoon willen we een ruime, vaste
+  // mono-bitrate mét in-band foutcorrectie en zonder DTX, zodat zacht geluid
+  // heel blijft en een verloren pakketje niet als een tik hoorbaar wordt.
+  const OPUS_FMTP = 'minptime=10;useinbandfec=1;usedtx=0;stereo=0;sprop-stereo=0;' +
+    'maxaveragebitrate=64000;maxplaybackrate=48000';
+  function tuneOpus(sdp) {
+    try {
+      const m = /a=rtpmap:(\d+)\s+opus\/48000/i.exec(sdp);
+      if (!m) return sdp;
+      const pt = m[1];
+      const fmtp = new RegExp('^a=fmtp:' + pt + ' .*$', 'm');
+      if (fmtp.test(sdp)) return sdp.replace(fmtp, 'a=fmtp:' + pt + ' ' + OPUS_FMTP);
+      return sdp.replace(new RegExp('^(a=rtpmap:' + pt + ' opus/48000[^\\r\\n]*)$', 'm'),
+        '$1\r\na=fmtp:' + pt + ' ' + OPUS_FMTP);
+    } catch (e) { return sdp; }
+  }
+  const CALL_OPTS = { sdpTransform: tuneOpus };
+
+  // Geluid krijgt expliciet voorrang en een ruime bovengrens, zodat de
+  // videostroom het niet kan verdringen.
+  function tuneAudioSender(pc) {
+    if (!pc || !pc.getSenders) return;
+    try {
+      pc.getSenders().forEach((s) => {
+        if (!s.track || s.track.kind !== 'audio' || !s.getParameters) return;
+        const p = s.getParameters();
+        if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+        p.encodings[0].maxBitrate = 64000;
+        p.encodings[0].networkPriority = 'high';
+        p.encodings[0].priority = 'high';
+        const r = s.setParameters(p);
+        if (r && r.catch) r.catch(() => {});
+      });
+    } catch (e) {}
+  }
+  // Een ontvangstbuffer die voortdurend meerekt is zélf een bron van gekraak:
+  // om de vertraging bij te sturen rekt de ontvanger de audio uit of kort hem
+  // in (insertedSamplesForDeceleration / removedSamplesForAcceleration). Een
+  // vaste, ruime buffer klinkt rustiger; bij een babyfoon weegt 150 ms extra
+  // vertraging niet op tegen schoon geluid. 0 = de browser zelf laten kiezen.
+  const JITTER_TARGET_MS = window.BABYFOON_JITTER_MS != null ? window.BABYFOON_JITTER_MS : 150;
+  function tuneAudioReceiver(pc) {
+    if (!pc || !pc.getReceivers || !(JITTER_TARGET_MS > 0)) return;
+    try {
+      pc.getReceivers().forEach((r) => {
+        if (r.track && r.track.kind === 'audio' && 'jitterBufferTarget' in r) {
+          r.jitterBufferTarget = JITTER_TARGET_MS;
+        }
+      });
+    } catch (e) {}
+  }
+
   // ------------------------------------------------------------------ state
   let role = null;
   let peer = null;
@@ -229,6 +316,11 @@
     if (role === 'parent') {
       $('connDot').classList.add('off');
       $('connText').textContent = T('connectionLost');
+      // Microfoon dicht zolang er geen verbinding is. Stond terugpraten aan,
+      // dan gaat hij na de herverbinding vanzelf weer open (zie 'authOk').
+      const wasTalking = talking;
+      stopTalkback(false);
+      talking = wasTalking;
       triggerConnectionLostAlert();
       scheduleParentReconnect();
     } else if (role === 'baby') {
@@ -429,12 +521,9 @@
         clearAuthWatchdog();
         connectSucceeded();
         linkApproved = true;
-        startTalkback(); // doet niets zolang de microfoon nog niet klaar is
-        // Vangnet: komt er (bijv. bij audio-only) helemaal geen videostream,
-        // dan alsnog een microfoon regelen zodat terugpraten blijft werken.
-        if (!micTimer && !micStream && !talkDisabled) {
-          micTimer = setTimeout(() => { micTimer = null; ensureMic(); }, MIC_FALLBACK_DELAY);
-        }
+        // Alleen als er vóór de herverbinding werd teruggepraat gaat de
+        // microfoon weer open; anders blijft hij dicht (zie ensureMic).
+        if (talking) ensureMic().then((s) => { if (s) startTalkback(); });
       }
       return;
     }
@@ -467,6 +556,9 @@
           if (ts) { ts.textContent = msg.min ? msg.min + ' min' : T('off2'); ts.classList.toggle('ok', !!msg.min); }
           break;
         }
+        case 'talk':
+          setBabyDuplex(!!msg.on);
+          break;
         case 'flip':
           babyCycleCamera();
           break;
@@ -554,12 +646,13 @@
     peer.on('call', (call) => {
       // Terugpraten van de ouder (audio) → alleen van de toegelaten ouderunit.
       if (!approvedPeer || call.peer !== approvedPeer) { try { call.close(); } catch (e) {} return; }
-      call.answer();
+      call.answer(undefined, CALL_OPTS);
       // Terugpraten is een TWEEDE RTCPeerConnection. Die niet bewaken: als
       // het talkback-kanaal sneuvelt of netjes sluit, is de videoverbinding
       // nog gewoon in orde. Zie ook de ouderkant.
       if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; }
       call.on('stream', playTalkback);
+      call.on('close', () => setBabyDuplex(false));
     });
     peer.on('disconnected', () => {
       // Broker kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
@@ -599,8 +692,12 @@
       // opnieuw op "Toestaan" te wachten.
       try { conn.send({ cmd: 'authOk', token: sessionToken }); } catch (e) {}
       try {
-        const call = peer.call(conn.peer, localStream);
-        if (call) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
+        const call = peer.call(conn.peer, localStream, CALL_OPTS);
+        if (call) {
+          mediaPc = call.peerConnection || mediaPc;
+          watchMediaPc(mediaPc);
+          setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
+        }
       } catch (e) {}
       babyConnected();
       reportBattery();
@@ -672,7 +769,7 @@
     showScreen('screenPairBaby');
     try {
       localStream = await getMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: MIC_MONITOR,
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
       });
     } catch (e) {
@@ -718,10 +815,10 @@
     // De microfoon voor terugpraten wordt hier NIET meer opgevraagd. Hij is
     // niet nodig om beeld te krijgen, maar het opvragen duurt op een telefoon
     // vaak 1–3 seconden — en dat stond vóór het verbinden, dus die tijd telde
-    // een-op-een op bij "tijd tot beeld". Het gebeurt nu pas zodra het beeld
-    // binnen is (zie call.on('stream')), zodat het ook niet met de
-    // ICE-onderhandeling om dezelfde audio-hardware en rekentijd concurreert.
-    if (micTimer) { clearTimeout(micTimer); micTimer = null; }
+    // een-op-een op bij "tijd tot beeld". Hij gaat nu pas open als de ouder
+    // echt op Talk back drukt, zodat hij niet met de ICE-onderhandeling om
+    // dezelfde audio-hardware concurreert én het luisteren niet in
+    // gespreksmodus zet.
     // Nooit eindeloos "Verbinden…": na 20 s expliciet mislukt of opnieuw.
     clearConnectTimers();
     connectTimer = setTimeout(() => {
@@ -752,7 +849,9 @@
     peer.on('call', (call) => {
       // videobeeld van de baby
       mark('callOffer');
-      call.answer();
+      // Het antwoord draagt óók het opus-profiel: dit is de kant die de
+      // babyunit vertelt met welke bitrate hij mag coderen.
+      call.answer(undefined, CALL_OPTS);
       mediaPc = call.peerConnection || mediaPc;
       watchMediaPc(mediaPc);
       call.on('stream', (s) => {
@@ -762,10 +861,10 @@
         if (TRACE) v.addEventListener('loadedmetadata', () => mark('firstFrame'), { once: true });
         v.srcObject = s;
         v.play().catch(() => {});
+        tuneAudioReceiver(call.peerConnection || mediaPc);
         setupAnalyser(s);
-        // Beeld binnen: nu pas de terugpraat-microfoon warmdraaien.
-        if (micTimer) { clearTimeout(micTimer); micTimer = null; }
-        ensureMic();
+        // De microfoon blijft dicht zolang er niet teruggepraat wordt.
+        if (talking) ensureMic().then((x) => { if (x) startTalkback(); });
       });
     });
     peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
@@ -801,36 +900,46 @@
   // ================================================================== OUDER-PANEEL
   let micStream = null;
   let talkDisabled = false;
-  let micPromise = null;     // wordt pas gestart als het beeld binnen is
-  let micTimer = null;       // vangnet als er geen videostream komt
-  const MIC_FALLBACK_DELAY = window.BABYFOON_MIC_DELAY || 3000;
+  let micPromise = null;     // pas gestart zodra er echt teruggepraat wordt
   let currentBabyId = '';    // PeerJS-id van de babyunit waarmee we praten
   let talkCall = null;       // terugpraat-MediaConnection (pas na goedkeuring)
   let linkApproved = false;  // babyunit heeft ons toegelaten ('authOk')
-  // De microfoon één keer opvragen, zonder erop te wachten. Wie er wél op moet
-  // wachten (de Talk back-knop) gebruikt de promise; het verbinden zelf niet.
+  // De microfoon van de OUDER gaat pas open als er ook echt teruggepraat
+  // wordt, en gaat daarna weer helemaal dicht. Een openstaande microfoon —
+  // ook eentje waarvan de track alleen op enabled=false staat — zet een
+  // telefoon in gespreksmodus: de weergave schakelt naar het smalbandige
+  // spraakpad en de echo-onderdrukking gaat meeluisteren met wat er uit de
+  // speaker komt. Precies daardoor gaat het lúisteren zelf slechter klinken,
+  // terwijl de ouder al die tijd helemaal niet praat.
   function ensureMic() {
     if (micStream) return Promise.resolve(micStream);
     if (talkDisabled) return Promise.resolve(null);
     if (!micPromise) {
-      micPromise = getMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        video: false,
-      }).then((s) => {
+      micPromise = getMedia({ audio: MIC_TALKBACK, video: false }).then((s) => {
         micStream = s;
         mark('micReady');
         applyTalkAvailability();
-        // Kwam de microfoon pas ná de goedkeuring binnen? Dan nu alsnog.
-        if (linkApproved) startTalkback();
         return s;
       }, () => {
         talkDisabled = true;
+        micPromise = null; // opnieuw proberen mag; misschien is toestemming later wél gegeven
         mark('micReady');
         applyTalkAvailability();
         return null;
       });
     }
     return micPromise;
+  }
+  // Microfoon en terugpraatkanaal volledig afbreken.
+  function stopTalkback(meldAanBaby) {
+    talking = false;
+    if (talkCall) { try { talkCall.close(); } catch (e) {} talkCall = null; }
+    if (micStream) {
+      try { micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+      micStream = null;
+    }
+    micPromise = null;
+    if (meldAanBaby) sendControl({ cmd: 'talk', on: false });
   }
   function applyTalkAvailability() {
     const b = $('btnTalk');
@@ -843,16 +952,22 @@
     if (talkCall || !micStream || !peer || !currentBabyId) return;
     try {
       micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
-      talkCall = peer.call(currentBabyId, micStream);
+      talkCall = peer.call(currentBabyId, micStream, CALL_OPTS);
       // Terugpraten is een APARTE RTCPeerConnection naast die van het
       // babybeeld. Nooit bewaken met watchMediaPc: die verbinding mag
       // legitiem sluiten zonder dat de gezonde videoverbinding als wegval
       // geldt. Alleen de PC van het babybeeld telt.
       if (talkCall && !mediaPc) { mediaPc = talkCall.peerConnection || mediaPc; }
+      if (talkCall) setTimeout(() => tuneAudioSender(talkCall && talkCall.peerConnection), 1000);
+      // De babyunit zet zolang echo-onderdrukking aan op zijn microfoon,
+      // anders zingt het rond: ouder → babyspeaker → babymicrofoon → ouder.
+      sendControl({ cmd: 'talk', on: true });
     } catch (e) {}
   }
   let audioCtx = null;
   let analyser = null;
+  let analyserSrc = null;
+  let analyserStream = null;
   let talking = false;
   let nightMode = false;
   let alarmOn = true;
@@ -883,18 +998,37 @@
   let musicBabyPlaying = false;
   let musicErr = 0;
 
+  // Geluidsmeter en huilalarm meten mee op een KLOON van de audiotrack.
+  // Dezelfde track tegelijk door een <video>-element laten afspelen én door
+  // een MediaStreamAudioSourceNode laten uitlezen geeft in sommige browsers
+  // onderbrekingen in de weergave; met een kloon heeft de meting een eigen
+  // afnemer en blijft het afspelen ongemoeid. Er is bewust één AudioContext
+  // voor de hele pagina: bij elke herverbinding komt hier een nieuwe stream
+  // binnen, en een context per herverbinding stapelt zich op.
   function setupAnalyser(stream) {
     try {
+      const track = stream && stream.getAudioTracks && stream.getAudioTracks()[0];
+      if (!track) { analyser = null; return; }
+      // Oude meetketen opruimen, anders blijven bronknopen en gekloonde
+      // tracks op dezelfde context achter.
+      if (analyserSrc) { try { analyserSrc.disconnect(); } catch (e) {} analyserSrc = null; }
+      if (analyserStream) {
+        try { analyserStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+        analyserStream = null;
+      }
+      analyser = null;
       if (!audioCtx) {
         const AC = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AC();
       }
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const src = audioCtx.createMediaStreamSource(stream);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.6;
-      src.connect(analyser);
+      analyserStream = new MediaStream([track.clone()]);
+      analyserSrc = audioCtx.createMediaStreamSource(analyserStream);
+      const an = audioCtx.createAnalyser();
+      an.fftSize = 512;
+      an.smoothingTimeConstant = 0.6;
+      analyserSrc.connect(an);
+      analyser = an;
     } catch (e) {
       analyser = null;
     }
@@ -1343,18 +1477,21 @@
       if (tb) { tb.classList.toggle('on', talking); $('talkBigText').textContent = talking ? T('talkActive') : T('tapToTalk'); }
     };
     const toggleTalk = () => {
-      // De microfoon wordt niet meer vóór het verbinden opgehaald. Is hij er
-      // nog niet, dan wachten we hier even — niet meteen "geen microfoon".
+      // Terugpraten uit: microfoon én terugpraatkanaal helemaal sluiten, zodat
+      // het toestel weer in gewone weergavemodus staat.
+      if (talking) { stopTalkback(true); setTalkUI(); return; }
+      // De microfoon wordt pas hier opgevraagd. Is hij er nog niet, dan
+      // wachten we even — niet meteen "geen microfoon".
       if (!micStream) {
         if (talkDisabled) return toast(T('noMic'));
-        ensureMic().then((s) => { if (s) { startTalkback(); toggleTalk(); } else toast(T('noMic')); });
+        ensureMic().then((s) => { if (s) toggleTalk(); else toast(T('noMic')); });
         return;
       }
+      talking = true;
+      micStream.getAudioTracks().forEach((t) => (t.enabled = true));
       startTalkback();
-      talking = !talking;
-      micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
       setTalkUI();
-      if (talking) addEvent('talk', T('evTalk'), T('evTalkSub'));
+      addEvent('talk', T('evTalk'), T('evTalkSub'));
     };
     $('btnTalk').onclick = toggleTalk;
     if ($('talkBig')) $('talkBig').onclick = toggleTalk;
@@ -1529,6 +1666,45 @@
     reportCameras();
     reportTorch();
   }
+  // Terwijl de ouder terugpraat ontstaat er wél een echopad (babyspeaker →
+  // babymicrofoon). Alleen dán zetten we de echo-onderdrukking aan; daarna
+  // gaat de microfoon weer onbewerkt, zodat zacht ademen hoorbaar blijft.
+  let duplexOn = false;
+  let duplexBusy = false;
+  async function setBabyDuplex(on) {
+    on = !!on;
+    if (role !== 'baby' || !localStream || duplexBusy || on === duplexOn) return;
+    duplexBusy = true;
+    try {
+      const cur = localStream.getAudioTracks()[0];
+      // Eerst de goedkope weg: sommige browsers kunnen de spraakbewerking op
+      // een lopend spoor omzetten.
+      if (cur && cur.applyConstraints) {
+        try {
+          await cur.applyConstraints(on ? MIC_DUPLEX : MIC_MONITOR);
+          if (!!cur.getSettings().echoCancellation === on) { duplexOn = on; return; }
+        } catch (e) { /* onder af te handelen */ }
+      }
+      // Chrome legt de audiobewerking vast bij het ópenen van het spoor.
+      // Omschakelen kan dan alleen door de microfoon opnieuw te openen en het
+      // spoor te vervangen — dezelfde aanpak als flipCamera()/recoverBabyTrack().
+      const ns = await getMedia({ audio: on ? MIC_DUPLEX : MIC_MONITOR, video: false });
+      const nt = ns.getAudioTracks()[0];
+      if (!nt) return;
+      if (cur) nt.enabled = cur.enabled; // microfoon-uit van de gebruiker respecteren
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'audio');
+      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
+      if (cur) { try { localStream.removeTrack(cur); cur.stop(); } catch (e) {} }
+      localStream.addTrack(nt);
+      watchTrackEnd(nt, 'audio');
+      duplexOn = on;
+    } catch (e) {
+      // Lukt het niet, dan blijft de bestaande microfoon gewoon staan.
+    } finally {
+      duplexBusy = false;
+    }
+  }
+
   // ---- camerawissel op de babyunit ----------------------------------------
   // Waarom dit zo omslachtig is: `facingMode` is in de spec een *voorkeur*, geen
   // eis. iPadOS/Safari mag dus doodleuk dezelfde camera teruggeven. Je ziet dan
@@ -1802,7 +1978,9 @@
         toast(T('cameraRecovered'));
         return;
       }
-      const constraints = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false };
+      // Onbewerkte microfoon, net als bij het openen: geen AGC/ruisonderdrukking,
+      // anders klinkt de babyunit na een herstel ineens anders dan daarvoor.
+      const constraints = { audio: MIC_MONITOR, video: false };
       const ns = await getMedia(constraints);
       const nt = ns.getTracks()[0];
       const ot = localStream.getTracks().find((t) => t.kind === kind);
@@ -1811,6 +1989,7 @@
       if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, kind);
+      if (kind === 'audio') duplexOn = false; // verse microfoon = weer onbewerkt
       toast(T('cameraRecovered'));
     } catch (e) {
       // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
@@ -2140,6 +2319,10 @@
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+      // Een AudioContext die opgeschort blijft na terugkeer uit de
+      // achtergrond bevriest de geluidsmeter en daarmee het huilalarm.
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+      if (role === 'parent') { const v = $('video'); if (v) v.play().catch(() => {}); }
       checkParentHealthOnResume();
       checkBabyHealthOnResume();
     }
