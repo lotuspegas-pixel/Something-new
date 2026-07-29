@@ -713,6 +713,25 @@
          uitzien maar werkt geen enkele knop; zonder dit blok is er op een iPad
          geen enkele manier om te zien waaraan dat ligt. -->
     <script>
+      // Ontbrekende DOM-functies aanvullen voor oude browsers. Deze staan hier
+      // bewust vóór alle andere scripts en in ouderwets JavaScript.
+      // replaceChildren bestaat pas vanaf Safari 14; op iOS 12 gaf dat
+      // "box.replaceChildren is not a function" en startte de app niet.
+      (function () {
+        if (typeof Element === 'undefined' || Element.prototype.replaceChildren) return;
+        var vervang = function () {
+          while (this.firstChild) this.removeChild(this.firstChild);
+          for (var i = 0; i < arguments.length; i++) {
+            var k = arguments[i];
+            this.appendChild(typeof k === 'string' ? document.createTextNode(k) : k);
+          }
+        };
+        Element.prototype.replaceChildren = vervang;
+        if (typeof DocumentFragment !== 'undefined' && !DocumentFragment.prototype.replaceChildren) {
+          DocumentFragment.prototype.replaceChildren = vervang;
+        }
+      })();
+
       (function () {
         function toon(tekst) {
           try {

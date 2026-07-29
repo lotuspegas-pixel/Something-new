@@ -12,7 +12,8 @@
     "test:reconnect": "node test/e2e-reconnect.js",
     "test:timing": "node test/e2e-timing.js",
     "build": "node build.js",
-    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'"
+    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'",
+    "test:oldbrowser": "node test/e2e-oldbrowser.js"
   },
   "engines": {
     "node": ">=18"
