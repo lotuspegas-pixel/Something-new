@@ -1191,3 +1191,70 @@ body.app-mode #dviewMonitor .mplayer { grid-area: music; }
       "events";
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Vier zichtbare correcties op de dashboards
+
+   1. Op 390px verdween het woordmerk uit de topbalk — er stond dan alleen een
+      klein icoontje naast een brede taalkiezer. Het schaalt nu mee en
+      verdwijnt pas onder 340px.
+   2. De navigatierij brak af als 4 + 3, waarbij de drie op de tweede rij
+      breder uitrekten dan de vier erboven. Nu even breed en gecentreerd.
+   3. "Wissel camera" loopt over twee regels, waardoor die knoppenrij hoger
+      werd dan de rij erboven. Het label krijgt nu altijd twee regels ruimte.
+   4. Het camerabeeld was op de babyunit het kleinste element op een pagina
+      vol grote kaarten, terwijl het juist de hoofdzaak is.
+
+   Let op: assets/brand-theme.css laadt ná dit bestand, dus deze regels hebben
+   bewust een hogere specificiteit (body.app-mode … ) om te winnen.
+   --------------------------------------------------------------------------- */
+@media (min-width: 341px) {
+  body.app-mode .dash-topbar .bp-wordmark {
+    display: inline-flex !important;
+    font-size: clamp(12px, 3.4vw, 20px);
+  }
+}
+@media (max-width: 340px) {
+  body.app-mode .dash-topbar .bp-wordmark { display: none !important; }
+}
+
+@media (max-width: 400px) {
+  body.app-mode .dash .dash-nav { justify-content: center; }
+  body.app-mode .dash .dash-nav .dnav { flex: 0 0 calc(25% - 4px) !important; }
+}
+
+/* gelijke knophoogtes: het label krijgt altijd twee regels, ook als het er
+   maar één nodig heeft — zo blijven alle rijen even hoog */
+@media (max-width: 680px) {
+  body.app-mode #dviewMonitor .ctrlbtn > span:last-child {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 2.5em; text-align: center; line-height: 1.2;
+  }
+}
+
+/* babyunit: camerabeeld als hoofdzaak in beeld */
+@media (max-width: 860px) {
+  body.app-mode .bdash .vcard.baby { aspect-ratio: 4 / 3 !important; }
+}
+
+/* Statuskaarten babyunit naast elkaar op mobiel: drie korte feiten (verbonden,
+   batterij, kamer) namen gestapeld 316px in beslag — meer dan het camerabeeld
+   zelf. Naast elkaar past het in één rij en blijft het beeld de hoofdzaak. */
+@media (max-width: 860px) {
+  body.app-mode .bdash .bstat-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px;
+  }
+  body.app-mode .bdash .bstat { padding: 12px 10px; }
+  body.app-mode .bdash .bstat .big { font-size: clamp(15px, 4.2vw, 20px); }
+  body.app-mode .bdash .bstat small { font-size: 10.5px; line-height: 1.35; }
+}
+
+/* Woordmerk mag niet middenin een woord afbreken. Op smalle schermen krijgt
+   het merk voorrang op de taalnaam: die kort af (de globe blijft zichtbaar en
+   de keuzelijst blijft gewoon werken), zodat "Babyphone.Online" heel blijft. */
+@media (max-width: 480px) {
+  body.app-mode .dash-topbar .bp-wordmark { flex: 0 0 auto; overflow: visible; }
+  body.app-mode .dash-topbar .lang-pill { flex: 0 1 auto; min-width: 0; }
+  body.app-mode .dash-topbar .lang-pill .lang-select { max-width: clamp(0px, 12vw, 96px); }
+}

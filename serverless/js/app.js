@@ -1627,7 +1627,8 @@
   };
   // Decoratieve QR op het startscherm (er is nog geen actieve kamercode vóór
   // het koppelen); encodeert de eigen site-URL zodat scannen nooit stukloopt.
-  if ($('homeQrPreview')) QRKit.render('homeQrPreview', location.href.split('#')[0], 4);
+  // De knop op de landingspagina opent de scanner; daar hoort een scan-icoon,
+  // geen QR-code van de homepage (die was klein, korrelig en nergens voor nodig).
   $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);

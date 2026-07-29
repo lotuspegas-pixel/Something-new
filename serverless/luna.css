@@ -2176,3 +2176,105 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    --------------------------------------------------------------------------- */
 .lp .lang-pill { min-height: 44px; padding-top: 0; padding-bottom: 0; }
 .lp .lang-pill .lang-select { align-self: stretch; min-height: 44px; padding-top: 0; padding-bottom: 0; }
+
+/* ---------------------------------------------------------------------------
+   Vertrouwenskaarten: vier gelijke kaarten in plaats van een tijdlijn
+
+   De brandtheme maakte hier een tijdlijn van: een verticale lijn met kaarten
+   die om en om links en rechts uitlijnen op 79% breedte, met daarachter een
+   groot babywatermerk. Op een breed scherm leverde dat een rafelige zigzag op
+   met dezelfde illustratie twee keer in beeld (één keer als watermerk, één
+   keer in de kaart) — het las als een weergavefout in plaats van als ontwerp.
+   Bovendien had elke kaart een derde kolom van 52px voor een pictogram dat
+   dubbelop was met de illustratie en daarom is weggehaald.
+
+   Hieronder: vier gelijke kaarten naast elkaar, illustratie boven de tekst,
+   geen lijn en geen watermerk erdoorheen.
+   --------------------------------------------------------------------------- */
+.lp .lp-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  max-width: none;
+  align-items: stretch;
+}
+.lp .lp-trust-grid::before { display: none; }   /* de tijdlijn-lijn */
+.lp .lp-trust::before { opacity: 0.06; }         /* watermerk sterk terug */
+
+.lp .lp-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  width: auto;
+  min-height: 0;
+  padding: 22px 18px 20px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.lp .lp-trust-item .bp-trust-baby {
+  position: static;
+  transform: none;
+  width: clamp(84px, 9vw, 116px);
+  height: auto;
+  margin: 0 0 10px;
+  order: -1;                 /* illustratie bovenaan, tekst eronder */
+}
+.lp .lp-trust-item b { font-size: clamp(15px, 1.2vw, 16.5px); }
+.lp .lp-trust-item p { font-size: 13.5px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .lp .lp-trust-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .lp .lp-trust-grid { grid-template-columns: 1fr; gap: 12px; }
+  /* op een smal scherm leest een rij prettiger dan een hoge kolom */
+  .lp .lp-trust-item { flex-direction: row; text-align: left; align-items: center; gap: 14px; padding: 16px; }
+  .lp .lp-trust-item .bp-trust-baby { width: 74px; margin: 0; flex: 0 0 auto; }
+  .lp .lp-trust-item .lp-trust-txt { flex: 1 1 auto; min-width: 0; }
+}
+
+/* tekstblokken in de vertrouwenskaarten over de volle breedte centreren
+   (in een flexkolom krimpen ze anders en schuiven ze uit het midden) */
+.lp .lp-trust-item b,
+.lp .lp-trust-item p {
+  align-self: stretch;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .lp .lp-trust-item b,
+  .lp .lp-trust-item p { text-align: left; }
+}
+/* watermerk mag de kaarten niet meer storen */
+.lp .lp-trust::before { opacity: 0.035; }
+
+/* De vier illustraties hebben elk een andere beeldverhouding. Op gelijke
+   BREEDTE kregen ze dus verschillende hoogtes, waardoor de titels op vier
+   verschillende hoogtes uitkwamen. Op gelijke HOOGTE lijnt alles uit. */
+.lp .lp-trust-item .bp-trust-baby {
+  height: clamp(76px, 7.4vw, 96px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+.lp .lp-trust-item b { margin-top: auto; }   /* titels op één lijn, tekst eronder */
+@media (max-width: 520px) {
+  .lp .lp-trust-item .bp-trust-baby { height: 64px; }
+  .lp .lp-trust-item b { margin-top: 0; }
+}
+
+/* Restanten van de tijdlijn-opmaak op de even kaarten: die kregen een andere
+   padding, een asymmetrische radius en margin-left:auto, waardoor ze 4px
+   verschoven t.o.v. de oneven kaarten. Alle vier nu identiek. */
+.lp .lp-trust-item,
+.lp .lp-trust-item:nth-child(even) {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 22px 18px 20px;
+  border-radius: 24px;
+  grid-template-columns: none;
+}
