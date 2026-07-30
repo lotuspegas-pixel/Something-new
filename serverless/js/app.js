@@ -155,6 +155,27 @@
     echoCancellation: false, noiseSuppression: false, autoGainControl: false,
     channelCount: 1, sampleRate: 48000,
   };
+  // ---- opnameprofiel voor de babycamera --------------------------------
+  // Een oude tablet (bv. een iPad mini uit 2013 op iOS 12) kan 1280x720 niet
+  // in realtime coderen. De frames stapelen dan op en het beeld komt met een
+  // groeiende vertraging aan: het lijkt slowmotion. Zulke toestellen krijgen
+  // daarom meteen een lichter profiel. Herkenning gebeurt op browserleeftijd
+  // en het aantal processorkernen — geen van beide is waterdicht, maar samen
+  // vangen ze precies de toestellen die het niet trekken. Gaat het toch mis,
+  // dan schakelt watchEncoder() hieronder alsnog terug.
+  const ZWAAR = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } };
+  const LICHT = { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15, max: 20 } };
+  function oudToestel() {
+    try {
+      // replaceChildren kwam in Safari 14; ontbreekt die, dan is dit een
+      // browser (en dus vrijwel zeker een toestel) van vóór 2020.
+      if (typeof Element !== 'undefined' && !Element.prototype.replaceChildren) return true;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true;
+    } catch (e) {}
+    return false;
+  }
+  let camProfiel = oudToestel() ? LICHT : ZWAAR;
+
   const MIC_DUPLEX = {
     echoCancellation: true, noiseSuppression: false, autoGainControl: false,
     channelCount: 1,
@@ -293,6 +314,7 @@
   }
   function babyConnected() {
     showScreen('screenBaby');
+    watchEncoder(); // let op of dit toestel het coderen wel bijhoudt
     $('bConnDot').classList.remove('off');
     $('bConn').textContent = T('connected');
     const bl = $('bLatency'); if (bl) bl.textContent = T('live');
@@ -764,13 +786,62 @@
     else { deniedCount++; p.deny('refused'); }
   }
 
+  // Vangnet voor toestellen die hierboven niet als "oud" herkend worden maar
+  // het alsnog niet bijhouden. WebRTC meldt zelf waarom het inlevert
+  // (qualityLimitationReason 'cpu') en hoeveel frames er per seconde de deur
+  // uitgaan. Blijft dat te laag, dan halveren we de opname eenmalig. Dat is
+  // beter dan doorgaan met beeld dat steeds verder achterloopt: bij een
+  // babyfoon telt actueel beeld zwaarder dan scherp beeld.
+  let encoderVerlaagd = false;
+  function watchEncoder() {
+    if (role !== 'baby' || encoderVerlaagd) return;
+    let slechteMetingen = 0;
+    const timer = setInterval(async () => {
+      if (shuttingDown || encoderVerlaagd || role !== 'baby') { clearInterval(timer); return; }
+      if (!mediaPc || !mediaPc.getStats) return;
+      try {
+        const stats = await mediaPc.getStats();
+        let fps = null, reden = '';
+        stats.forEach((r) => {
+          if (r.type === 'outbound-rtp' && r.kind === 'video') {
+            if (typeof r.framesPerSecond === 'number') fps = r.framesPerSecond;
+            if (r.qualityLimitationReason) reden = r.qualityLimitationReason;
+          }
+        });
+        const teTraag = (fps !== null && fps < 8) || reden === 'cpu';
+        slechteMetingen = teTraag ? slechteMetingen + 1 : 0;
+        // Drie keer achter elkaar (dus ~15 s) voordat we ingrijpen: één
+        // uitschieter tijdens het opstarten is geen reden om beeld te
+        // verslechteren.
+        if (slechteMetingen >= 3) {
+          clearInterval(timer);
+          encoderVerlaagd = true;
+          camProfiel = LICHT;
+          await verlaagCamera();
+        }
+      } catch (e) {}
+    }, 5000);
+  }
+  async function verlaagCamera() {
+    try {
+      const sender = await detachVideoSender();
+      const ot = localStream && localStream.getVideoTracks()[0];
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      let nt = babyCamId ? await openCam({ deviceId: { exact: babyCamId } }) : null;
+      if (!nt) nt = await openCam({ facingMode: facing });
+      if (!nt) nt = await openCam(true);
+      if (!nt) return;
+      await attachVideoTrack(nt, sender);
+    } catch (e) {}
+  }
+
   async function startBaby() {
     role = 'baby';
     showScreen('screenPairBaby');
     try {
       localStream = await getMedia({
         audio: MIC_MONITOR,
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
+        video: Object.assign({ facingMode: 'environment' }, camProfiel),
       });
     } catch (e) {
       toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
@@ -1773,7 +1844,7 @@
   }
   // Eén camera openen. Geeft het videospoor terug, of null als het niet lukt.
   async function openCam(videoConstraint) {
-    const base = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } };
+    const base = Object.assign({}, camProfiel);
     const v = videoConstraint === true ? true : Object.assign({}, base, videoConstraint);
     try {
       const ns = await getMedia({ audio: false, video: v });

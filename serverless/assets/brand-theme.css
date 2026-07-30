@@ -2710,3 +2710,48 @@ body.app-mode .pair-box {
   bottom: 0;
   left: 0;
 }
+
+/* =========================================================================
+   VIDEOVENSTER — hoogte zonder aspect-ratio
+   Alle kinderen van .vcard staan absoluut gepositioneerd, dus de kaart haalde
+   haar hoogte uitsluitend uit `aspect-ratio`. Die eigenschap bestaat pas vanaf
+   Safari 15: op iOS 12 werd de kaart 0 pixels hoog en was er GEEN videovenster
+   te zien. Er stond al een vangnet, maar dat gold alleen tot 680px breed en
+   een iPad staand is 768px.
+
+   Hieronder één methode die in élke browser hetzelfde doet: een leeg
+   ::before-element met een verhoudingsgewijze bovenmarge duwt de kaart open.
+   Bewust NIET achter een @supports-controle: dan zou het op moderne browsers
+   nooit draaien en dus ook nooit te testen zijn — precies de reden dat het
+   vorige vangnet zo lang onopgemerkt kapot kon zijn. De percentages komen
+   overeen met de verhoudingen die aspect-ratio hier gaf, dus de weergave op
+   moderne browsers blijft ongewijzigd (nagemeten op 390 t/m 1280px).
+   Een eventuele max-height blijft er gewoon overheen gaan.
+   ========================================================================= */
+.vcard,
+.vcard.baby,
+#dviewMonitor .vcard,
+.bdash .vcard.baby {
+  aspect-ratio: auto !important;
+}
+.vcard::before {
+  content: "";
+  display: block;
+  padding-top: 56.25%; /* 16:9 */
+}
+.vcard.baby::before {
+  padding-top: 50%; /* 16:8 */
+}
+@media (max-width: 860px) {
+  .bdash .vcard.baby::before { padding-top: 75%; } /* 4:3 */
+}
+@media (max-width: 680px) {
+  #dviewMonitor .vcard::before { padding-top: 75%; } /* 4:3 */
+}
+/* De beeld- en overlaylagen blijven absoluut, dus bovenop dat spacer-blok. */
+.vcard video,
+.vcard .night-veil,
+.vcard-ph,
+.vcard-poster {
+  position: absolute;
+}

@@ -58,6 +58,16 @@ const SLOOP = `
   weg(navigator, 'wakeLock');                  // 16.4
   if (window.crypto) weg(window.crypto, 'randomUUID');           // 15.4
   if (window.MediaStreamTrack) weg(MediaStreamTrack.prototype, 'getCapabilities'); // 13
+  // aspect-ratio bestaat pas vanaf Safari 15. Chromium kan een CSS-eigenschap
+  // niet écht uitzetten, dus overschrijven we hem met 'auto !important' — het
+  // effect is hetzelfde: de kaart krijgt haar hoogte niet meer uit die
+  // eigenschap en moet het van het vangnet hebben.
+  document.addEventListener('DOMContentLoaded', function () {
+    var st = document.createElement('style');
+    st.textContent = '.vcard, .vcard.baby, #dviewMonitor .vcard, .bdash .vcard.baby { aspect-ratio: auto !important; }';
+    document.head.appendChild(st);
+  });
+
   // De Battery Status API bestaat in WebKit helemaal niet. Deze staat op het
   // prototype, dus daar moet hij weg — niet van het navigator-object zelf.
   if (window.Navigator) weg(Navigator.prototype, 'getBattery');
@@ -160,6 +170,25 @@ function findExecutable() {
   let w = 0;
   for (let i = 0; i < 60; i++) { w = await parent.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0); if (w > 0) break; await sleep(300); }
   check('Ouderunit krijgt live beeld ("' + w + 'px")', w > 0);
+
+  // Zonder aspect-ratio moet het vangnet de kaart openduwen. Dit is precies
+  // wat op de iPad mini misging: geen videovenster te zien.
+  const babyVenster = await baby.evaluate(() => {
+    const v = document.querySelector('.bdash .vcard.baby') || document.querySelector('.vcard.baby');
+    if (!v) return { gevonden: false };
+    const b = v.getBoundingClientRect();
+    return { gevonden: true, h: Math.round(b.height), w: Math.round(b.width) };
+  });
+  check('Babyunit toont een videovenster met hoogte (' + JSON.stringify(babyVenster) + ')',
+        babyVenster.gevonden && babyVenster.h > 80);
+  const ouderVenster = await parent.evaluate(() => {
+    const v = document.getElementById('screen');
+    if (!v) return { gevonden: false };
+    const b = v.getBoundingClientRect();
+    return { gevonden: true, h: Math.round(b.height), w: Math.round(b.width) };
+  });
+  check('Ouderunit toont een videovenster met hoogte (' + JSON.stringify(ouderVenster) + ')',
+        ouderVenster.gevonden && ouderVenster.h > 80);
 
   const lijst = await parent.$$eval('#playlist .track', (e) => e.length).catch(() => 0);
   check('Afspeellijst is opgebouwd (' + lijst + ' nummers, gebruikt replaceChildren)', lijst > 0);
