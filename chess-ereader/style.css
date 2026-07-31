@@ -1,0 +1,250 @@
+/* E-ink friendly styling: pure black/white/gray, no animation, no shadows/gradients,
+   large touch targets, table-based board for maximum browser compatibility. */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #000000;
+}
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.4;
+  padding: 10px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.5em;
+  text-align: center;
+  margin: 4px 0 8px 0;
+  border-bottom: 2px solid #000;
+  padding-bottom: 6px;
+}
+
+#status {
+  text-align: center;
+  font-size: 1.15em;
+  font-weight: bold;
+  border: 2px solid #000;
+  padding: 8px;
+  margin: 8px 0;
+  min-height: 1.4em;
+}
+
+#status.check {
+  background: #000;
+  color: #fff;
+}
+
+/* ---- Board ---- */
+
+#board-wrap {
+  width: 100%;
+  display: block;
+  text-align: center;
+}
+
+#board {
+  border-collapse: collapse;
+  margin: 0 auto;
+  table-layout: fixed;
+  border: 3px solid #000;
+}
+
+/* Each cell gets an explicit width AND height so empty squares don't
+   collapse while squares with a large glyph don't stretch the row. */
+#board td {
+  border: 1px solid #666;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  width: 11.5vmin;
+  height: 11.5vmin;
+  max-width: 78px;
+  max-height: 78px;
+  font-size: 7vmin;
+  line-height: 1;
+  overflow: hidden;
+  user-select: none;
+}
+
+#board .sq-light {
+  background: #ffffff;
+}
+
+#board .sq-dark {
+  background: #cccccc;
+}
+
+/* Independent layers so a selected square and the keyboard cursor
+   stay visible at the same time instead of one outline overriding the other. */
+#board .sq-selected {
+  outline: 4px solid #000;
+  outline-offset: -4px;
+}
+
+#board .sq-cursor::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 3px dashed #000;
+  pointer-events: none;
+}
+
+#board .sq-check {
+  background: #000 !important;
+}
+#board .sq-check .piece {
+  color: #fff;
+}
+#board .sq-check.sq-cursor::after {
+  border-color: #fff;
+}
+
+#board .sq-lastmove {
+  background: #999999;
+}
+
+.piece {
+  display: inline-block;
+  line-height: 1;
+}
+
+.move-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26%;
+  height: 26%;
+  margin-left: -13%;
+  margin-top: -13%;
+  background: #000;
+  border-radius: 50%;
+  opacity: 0.55;
+}
+
+.move-ring {
+  position: absolute;
+  left: 6%;
+  top: 6%;
+  right: 6%;
+  bottom: 6%;
+  border: 4px solid #000;
+  border-radius: 50%;
+  opacity: 0.65;
+}
+
+/* ---- Controls ---- */
+
+#controls {
+  margin: 12px 0;
+  text-align: center;
+}
+
+button, select, input[type=text] {
+  font-family: inherit;
+  font-size: 1em;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  padding: 8px 12px;
+  margin: 4px;
+  min-height: 44px;
+  border-radius: 0;
+}
+
+button:active {
+  background: #000;
+  color: #fff;
+}
+
+.btn-row {
+  margin: 6px 0;
+}
+
+fieldset {
+  border: 2px solid #000;
+  margin: 10px 0;
+  padding: 8px;
+}
+
+legend {
+  font-weight: bold;
+  padding: 0 6px;
+}
+
+label {
+  display: inline-block;
+  margin: 4px 8px;
+}
+
+/* ---- Promotion dialog ---- */
+
+#promo-dialog {
+  border: 3px solid #000;
+  background: #fff;
+  padding: 10px;
+  text-align: center;
+  margin: 10px 0;
+}
+
+#promo-dialog button {
+  font-size: 1.6em;
+  min-width: 56px;
+}
+
+/* ---- Move list ---- */
+
+#movelist-wrap {
+  border: 2px solid #000;
+  padding: 8px;
+  margin: 10px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+#movelist {
+  font-family: "Courier New", monospace;
+  font-size: 1em;
+  white-space: pre-wrap;
+}
+
+/* ---- FEN / PGN ---- */
+
+textarea {
+  width: 100%;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+  border: 2px solid #000;
+  padding: 6px;
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.85em;
+  margin: 20px 0 6px 0;
+  border-top: 1px solid #666;
+  padding-top: 6px;
+}
+
+@media (max-width: 380px) {
+  body { font-size: 16px; }
+  #board td { font-size: 6.5vmin; }
+}
