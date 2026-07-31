@@ -1,250 +1,320 @@
-/* E-ink friendly styling: pure black/white/gray, no animation, no shadows/gradients,
-   large touch targets, table-based board for maximum browser compatibility. */
+/* E-reader friendly styling.
+   Every colour comes from a CSS custom property so themes.js can restyle the
+   whole app by setting variables on <html>. No animations or transitions:
+   e-ink panels ghost badly when things move, and repaints are expensive. */
 
-* {
-  box-sizing: border-box;
+:root {
+  /* Fallbacks so the page is usable even if themes.js never runs. */
+  --board-light: #eeeed2;
+  --board-dark: #769656;
+  --piece-white: #ffffff;
+  --piece-black: #2e2e2e;
+  --piece-outline: #1a1a1a;
+  --piece-detail: #ffffff;
+  --page-bg: #faf9f0;
+  --page-fg: #1c1c1c;
+  --panel-bg: #ffffff;
+  --border: #3d4f2e;
+  --accent: #4a6b35;
+  --accent-fg: #ffffff;
+  --hl-lastmove: #c9d16a;
+  --hl-selected: #f2f26a;
+  --hl-check: #d64a3a;
+  --hl-dot: #3a4a2a;
+  --coord: #5a6b45;
+
+  --cell: 11vmin;
+  --cell-max: 68px;
 }
+
+* { box-sizing: border-box; }
 
 html, body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
-  color: #000000;
+  background: var(--page-bg);
+  color: var(--page-fg);
 }
 
 body {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.4;
-  padding: 10px;
-  max-width: 700px;
+  padding: 8px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
 h1 {
-  font-size: 1.5em;
+  font-size: 1.35em;
   text-align: center;
-  margin: 4px 0 8px 0;
-  border-bottom: 2px solid #000;
-  padding-bottom: 6px;
+  margin: 2px 0 6px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--border);
 }
+
+/* ---- Status bar ---- */
 
 #status {
   text-align: center;
-  font-size: 1.15em;
+  font-size: 1.1em;
   font-weight: bold;
-  border: 2px solid #000;
-  padding: 8px;
-  margin: 8px 0;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  padding: 7px 6px;
+  margin: 7px 0;
   min-height: 1.4em;
 }
 
-#status.check {
-  background: #000;
-  color: #fff;
+#status.is-check,
+#status.is-over {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+#subline {
+  text-align: center;
+  font-size: 0.85em;
+  margin: -3px 0 7px 0;
+  min-height: 1.2em;
 }
 
 /* ---- Board ---- */
 
-#board-wrap {
-  width: 100%;
-  display: block;
-  text-align: center;
-}
+#board-wrap { text-align: center; }
 
 #board {
   border-collapse: collapse;
   margin: 0 auto;
   table-layout: fixed;
-  border: 3px solid #000;
+  border: 3px solid var(--border);
 }
 
-/* Each cell gets an explicit width AND height so empty squares don't
-   collapse while squares with a large glyph don't stretch the row. */
+/* Explicit width AND height on every cell: without both, empty squares
+   collapse while squares holding a piece stretch the whole row. */
 #board td {
-  border: 1px solid #666;
+  width: var(--cell);
+  height: var(--cell);
+  max-width: var(--cell-max);
+  max-height: var(--cell-max);
+  padding: 0;
+  margin: 0;
+  position: relative;
   text-align: center;
   vertical-align: middle;
-  padding: 0;
   cursor: pointer;
-  position: relative;
-  width: 11.5vmin;
-  height: 11.5vmin;
-  max-width: 78px;
-  max-height: 78px;
-  font-size: 7vmin;
-  line-height: 1;
   overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
   user-select: none;
 }
 
-#board .sq-light {
-  background: #ffffff;
-}
+#board .sq-light { background: var(--board-light); }
+#board .sq-dark  { background: var(--board-dark); }
 
-#board .sq-dark {
-  background: #cccccc;
-}
+#board .sq-lastmove { background: var(--hl-lastmove); }
+#board .sq-check    { background: var(--hl-check); }
 
-/* Independent layers so a selected square and the keyboard cursor
-   stay visible at the same time instead of one outline overriding the other. */
+/* Selection and the keyboard cursor are separate layers so both can show at
+   once; an outline on the same element would let one silently replace the other. */
 #board .sq-selected {
-  outline: 4px solid #000;
+  outline: 4px solid var(--hl-selected);
   outline-offset: -4px;
 }
 
 #board .sq-cursor::after {
   content: '';
   position: absolute;
-  left: 2px;
-  top: 2px;
-  right: 2px;
-  bottom: 2px;
-  border: 3px dashed #000;
+  left: 2px; top: 2px; right: 2px; bottom: 2px;
+  border: 3px dashed var(--piece-outline);
   pointer-events: none;
 }
 
-#board .sq-check {
-  background: #000 !important;
-}
-#board .sq-check .piece {
-  color: #fff;
-}
-#board .sq-check.sq-cursor::after {
-  border-color: #fff;
-}
-
-#board .sq-lastmove {
-  background: #999999;
+/* King of the Hill: mark the four goal squares. */
+#board .sq-hill::before {
+  content: '';
+  position: absolute;
+  left: 12%; top: 12%; right: 12%; bottom: 12%;
+  border: 2px dotted var(--hl-dot);
+  pointer-events: none;
 }
 
-.piece {
-  display: inline-block;
+.piece-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.coord {
+  position: absolute;
+  font-size: 0.55em;
+  font-weight: bold;
+  color: var(--coord);
   line-height: 1;
+  pointer-events: none;
 }
+
+/* Take the opposing square's colour so coordinates stay readable in every
+   theme, including the ones whose squares are close together in luminance. */
+#board .sq-light .coord { color: var(--board-dark); }
+#board .sq-dark .coord  { color: var(--board-light); }
+.coord-file { right: 2px; bottom: 1px; }
+.coord-rank { left: 2px; top: 1px; }
 
 .move-dot {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 26%;
-  height: 26%;
-  margin-left: -13%;
-  margin-top: -13%;
-  background: #000;
+  left: 50%; top: 50%;
+  width: 28%; height: 28%;
+  margin-left: -14%; margin-top: -14%;
+  background: var(--hl-dot);
   border-radius: 50%;
-  opacity: 0.55;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .move-ring {
   position: absolute;
-  left: 6%;
-  top: 6%;
-  right: 6%;
-  bottom: 6%;
-  border: 4px solid #000;
+  left: 5%; top: 5%; right: 5%; bottom: 5%;
+  border: 4px solid var(--hl-dot);
   border-radius: 50%;
-  opacity: 0.65;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ---- Captured material ---- */
+
+.material {
+  display: block;
+  min-height: 26px;
+  font-size: 20px;
+  line-height: 1.2;
+  text-align: center;
+  word-wrap: break-word;
+  padding: 1px 0;
+}
+
+.material .adv {
+  font-family: Georgia, serif;
+  font-size: 0.75em;
+  font-weight: bold;
 }
 
 /* ---- Controls ---- */
 
-#controls {
-  margin: 12px 0;
-  text-align: center;
-}
+.btn-row { text-align: center; margin: 6px 0; }
 
 button, select, input[type=text] {
   font-family: inherit;
   font-size: 1em;
-  border: 2px solid #000;
-  background: #fff;
-  color: #000;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--page-fg);
   padding: 8px 12px;
-  margin: 4px;
+  margin: 3px;
   min-height: 44px;
   border-radius: 0;
 }
 
-button:active {
-  background: #000;
-  color: #fff;
-}
+button:active { background: var(--accent); color: var(--accent-fg); }
 
-.btn-row {
-  margin: 6px 0;
-}
+button[disabled] { opacity: 0.45; }
+
+.btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 
 fieldset {
-  border: 2px solid #000;
-  margin: 10px 0;
-  padding: 8px;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  margin: 9px 0;
+  padding: 8px 10px;
 }
 
-legend {
+legend { font-weight: bold; padding: 0 6px; }
+
+.field {
+  display: block;
+  margin: 8px 0;
+}
+
+.field > span.label {
+  display: block;
   font-weight: bold;
-  padding: 0 6px;
+  font-size: 0.9em;
+  margin-bottom: 2px;
 }
 
-label {
-  display: inline-block;
-  margin: 4px 8px;
+.field select { width: 100%; margin: 0; }
+
+.note {
+  font-size: 0.82em;
+  margin: 3px 0 0 0;
+  opacity: 0.85;
 }
+
+#settings.collapsed { display: none; }
 
 /* ---- Promotion dialog ---- */
 
 #promo-dialog {
-  border: 3px solid #000;
-  background: #fff;
-  padding: 10px;
+  border: 3px solid var(--border);
+  background: var(--panel-bg);
+  padding: 8px;
   text-align: center;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 
 #promo-dialog button {
-  font-size: 1.6em;
-  min-width: 56px;
+  width: 62px;
+  height: 62px;
+  padding: 4px;
+  vertical-align: middle;
 }
+
+#promo-dialog button .piece-svg { width: 100%; height: 100%; }
 
 /* ---- Move list ---- */
 
 #movelist-wrap {
-  border: 2px solid #000;
-  padding: 8px;
-  margin: 10px 0;
-  max-height: 220px;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  padding: 7px 9px;
+  margin: 9px 0;
+  max-height: 200px;
   overflow-y: auto;
 }
 
 #movelist {
-  font-family: "Courier New", monospace;
-  font-size: 1em;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.95em;
   white-space: pre-wrap;
+  margin: 0;
 }
-
-/* ---- FEN / PGN ---- */
 
 textarea {
   width: 100%;
-  font-family: "Courier New", monospace;
-  font-size: 0.9em;
-  border: 2px solid #000;
-  padding: 6px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.85em;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--page-fg);
+  padding: 5px;
 }
 
-.hidden {
-  display: none;
-}
+input[type=text] { width: 100%; }
+
+.hidden { display: none; }
 
 footer {
   text-align: center;
-  font-size: 0.85em;
-  margin: 20px 0 6px 0;
-  border-top: 1px solid #666;
+  font-size: 0.8em;
+  margin: 16px 0 6px 0;
   padding-top: 6px;
+  border-top: 1px solid var(--border);
+  opacity: 0.85;
 }
 
-@media (max-width: 380px) {
-  body { font-size: 16px; }
-  #board td { font-size: 6.5vmin; }
+@media (max-width: 400px) {
+  body { font-size: 15px; }
+  :root { --cell: 11.5vmin; }
 }

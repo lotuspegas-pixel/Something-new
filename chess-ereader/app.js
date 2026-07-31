@@ -1,54 +1,78 @@
-/* UI layer — plain ES5, DOM level 1/2 APIs only, no build step.
-   Relies on window.ChessEngine (loaded from chess-engine.js). */
+/* UI layer — plain ES5, DOM level 1/2 only, no build step.
+   Depends on window.ChessEngine, window.ChessAI, window.PieceSets, window.Themes. */
 
 (function () {
   'use strict';
 
   var C = window.ChessEngine;
+  var AI = window.ChessAI;
 
-  var PIECE_GLYPH = {
-    K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙',
-    k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟'
+  var VALUE = { P: 1, N: 3, B: 3, R: 5, Q: 9, K: 0 };
+  var STORAGE_KEY = 'schaak-ereader-instellingen';
+
+  var settings = {
+    theme: 'bos',
+    pieceSet: 'klassiek',
+    variant: 'standard',
+    level: 2,
+    vsComputer: true,
+    humanColor: 'w',
+    showCoords: true
   };
 
-  var game = C.newGame();
-  var snapshots = [C.cloneState(game)];
+  var game = null;
+  var snapshots = [];
   var selected = null;
   var legalForSelected = [];
   var flipped = false;
-  var cursor = 4; // e1
+  var cursor = 4;
   var lastMove = null;
   var pendingPromotion = null;
-  var vsAI = false;
-  var aiColor = 'b';
-  var aiDepth = 2;
   var aiThinking = false;
-  var matchEndedOverride = null;
   var moveToken = 0;
+  var endedOverride = null;
 
   function $(id) { return document.getElementById(id); }
 
-  function displayIndex(sq) {
-    // Returns the square index to render at a given table cell position, honoring flip.
-    return sq;
+  /* ---------- Settings persistence (e-readers may disable storage) ---------- */
+
+  function loadSettings() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      for (var k in settings) {
+        if (settings.hasOwnProperty(k) && saved.hasOwnProperty(k)) settings[k] = saved[k];
+      }
+    } catch (e) { /* storage unavailable or corrupt — defaults are fine */ }
+  }
+
+  function saveSettings() {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); }
+    catch (e) { /* nothing we can do; settings just won't persist */ }
+  }
+
+  /* ---------- Rendering ---------- */
+
+  function pieceSvg(pieceChar) {
+    var set = window.PieceSets[settings.pieceSet] || window.PieceSets.klassiek;
+    return set.render(pieceChar);
   }
 
   function buildBoardTable() {
     var table = $('board');
     table.innerHTML = '';
-    var r, f, row, td;
     for (var ri = 0; ri < 8; ri++) {
-      r = flipped ? ri : 7 - ri;
-      row = document.createElement('tr');
+      var r = flipped ? ri : 7 - ri;
+      var row = document.createElement('tr');
       for (var fi = 0; fi < 8; fi++) {
-        f = flipped ? 7 - fi : fi;
+        var f = flipped ? 7 - fi : fi;
         var sq = C.sqOf(f, r);
-        td = document.createElement('td');
+        var td = document.createElement('td');
         td.id = 'sq-' + sq;
-        td.className = (f + r) % 2 === 0 ? 'sq-dark' : 'sq-light';
-        td.setAttribute('data-sq', sq);
-        (function (sqCaptured) {
-          td.onclick = function () { onSquareClick(sqCaptured); };
+        td.setAttribute('data-sq', String(sq));
+        (function (target) {
+          td.onclick = function () { onSquareClick(target); };
         })(sq);
         row.appendChild(td);
       }
@@ -57,128 +81,159 @@
   }
 
   function render() {
-    var status = C.gameStatus(game);
-    var inCheck = status.over ? (status.reason === 'checkmate') : status.inCheck;
+    var status = endedOverride ? null : C.gameStatus(game);
+    var inCheck = status && !status.over ? status.inCheck : (status && status.reason === 'checkmate');
     var checkSq = -1;
-    if (inCheck) checkSq = C.kingSquare(game.board, game.turn);
+    if (!endedOverride && C.isInCheck(game, game.turn)) checkSq = game.kings[game.turn];
+
+    var isHill = {};
+    if (game.variant === 'koth') {
+      for (var h = 0; h < C.CENTER_SQUARES.length; h++) isHill[C.CENTER_SQUARES[h]] = true;
+    }
+
+    // Destination squares for the current selection; castling is also offered
+    // on the rook's own square, which is the Chess960 convention.
+    var dests = {};
+    for (var i = 0; i < legalForSelected.length; i++) {
+      var m = legalForSelected[i];
+      var capture = !!m.captured || m.flag === 'ep';
+      dests[m.to] = capture ? 'ring' : 'dot';
+      if (m.flag === 'castleK' || m.flag === 'castleQ') dests[m.rookFrom] = 'dot';
+    }
 
     for (var sq = 0; sq < 64; sq++) {
       var td = $('sq-' + sq);
       if (!td) continue;
-      var cls = (C.fileOf(sq) + C.rankOf(sq)) % 2 === 0 ? 'sq-dark' : 'sq-light';
+      var f = C.fileOf(sq), r = C.rankOf(sq);
+      var cls = ((f + r) & 1) === 0 ? 'sq-dark' : 'sq-light';
+
+      if (lastMove && (sq === lastMove.from || sq === lastMove.to)) cls += ' sq-lastmove';
+      if (sq === checkSq) cls += ' sq-check';
+      if (isHill[sq]) cls += ' sq-hill';
+      if (selected === sq) cls += ' sq-selected';
+      if (sq === cursor) cls += ' sq-cursor';
       td.className = cls;
-      td.innerHTML = '';
 
-      if (lastMove && (sq === lastMove.from || sq === lastMove.to)) {
-        td.className += ' sq-lastmove';
-      }
-      if (sq === checkSq) {
-        td.className += ' sq-check';
-      }
-      if (selected === sq) {
-        td.className += ' sq-selected';
-      }
-      if (sq === cursor) {
-        td.className += ' sq-cursor';
-      }
-
+      var html = '';
       var piece = game.board[sq];
-      if (piece) {
-        var span = document.createElement('span');
-        span.className = 'piece';
-        span.textContent = PIECE_GLYPH[piece];
-        td.appendChild(span);
-      }
+      if (piece) html += pieceSvg(piece);
+      if (dests[sq]) html += '<span class="' + (dests[sq] === 'ring' ? 'move-ring' : 'move-dot') + '"></span>';
 
-      var isDest = false, isCapture = false;
-      for (var i = 0; i < legalForSelected.length; i++) {
-        if (legalForSelected[i].to === sq) {
-          isDest = true;
-          if (legalForSelected[i].captured || legalForSelected[i].flag === 'ep') isCapture = true;
-        }
+      if (settings.showCoords) {
+        var edgeRank = flipped ? 7 : 0;
+        var edgeFile = flipped ? 7 : 0;
+        if (r === edgeRank) html += '<span class="coord coord-file">' + 'abcdefgh'.charAt(f) + '</span>';
+        if (f === edgeFile) html += '<span class="coord coord-rank">' + (r + 1) + '</span>';
       }
-      if (isDest) {
-        var marker = document.createElement('span');
-        marker.className = isCapture ? 'move-ring' : 'move-dot';
-        td.appendChild(marker);
-      }
+      td.innerHTML = html;
     }
 
     renderStatus(status, inCheck);
+    renderMaterial();
     renderMoveList();
-    renderFen();
-    renderAiControls();
+    $('fen-output').value = C.stateToFen(game);
+    $('btn-undo').disabled = snapshots.length <= 1 || aiThinking;
   }
 
   function renderStatus(status, inCheck) {
-    var el = $('status');
-    if (matchEndedOverride) {
-      el.textContent = matchEndedOverride;
+    var el = $('status'), sub = $('subline');
+    var subText = '';
+
+    if (endedOverride) {
+      el.textContent = endedOverride;
+      el.className = 'is-over';
+    } else if (status.over) {
+      el.textContent = describeEnd(status);
+      el.className = 'is-over';
+    } else if (aiThinking) {
+      el.textContent = 'Computer denkt na…';
       el.className = '';
-      return;
-    }
-    var turnName = game.turn === 'w' ? 'Wit' : 'Zwart';
-    var text;
-    if (status.over) {
-      if (status.reason === 'checkmate') {
-        var winner = status.result === '1-0' ? 'Wit' : 'Zwart';
-        text = 'Schaakmat — ' + winner + ' wint';
-      } else {
-        text = 'Remise (' + dutchReason(status.reason) + ')';
-      }
     } else {
-      text = turnName + ' aan zet';
-      if (inCheck) text += ' — Schaak!';
-      if (vsAI && game.turn === aiColor && !aiThinking) text = 'Computer denkt na...';
+      var turnName = game.turn === 'w' ? 'Wit' : 'Zwart';
+      el.textContent = turnName + ' aan zet' + (inCheck ? ' — schaak!' : '');
+      el.className = inCheck ? 'is-check' : '';
     }
-    el.textContent = text;
-    el.className = inCheck ? 'check' : '';
+
+    if (game.variant === 'threecheck') {
+      subText = 'Schaken gegeven — wit: ' + game.checkCount.w + '/3, zwart: ' + game.checkCount.b + '/3';
+    } else if (game.variant === 'koth') {
+      subText = 'Bereik d4, e4, d5 of e5 met je koning om te winnen';
+    } else if (game.variant === 'chess960') {
+      subText = 'Chess960 — willekeurige opstelling';
+    }
+    sub.textContent = subText;
   }
 
-  function dutchReason(reason) {
-    if (reason === 'stalemate') return 'pat';
-    if (reason === 'fifty-move rule') return '50-zettenregel';
-    if (reason === 'threefold repetition') return 'drievoudige zetherhaling';
-    if (reason === 'insufficient material') return 'onvoldoende materiaal';
-    return reason;
+  function describeEnd(status) {
+    if (status.reason === 'checkmate') {
+      return 'Schaakmat — ' + (status.result === '1-0' ? 'wit' : 'zwart') + ' wint';
+    }
+    if (status.reason === 'koth') {
+      return 'Koning op de heuvel — ' + (status.result === '1-0' ? 'wit' : 'zwart') + ' wint';
+    }
+    if (status.reason === 'threecheck') {
+      return 'Drie schaken — ' + (status.result === '1-0' ? 'wit' : 'zwart') + ' wint';
+    }
+    var reasons = {
+      stalemate: 'pat',
+      fifty: '50-zettenregel',
+      repetition: 'drievoudige zetherhaling',
+      material: 'onvoldoende materiaal'
+    };
+    return 'Remise — ' + (reasons[status.reason] || status.reason);
+  }
+
+  /* Captured material, taken from the moves actually played. */
+  function renderMaterial() {
+    var byWhite = [], byBlack = [], scoreW = 0, scoreB = 0;
+    for (var i = 0; i < game.history.length; i++) {
+      var h = game.history[i];
+      if (!h.captured) continue;
+      var v = VALUE[C.typeOf(h.captured)] || 0;
+      if (C.colorOf(h.piece) === 'w') { byWhite.push(h.captured); scoreW += v; }
+      else { byBlack.push(h.captured); scoreB += v; }
+    }
+    $('captured-black').innerHTML = materialHtml(byBlack, scoreB - scoreW);
+    $('captured-white').innerHTML = materialHtml(byWhite, scoreW - scoreB);
+  }
+
+  function materialHtml(pieces, advantage) {
+    var order = { Q: 0, R: 1, B: 2, N: 3, P: 4 };
+    pieces.sort(function (a, b) { return order[C.typeOf(a)] - order[C.typeOf(b)]; });
+    var glyphs = { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙', k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+    var html = '';
+    for (var i = 0; i < pieces.length; i++) html += glyphs[pieces[i]];
+    if (advantage > 0) html += ' <span class="adv">+' + advantage + '</span>';
+    return html || '&nbsp;';
   }
 
   function renderMoveList() {
-    var el = $('movelist');
     var out = '';
     for (var i = 0; i < game.history.length; i++) {
       if (i % 2 === 0) out += (Math.floor(i / 2) + 1) + '. ';
-      out += game.history[i].san + ' ';
-      if (i % 2 === 1) out += '\n';
+      out += game.history[i].san + (i % 2 === 1 ? '\n' : ' ');
     }
-    el.textContent = out || '(nog geen zetten)';
+    $('movelist').textContent = out || '(nog geen zetten)';
     var wrap = $('movelist-wrap');
     wrap.scrollTop = wrap.scrollHeight;
   }
 
-  function renderFen() {
-    $('fen-output').value = C.stateToFen(game);
+  /* ---------- Interaction ---------- */
+
+  function inputLocked() {
+    if (pendingPromotion || aiThinking || endedOverride) return true;
+    if (C.gameStatus(game).over) return true;
+    return settings.vsComputer && game.turn !== settings.humanColor;
   }
 
-  function renderAiControls() {
-    $('ai-toggle').checked = vsAI;
-    $('ai-color').disabled = vsAI;
-    $('ai-depth').disabled = !vsAI;
-  }
-
-  function clearSelection() {
-    selected = null;
-    legalForSelected = [];
+  function movesFrom(sq) {
+    var all = C.generateLegalMoves(game), out = [];
+    for (var i = 0; i < all.length; i++) { if (all[i].from === sq) out.push(all[i]); }
+    return out;
   }
 
   function onSquareClick(sq) {
-    if (pendingPromotion) return;
-    if (aiThinking) return;
-    if (matchEndedOverride) return;
-    var status = C.gameStatus(game);
-    if (status.over) return;
-    if (vsAI && game.turn === aiColor) return;
-
+    if (inputLocked()) return;
     cursor = sq;
     var piece = game.board[sq];
 
@@ -191,58 +246,48 @@
       return;
     }
 
-    if (sq === selected) {
-      clearSelection();
-      render();
-      return;
-    }
+    if (sq === selected) { clearSelection(); render(); return; }
 
-    if (piece && C.colorOf(piece) === game.turn) {
-      selected = sq;
-      legalForSelected = movesFrom(sq);
-      render();
-      return;
-    }
-
+    // Find a move landing here (or a castling move triggered via its rook).
     var target = null;
     for (var i = 0; i < legalForSelected.length; i++) {
-      if (legalForSelected[i].to === sq) { target = legalForSelected[i]; break; }
+      var m = legalForSelected[i];
+      if (m.to === sq || ((m.flag === 'castleK' || m.flag === 'castleQ') && m.rookFrom === sq)) { target = m; break; }
     }
+
     if (!target) {
-      clearSelection();
+      // Not a legal destination: treat a click on another own piece as reselecting.
+      if (piece && C.colorOf(piece) === game.turn) {
+        selected = sq;
+        legalForSelected = movesFrom(sq);
+      } else {
+        clearSelection();
+      }
       render();
       return;
     }
 
     if (target.promotion) {
-      pendingPromotion = { from: selected, to: sq, color: C.colorOf(target.piece) };
+      pendingPromotion = { from: selected, to: target.to, color: C.colorOf(target.piece) };
       showPromoDialog();
       return;
     }
-
-    doMove(selected, sq, null);
+    doMove(selected, target.to === sq ? target.to : sq, null);
   }
 
-  function movesFrom(sq) {
-    var all = C.generateLegalMoves(game);
-    var out = [];
-    for (var i = 0; i < all.length; i++) { if (all[i].from === sq) out.push(all[i]); }
-    return out;
-  }
+  function clearSelection() { selected = null; legalForSelected = []; }
 
   function showPromoDialog() {
     var dlg = $('promo-dialog');
     dlg.classList.remove('hidden');
+    dlg.innerHTML = '<div>Promoveer naar:</div>';
     var isWhite = pendingPromotion.color === 'w';
     var letters = ['Q', 'R', 'B', 'N'];
-    var glyphs = isWhite ? ['♕', '♖', '♗', '♘'] : ['♛', '♜', '♝', '♞'];
-    dlg.innerHTML = '<div>Promoveer naar:</div>';
     for (var i = 0; i < letters.length; i++) {
       var btn = document.createElement('button');
-      btn.textContent = glyphs[i];
-      (function (letter) {
-        btn.onclick = function () { resolvePromotion(letter); };
-      })(letters[i]);
+      btn.innerHTML = pieceSvg(isWhite ? letters[i] : letters[i].toLowerCase());
+      btn.setAttribute('aria-label', letters[i]);
+      (function (letter) { btn.onclick = function () { resolvePromotion(letter); }; })(letters[i]);
       dlg.appendChild(btn);
     }
   }
@@ -256,246 +301,259 @@
   }
 
   function doMove(from, to, promotion) {
-    var result = C.move(game, from, to, promotion);
-    if (!result) { clearSelection(); render(); return; }
-    lastMove = { from: from, to: to };
+    var played = C.move(game, from, to, promotion);
+    if (!played) { clearSelection(); render(); return; }
+    lastMove = { from: played.from, to: played.to };
     clearSelection();
     snapshots.push(C.cloneState(game));
     render();
     maybeTriggerAi();
   }
 
+  /* ---------- Computer opponent ---------- */
+
   function maybeTriggerAi() {
-    if (!vsAI) return;
-    var status = C.gameStatus(game);
-    if (status.over) return;
-    if (game.turn !== aiColor) return;
+    if (!settings.vsComputer || endedOverride) return;
+    if (C.gameStatus(game).over) return;
+    if (game.turn === settings.humanColor) return;
     aiThinking = true;
     moveToken++;
-    var myToken = moveToken;
+    var token = moveToken;
     render();
-    setTimeout(function () { runAiMove(myToken); }, 30);
+    // Yield first so the "thinking" state actually paints before the search
+    // blocks the thread — on e-ink a repaint is slow and must not be skipped.
+    setTimeout(function () { runAi(token); }, 50);
   }
 
-  function runAiMove(myToken) {
-    if (myToken !== moveToken) return; // superseded by undo/new game/loaded FEN
-    var status = C.gameStatus(game);
-    if (status.over) { aiThinking = false; render(); return; }
-    var best = chooseAiMove(game, aiDepth);
-    if (myToken !== moveToken) return;
+  function runAi(token) {
+    if (token !== moveToken) return;
+    var best = null;
+    try {
+      best = AI.chooseMove(game, settings.level);
+    } catch (e) {
+      aiThinking = false; render();
+      return;
+    }
+    if (token !== moveToken) return; // superseded by undo / new game / loaded FEN
     aiThinking = false;
     if (best) {
-      var result = C.move(game, best.from, best.to, best.promotion);
-      if (result) {
-        lastMove = { from: best.from, to: best.to };
+      var promo = best.promotion ? C.typeOf(best.promotion) : null;
+      var played = C.move(game, best.from, best.to, promo);
+      if (played) {
+        lastMove = { from: played.from, to: played.to };
         snapshots.push(C.cloneState(game));
       }
     }
     render();
   }
 
-  /* ---- Minimal-strength search AI (material + light positional eval) ---- */
-
-  var PIECE_VALUE = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 0 };
-  var CENTER_BONUS = [
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 2, 2, 2, 2, 1, 0,
-    0, 1, 2, 3, 3, 2, 1, 0,
-    0, 1, 2, 3, 3, 2, 1, 0,
-    0, 1, 2, 2, 2, 2, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 0,
-    0, 0, 0, 0, 0, 0, 0, 0
-  ];
-
-  function evaluate(state) {
-    var score = 0;
-    for (var sq = 0; sq < 64; sq++) {
-      var p = state.board[sq];
-      if (!p) continue;
-      var val = PIECE_VALUE[C.typeOf(p)] + CENTER_BONUS[sq];
-      score += C.colorOf(p) === 'w' ? val : -val;
-    }
-    return score;
-  }
-
-  function minimax(state, depth, alpha, beta, maximizing) {
-    var legal = C.generateLegalMoves(state);
-    if (legal.length === 0) {
-      if (C.isInCheck(state, state.turn)) {
-        return maximizing ? (-100000 - depth) : (100000 + depth);
-      }
-      return 0;
-    }
-    if (depth === 0) return evaluate(state);
-
-    if (maximizing) {
-      var best = -Infinity;
-      for (var i = 0; i < legal.length; i++) {
-        var clone = C.cloneState(state);
-        C.applyMove(clone, legal[i]);
-        var v = minimax(clone, depth - 1, alpha, beta, false);
-        if (v > best) best = v;
-        if (best > alpha) alpha = best;
-        if (alpha >= beta) break;
-      }
-      return best;
-    } else {
-      var worst = Infinity;
-      for (var j = 0; j < legal.length; j++) {
-        var clone2 = C.cloneState(state);
-        C.applyMove(clone2, legal[j]);
-        var v2 = minimax(clone2, depth - 1, alpha, beta, true);
-        if (v2 < worst) worst = v2;
-        if (worst < beta) beta = worst;
-        if (alpha >= beta) break;
-      }
-      return worst;
-    }
-  }
-
-  function shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-    }
-    return arr;
-  }
-
-  function chooseAiMove(state, depth) {
-    var legal = shuffle(C.generateLegalMoves(state).slice());
-    if (legal.length === 0) return null;
-    var maximizing = state.turn === 'w';
-    var bestScore = maximizing ? -Infinity : Infinity;
-    var bestMoves = [];
-    for (var i = 0; i < legal.length; i++) {
-      var clone = C.cloneState(state);
-      C.applyMove(clone, legal[i]);
-      var score = minimax(clone, depth - 1, -Infinity, Infinity, !maximizing);
-      if (maximizing ? score > bestScore : score < bestScore) {
-        bestScore = score;
-        bestMoves = [legal[i]];
-      } else if (score === bestScore) {
-        bestMoves.push(legal[i]);
-      }
-    }
-    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
-  }
-
-  /* ---- Keyboard navigation for button/d-pad e-readers ---- */
+  /* ---------- Keyboard / d-pad ---------- */
 
   function onKeyDown(e) {
-    if (matchEndedOverride || pendingPromotion || aiThinking) return;
-    var key = e.key;
-    var f = C.fileOf(cursor), r = C.rankOf(cursor);
-    var moved = true;
-    if (key === 'ArrowLeft') { f = Math.max(0, f - 1); }
-    else if (key === 'ArrowRight') { f = Math.min(7, f + 1); }
-    else if (key === 'ArrowUp') { r = Math.min(7, r + 1); }
-    else if (key === 'ArrowDown') { r = Math.max(0, r - 1); }
-    else if (key === 'Enter' || key === ' ') { onSquareClick(cursor); return; }
-    else { moved = false; }
-    if (moved) {
-      cursor = C.sqOf(f, r);
-      render();
-      e.preventDefault();
-    }
+    if (pendingPromotion || aiThinking || endedOverride) return;
+    var tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    var key = e.key || e.keyIdentifier;
+    var f = C.fileOf(cursor), r = C.rankOf(cursor), moved = true;
+    // Arrows are screen-relative, so they must follow the board orientation.
+    var dx = flipped ? -1 : 1;
+
+    if (key === 'ArrowLeft' || key === 'Left') f -= dx;
+    else if (key === 'ArrowRight' || key === 'Right') f += dx;
+    else if (key === 'ArrowUp' || key === 'Up') r += dx;
+    else if (key === 'ArrowDown' || key === 'Down') r -= dx;
+    else if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
+      onSquareClick(cursor);
+      if (e.preventDefault) e.preventDefault();
+      return;
+    } else moved = false;
+
+    if (!moved) return;
+    if (f < 0 || f > 7 || r < 0 || r > 7) return;
+    cursor = C.sqOf(f, r);
+    render();
+    if (e.preventDefault) e.preventDefault();
   }
 
-  /* ---- Controls ---- */
+  /* ---------- Commands ---------- */
 
-  function newGame() {
-    if (aiThinking) return;
+  function startNewGame() {
     moveToken++;
-    game = C.newGame();
+    aiThinking = false;
+    game = C.newGame(settings.variant);
     snapshots = [C.cloneState(game)];
     clearSelection();
     lastMove = null;
     pendingPromotion = null;
-    matchEndedOverride = null;
+    endedOverride = null;
+    cursor = settings.humanColor === 'w' ? 4 : 60;
+    flipped = settings.vsComputer && settings.humanColor === 'b';
     $('promo-dialog').classList.add('hidden');
     $('promo-dialog').innerHTML = '';
+    buildBoardTable();
     render();
     maybeTriggerAi();
   }
 
   function undo() {
-    if (aiThinking) return;
-    if (snapshots.length <= 1) return;
+    if (aiThinking || snapshots.length <= 1) return;
     moveToken++;
     snapshots.pop();
-    if (vsAI && snapshots.length > 1) {
-      // Undo the AI reply too, landing back on the human's turn.
-      var next = C.cloneState(snapshots[snapshots.length - 1]);
-      if (next.turn === aiColor) { snapshots.pop(); }
+    // Against the computer, step back past its reply so it stays the human's turn.
+    if (settings.vsComputer && snapshots.length > 1 &&
+        snapshots[snapshots.length - 1].turn !== settings.humanColor) {
+      snapshots.pop();
     }
     game = C.cloneState(snapshots[snapshots.length - 1]);
     clearSelection();
     lastMove = null;
-    matchEndedOverride = null;
+    endedOverride = null;
     render();
   }
 
-  function flipBoard() {
-    flipped = !flipped;
-    buildBoardTable();
-    render();
-  }
-
-  function loadFen() {
-    if (aiThinking) return;
-    var input = $('fen-input').value;
-    try {
-      var loaded = C.fenToState(input);
-      // sanity check: must have exactly one king per side
-      var wk = 0, bk = 0;
-      for (var i = 0; i < 64; i++) {
-        if (loaded.board[i] === 'K') wk++;
-        if (loaded.board[i] === 'k') bk++;
-      }
-      if (wk !== 1 || bk !== 1) throw new Error('invalid kings');
-      moveToken++;
-      game = loaded;
-      snapshots = [C.cloneState(game)];
-      clearSelection();
-      lastMove = null;
-      matchEndedOverride = null;
-      render();
-      maybeTriggerAi();
-    } catch (err) {
-      alert('Ongeldige FEN-notatie.');
-    }
-  }
-
-  function copyFen() {
-    var el = $('fen-output');
-    el.select();
-    try { document.execCommand('copy'); } catch (e) { /* clipboard unavailable; text stays selected for manual copy */ }
-  }
+  function flipBoard() { flipped = !flipped; buildBoardTable(); render(); }
 
   function resign() {
-    if (matchEndedOverride) return;
-    if (!confirm('Weet je zeker dat je wilt opgeven?')) return;
-    var winner = game.turn === 'w' ? 'Zwart' : 'Wit';
-    matchEndedOverride = 'Opgegeven — ' + winner + ' wint';
+    if (endedOverride || C.gameStatus(game).over) return;
+    if (!window.confirm('Weet je zeker dat je wilt opgeven?')) return;
+    endedOverride = 'Opgegeven — ' + (game.turn === 'w' ? 'zwart' : 'wit') + ' wint';
+    moveToken++;
+    aiThinking = false;
     clearSelection();
     render();
   }
 
   function offerDraw() {
-    if (matchEndedOverride) return;
-    if (confirm('Bevestig: beide spelers gaan akkoord met remise?')) {
-      matchEndedOverride = 'Remise — in onderling overleg';
-      clearSelection();
-      render();
+    if (endedOverride || C.gameStatus(game).over) return;
+    var msg = settings.vsComputer
+      ? 'De computer neemt alleen remise aan in een gelijke stelling. Toch remise vastleggen?'
+      : 'Gaan beide spelers akkoord met remise?';
+    if (!window.confirm(msg)) return;
+    endedOverride = 'Remise — in onderling overleg';
+    moveToken++;
+    aiThinking = false;
+    clearSelection();
+    render();
+  }
+
+  function loadFen() {
+    if (aiThinking) return;
+    var text = $('fen-input').value;
+    if (!text || !text.replace(/\s/g, '')) { window.alert('Vul eerst een FEN-notatie in.'); return; }
+    var loaded;
+    try {
+      loaded = C.fenToState(text, settings.variant);
+    } catch (err) {
+      window.alert('Ongeldige FEN-notatie: ' + (err && err.message ? err.message : 'onbekende fout'));
+      return;
+    }
+    moveToken++;
+    aiThinking = false;
+    game = loaded;
+    snapshots = [C.cloneState(game)];
+    clearSelection();
+    lastMove = null;
+    endedOverride = null;
+    render();
+    maybeTriggerAi();
+  }
+
+  function copyFen() {
+    var el = $('fen-output');
+    el.focus();
+    el.select();
+    try { document.execCommand('copy'); }
+    catch (e) { /* no clipboard access: the text stays selected for manual copying */ }
+  }
+
+  /* ---------- Settings UI ---------- */
+
+  function fillSelect(sel, items, current) {
+    sel.innerHTML = '';
+    for (var i = 0; i < items.length; i++) {
+      var opt = document.createElement('option');
+      opt.value = String(items[i].value);
+      opt.textContent = items[i].label;
+      if (String(items[i].value) === String(current)) opt.selected = true;
+      sel.appendChild(opt);
     }
   }
 
+  function buildSettings() {
+    var themeItems = [];
+    for (var i = 0; i < window.Themes.list.length; i++) {
+      themeItems.push({ value: window.Themes.list[i].id, label: window.Themes.list[i].name });
+    }
+    fillSelect($('sel-theme'), themeItems, settings.theme);
+
+    var setItems = [];
+    for (var key in window.PieceSets) {
+      if (window.PieceSets.hasOwnProperty(key)) {
+        setItems.push({ value: key, label: window.PieceSets[key].name });
+      }
+    }
+    fillSelect($('sel-pieces'), setItems, settings.pieceSet);
+
+    var variantItems = [];
+    for (var v in C.VARIANT_NAMES) {
+      if (C.VARIANT_NAMES.hasOwnProperty(v)) variantItems.push({ value: v, label: C.VARIANT_NAMES[v] });
+    }
+    fillSelect($('sel-variant'), variantItems, settings.variant);
+
+    var levelItems = [];
+    for (var l = 0; l < AI.LEVELS.length; l++) {
+      levelItems.push({ value: l, label: (l + 1) + '. ' + AI.LEVELS[l].name + ' — ' + AI.LEVELS[l].hint });
+    }
+    fillSelect($('sel-level'), levelItems, settings.level);
+
+    fillSelect($('sel-opponent'), [
+      { value: 'computer', label: 'Tegen de computer' },
+      { value: 'mens', label: 'Twee spelers op dit toestel' }
+    ], settings.vsComputer ? 'computer' : 'mens');
+
+    fillSelect($('sel-side'), [
+      { value: 'w', label: 'Ik speel wit' },
+      { value: 'b', label: 'Ik speel zwart' }
+    ], settings.humanColor);
+
+    $('chk-coords').checked = settings.showCoords;
+    updateSettingNotes();
+  }
+
+  function updateSettingNotes() {
+    $('note-theme').textContent = window.Themes.byId(settings.theme).note;
+    $('note-variant').textContent = C.VARIANT_RULES[settings.variant] || '';
+    $('note-level').textContent = AI.LEVELS[settings.level]
+      ? 'Bedenktijd tot ongeveer ' + Math.round(AI.LEVELS[settings.level].timeMs / 1000) + ' seconden per zet.'
+      : '';
+    $('sel-level').disabled = !settings.vsComputer;
+    $('sel-side').disabled = !settings.vsComputer;
+  }
+
+  function confirmRestart(question) {
+    if (game && game.history.length > 0 && !endedOverride && !C.gameStatus(game).over) {
+      return window.confirm(question);
+    }
+    return true;
+  }
+
   function setup() {
+    loadSettings();
+    window.Themes.apply(settings.theme);
+    buildSettings();
+
+    game = C.newGame(settings.variant);
+    snapshots = [C.cloneState(game)];
+    flipped = settings.vsComputer && settings.humanColor === 'b';
+    cursor = settings.humanColor === 'w' ? 4 : 60;
     buildBoardTable();
     render();
+    maybeTriggerAi();
 
-    $('btn-new').onclick = newGame;
+    $('btn-new').onclick = function () {
+      if (confirmRestart('Nieuwe partij starten? De huidige partij gaat verloren.')) startNewGame();
+    };
     $('btn-undo').onclick = undo;
     $('btn-flip').onclick = flipBoard;
     $('btn-resign').onclick = resign;
@@ -503,24 +561,80 @@
     $('btn-load-fen').onclick = loadFen;
     $('btn-copy-fen').onclick = copyFen;
 
-    $('ai-toggle').onchange = function () {
-      vsAI = this.checked;
-      renderAiControls();
-      maybeTriggerAi();
-    };
-    $('ai-color').onchange = function () {
-      aiColor = this.value;
-      maybeTriggerAi();
-    };
-    $('ai-depth').onchange = function () {
-      aiDepth = parseInt(this.value, 10);
+    $('btn-settings').onclick = function () {
+      var panel = $('settings');
+      var hidden = panel.className.indexOf('collapsed') !== -1;
+      panel.className = hidden ? '' : 'collapsed';
+      this.textContent = hidden ? 'Instellingen verbergen' : 'Instellingen';
     };
 
-    document.addEventListener('keydown', onKeyDown);
+    $('sel-theme').onchange = function () {
+      settings.theme = this.value;
+      window.Themes.apply(settings.theme);
+      updateSettingNotes();
+      saveSettings();
+    };
+
+    $('sel-pieces').onchange = function () {
+      settings.pieceSet = this.value;
+      saveSettings();
+      render();
+    };
+
+    $('sel-variant').onchange = function () {
+      var chosen = this.value;
+      if (!confirmRestart('Een andere variant start een nieuwe partij. Doorgaan?')) {
+        this.value = settings.variant;
+        return;
+      }
+      settings.variant = chosen;
+      updateSettingNotes();
+      saveSettings();
+      startNewGame();
+    };
+
+    $('sel-level').onchange = function () {
+      settings.level = parseInt(this.value, 10) || 0;
+      updateSettingNotes();
+      saveSettings();
+    };
+
+    $('sel-opponent').onchange = function () {
+      var wantsComputer = this.value === 'computer';
+      if (wantsComputer === settings.vsComputer) return;
+      if (!confirmRestart('Van tegenstander wisselen start een nieuwe partij. Doorgaan?')) {
+        this.value = settings.vsComputer ? 'computer' : 'mens';
+        return;
+      }
+      settings.vsComputer = wantsComputer;
+      updateSettingNotes();
+      saveSettings();
+      startNewGame();
+    };
+
+    $('sel-side').onchange = function () {
+      if (this.value === settings.humanColor) return;
+      if (!confirmRestart('Van kleur wisselen start een nieuwe partij. Doorgaan?')) {
+        this.value = settings.humanColor;
+        return;
+      }
+      settings.humanColor = this.value;
+      saveSettings();
+      startNewGame();
+    };
+
+    $('chk-coords').onchange = function () {
+      settings.showCoords = this.checked;
+      saveSettings();
+      render();
+    };
+
+    document.onkeydown = onKeyDown;
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
+    if (document.addEventListener) document.addEventListener('DOMContentLoaded', setup, false);
+    else window.onload = setup;
   } else {
     setup();
   }

@@ -1,59 +1,90 @@
 # Schaak voor E-readers
 
-Een volledig, foutloos schaakspel dat werkt op de trage, verouderde browsers
-van e-readers (Kindle, Kobo, PocketBook, Boox, reMarkable, ...) en op elke
-gewone desktop- of mobiele browser.
-
-Geen build-stap, geen dependencies, geen internetverbinding nodig. Drie
-platte bestanden: `index.html`, `style.css`, `chess-engine.js` + `app.js`.
-
-## Waarom dit anders is dan een gewone webapp
-
-E-reader-browsers zijn een lastige doelgroep: oude WebKit-versies, trage
-ARM-processors, e-inkschermen die animaties niet aankunnen (ghosting), en
-input via touch **of** fysieke knoppen/d-pad in plaats van een muis. Daarom:
-
-- **Pure ES5 JavaScript.** Geen classes, arrow functions, `let`/`const`,
-  template literals of `Array.prototype.includes`/`find`. Alleen taal­
-  features die al sinds ~2010 overal werken.
-- **Geen animaties of transities.** E-inkschermen "spoken"/ghosten bij
-  herhaald hertekenen; de UI update in één keer, statisch.
-- **Zwart/wit/grijs only**, geen kleurafhankelijke informatie — stukken zijn
-  te onderscheiden aan hun vorm (gevulde vs. omlijnde Unicode-schaaksymbolen),
-  niet aan kleur.
-- **Tafel-layout voor het bord** (HTML `<table>`) — de meest universeel
-  ondersteunde layout-methode, werkt ook op browsers zonder degelijke
-  flexbox/grid-ondersteuning.
-- **Twee onafhankelijke invoermethodes**: tikken/klikken op een veld, én
-  pijltjestoetsen + Enter/Spatie voor e-readers met alleen fysieke knoppen.
-- **Alles inline/lokaal** — geen CDN's, geen fonts, geen externe requests.
-  Werkt volledig offline zodra de bestanden op het toestel staan.
+Een volledig schaakspel dat werkt op de trage, verouderde browsers van
+e-readers (Kindle, Kobo, PocketBook, Boox, reMarkable, …) en op elke gewone
+desktop- of mobiele browser. Geen build-stap, geen dependencies, geen
+internetverbinding.
 
 ## Gebruiken
 
-Zet de map `chess-ereader/` op een webserver (bijv. GitHub Pages) en open
-`index.html` in de browser van de e-reader. Sideloaden en lokaal openen via
-`file://` werkt in de meeste browsers ook, omdat alle bestanden relatief
-naar elkaar verwijzen en er geen externe afhankelijkheden zijn.
+Zet de map `chess-ereader/` op een webserver (bijvoorbeeld GitHub Pages) en
+open `index.html` in de browser van je e-reader. Sideloaden en lokaal openen
+via `file://` werkt in de meeste browsers ook: alle bestanden verwijzen
+relatief naar elkaar en er zijn geen externe afhankelijkheden.
 
 ## Functies
 
-- Volledig legale zetgeneratie: rokade (kort/lang), en passant, promotie
-  (met keuzemenu voor dame/toren/loper/paard)
-- Schaak-, mat- en patdetectie
-- Remise-detectie: 50-zettenregel, drievoudige zetherhaling, onvoldoende
-  materiaal
-- Zetlijst in standaardnotatie (SAN), met zetnummers
-- FEN importeren/exporteren (positie delen of laden)
-- Zet terugnemen (undo), bord draaien, opgeven, remise aanbieden
-- Ingebouwde computertegenstander (minimax met alpha-bèta-snoei, 3
-  sterkteniveaus) voor solo spelen — optioneel, standaard uit
-- Toetsenbord-/knopnavigatie als alternatief voor aanraken
+**Volledige schaakregels** — rokade (kort en lang), en passant, promotie met
+keuzemenu, schaak, schaakmat en pat. Remise door de 50-zettenregel,
+drievoudige zetherhaling en onvoldoende materiaal.
 
-## Techniek
+**Vier varianten**
 
-`chess-engine.js` is de losse regelengine (UMD-module, ook bruikbaar vanuit
-Node.js) en is los getest met perft-tellingen tegen bekende referentie­
-posities (startpositie t/m diepte 4, plus de "Kiwipete"-testpositie voor
-rokade/en passant/promotiehoeken) — allemaal exact overeenkomend met de
-bekende waarden. `app.js` bevat alleen de DOM/UI-laag.
+| Variant | Regel |
+|---|---|
+| Standaard schaak | De klassieke regels |
+| Chess960 | Willekeurige opstelling op de achterste rij; rokade werkt volgens de Chess960-regels |
+| King of the Hill | Je wint ook door je koning veilig op d4, e4, d5 of e5 te krijgen |
+| Drie schaken | Je wint zodra je drie keer schaak hebt gegeven |
+
+**Zes computerniveaus** — van *Beginner* (speelt vaak willekeurig) tot
+*Expert*. Elk niveau heeft een eigen zoekdiepte én een tijdsbudget: de
+computer zoekt zo diep als hij binnen die tijd haalt, waardoor de sterkte
+zich vanzelf aanpast aan hoe snel het toestel is. Of speel met z'n tweeën op
+één toestel.
+
+**Elf kleurenthema's** — Bos, Hout, Oceaan, Koraal, Lavendel, Munt,
+Zonsondergang, Papier, Grafiet, Nacht en Hoog contrast.
+
+**Drie stukkenstijlen** — Klassiek (Staunton-silhouetten), Modern (vlakker en
+geometrischer) en Symbolen (Unicode-tekens, het lichtst voor trage toestellen).
+
+**Verder** — zetlijst in standaardnotatie, geslagen materiaal met
+puntenvoorsprong, zet terugnemen, bord draaien, opgeven, remise, coördinaten
+langs de rand, en FEN-notatie importeren en exporteren om een stelling te
+delen. Instellingen worden onthouden.
+
+## Waarom dit anders is dan een gewone webapp
+
+E-readers zijn een lastige doelgroep: oude browsers, trage processors,
+e-inkschermen die animaties niet aankunnen, en bediening via aanraking **of**
+fysieke knoppen. Daarom:
+
+- **Pure ES5 JavaScript.** Geen `let`/`const`, arrow functions, classes of
+  template literals — alleen taalfeatures die al sinds ongeveer 2010 overal
+  werken. Geen frameworks, geen CDN, geen build-stap.
+- **Geen animaties of transities.** E-inkschermen laten schaduwbeelden achter
+  bij herhaald hertekenen, dus het scherm wordt in één keer bijgewerkt.
+- **Kleuren gekozen voor kleuren-e-ink.** Kaleido-achtige schermen leggen een
+  kleurfilter over een grijswaardenpaneel, wat de verzadiging fors dempt.
+  Elk thema houdt daarom een duidelijk *helderheidsverschil* tussen lichte en
+  donkere velden aan, zodat het bord ook op een zwart-wit e-reader klopt. Het
+  thema *Grafiet* is speciaal voor zulke schermen.
+- **Tabel-layout voor het bord**, de meest universeel ondersteunde
+  layoutmethode — werkt ook zonder degelijke flexbox- of grid-ondersteuning.
+- **Twee onafhankelijke bedieningen**: tikken op een veld, of de
+  pijltjestoetsen met Enter/spatie voor e-readers met alleen knoppen.
+- **Alles lokaal.** Geen externe requests, dus volledig offline bruikbaar.
+
+## Opbouw
+
+| Bestand | Rol |
+|---|---|
+| `chess-engine.js` | Spelregels: zetgeneratie, varianten, FEN, notatie |
+| `ai.js` | Computertegenstander en de niveaus |
+| `pieces.js` | De drie stukkenstijlen als SVG |
+| `themes.js` | De elf kleurenthema's |
+| `app.js` | Bediening en scherm |
+| `style.css` | Vormgeving, volledig via CSS-variabelen |
+
+`chess-engine.js` en `ai.js` zijn UMD-modules en werken ook los in Node.js.
+
+## Correctheid
+
+De zetgeneratie is geverifieerd met perft-tellingen tegen de bekende
+referentieposities: de startstelling tot en met diepte 5 (4.865.609
+stellingen), "Kiwipete" tot diepte 4, en de standaardposities 3 tot en met 6
+— posities die speciaal gemaakt zijn om fouten rond rokade, en passant,
+promotie en penningen bloot te leggen. Positie 5 is tot diepte 5 getest
+(89.941.194 stellingen). De Chess960-rokade is apart geverifieerd tegen
+Chess960-referentieposities. Alle waarden komen exact overeen.

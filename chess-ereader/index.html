@@ -4,77 +4,122 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Schaak voor E-readers</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='78' font-size='80' text-anchor='middle'%3E%E2%99%9A%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='78' font-size='80' text-anchor='middle'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Schaak voor E-readers</h1>
+<h1>Schaak</h1>
+
 <div id="status" role="status">Wit aan zet</div>
+<div id="subline"></div>
+
+<div id="captured-black" class="material">&nbsp;</div>
 
 <div id="board-wrap">
   <table id="board"></table>
 </div>
 
+<div id="captured-white" class="material">&nbsp;</div>
+
 <div id="promo-dialog" class="hidden"></div>
 
-<div id="controls">
-  <div class="btn-row">
-    <button id="btn-new">Nieuw spel</button>
-    <button id="btn-undo">Zet terug</button>
-    <button id="btn-flip">Draai bord</button>
-  </div>
-  <div class="btn-row">
-    <button id="btn-resign">Opgeven</button>
-    <button id="btn-draw">Remise aanbieden</button>
-  </div>
+<div class="btn-row">
+  <button id="btn-new" class="btn-primary">Nieuwe partij</button>
+  <button id="btn-undo">Zet terug</button>
+  <button id="btn-flip">Draai bord</button>
+</div>
+<div class="btn-row">
+  <button id="btn-resign">Opgeven</button>
+  <button id="btn-draw">Remise</button>
+  <button id="btn-settings">Instellingen</button>
+</div>
+
+<div id="settings" class="collapsed">
 
   <fieldset>
-    <legend>Tegen de computer</legend>
-    <label><input type="checkbox" id="ai-toggle"> Speel tegen computer</label><br>
-    <label>Computer speelt:
-      <select id="ai-color">
-        <option value="b" selected>Zwart</option>
-        <option value="w">Wit</option>
-      </select>
+    <legend>Spel</legend>
+
+    <label class="field">
+      <span class="label">Tegenstander</span>
+      <select id="sel-opponent"></select>
     </label>
-    <label>Sterkte:
-      <select id="ai-depth">
-        <option value="1">Zwak (snel)</option>
-        <option value="2" selected>Normaal</option>
-        <option value="3">Sterk (traag)</option>
-      </select>
+
+    <label class="field">
+      <span class="label">Kleur</span>
+      <select id="sel-side"></select>
+    </label>
+
+    <label class="field">
+      <span class="label">Sterkte van de computer</span>
+      <select id="sel-level"></select>
+    </label>
+    <p class="note" id="note-level"></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Spelregels</legend>
+    <label class="field">
+      <span class="label">Variant</span>
+      <select id="sel-variant"></select>
+    </label>
+    <p class="note" id="note-variant"></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Uiterlijk</legend>
+
+    <label class="field">
+      <span class="label">Kleurenthema</span>
+      <select id="sel-theme"></select>
+    </label>
+    <p class="note" id="note-theme"></p>
+
+    <label class="field">
+      <span class="label">Stukken</span>
+      <select id="sel-pieces"></select>
+    </label>
+
+    <label class="field">
+      <input type="checkbox" id="chk-coords"> Coördinaten langs de rand tonen
     </label>
   </fieldset>
 
   <fieldset>
-    <legend>Toetsenbord / knoppen navigatie</legend>
-    Pijltjestoetsen bewegen de gestippelde cursor, Enter of Spatie selecteert of speelt de zet.
+    <legend>Positie delen</legend>
+    <label class="field" for="fen-output"><span class="label">Huidige stelling (FEN)</span></label>
+    <textarea id="fen-output" rows="2" readonly></textarea>
+    <button id="btn-copy-fen">Kopieer FEN</button>
+
+    <label class="field" for="fen-input"><span class="label">Stelling laden</span></label>
+    <input type="text" id="fen-input" placeholder="Plak hier een FEN-notatie">
+    <button id="btn-load-fen">Laad stelling</button>
   </fieldset>
+
+  <fieldset>
+    <legend>Bediening</legend>
+    <p class="note">
+      Tik op een stuk en daarna op het doelveld. Werkt je e-reader met knoppen in
+      plaats van aanraken? Gebruik dan de pijltjestoetsen om de gestippelde cursor
+      te verplaatsen en Enter of de spatiebalk om te selecteren en te zetten.
+      Rokeren kan door op je eigen toren te tikken.
+    </p>
+  </fieldset>
+
 </div>
 
 <div id="movelist-wrap">
-  <div><strong>Zetten</strong></div>
   <div id="movelist">(nog geen zetten)</div>
 </div>
 
-<fieldset>
-  <legend>Positie delen</legend>
-  <label for="fen-output">Huidige FEN:</label>
-  <textarea id="fen-output" rows="2" readonly></textarea>
-  <button id="btn-copy-fen">Kopieer FEN</button>
-
-  <br><br>
-  <label for="fen-input">FEN laden:</label>
-  <input type="text" id="fen-input" style="width:100%">
-  <button id="btn-load-fen">Laad positie</button>
-</fieldset>
-
 <footer>
-  Werkt volledig offline, zonder externe bestanden of internetverbinding. Geoptimaliseerd voor e-inkschermen: geen animaties, hoog contrast, grote knoppen.
+  Werkt volledig offline — geen internetverbinding, externe bestanden of installatie nodig.
 </footer>
 
 <script src="chess-engine.js"></script>
+<script src="ai.js"></script>
+<script src="pieces.js"></script>
+<script src="themes.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
