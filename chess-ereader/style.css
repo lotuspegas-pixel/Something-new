@@ -147,6 +147,15 @@ h1 {
   pointer-events: none;
 }
 
+/* Text pieces: the fallback for browsers without inline SVG. The exact size
+   is set by the generated theme stylesheet, which knows the cell size. */
+.piece-text {
+  display: block;
+  text-align: center;
+  line-height: 1;
+  font-family: "DejaVu Sans", "Segoe UI Symbol", "Arial Unicode MS", FreeSerif, serif;
+}
+
 .coord {
   position: absolute;
   font-size: 0.55em;

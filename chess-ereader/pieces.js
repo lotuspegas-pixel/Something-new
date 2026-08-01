@@ -290,12 +290,28 @@
       ' stroke-linejoin="round" paint-order="stroke">' + glyph + '</text>');
   }
 
+  /* ================================================================= TEKST
+   * Helemaal zonder SVG: de oudste e-readerbrowsers (bijvoorbeeld de
+   * Android 2.x-browser van de Sony PRS-T-serie) kunnen geen inline SVG
+   * tonen en laten het bord dan leeg. Deze set gebruikt gewone HTML-tekst en
+   * werkt daardoor overal. app.js schakelt hier automatisch naartoe als de
+   * browser geen SVG blijkt te ondersteunen.
+   */
+
+  function renderTekst(ch) {
+    var glyph = GLYPHS[ch];
+    if (!glyph) { return ''; }
+    return '<span class="piece-text piece-text-' +
+      (isWhitePiece(ch) ? 'wit' : 'zwart') + '">' + glyph + '</span>';
+  }
+
   /* ---------------------------------------------------------------- export */
 
   global.PieceSets = {
     klassiek: { name: 'Klassiek', render: renderKlassiek },
     modern: { name: 'Modern', render: renderModern },
-    symbool: { name: 'Symbolen', render: renderSymbool }
+    symbool: { name: 'Symbolen', render: renderSymbool },
+    tekst: { name: 'Tekst (oude e-readers)', render: renderTekst, noSvg: true }
   };
 
 }(typeof window !== 'undefined' ? window : this));

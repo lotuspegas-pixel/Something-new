@@ -34,6 +34,109 @@
 
   function $(id) { return document.getElementById(id); }
 
+  /* ---------- Compatibility with very old e-reader browsers ----------
+     The Android 2.x browser used by e-readers such as the Sony PRS-T series
+     supports none of CSS custom properties, inline SVG, or vmin units. So the
+     theme is *also* written out as a generated stylesheet holding literal
+     colour values and pixel sizes, which every browser understands, and the
+     pieces fall back to plain text when SVG is missing. */
+
+  var supportsSvg = (function () {
+    return !!(document.createElementNS &&
+      document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect);
+  })();
+
+  var themeVars = {};
+
+  /* Replace var(--name, fallback) with the literal colour from the theme. */
+  function resolveVars(text) {
+    return text.replace(/var\(\s*(--[a-z-]+)\s*(?:,\s*([^)]*))?\)/g, function (all, name, fallback) {
+      return themeVars[name] || fallback || '#000000';
+    });
+  }
+
+  function cellPixels() {
+    var w = window.innerWidth || document.documentElement.clientWidth || 600;
+    var h = window.innerHeight || document.documentElement.clientHeight || 800;
+    // Leave room for the status bar and the buttons under the board.
+    var size = Math.floor(Math.min(w - 24, h * 0.66) / 8);
+    if (size < 24) size = 24;
+    if (size > 68) size = 68;
+    return size;
+  }
+
+  function buildThemeCss() {
+    var v = themeVars;
+    var cell = cellPixels();
+    var css = [];
+    function rule(sel, body) { css.push(sel + '{' + body + '}'); }
+
+    rule('html,body', 'background:' + v['--page-bg'] + ';color:' + v['--page-fg']);
+    rule('h1', 'border-bottom-color:' + v['--border']);
+    rule('#status', 'border-color:' + v['--border'] + ';background:' + v['--panel-bg'] + ';color:' + v['--page-fg']);
+    rule('#status.is-check,#status.is-over',
+      'background:' + v['--accent'] + ';color:' + v['--accent-fg'] + ';border-color:' + v['--accent']);
+    rule('#board', 'border-color:' + v['--border']);
+    rule('#board td',
+      'width:' + cell + 'px;height:' + cell + 'px;max-width:' + cell + 'px;max-height:' + cell +
+      'px;font-size:' + Math.round(cell * 0.78) + 'px');
+    rule('#board .sq-light', 'background:' + v['--board-light']);
+    rule('#board .sq-dark', 'background:' + v['--board-dark']);
+    rule('#board .sq-lastmove', 'background:' + v['--hl-lastmove']);
+    rule('#board .sq-check', 'background:' + v['--hl-check']);
+    rule('#board .sq-selected', 'outline:4px solid ' + v['--hl-selected'] + ';outline-offset:-4px');
+    rule('#board .sq-cursor:after', 'border-color:' + v['--piece-outline']);
+    rule('#board .sq-hill:before', 'border-color:' + v['--hl-dot']);
+    rule('#board .sq-light .coord', 'color:' + v['--board-dark']);
+    rule('#board .sq-dark .coord', 'color:' + v['--board-light']);
+    rule('.move-dot', 'background:' + v['--hl-dot']);
+    rule('.move-ring', 'border-color:' + v['--hl-dot']);
+    // The text pieces are solid glyphs with no outline of their own, so a
+    // white piece would nearly vanish on a light square. text-shadow draws a
+    // one-pixel contour and is supported even by the oldest e-reader browsers.
+    var o = v['--piece-outline'];
+    var contour = 'text-shadow:-1px 0 ' + o + ',0 1px ' + o + ',1px 0 ' + o + ',0 -1px ' + o;
+    rule('.piece-text', 'font-size:' + Math.round(cell * 0.8) + 'px;line-height:1');
+    rule('.piece-text-wit', 'color:' + v['--piece-white'] + ';' + contour);
+    rule('.piece-text-zwart', 'color:' + v['--piece-black'] + ';' + contour);
+    rule('button,select,input,textarea',
+      'border-color:' + v['--border'] + ';background:' + v['--panel-bg'] + ';color:' + v['--page-fg']);
+    rule('.btn-primary',
+      'background:' + v['--accent'] + ';color:' + v['--accent-fg'] + ';border-color:' + v['--accent']);
+    rule('fieldset', 'border-color:' + v['--border'] + ';background:' + v['--panel-bg']);
+    rule('#promo-dialog', 'border-color:' + v['--border'] + ';background:' + v['--panel-bg']);
+    rule('#movelist-wrap', 'border-color:' + v['--border'] + ';background:' + v['--panel-bg']);
+    rule('footer', 'border-top-color:' + v['--border']);
+    return css.join('\n');
+  }
+
+  function applyTheme(id) {
+    var theme = window.Themes.byId(id);
+    themeVars = theme.vars;
+    // Modern browsers pick this up; old ones ignore it harmlessly.
+    if (document.documentElement.style.setProperty) {
+      for (var key in theme.vars) {
+        if (theme.vars.hasOwnProperty(key)) {
+          document.documentElement.style.setProperty(key, theme.vars[key]);
+        }
+      }
+    }
+    var el = $('theme-css');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'theme-css';
+      el.type = 'text/css';
+      (document.head || document.getElementsByTagName('head')[0]).appendChild(el);
+    }
+    var css = buildThemeCss();
+    if (el.styleSheet) el.styleSheet.cssText = css; // very old engines
+    else el.innerHTML = css;
+    document.documentElement.setAttribute('data-theme', theme.id);
+    return theme;
+  }
+
+  function show(el, visible) { el.className = visible ? '' : 'hidden'; }
+
   /* ---------- Settings persistence (e-readers may disable storage) ---------- */
 
   function loadSettings() {
@@ -56,7 +159,10 @@
 
   function pieceSvg(pieceChar) {
     var set = window.PieceSets[settings.pieceSet] || window.PieceSets.klassiek;
-    return set.render(pieceChar);
+    if (!supportsSvg && !set.noSvg) set = window.PieceSets.tekst;
+    // Old browsers do not understand var() inside SVG attributes either, so
+    // the colours are substituted before the markup reaches the DOM.
+    return resolveVars(set.render(pieceChar));
   }
 
   function buildBoardTable() {
@@ -279,7 +385,7 @@
 
   function showPromoDialog() {
     var dlg = $('promo-dialog');
-    dlg.classList.remove('hidden');
+    show(dlg, true);
     dlg.innerHTML = '<div>Promoveer naar:</div>';
     var isWhite = pendingPromotion.color === 'w';
     var letters = ['Q', 'R', 'B', 'N'];
@@ -295,7 +401,7 @@
   function resolvePromotion(letter) {
     var p = pendingPromotion;
     pendingPromotion = null;
-    $('promo-dialog').classList.add('hidden');
+    show($('promo-dialog'), false);
     $('promo-dialog').innerHTML = '';
     doMove(p.from, p.to, letter);
   }
@@ -389,7 +495,7 @@
     endedOverride = null;
     cursor = settings.humanColor === 'w' ? 4 : 60;
     flipped = settings.vsComputer && settings.humanColor === 'b';
-    $('promo-dialog').classList.add('hidden');
+    show($('promo-dialog'), false);
     $('promo-dialog').innerHTML = '';
     buildBoardTable();
     render();
@@ -540,7 +646,7 @@
 
   function setup() {
     loadSettings();
-    window.Themes.apply(settings.theme);
+    applyTheme(settings.theme);
     buildSettings();
 
     game = C.newGame(settings.variant);
@@ -570,7 +676,7 @@
 
     $('sel-theme').onchange = function () {
       settings.theme = this.value;
-      window.Themes.apply(settings.theme);
+      applyTheme(settings.theme);
       updateSettingNotes();
       saveSettings();
     };
@@ -630,6 +736,20 @@
     };
 
     document.onkeydown = onKeyDown;
+
+    // The board is sized in pixels rather than vmin so that browsers without
+    // viewport units still lay it out, which means it has to be recomputed
+    // when the window or screen orientation changes.
+    var resizeTimer = null;
+    window.onresize = function () {
+      if (resizeTimer) window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(function () { applyTheme(settings.theme); }, 200);
+    };
+
+    if (!supportsSvg) {
+      $('note-pieces').textContent =
+        'Deze browser ondersteunt geen SVG, dus de tekststukken worden gebruikt.';
+    }
   }
 
   if (document.readyState === 'loading') {
