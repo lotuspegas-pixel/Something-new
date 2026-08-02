@@ -16,10 +16,12 @@
       id: 'bos',
       name: 'Bos',
       note: 'Klassiek groen, zoals een toernooibord',
+      // Board and piece colours sampled directly from a reference tournament
+      // board so this theme reproduces that look exactly.
       vars: {
-        '--board-light': '#eeeed2', '--board-dark': '#769656',
-        '--piece-white': '#ffffff', '--piece-black': '#2e2e2e',
-        '--piece-outline': '#1a1a1a', '--piece-detail': '#ffffff',
+        '--board-light': '#ebecd0', '--board-dark': '#779556',
+        '--piece-white': '#f9f9f9', '--piece-black': '#57544f',
+        '--piece-outline': '#3a3a3a', '--piece-detail': '#f2f2f2',
         '--page-bg': '#faf9f0', '--page-fg': '#1c1c1c', '--panel-bg': '#ffffff',
         '--border': '#3d4f2e', '--accent': '#4a6b35', '--accent-fg': '#ffffff',
         '--hl-lastmove': '#c9d16a', '--hl-selected': '#f2f26a',
