@@ -42,9 +42,10 @@ toernooiontwerp met voetplaat en schaduwvlak), Klassiek
 (Unicode-tekens) en Tekst (zonder SVG, voor de oudste e-readers).
 
 **Verder** — zetlijst in standaardnotatie, geslagen materiaal met
-puntenvoorsprong, zet terugnemen, bord draaien, opgeven, remise, coördinaten
-langs de rand, en FEN-notatie importeren en exporteren om een stelling te
-delen. Instellingen worden onthouden.
+puntenvoorsprong, zet terugnemen, bord draaien, opgeven, remise, en
+FEN-notatie importeren en exporteren om een stelling te delen. Het bord vult
+de volledige breedte van het scherm; coördinaten langs de rand staan
+standaard uit en zijn desgewenst aan te zetten. Instellingen worden onthouden.
 
 ## Waarom dit anders is dan een gewone webapp
 

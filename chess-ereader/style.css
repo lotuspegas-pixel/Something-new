@@ -48,16 +48,18 @@ body {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 17px;
   line-height: 1.4;
-  padding: 8px;
-  max-width: 720px;
+  /* Tight padding and a generous max-width: the board is sized from the
+     space this leaves, so every pixel here is a pixel off the board. */
+  padding: 4px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
 h1 {
-  font-size: 1.35em;
+  font-size: 1.05em;
   text-align: center;
-  margin: 2px 0 6px 0;
-  padding-bottom: 5px;
+  margin: 0 0 4px 0;
+  padding-bottom: 3px;
   border-bottom: 2px solid var(--border);
 }
 
@@ -65,13 +67,13 @@ h1 {
 
 #status {
   text-align: center;
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: bold;
   border: 2px solid var(--border);
   background: var(--panel-bg);
-  padding: 7px 6px;
-  margin: 7px 0;
-  min-height: 1.4em;
+  padding: 5px 6px;
+  margin: 4px 0;
+  min-height: 1.3em;
 }
 
 #status.is-check,
@@ -84,9 +86,11 @@ h1 {
 #subline {
   text-align: center;
   font-size: 0.85em;
-  margin: -3px 0 7px 0;
-  min-height: 1.2em;
+  margin: -2px 0 4px 0;
+  min-height: 0;
 }
+/* Collapse entirely in standard chess, where it has nothing to say. */
+#subline:empty { display: none; }
 
 /* ---- Board ---- */
 
@@ -204,12 +208,12 @@ h1 {
 
 .material {
   display: block;
-  min-height: 26px;
-  font-size: 20px;
-  line-height: 1.2;
+  min-height: 22px;
+  font-size: 19px;
+  line-height: 1.15;
   text-align: center;
   word-wrap: break-word;
-  padding: 1px 0;
+  padding: 0;
 }
 
 .material .adv {

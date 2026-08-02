@@ -8,7 +8,9 @@
   var AI = window.ChessAI;
 
   var VALUE = { P: 1, N: 3, B: 3, R: 5, Q: 9, K: 0 };
-  var STORAGE_KEY = 'schaak-ereader-instellingen';
+  // Bumped when the defaults change, so a saved copy of the old ones does not
+  // keep overriding them on a device that already ran an earlier version.
+  var STORAGE_KEY = 'schaak-ereader-instellingen-v2';
 
   var settings = {
     theme: 'bos',
@@ -17,7 +19,7 @@
     level: 2,
     vsComputer: true,
     humanColor: 'w',
-    showCoords: true
+    showCoords: false
   };
 
   var game = null;
@@ -56,12 +58,17 @@
   }
 
   function cellPixels() {
-    var w = window.innerWidth || document.documentElement.clientWidth || 600;
+    // Measure the board's own container rather than the window: that already
+    // accounts for the page padding and max-width, so the board can take the
+    // full width actually available to it.
+    var wrap = $('board-wrap');
+    var avail = (wrap && wrap.clientWidth) ? wrap.clientWidth : (window.innerWidth || 600);
     var h = window.innerHeight || document.documentElement.clientHeight || 800;
-    // Leave room for the status bar and the buttons under the board.
-    var size = Math.floor(Math.min(w - 24, h * 0.66) / 8);
-    if (size < 24) size = 24;
-    if (size > 68) size = 68;
+    // Subtract the board's own border, and keep a height guard so a wide but
+    // short screen cannot push the whole board past the bottom of the view.
+    var size = Math.floor(Math.min(avail - 8, h * 0.88) / 8);
+    if (size < 22) size = 22;
+    if (size > 120) size = 120;
     return size;
   }
 
