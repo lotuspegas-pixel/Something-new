@@ -1,130 +1,134 @@
-# Installeren op een Sony e-reader
+# Installeren op de Sony Reader (PRS-T1 / PRS-T2)
 
-## Eerst: werkt het op jouw model?
+Deze handleiding is geschreven voor de Sony PRS-T1 — te herkennen aan
+*Instellingen → Informatie apparaat* met versienummer `1.0.00.xxxxx` en
+ongeveer 1,35 GB intern geheugen. De stappen zijn gelijk voor de PRS-T2
+(versienummer `2.x`); alleen de menunamen kunnen een klein beetje afwijken.
 
-Dit is een webapp. Hij draait in de **browser** van je e-reader. Sony heeft
-lang niet in al zijn readers een browser gezet, dus dat bepaalt of het werkt.
+Goed nieuws: dit model heeft een webbrowser, en daarmee kan het de app
+draaien. De app is 35 KB, dus ruimte is geen probleem.
 
-| Model | Werkt het? |
-|---|---|
-| **PRS-T1, PRS-T2, PRS-T3, PRS-T3S** | **Ja.** Deze zijn op Android gebaseerd en hebben een browser onder *Applications → Browser* (op de T1 heet het *Internet Browser*). |
-| PRS-350, PRS-650, PRS-950, PRS-600, PRS-505, PRS-300 | **Nee.** Deze hebben geen browser en kunnen alleen EPUB/PDF openen. Er is geen manier om hier een app op te draaien. |
-| DPT-S1, DPT-RP1, DPT-CP1 (Digital Paper) | **Nee.** Alleen PDF, geen algemene browser. |
+## Wat je nodig hebt
 
-Staat je model in de tweede of derde rij, dan houdt het helaas op — die
-toestellen kunnen geen JavaScript draaien. Lees dan het kopje *Als je model
-geen browser heeft* onderaan.
+De reader, de USB-kabel en een computer. Een internetverbinding op de reader
+is **niet** nodig — de app draait volledig van het geheugen van het apparaat.
 
-De browser van de PRS-T-serie is oud (Android 2.x). Deze app is daar
-specifiek op voorbereid: hij gebruikt geen moderne JavaScript-taalfeatures,
-zet alle kleuren om naar waarden die die browser begrijpt, en schakelt
-automatisch over op tekststukken als de browser geen SVG kan tonen. Je hoeft
-daar zelf niets voor in te stellen.
+## Stap 1 — Pak het zip-bestand uit
 
-## Installeren (PRS-T1 / T2 / T3)
+Je krijgt een map `schaak` met daarin `index.html` en zeven andere bestanden.
+Houd ze bij elkaar in die ene map; ze verwijzen naar elkaar.
 
-Je hebt nodig: de e-reader, de meegeleverde USB-kabel en een computer.
+## Stap 2 — Sluit de reader aan
 
-**1. Pak het zip-bestand uit**
+Verbind de reader met de USB-kabel met je computer. Op het scherm van de
+reader verschijnt een melding — bevestig die om de USB-verbinding te maken.
 
-Je krijgt een map `schaak/` met daarin `index.html` en een handvol andere
-bestanden. Houd die bestanden bij elkaar in één map — ze verwijzen naar
-elkaar.
+Op je computer verschijnt een schijf met de naam **READER**. Heb je een
+microSD-kaart in de reader zitten, dan zie je er twee.
 
-**2. Sluit de reader met USB op je computer aan**
+## Stap 3 — Kopieer de map
 
-De reader meldt zich als een USB-schijf. Op de T1/T2 moet je op het scherm
-soms nog op *Ja* / *USB verbinden* tikken voordat de schijf verschijnt.
+Sleep de hele map `schaak` naar de schijf **READER**, in de hoofdmap (dus
+niet in `Books`, `Digital Editions` of een andere submap). Zo blijft het pad
+straks kort en voorspelbaar.
 
-Je ziet één of twee schijven: het interne geheugen (`READER`) en, als je er
-een hebt, de microSD-kaart (`SETTING` of de kaartnaam).
+## Stap 4 — Koppel netjes los
 
-**3. Kopieer de map**
+Gebruik *hardware veilig verwijderen* (Windows) of sleep de schijf naar de
+prullenbak (Mac), en trek daarna pas de kabel eruit. De reader werkt het
+geheugen dan even bij.
 
-Sleep de hele map `schaak` naar het interne geheugen van de reader. Zet hem
-in de hoofdmap (dus niet in een submap), dan is het pad straks het kortst.
+## Stap 5 — Open de app in de browser
 
-**4. Koppel de reader netjes los**
+Ga op de reader naar het beginscherm en open **Toepassingen** (het icoon met
+de vier blokjes). Kies daar **Browser** — afhankelijk van je firmware heet
+dit *Browser*, *Webbrowser* of *Internet*.
 
-Gebruik *hardware veilig verwijderen* (Windows) of sleep het schijfje naar de
-prullenbak (Mac). Trek de kabel er niet zomaar uit — dan kunnen de bestanden
-half geschreven achterblijven.
+> Vraagt de reader om verbinding te maken met wifi? Dat mag je gerust
+> annuleren. Voor een bestand op het apparaat zelf is geen internet nodig.
 
-**5. Open de app in de browser**
-
-Op de reader: *Applications* → *Browser*. Tik op de adresbalk en typ:
+Tik in de browser op de adresbalk en typ precies dit:
 
 ```
 file:///mnt/sdcard/schaak/index.html
 ```
 
-Druk op Enter/Ga. Het schaakbord verschijnt.
+Tik op Enter of *Ga*. Het schaakbord verschijnt.
 
-**Werkt dat pad niet?** Sony gebruikt niet op elk model dezelfde naam voor
-het interne geheugen. Probeer deze op volgorde:
+### Als dat pad niet werkt
+
+Sony gebruikt niet op elke firmware dezelfde naam voor het interne geheugen.
+Probeer deze op volgorde:
 
 ```
 file:///mnt/sdcard/schaak/index.html
-file:///mnt/extsd/schaak/index.html
 file:///sdcard/schaak/index.html
+file:///mnt/extsd/schaak/index.html
 file:///mnt/media/schaak/index.html
 ```
 
-Kwam de map op een microSD-kaart terecht, dan is het bijna altijd
-`file:///mnt/extsd/schaak/index.html`.
+Zet je de map op een microSD-kaart in plaats van in het interne geheugen, dan
+is het vrijwel altijd `file:///mnt/extsd/schaak/index.html`.
 
-Kom je er niet uit, typ dan alleen `file:///mnt/` in de adresbalk. De browser
-toont dan een mappenlijst en kun je jezelf naar `schaak/index.html`
-doorklikken. Zo vind je het juiste pad zonder gokken.
+**Wil je niet gokken?** Typ alleen dit in de adresbalk:
 
-**6. Maak een bladwijzer**
+```
+file:///mnt/
+```
 
-Nu de app open is: menu → *Bookmark this page* (Bladwijzer toevoegen). De
-volgende keer open je hem in twee tikken in plaats van het pad te typen.
+De browser toont dan een lijst met mappen. Tik jezelf door naar `schaak` en
+vervolgens naar `index.html`. Zo vind je het juiste pad zonder te raden, en
+je ziet meteen of de bestanden goed zijn overgekomen.
 
-## Gebruiken
+## Stap 6 — Maak er een bladwijzer van
 
-- Tik op een stuk en daarna op het veld waar het heen moet.
-- Rokeren: tik op je koning en dan op je eigen toren.
-- *Instellingen* opent de keuze voor tegenstander, sterkte, variant, thema en
-  stukken. Je keuzes worden onthouden.
+Nu de app open staat: open het browsermenu en kies *Bladwijzer toevoegen*
+(*Bookmark this page*). De volgende keer open je het schaakspel met twee
+tikken in plaats van het hele pad te typen.
 
-**Tips voor een e-inkscherm**
+## Instellingen die op dit toestel het prettigst werken
 
-- Op een trage reader kun je beter niveau *Beginner* tot *Gemiddeld* nemen.
-  De hogere niveaus denken langer na; de app rekent binnen een tijdslimiet en
-  wordt dan gewoon wat zwakker in plaats van vast te lopen, maar je zit wel
-  te wachten.
-- Het thema *Grafiet* is gemaakt voor zwart-witschermen. De PRS-T-serie heeft
-  een zwart-witscherm, dus dat thema zal daar het scherpst zijn.
-- Ziet het bord er te groot of te klein uit, draai het toestel dan of ververs
-  de pagina — de app meet het scherm opnieuw op.
+Tik op **Instellingen** onder het bord.
 
-## Als je model geen browser heeft
+- **Kleurenthema: Grafiet.** De PRS-T1 heeft een zwart-witscherm. Grafiet is
+  precies daarvoor gemaakt en geeft het scherpste onderscheid tussen de
+  velden. De kleurenthema's werken wel, maar worden op dit scherm allemaal
+  als grijstinten getoond.
+- **Stukken.** De browser van dit toestel kan geen SVG-tekeningen tonen. De
+  app merkt dat zelf en schakelt automatisch over op de tekststukken; je
+  hoeft niets te doen. In de lijst zie je dat terug als *Tekst (oude
+  e-readers)*.
+- **Sterkte: Beginner tot Gemiddeld.** Dit toestel heeft een trage
+  processor. De app rekent binnen een tijdslimiet en wordt vanzelf wat
+  zwakker in plaats van vast te lopen, maar bij *Sterk* en *Expert* zit je
+  wel echt te wachten op elke zet.
 
-Op een PRS-505, PRS-650 en soortgelijke modellen kun je deze app niet
-draaien; die toestellen voeren geen programma's uit. Wat wel kan:
+## Spelen
 
-- De app op een telefoon, tablet of computer gebruiken — hij werkt in elke
-  browser.
-- Een schaakboek als EPUB of PDF op de reader zetten. Dat is wat die
-  toestellen wél kunnen.
+- Tik op een stuk en daarna op het veld waar het heen moet. De stippen laten
+  zien waar dat stuk naartoe mag.
+- Rokeren: tik op je koning en daarna op je eigen toren.
+- Elke zet ververst het e-inkscherm; dat duurt even. Dat hoort erbij en
+  betekent niet dat de app vastloopt.
 
 ## Problemen oplossen
 
-**Wit scherm, geen bord.** Bijna altijd een verkeerd pad. Ga terug naar stap
-5 en blader via `file:///mnt/` naar het bestand toe.
+**Wit scherm, geen bord.** Vrijwel altijd een verkeerd pad. Ga terug naar
+stap 5 en blader via `file:///mnt/` naar het bestand toe.
 
-**Het bord staat er, maar de stukken zijn onzichtbaar.** Open *Instellingen*
-→ *Stukken* en kies *Tekst (oude e-readers)*. Normaal schakelt de app hier
-zelf naartoe, maar zo dwing je het af.
+**Het bord staat er, maar de velden zijn allemaal wit.** Dan is het
+stylesheet niet meegekomen. Controleer of `style.css` naast `index.html`
+staat, in dezelfde map.
 
-**JavaScript staat uit.** In het browsermenu onder *Settings* moet
-*Enable JavaScript* aangevinkt staan.
+**Ik zie het bord maar geen stukken.** Open *Instellingen → Stukken* en kies
+*Tekst (oude e-readers)*. Normaal schakelt de app hier zelf naartoe.
 
-**De instellingen worden niet onthouden.** Sommige readers wissen
-browseropslag bij het afsluiten. Vervelend, maar de app zelf blijft gewoon
-werken; je stelt je thema en niveau dan opnieuw in.
+**Er gebeurt niets als ik tik.** Controleer in het browsermenu onder
+*Instellingen* of *JavaScript inschakelen* aan staat.
 
-**Alles is heel klein.** De browser van de reader heeft een zoomfunctie in
-het menu. De app zelf schaalt met de schermgrootte mee.
+**Mijn instellingen zijn na afsluiten weer weg.** Sommige firmware wist de
+browseropslag bij het afsluiten. De app blijft gewoon werken; je stelt thema
+en sterkte dan opnieuw in.
+
+**Alles is heel klein of juist te groot.** De app meet het scherm zelf op bij
+het laden. Ververs de pagina als je het toestel gedraaid hebt.

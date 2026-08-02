@@ -27,13 +27,21 @@
   --cell-max: 68px;
 }
 
-* { box-sizing: border-box; }
+/* The -webkit- prefix is required by the Android 2.x browser found in older
+   e-readers (Sony PRS-T series); without it the board and buttons mis-size. */
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
 html, body {
   margin: 0;
   padding: 0;
   background: var(--page-bg);
   color: var(--page-fg);
+  /* Stop Android's automatic text inflation from breaking the layout. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
