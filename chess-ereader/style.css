@@ -1,0 +1,341 @@
+/* E-reader friendly styling.
+   Every colour comes from a CSS custom property so themes.js can restyle the
+   whole app by setting variables on <html>. No animations or transitions:
+   e-ink panels ghost badly when things move, and repaints are expensive. */
+
+:root {
+  /* Fallbacks so the page is usable even if themes.js never runs. */
+  --board-light: #eeeed2;
+  --board-dark: #769656;
+  --piece-white: #ffffff;
+  --piece-black: #2e2e2e;
+  --piece-outline: #1a1a1a;
+  --piece-detail: #ffffff;
+  --page-bg: #faf9f0;
+  --page-fg: #1c1c1c;
+  --panel-bg: #ffffff;
+  --border: #3d4f2e;
+  --accent: #4a6b35;
+  --accent-fg: #ffffff;
+  --hl-lastmove: #c9d16a;
+  --hl-selected: #f2f26a;
+  --hl-check: #d64a3a;
+  --hl-dot: #3a4a2a;
+  --coord: #5a6b45;
+
+  --cell: 11vmin;
+  --cell-max: 68px;
+}
+
+/* The -webkit- prefix is required by the Android 2.x browser found in older
+   e-readers (Sony PRS-T series); without it the board and buttons mis-size. */
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  /* Stop Android's automatic text inflation from breaking the layout. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.4;
+  /* Tight padding and a generous max-width: the board is sized from the
+     space this leaves, so every pixel here is a pixel off the board. */
+  padding: 4px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.05em;
+  text-align: center;
+  margin: 0 0 4px 0;
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* ---- Status bar ---- */
+
+#status {
+  text-align: center;
+  font-size: 1.05em;
+  font-weight: bold;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  padding: 5px 6px;
+  margin: 4px 0;
+  min-height: 1.3em;
+}
+
+#status.is-check,
+#status.is-over {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+#subline {
+  text-align: center;
+  font-size: 0.85em;
+  margin: -2px 0 4px 0;
+  min-height: 0;
+}
+/* Collapse entirely in standard chess, where it has nothing to say. */
+#subline:empty { display: none; }
+
+/* ---- Board ---- */
+
+#board-wrap { text-align: center; }
+
+#board {
+  border-collapse: collapse;
+  margin: 0 auto;
+  table-layout: fixed;
+  border: 3px solid var(--border);
+}
+
+/* Explicit width AND height on every cell: without both, empty squares
+   collapse while squares holding a piece stretch the whole row. */
+#board td {
+  width: var(--cell);
+  height: var(--cell);
+  max-width: var(--cell-max);
+  max-height: var(--cell-max);
+  padding: 0;
+  margin: 0;
+  position: relative;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+#board .sq-light { background: var(--board-light); }
+#board .sq-dark  { background: var(--board-dark); }
+
+#board .sq-lastmove { background: var(--hl-lastmove); }
+#board .sq-check    { background: var(--hl-check); }
+
+/* Selection and the keyboard cursor are separate layers so both can show at
+   once; an outline on the same element would let one silently replace the other. */
+#board .sq-selected {
+  outline: 4px solid var(--hl-selected);
+  outline-offset: -4px;
+}
+
+#board .sq-cursor::after {
+  content: '';
+  position: absolute;
+  left: 2px; top: 2px; right: 2px; bottom: 2px;
+  border: 3px dashed var(--piece-outline);
+  pointer-events: none;
+}
+
+/* King of the Hill: mark the four goal squares. */
+#board .sq-hill::before {
+  content: '';
+  position: absolute;
+  left: 12%; top: 12%; right: 12%; bottom: 12%;
+  border: 2px dotted var(--hl-dot);
+  pointer-events: none;
+}
+
+.piece-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Text pieces: the fallback for browsers without inline SVG. The exact size
+   is set by the generated theme stylesheet, which knows the cell size. */
+.piece-text {
+  display: block;
+  text-align: center;
+  line-height: 1;
+  font-family: "DejaVu Sans", "Segoe UI Symbol", "Arial Unicode MS", FreeSerif, serif;
+}
+
+.coord {
+  position: absolute;
+  font-size: 0.55em;
+  font-weight: bold;
+  color: var(--coord);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Take the opposing square's colour so coordinates stay readable in every
+   theme, including the ones whose squares are close together in luminance. */
+#board .sq-light .coord { color: var(--board-dark); }
+#board .sq-dark .coord  { color: var(--board-light); }
+.coord-file { right: 2px; bottom: 1px; }
+.coord-rank { left: 2px; top: 1px; }
+
+.move-dot {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 28%; height: 28%;
+  margin-left: -14%; margin-top: -14%;
+  background: var(--hl-dot);
+  border-radius: 50%;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.move-ring {
+  position: absolute;
+  left: 5%; top: 5%; right: 5%; bottom: 5%;
+  border: 4px solid var(--hl-dot);
+  border-radius: 50%;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ---- Captured material ---- */
+
+.material {
+  display: block;
+  min-height: 22px;
+  font-size: 19px;
+  line-height: 1.15;
+  text-align: center;
+  word-wrap: break-word;
+  padding: 0;
+}
+
+.material .adv {
+  font-family: Georgia, serif;
+  font-size: 0.75em;
+  font-weight: bold;
+}
+
+/* ---- Controls ---- */
+
+.btn-row { text-align: center; margin: 6px 0; }
+
+button, select, input[type=text] {
+  font-family: inherit;
+  font-size: 1em;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--page-fg);
+  padding: 8px 12px;
+  margin: 3px;
+  min-height: 44px;
+  border-radius: 0;
+}
+
+button:active { background: var(--accent); color: var(--accent-fg); }
+
+button[disabled] { opacity: 0.45; }
+
+.btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+fieldset {
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  margin: 9px 0;
+  padding: 8px 10px;
+}
+
+legend { font-weight: bold; padding: 0 6px; }
+
+.field {
+  display: block;
+  margin: 8px 0;
+}
+
+.field > span.label {
+  display: block;
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+
+.field select { width: 100%; margin: 0; }
+
+.note {
+  font-size: 0.82em;
+  margin: 3px 0 0 0;
+  opacity: 0.85;
+}
+
+#settings.collapsed { display: none; }
+
+/* ---- Promotion dialog ---- */
+
+#promo-dialog {
+  border: 3px solid var(--border);
+  background: var(--panel-bg);
+  padding: 8px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+#promo-dialog button {
+  width: 62px;
+  height: 62px;
+  padding: 4px;
+  vertical-align: middle;
+}
+
+#promo-dialog button .piece-svg { width: 100%; height: 100%; }
+
+/* ---- Move list ---- */
+
+#movelist-wrap {
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  padding: 7px 9px;
+  margin: 9px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#movelist {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.95em;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+textarea {
+  width: 100%;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.85em;
+  border: 2px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--page-fg);
+  padding: 5px;
+}
+
+input[type=text] { width: 100%; }
+
+.hidden { display: none; }
+
+footer {
+  text-align: center;
+  font-size: 0.8em;
+  margin: 16px 0 6px 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  opacity: 0.85;
+}
+
+@media (max-width: 400px) {
+  body { font-size: 15px; }
+  :root { --cell: 11.5vmin; }
+}
