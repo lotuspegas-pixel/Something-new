@@ -12,7 +12,7 @@
 
   var settings = {
     theme: 'bos',
-    pieceSet: 'klassiek',
+    pieceSet: 'toernooi',
     variant: 'standard',
     level: 2,
     vsComputer: true,

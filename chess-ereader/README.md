@@ -36,8 +36,10 @@ zich vanzelf aanpast aan hoe snel het toestel is. Of speel met z'n tweeën op
 **Elf kleurenthema's** — Bos, Hout, Oceaan, Koraal, Lavendel, Munt,
 Zonsondergang, Papier, Grafiet, Nacht en Hoog contrast.
 
-**Drie stukkenstijlen** — Klassiek (Staunton-silhouetten), Modern (vlakker en
-geometrischer) en Symbolen (Unicode-tekens, het lichtst voor trage toestellen).
+**Vijf stukkenstijlen** — Toernooi (de standaard: het bekende
+toernooiontwerp met voetplaat en schaduwvlak), Klassiek
+(Staunton-silhouetten), Modern (vlakker en geometrischer), Symbolen
+(Unicode-tekens) en Tekst (zonder SVG, voor de oudste e-readers).
 
 **Verder** — zetlijst in standaardnotatie, geslagen materiaal met
 puntenvoorsprong, zet terugnemen, bord draaien, opgeven, remise, coördinaten
@@ -72,7 +74,7 @@ fysieke knoppen. Daarom:
 |---|---|
 | `chess-engine.js` | Spelregels: zetgeneratie, varianten, FEN, notatie |
 | `ai.js` | Computertegenstander en de niveaus |
-| `pieces.js` | De drie stukkenstijlen als SVG |
+| `pieces.js` | De vijf stukkenstijlen |
 | `themes.js` | De elf kleurenthema's |
 | `app.js` | Bediening en scherm |
 | `style.css` | Vormgeving, volledig via CSS-variabelen |

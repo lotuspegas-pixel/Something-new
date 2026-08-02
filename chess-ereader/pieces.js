@@ -305,12 +305,258 @@
       (isWhitePiece(ch) ? 'wit' : 'zwart') + '">' + glyph + '</span>';
   }
 
+  /* ============================================================== TOERNOOI
+   * Moderne "toernooi"-set: bolle, afgeronde vormen met een stevige donkere
+   * omtreklijn, een aparte afgeronde voetplaat onder de stukken en een
+   * schaduwvlak langs de rechterkant voor een 3D-reliefeffect.
+   *
+   * Het schaduwvlak is een half-transparant zwart overlay-vlak. Daardoor
+   * werkt het op zowel lichte als donkere stukken zonder extra themakleuren.
+   * Het wordt afgeknipt op de romp zodat het nooit buiten het stuk valt.
+   *
+   * De pion heeft (net als in het voorbeeld) geen losse voetplaat maar een
+   * romp die zelf tot een brede voet uitwaaiert, met een kraag als hals.
+   */
+
+  var T_SW = 1.4;             /* omtreklijndikte */
+  var T_SHADE = 'rgba(0,0,0,0.17)';
+
+  /* De voetplaat is voor alle stukken identiek. */
+  var toernooiVoet =
+    'M 13.4,33.1 L 31.6,33.1' +
+    ' C 33.7,33.8 34.9,36.0 34.9,38.1 L 34.9,39.7 L 10.1,39.7 L 10.1,38.1' +
+    ' C 10.1,36.0 11.3,33.8 13.4,33.1 Z';
+
+  var toernooiShapes = {
+
+    /* --------------------------------------------------------------- pion
+       Bolle kop, een brede kraag als hals en een romp die vloeiend
+       uitwaaiert naar een brede voet. */
+    p: '<path d="M 21.06,21.3 A 5.3,5.3 0 1,1 23.94,21.3 Z"/>' +
+       '<path d="M 19.3,24.4' +
+       ' C 19.3,27.6 18.3,29.7 15.6,31.8' +
+       ' C 13.0,33.9 11.3,36.3 11.3,39.7' +
+       ' L 33.7,39.7' +
+       ' C 33.7,36.3 32.0,33.9 29.4,31.8' +
+       ' C 26.7,29.7 25.7,27.6 25.7,24.4 Z"/>' +
+       '<path d="M 17.8,21.3 L 27.2,21.3' +
+       ' C 28.6,21.6 29.2,22.4 29.2,23.2' +
+       ' C 29.2,24.0 28.8,24.6 28.0,25.1' +
+       ' L 17.0,25.1' +
+       ' C 16.2,24.6 15.8,24.0 15.8,23.2' +
+       ' C 15.8,22.4 16.4,21.6 17.8,21.3 Z"/>',
+    pShade:
+       '<path d="M 22.5,24.8 L 25.7,24.8' +
+       ' C 25.7,27.6 26.7,29.7 29.4,31.8' +
+       ' C 32.0,33.9 33.7,36.3 33.7,39.7' +
+       ' L 29.6,39.7' +
+       ' C 29.6,36.0 28.0,33.4 25.6,31.2' +
+       ' C 23.6,29.3 22.5,27.4 22.5,24.8 Z"/>' +
+       '<path d="M 24.8,12.2 C 27.2,13.6 28.0,17.4 26.2,19.8' +
+       ' C 25.2,21.0 23.4,21.4 22.0,20.8' +
+       ' C 25.0,19.8 26.6,15.6 24.8,12.2 Z"/>',
+    pNoVoet: true,
+
+    /* -------------------------------------------------------------- toren
+       Brede kanteelkap met twee inkepingen, romp die licht uitwaaiert. */
+    r: '<path d="M 15.4,18.6' +
+       ' C 13.4,17.9 12.1,17.3 12.1,16.0 L 12.1,10.0' +
+       ' Q 12.1,8.9 13.2,8.9 L 15.1,8.9 Q 16.2,8.9 16.2,10.0 L 16.2,13.0' +
+       ' L 19.6,13.0 L 19.6,9.4 Q 19.6,8.3 20.7,8.3 L 24.3,8.3' +
+       ' Q 25.4,8.3 25.4,9.4 L 25.4,13.0 L 28.8,13.0 L 28.8,10.0' +
+       ' Q 28.8,8.9 29.9,8.9 L 31.8,8.9 Q 32.9,8.9 32.9,10.0 L 32.9,16.0' +
+       ' C 32.9,17.3 31.6,17.9 29.6,18.6 Z"/>' +
+       '<path d="M 15.4,18.4' +
+       ' C 15.0,24.0 14.5,29.0 14.0,34.0 L 31.0,34.0' +
+       ' C 30.5,29.0 30.0,24.0 29.6,18.4 Z"/>',
+    rShade:
+       '<path d="M 30.4,8.9 L 31.8,8.9 Q 32.9,8.9 32.9,10.0 L 32.9,16.0' +
+       ' C 32.9,17.3 31.6,17.9 29.6,18.6 L 27.0,18.6' +
+       ' C 29.8,17.4 31.0,15.4 30.8,12.4 Z"/>' +
+       '<path d="M 21.4,18.8 L 29.6,18.8' +
+       ' C 30.0,24.0 30.5,29.2 31.0,34.0 L 27.3,34.0' +
+       ' C 27.2,27.6 25.4,22.4 21.4,18.8 Z"/>',
+
+    /* -------------------------------------------------------------- paard
+       Paardenkop en profil, naar links kijkend: punt oor, gebogen voorhoofd,
+       stompe snuit linksonder en een hals die naar rechtsonder wegzwaait. */
+    n: '<path d="M 18.3,5.3' +
+       ' C 17.5,6.6 16.8,7.4 16.3,8.4' +
+       ' C 14.6,9.9 13.2,11.6 12.9,14.2' +
+       ' C 12.4,16.0 10.9,17.4 9.9,19.0' +
+       ' C 9.0,20.7 7.9,21.9 7.7,23.1' +
+       ' C 7.4,24.5 8.2,25.6 9.8,26.1' +
+       ' C 11.2,26.6 12.7,26.5 13.9,25.9' +
+       ' C 14.4,25.0 15.5,24.1 17.0,23.3' +
+       ' C 19.2,22.5 21.0,21.5 22.1,20.0' +
+       ' C 23.2,22.2 22.2,24.6 19.8,26.6' +
+       ' C 18.0,28.2 15.6,30.4 15.0,33.6' +
+       ' L 33.5,33.6' +
+       ' C 33.9,31.0 35.2,29.0 35.2,25.0' +
+       ' C 35.2,20.4 34.2,15.6 30.4,12.6' +
+       ' C 29.4,10.4 27.0,9.0 24.2,8.5' +
+       ' L 22.9,9.7' +
+       ' L 21.2,7.0 Z"/>',
+    nShade:
+       '<path d="M 25.2,10.2' +
+       ' C 29.8,13.4 32.2,18.0 32.2,23.6' +
+       ' C 32.2,27.6 30.0,30.8 27.4,33.8' +
+       ' L 33.8,33.8' +
+       ' C 34.2,31.0 35.4,29.0 35.4,25.0' +
+       ' C 35.4,20.4 34.0,15.8 30.6,12.0' +
+       ' C 28.6,9.8 26.6,8.6 24.5,8.3 Z"/>' +
+       '<path d="M 20.2,15.4' +
+       ' C 21.6,17.0 22.0,18.5 21.6,20.2' +
+       ' C 21.0,21.7 19.6,22.7 17.4,23.5' +
+       ' C 19.4,22.2 20.4,20.8 20.6,19.4' +
+       ' C 20.8,18.0 20.6,16.6 20.2,15.4 Z"/>',
+    nDetail:
+       '<path d="M 19.8,13.0' +
+       ' C 20.6,14.2 20.2,15.5 18.9,15.8' +
+       ' C 17.9,16.0 17.1,16.4 16.5,17.0' +
+       ' C 16.5,15.6 16.9,14.4 17.6,13.5' +
+       ' C 18.3,12.6 19.2,12.2 19.8,13.0 Z"/>',
+
+    /* -------------------------------------------------------------- loper
+       Gladde uivorm met een gebogen spleet en een bolletje bovenop. */
+    b: '<path d="M 16.0,33.8 L 15.2,32.4' +
+       ' C 12.9,30.2 12.1,26.4 12.3,22.6' +
+       ' C 12.5,18.6 14.4,14.9 17.3,12.3' +
+       ' C 18.1,11.6 19.2,10.4 19.9,9.7' +
+       ' A 3.1,3.1 0 1,1 23.7,10.2' +
+       ' C 22.6,12.6 20.9,17.2 20.6,22.0' +
+       ' C 20.4,22.8 21.2,23.3 22.1,23.3' +
+       ' C 23.0,23.3 24.4,23.0 24.5,22.0' +
+       ' C 24.9,17.1 26.0,13.6 27.4,11.2' +
+       ' C 29.8,13.8 32.4,17.4 32.6,22.0' +
+       ' C 32.8,26.4 31.4,30.2 29.6,32.4 L 28.8,33.8 Z"/>',
+    bShade:
+       '<path d="M 27.4,11.2' +
+       ' C 29.8,13.8 32.4,17.4 32.6,22.0' +
+       ' C 32.9,26.4 31.4,30.2 29.6,32.4' +
+       ' L 25.4,32.4' +
+       ' C 27.8,30.0 29.4,26.4 29.3,22.4' +
+       ' C 29.2,18.6 28.2,14.8 26.4,12.3 Z"/>' +
+       '<path d="M 22.6,13.4' +
+       ' C 21.4,16.6 20.8,19.6 20.7,22.6' +
+       ' L 18.9,22.6' +
+       ' C 19.0,19.4 19.7,16.3 20.9,13.4 Z"/>',
+
+    /* --------------------------------------------------------------- dame
+       Kroon met vier punten, elk met een bol, en V-inkepingen ertussen. */
+    q: '<path d="M 14.9,33.8' +
+       ' L 7.6,18.9' +
+       ' A 3.5,3.5 0 1,1 10.0,18.9' +
+       ' L 16.8,20.8' +
+       ' L 15.8,12.0' +
+       ' A 3.65,3.65 0 1,1 19.2,12.0' +
+       ' L 22.5,19.8' +
+       ' L 25.8,12.0' +
+       ' A 3.65,3.65 0 1,1 29.2,12.0' +
+       ' L 28.2,20.8' +
+       ' L 35.0,18.9' +
+       ' A 3.5,3.5 0 1,1 37.4,18.9' +
+       ' L 30.1,33.8 Z"/>',
+    qShade:
+       '<path d="M 37.4,18.9 L 30.1,33.8 L 26.2,33.8' +
+       ' C 29.8,28.4 32.6,23.4 34.0,17.6 Z"/>' +
+       '<path d="M 28.4,10.8 C 30.8,12.2 31.0,15.2 29.2,16.6' +
+       ' L 29.6,13.2 Z"/>' +
+       '<path d="M 18.4,10.8 C 20.8,12.2 21.0,15.2 19.2,16.6' +
+       ' L 19.6,13.2 Z"/>' +
+       '<path d="M 9.4,17.6 C 11.6,16.2 12.0,13.6 10.6,12.0' +
+       ' C 12.8,12.8 13.4,15.6 12.0,17.6 Z"/>',
+
+    /* ------------------------------------------------------------- koning
+       Kruis bovenop, brede kroon met twee boogvormige uitsparingen. */
+    k: '<path d="M 20.5,4.2 L 25.0,4.2 L 25.0,7.1 L 27.7,7.1 L 27.7,11.1' +
+       ' L 25.0,11.1 L 25.0,15.0 L 20.5,15.0 L 20.5,11.1 L 17.8,11.1' +
+       ' L 17.8,7.1 L 20.5,7.1 Z"/>' +
+       '<path d="M 20.3,14.6' +
+       ' C 18.4,13.1 15.8,12.5 13.0,13.3' +
+       ' C 9.0,13.8 6.2,15.8 5.7,19.4' +
+       ' C 5.2,22.7 6.5,26.1 9.3,28.9' +
+       ' C 11.6,31.0 12.8,32.3 13.2,33.7' +
+       ' L 31.8,33.7' +
+       ' C 32.2,32.3 33.4,31.0 35.7,28.9' +
+       ' C 38.5,26.1 39.8,22.7 39.3,19.4' +
+       ' C 38.8,15.8 36.0,13.8 32.0,13.3' +
+       ' C 29.2,12.5 26.6,13.1 24.7,14.6 Z' +
+       ' M 19.2,20.6' +
+       ' C 18.4,19.2 16.4,18.7 14.8,19.8' +
+       ' C 13.2,20.8 12.6,23.0 14.4,25.0' +
+       ' C 15.8,26.5 17.6,27.2 19.2,27.4 Z' +
+       ' M 25.8,20.6' +
+       ' C 26.6,19.2 28.6,18.7 30.2,19.8' +
+       ' C 31.8,20.8 32.4,23.0 30.6,25.0' +
+       ' C 29.2,26.5 27.4,27.2 25.8,27.4 Z"/>',
+    kShade:
+       '<path d="M 34.6,14.2' +
+       ' C 37.6,15.4 39.0,17.4 39.3,19.4' +
+       ' C 39.8,22.7 38.5,26.1 35.7,28.9' +
+       ' C 33.4,31.0 32.2,32.3 31.8,33.7' +
+       ' L 29.4,33.7' +
+       ' C 30.0,31.8 31.2,30.4 33.4,28.2' +
+       ' C 36.0,25.6 37.4,22.4 37.2,19.2' +
+       ' C 37.1,17.4 36.2,15.6 34.6,14.2 Z"/>'
+  };
+
+  function renderToernooi(ch) {
+    var white = isWhitePiece(ch);
+    var key = ch.toLowerCase();
+    var shapes = toernooiShapes[key];
+    if (!shapes) { return wrap(''); }
+
+    var fill = bodyFill(white);
+    var clipId = 'toernooi-clip-' + key;
+    var out = '';
+
+    /* Het schaduwvlak wordt afgeknipt op de romp zelf, zodat het nooit
+       buiten het stuk op het bord terechtkomt. Het id hangt alleen van de
+       stuksoort af: identieke stukken delen dus dezelfde (identieke)
+       clipPath, wat geen probleem is. */
+    out += '<defs><clipPath id="' + clipId + '" clip-rule="evenodd">' +
+      shapes + '</clipPath></defs>';
+
+    /* 1. gevulde vormen met omtrek */
+    out += '<g fill="' + fill + '" fill-rule="evenodd" stroke="' + C_LINE +
+      '" stroke-width="' + T_SW + '" stroke-linejoin="round"' +
+      ' stroke-linecap="round">' + shapes + '</g>';
+
+    /* 2. schaduwvlak (half-transparant zwart, geen omtrek) */
+    var shade = toernooiShapes[key + 'Shade'];
+    if (shade) {
+      out += '<g clip-path="url(#' + clipId + ')" fill="' + T_SHADE +
+        '" fill-rule="evenodd" stroke="none">' + shade + '</g>';
+    }
+
+    /* 3. omtrek opnieuw, zodat de schaduw de lijnen niet vertroebelt */
+    out += '<g fill="none" stroke="' + C_LINE + '" stroke-width="' + T_SW +
+      '" stroke-linejoin="round" stroke-linecap="round">' + shapes + '</g>';
+
+    /* 4. voetplaat, bovenop de romp */
+    if (!toernooiShapes[key + 'NoVoet']) {
+      out += '<g fill="' + fill + '" stroke="' + C_LINE + '" stroke-width="' +
+        T_SW + '" stroke-linejoin="round" stroke-linecap="round"><path d="' +
+        toernooiVoet + '"/></g>';
+    }
+
+    /* 5. losse details (oog van het paard) */
+    var detail = toernooiShapes[key + 'Detail'];
+    if (detail) {
+      out += '<g fill="' + C_LINE + '" stroke="none">' + detail + '</g>';
+    }
+
+    return wrap(out);
+  }
+
   /* ---------------------------------------------------------------- export */
 
   global.PieceSets = {
     klassiek: { name: 'Klassiek', render: renderKlassiek },
     modern: { name: 'Modern', render: renderModern },
     symbool: { name: 'Symbolen', render: renderSymbool },
+    toernooi: { name: 'Toernooi', render: renderToernooi },
     tekst: { name: 'Tekst (oude e-readers)', render: renderTekst, noSvg: true }
   };
 
