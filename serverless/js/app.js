@@ -155,6 +155,112 @@
     echoCancellation: false, noiseSuppression: false, autoGainControl: false,
     channelCount: 1, sampleRate: 48000,
   };
+  // ---- versterking van de babymicrofoon ----------------------------------
+  // De ingebouwde automatische versterking (autoGainControl) staat bewust uit:
+  // die regelt zo snel dat je hem hoort pompen, en samen met ruisonderdrukking
+  // gaf dat het gekraak waar eerder over geklaagd is. Maar zónder versterking
+  // is een stille kinderkamer ook werkelijk stil — zeker op een tablet die de
+  // spraakmicrofoon gebruikt in plaats van de luidsprekermicrofoon.
+  //
+  // Daarom een eigen trap: vaste versterking die LANGZAAM meebeweegt met het
+  // gemiddelde niveau, gevolgd door een begrenzer. Langzaam regelen is precies
+  // het verschil: het maakt zacht geluid hoorbaar zonder dat je het hoort
+  // ademen, en de begrenzer vangt een huilbui op zonder vervorming.
+  const MIC_GAIN_MIN = 1;
+  const MIC_GAIN_MAX = 14;
+  const MIC_GAIN_START = 5;
+  let micChain = null;   // { src, gain, comp, dest, uit, ruw }
+  let micGainTimer = null;
+
+  function bouwMicKeten(ruwSpoor) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC || !ruwSpoor) return null;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+      if (!audioCtx.createMediaStreamDestination || !audioCtx.createDynamicsCompressor) return null;
+      const src = audioCtx.createMediaStreamSource(new MediaStream([ruwSpoor]));
+      const gain = audioCtx.createGain();
+      gain.gain.value = MIC_GAIN_START;
+      const comp = audioCtx.createDynamicsCompressor();
+      // Begrenzer: pas laat ingrijpen, dan stevig. Zo blijft zacht geluid
+      // ongemoeid en wordt alleen een piek afgevlakt.
+      comp.threshold.value = -12;
+      comp.knee.value = 6;
+      comp.ratio.value = 12;
+      comp.attack.value = 0.005;
+      comp.release.value = 0.25;
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(gain); gain.connect(comp); comp.connect(dest);
+      const uit = dest.stream.getAudioTracks()[0];
+      if (!uit) return null;
+      return { src: src, gain: gain, comp: comp, dest: dest, uit: uit, ruw: ruwSpoor };
+    } catch (e) { return null; }
+  }
+
+  function sloopMicKeten() {
+    if (micGainTimer) { clearInterval(micGainTimer); micGainTimer = null; }
+    if (!micChain) return;
+    try { micChain.src.disconnect(); } catch (e) {}
+    try { micChain.gain.disconnect(); } catch (e) {}
+    try { micChain.comp.disconnect(); } catch (e) {}
+    micChain = null;
+  }
+
+  // Vervangt het audiospoor van een opgenomen stream door de versterkte versie.
+  // Lukt dat niet (oude WebKit kan hier stilte geven), dan blijft het ruwe
+  // spoor gewoon staan — liever onversterkt dan niets.
+  function versterkMic(stream) {
+    if (!stream || !stream.getAudioTracks) return stream;
+    const ruw = stream.getAudioTracks()[0];
+    if (!ruw) return stream;
+    sloopMicKeten();
+    const keten = bouwMicKeten(ruw);
+    if (!keten) return stream;
+    micChain = keten;
+    try {
+      stream.removeTrack(ruw);   // ruw spoor NIET stoppen: het voedt de keten
+      stream.addTrack(keten.uit);
+    } catch (e) { return stream; }
+    startMicGainRegeling();
+    return stream;
+  }
+
+  // Langzame niveauregeling. Meet elke halve seconde het gemiddelde niveau en
+  // schuift de versterking hooguit een klein stapje op. Een huilbui zakt dus
+  // niet meteen weg en stilte wordt niet meteen opgeblazen.
+  function startMicGainRegeling() {
+    if (micGainTimer) clearInterval(micGainTimer);
+    let meter = null;
+    try {
+      meter = audioCtx.createAnalyser();
+      meter.fftSize = 1024;
+      meter.smoothingTimeConstant = 0.85;
+      micChain.src.connect(meter);
+    } catch (e) { meter = null; }
+    if (!meter) return;
+    const buf = new Uint8Array(meter.fftSize);
+    micGainTimer = setInterval(() => {
+      if (!micChain || role !== 'baby' || shuttingDown) return;
+      try {
+        meter.getByteTimeDomainData(buf);
+        let som = 0;
+        for (let i = 0; i < buf.length; i++) { const d = (buf[i] - 128) / 128; som += d * d; }
+        const rms = Math.sqrt(som / buf.length);            // 0..1, vóór versterking
+        const doelRms = 0.06;                                // rustig maar duidelijk hoorbaar
+        const huidig = micChain.gain.gain.value;
+        let gewenst = huidig;
+        if (rms > 0.0008) gewenst = doelRms / rms;           // stilte niet eindeloos opdraaien
+        gewenst = Math.max(MIC_GAIN_MIN, Math.min(MIC_GAIN_MAX, gewenst));
+        // Hooguit 8% per halve seconde: dat is te traag om te horen pompen.
+        const stap = huidig * 0.08;
+        const nieuw = gewenst > huidig ? Math.min(gewenst, huidig + stap) : Math.max(gewenst, huidig - stap);
+        if (micChain.gain.gain.setTargetAtTime) micChain.gain.gain.setTargetAtTime(nieuw, audioCtx.currentTime, 0.25);
+        else micChain.gain.gain.value = nieuw;
+      } catch (e) {}
+    }, 500);
+  }
+
   // ---- opnameprofiel voor de babycamera --------------------------------
   // Een oude tablet (bv. een iPad mini uit 2013 op iOS 12) kan 1280x720 niet
   // in realtime coderen. De frames stapelen dan op en het beeld komt met een
@@ -314,7 +420,8 @@
   }
   function babyConnected() {
     showScreen('screenBaby');
-    watchEncoder(); // let op of dit toestel het coderen wel bijhoudt
+    watchEncoder();   // houdt dit toestel het coderen bij?
+    watchMicKeten();  // komt er echt geluid door de versterkingstrap?
     $('bConnDot').classList.remove('off');
     $('bConn').textContent = T('connected');
     const bl = $('bLatency'); if (bl) bl.textContent = T('live');
@@ -793,6 +900,59 @@
   // beter dan doorgaan met beeld dat steeds verder achterloopt: bij een
   // babyfoon telt actueel beeld zwaarder dan scherp beeld.
   let encoderVerlaagd = false;
+  // Veiligheidsnet voor de versterkingstrap. Op oude WebKit is bekend dat een
+  // MediaStreamDestination soms stilte doorgeeft. Een babyfoon die zwijgt is
+  // gevaarlijker dan een babyfoon die zacht is, dus meten we of er werkelijk
+  // audio de deur uitgaat. Zo niet, dan terug naar het ruwe spoor.
+  let micKetenGecontroleerd = false;
+  function watchMicKeten() {
+    if (role !== 'baby' || micKetenGecontroleerd || !micChain) return;
+    let vorigeBytes = -1;
+    let stilleMetingen = 0;
+    const timer = setInterval(async () => {
+      if (shuttingDown || role !== 'baby' || micKetenGecontroleerd) { clearInterval(timer); return; }
+      if (!mediaPc || !mediaPc.getStats || !micChain) return;
+      try {
+        const stats = await mediaPc.getStats();
+        let bytes = null;
+        stats.forEach((r) => {
+          if (r.type === 'outbound-rtp' && r.kind === 'audio' && typeof r.bytesSent === 'number') bytes = r.bytesSent;
+        });
+        if (bytes === null) return;
+        if (vorigeBytes >= 0) {
+          // Stilte in Opus is niet 0 bytes maar wel héél weinig; onder 200
+          // bytes per 3 seconden gaat er feitelijk niets doorheen.
+          if (bytes - vorigeBytes < 200) stilleMetingen++; else stilleMetingen = 0;
+        }
+        vorigeBytes = bytes;
+        if (stilleMetingen >= 3) {
+          clearInterval(timer);
+          micKetenGecontroleerd = true;
+          await zetMicKetenUit();
+        } else if (stilleMetingen === 0 && vorigeBytes > 0) {
+          // Er stroomt audio: keten is in orde, controle kan stoppen.
+          clearInterval(timer);
+          micKetenGecontroleerd = true;
+        }
+      } catch (e) {}
+    }, 3000);
+  }
+  async function zetMicKetenUit() {
+    if (!micChain) return;
+    const ruw = micChain.ruw;
+    const versterkt = micChain.uit;
+    sloopMicKeten();
+    try {
+      if (localStream) {
+        try { localStream.removeTrack(versterkt); } catch (e) {}
+        try { versterkt.stop(); } catch (e) {}
+        localStream.addTrack(ruw);
+      }
+      const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+      if (z) { try { await z.replaceTrack(ruw); } catch (e) {} }
+    } catch (e) {}
+  }
+
   function watchEncoder() {
     if (role !== 'baby' || encoderVerlaagd) return;
     let slechteMetingen = 0;
@@ -843,6 +1003,9 @@
         audio: MIC_MONITOR,
         video: Object.assign({ facingMode: 'environment' }, camProfiel),
       });
+      // Zachte geluiden hoorbaar maken vóór het verzenden. Lukt de
+      // versterkingstrap niet, dan gaat het ruwe spoor gewoon mee.
+      versterkMic(localStream);
     } catch (e) {
       toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
       showScreen('screenSetup');
@@ -1792,6 +1955,17 @@
       if (cur) { try { localStream.removeTrack(cur); cur.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, 'audio');
+      // Nieuw ruw spoor: versterkingstrap er opnieuw omheen en het versterkte
+      // spoor naar de ouder sturen.
+      sloopMicKeten();
+      const keten = bouwMicKeten(nt);
+      if (keten) {
+        micChain = keten;
+        try { localStream.removeTrack(nt); localStream.addTrack(keten.uit); } catch (e) {}
+        const zender = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+        if (zender) { try { await zender.replaceTrack(keten.uit); } catch (e) {} }
+        startMicGainRegeling();
+      }
       duplexOn = on;
     } catch (e) {
       // Lukt het niet, dan blijft de bestaande microfoon gewoon staan.
@@ -2084,7 +2258,20 @@
       if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, kind);
-      if (kind === 'audio') duplexOn = false; // verse microfoon = weer onbewerkt
+      if (kind === 'audio') {
+        duplexOn = false; // verse microfoon = weer onbewerkt
+        // Ook na een herstel weer versterken, anders is de babyunit ineens
+        // veel zachter dan daarvoor.
+        sloopMicKeten();
+        const k = bouwMicKeten(nt);
+        if (k) {
+          micChain = k;
+          try { localStream.removeTrack(nt); localStream.addTrack(k.uit); } catch (e) {}
+          const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+          if (z) { try { await z.replaceTrack(k.uit); } catch (e) {} }
+          startMicGainRegeling();
+        }
+      }
       toast(T('cameraRecovered'));
     } catch (e) {
       // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
