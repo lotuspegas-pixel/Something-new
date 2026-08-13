@@ -1256,7 +1256,13 @@
       else connectFailed();
     }, CONNECT_TIMEOUT);
     const babyId = currentBabyId;
-    pairStap = 0; setPairStap(1); setParentStatus(T('connecting'));
+    // Stap terug naar 1, maar de KOPTEKST niet overschrijven. Bij een
+    // herverbinding staat daar "Opnieuw verbinden… (2/5)" en die mededeling is
+    // voor de gebruiker belangrijker dan "Verbinden…". Wel opnieuw doorgeven,
+    // zodat de stapaanduiding onder het rondje meteen bijwerkt.
+    pairStap = 0; setPairStap(1);
+    const kop = $('connText');
+    setParentStatus(isRetry && kop && kop.textContent ? kop.textContent : T('connecting'));
     if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     peer = new Peer(peerOptions());
     peer.on('open', () => {
