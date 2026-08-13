@@ -72,6 +72,20 @@ const SLOOP = `
   // prototype, dus daar moet hij weg — niet van het navigator-object zelf.
   if (window.Navigator) weg(Navigator.prototype, 'getBattery');
   weg(navigator, 'getBattery');
+  // Alle RTCPeerConnections onthouden zodat de test kan meten wat er
+  // werkelijk binnenkomt (bytes audio/video), los van wat het scherm toont.
+  (function () {
+    var O = window.RTCPeerConnection;
+    if (!O) return;
+    window.__pcs = [];
+    var W = function () {
+      var pc = new (Function.prototype.bind.apply(O, [null].concat([].slice.call(arguments))))();
+      window.__pcs.push(pc);
+      return pc;
+    };
+    W.prototype = O.prototype;
+    window.RTCPeerConnection = W;
+  })();
   // Vastleggen DAT er gesloopt is. De app mag ontbrekende functies zelf
   // aanvullen (dat is precies de bedoeling), dus achteraf meten of ze weg
   // zijn bewijst niets — deze vlag wel.
@@ -153,19 +167,57 @@ function findExecutable() {
   check('QR-code is opgebouwd via replaceChildren (' + JSON.stringify(qr) + ')',
         qr.gevonden && qr.afbeelding && qr.bron.indexOf('data:image') === 0);
 
+  // Koppelen zoals bij een echte QR-scan: de ouderunit opent de deeplink uit
+  // de QR-code als VERSE PAGINA. Dat is een ander pad dan de code intypen —
+  // er is geen tikje van de gebruiker vooraf, en het token zit in de hash.
+  // De QR ECHT uitlezen, met dezelfde decoder die de app zelf gebruikt om te
+  // scannen. Zo testen we niet alleen het koppelen maar ook of die QR-code
+  // leesbaar is — precies wat de telefoon van de gebruiker doet.
+  const qrUrl = await baby.evaluate(() => new Promise((res) => {
+    const img = document.querySelector('#babyQR img');
+    if (!img || typeof jsQR !== 'function') return res('');
+    const klaar = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const g = c.getContext('2d');
+        g.imageSmoothingEnabled = false;
+        g.drawImage(img, 0, 0);
+        const d = g.getImageData(0, 0, c.width, c.height);
+        const r = jsQR(d.data, c.width, c.height);
+        res(r && r.data ? r.data : '');
+      } catch (e) { res(''); }
+    };
+    if (img.complete && img.naturalWidth) klaar(); else img.onload = klaar;
+  }));
+  check('QR-code is uitleesbaar en bevat code + token (' +
+        (qrUrl ? qrUrl.replace(/^https?:\/\/[^#]*/, '…') : 'NIET LEESBAAR') + ')',
+        !!qrUrl && qrUrl.indexOf('#') > -1 && qrUrl.split('#')[1].indexOf('.') > 0);
   const parent = await (await mk()).newPage();
   parent.on('pageerror', (e) => errs.push('PARENT: ' + e.message));
-  await parent.goto(BASE); await sleep(400);
-  await parent.click('#pickParent');
-  await parent.fill('#parentOfferInput', code);
-  await parent.click('#parentGenBtn');
+  // Als de app de koppel-URL niet blootgeeft, bouwen we hem uit code + token
+  // net zoals de QR dat doet.
+  // De QR wijst naar het echte domein; voor de test naar onze lokale server.
+  const doel = qrUrl ? BASE + '#' + qrUrl.split('#')[1] : BASE + '#' + code;
+  await parent.goto(doel);
+  await sleep(600);
+  const autoBezig = await parent.evaluate(() => {
+    const p = document.getElementById('screenPairParent');
+    const pc = document.getElementById('parentConnecting');
+    return { koppelscherm: !!p && !p.classList.contains('hidden'), bezig: !!pc && !pc.classList.contains('hidden') };
+  });
+  // Niet op het exacte moment vastpinnen: bij een snelle koppeling is het
+  // koppelscherm alweer weg. Wat telt is dat er beeld komt (verderop).
+  console.log('   (deeplink geopend, tussenstand: ' + JSON.stringify(autoBezig) + ')');
   let gevraagd = false;
   for (let i = 0; i < 40; i++) {
     const v = await baby.evaluate(() => { const b = document.getElementById('babyApproval'); return !!b && !b.classList.contains('hidden'); });
     if (v) { gevraagd = true; await baby.click('#btnApproveYes'); break; }
     await sleep(250);
   }
-  check('Toestemmingsvraag verschijnt en is te bedienen', gevraagd);
+  // Met een geldig token in de QR hoort de babyunit NIET om toestemming te
+  // vragen; dat is juist het verschil met een ingetypte code.
+  check('QR-koppeling vraagt GEEN toestemming (token is het bewijs)', !gevraagd);
 
   let w = 0;
   for (let i = 0; i < 60; i++) { w = await parent.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0); if (w > 0) break; await sleep(300); }
@@ -189,6 +241,32 @@ function findExecutable() {
   });
   check('Ouderunit toont een videovenster met hoogte (' + JSON.stringify(ouderVenster) + ')',
         ouderVenster.gevonden && ouderVenster.h > 80);
+
+  // Komt er ECHT geluid door? De versterkingstrap op de babyunit stuurt een
+  // bewerkt spoor; op oude WebKit kan dat stilte opleveren. Beeld zonder
+  // geluid is voor een babyfoon waardeloos, dus dit apart meten.
+  const audio1 = await parent.evaluate(async () => {
+    const pcs = window.__pcs || [];
+    let b = 0;
+    for (const pc of pcs) {
+      if (!pc.getStats) continue;
+      const st = await pc.getStats();
+      st.forEach((r) => { if (r.type === 'inbound-rtp' && r.kind === 'audio' && r.bytesReceived) b += r.bytesReceived; });
+    }
+    return b;
+  });
+  await sleep(3000);
+  const audio2 = await parent.evaluate(async () => {
+    const pcs = window.__pcs || [];
+    let b = 0;
+    for (const pc of pcs) {
+      if (!pc.getStats) continue;
+      const st = await pc.getStats();
+      st.forEach((r) => { if (r.type === 'inbound-rtp' && r.kind === 'audio' && r.bytesReceived) b += r.bytesReceived; });
+    }
+    return b;
+  });
+  check('Ouderunit ontvangt doorlopend geluid (' + audio1 + ' → ' + audio2 + ' bytes)', audio2 > audio1 + 500);
 
   const lijst = await parent.$$eval('#playlist .track', (e) => e.length).catch(() => 0);
   check('Afspeellijst is opgebouwd (' + lijst + ' nummers, gebruikt replaceChildren)', lijst > 0);

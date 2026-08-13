@@ -475,9 +475,33 @@
     if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
     clearAuthWatchdog();
   }
+  // Koppelen bestaat uit vijf stappen. Bleef de ouderunit hangen, dan zag je
+  // alleen een draaiend rondje en was niet te achterhalen wáár het misging.
+  // De stap wordt daarom achter de statustekst gezet — puur als cijfer, dus
+  // in elke taal leesbaar zonder vertaling.
+  //   1 aanmelden bij de koppelserver
+  //   2 kanaal openen naar de babyunit
+  //   3 legitimeren (hallo verstuurd)
+  //   4 wachten op akkoord van de babyunit
+  //   5 wachten op beeld en geluid
+  const PAIR_STAPPEN = 5;
+  let pairStap = 0;
+  let pairStapTijd = 0;
+  function setPairStap(n) {
+    if (n <= pairStap) return;
+    pairStap = n;
+    pairStapTijd = Date.now();
+  }
   function setParentStatus(txt) {
+    // De kop houdt de kale status (en bij herverbinden de pogingenteller).
     const el = $('connText'); if (el) el.textContent = txt;
-    const ph = $('phText'); if (ph) ph.textContent = txt;
+    // De tekst ónder het draaiende rondje krijgt de stap erbij. Daar kijkt de
+    // gebruiker naar als het hangt, en daar botst het niet met de teller.
+    const ph = $('phText');
+    if (ph) {
+      ph.textContent = (role === 'parent' && pairStap > 0 && pairStap < PAIR_STAPPEN)
+        ? txt + ' · ' + pairStap + '/' + PAIR_STAPPEN : txt;
+    }
   }
   function setPlaceholderSpinner(on) {
     const sp = document.querySelector('#placeholder .spinner');
@@ -645,6 +669,7 @@
     if (msg && msg.cmd === 'authOk') {
       if (role === 'parent') {
         mark('authOk');
+        setPairStap(5);
         if (msg.token) parentToken = String(msg.token);
         // Pas nu staat de verbinding er echt: de babyunit heeft ons toegelaten.
         clearAuthWatchdog();
@@ -752,6 +777,23 @@
 
   // ------------------------------------------------------------------ koppelen: baby
   let babyBrokerAttempt = 0;
+  // Toont of de babyunit op dit moment te koppelen is. Is hij dat niet, dan
+  // wordt de QR-code doorzichtig en verschijnt de bekende "verbinding kwijt"-
+  // melding: dan hoef je niet te scannen, want er kan niets aankomen.
+  function toonBabyKoppelbaar(ok) {
+    const qr = $('babyQR');
+    if (qr) {
+      qr.style.opacity = ok ? '' : '0.25';
+      qr.style.filter = ok ? '' : 'grayscale(1)';
+    }
+    const w = $('babyWaiting');
+    if (w) {
+      const tekst = w.querySelector('span[data-i18n]');
+      if (tekst) tekst.textContent = ok ? T('waitingConnection') : T('connectionLost');
+      w.classList.toggle('warn', !ok);
+    }
+  }
+
   function openBabyPeer() {
     if (peer) { try { peer.destroy(); } catch (e) {} }
     const code = makeCode(6);
@@ -761,6 +803,7 @@
     peer = new Peer(PEER_PREFIX + code, peerOptions());
     peer.on('open', () => {
       babyBrokerAttempt = 0;
+      toonBabyKoppelbaar(true);
       $('babyCodeText').textContent = code;
       $('babyOfferCode').value = code;
       // De QR draagt code + token; het invoerveld toont alleen de korte code.
@@ -787,6 +830,10 @@
       // Broker kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
       // kamercode geldig blijft en de ouderunit kan herverbinden.
       if (shuttingDown) return;
+      // Zolang de babyunit niet bij de koppelserver is aangemeld, is zijn
+      // QR-code onbruikbaar: een ouderunit die hem scant blijft dan eindeloos
+      // draaien zonder dat iemand weet waarom. Dat moet zichtbaar zijn.
+      toonBabyKoppelbaar(false);
       const d = RECONNECT_DELAYS[Math.min(babyBrokerAttempt++, RECONNECT_DELAYS.length - 1)];
       setTimeout(() => { if (!shuttingDown) { try { peer.reconnect(); } catch (e) {} } }, d);
     });
@@ -1061,17 +1108,21 @@
       else connectFailed();
     }, CONNECT_TIMEOUT);
     const babyId = currentBabyId;
+    pairStap = 0; setPairStap(1); setParentStatus(T('connecting'));
     peer = new Peer(peerOptions());
     peer.on('open', () => {
       mark('peerOpen');
+      setPairStap(2); setParentStatus(T('connecting'));
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
         mark('connOpen');
+        setPairStap(3); setParentStatus(T('connecting'));
         // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
         // de babyunit eerst toestemming op het eigen scherm.
         try { conn.send({ cmd: 'hello', token: parentToken, device: deviceId }); } catch (e) {}
         mark('helloSent');
+        setPairStap(4);
         // Nog niet klaar: connectSucceeded() volgt pas bij 'authOk' van de
         // babyunit. Tot dan bewaakt de watchdog of dat antwoord echt komt.
         startAuthWatchdog(isRetry);
