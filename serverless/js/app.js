@@ -659,7 +659,15 @@
       if (loopt) {
         mediaBevestigd = true;
         mediaPogingen = 0;
-        setPlaceholderSpinner(false);
+        // NIET setPlaceholderSpinner(false) gebruiken: die functie hoort bij de
+        // FAALSTAND en haalt daarbij de retry-knop tevoorschijn. Bij succes
+        // moet juist alles weg. Deed ik dat wel, dan stond de retry-knop na een
+        // geslaagde verbinding als "zichtbaar" gemarkeerd — voor de gebruiker
+        // onzichtbaar omdat het hele vak verborgen is, maar de toestand klopte
+        // niet en bij een latere wegval dook hij meteen op.
+        const sp = document.querySelector('#placeholder .spinner');
+        if (sp) sp.classList.add('hidden');
+        const rb = $('phRetry'); if (rb) rb.classList.add('hidden');
         const ph = $('placeholder'); if (ph) ph.classList.add('hidden');
         stopMediaWatchdog();
         return;
