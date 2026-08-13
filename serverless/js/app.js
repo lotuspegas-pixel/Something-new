@@ -14,9 +14,48 @@
   // verkeer (DTLS-SRTP) en kan niet meekijken. Het gratis Open Relay
   // Project is de best-effort standaard; vervang voor productie door een
   // eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
+  // Eigen doorgeefserver instellen zonder de code aan te raken: leg een
+  // bestand turn.json naast index.html met de vorm
+  //   { "iceServers": [ { "urls": "turn:jouwserver:3478",
+  //                       "username": "...", "credential": "..." } ] }
+  // Zonder zo'n bestand blijven de standaardservers gelden. Dit wordt vroeg
+  // geladen; de eerste koppelpoging wacht er kort op (zie wachtOpIce).
+  let iceGeladen = false;
+  let iceWacht = null;
+  function laadEigenIce() {
+    if (iceWacht) return iceWacht;
+    iceWacht = new Promise((klaar) => {
+      let af = false;
+      const stop = () => { if (!af) { af = true; iceGeladen = true; klaar(); } };
+      setTimeout(stop, 2500); // nooit langer wachten dan dit
+      try {
+        fetch('turn.json', { cache: 'no-store' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => {
+            if (j && Array.isArray(j.iceServers) && j.iceServers.length) {
+              ICE.length = 0;
+              j.iceServers.forEach((x) => ICE.push(x));
+            }
+            stop();
+          })
+          .catch(stop);
+      } catch (e) { stop(); }
+    });
+    return iceWacht;
+  }
+
   const ICE = window.BABYFOON_ICE ||
     [
-        { urls: 'stun:stun.l.google.com:19302' },
+        // Meerdere STUN-servers: met één server is dat een enkelvoudig
+        // faalpunt. Wordt er geen enkele bereikt, dan kent een toestel zijn
+        // eigen publieke adres niet en lukt koppelen alleen binnen hetzelfde
+        // netwerk.
+        { urls: [
+          'stun:stun.l.google.com:19302',
+          'stun:stun1.l.google.com:19302',
+          'stun:stun.cloudflare.com:3478',
+          'stun:stun.nextcloud.com:443',
+        ] },
         {
           urls: [
             'turn:openrelay.metered.ca:80',
@@ -511,7 +550,12 @@
   // Expliciete mislukt-status in plaats van eindeloos "Verbinden…".
   function connectFailed(msgKey) {
     clearConnectTimers();
-    const msg = T(msgKey || 'connectFailed');
+    stopMediaWatchdog();
+    // Netwerkdiagnose erbij: zonder 'relay' in de lijst is er geen
+    // doorgeefserver beschikbaar, en dan lukt koppelen alleen als beide
+    // toestellen elkaar rechtstreeks kunnen bereiken.
+    const diag = ' [' + netwerkDiagnose() + ' · ' + pairStap + '/' + PAIR_STAPPEN + ']';
+    const msg = T(msgKey || 'connectFailed') + diag;
     const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
     const err = $('parentError');
     if (err) { err.textContent = msg; err.classList.remove('hidden'); }
@@ -561,6 +605,76 @@
       scheduleParentReconnect();
     }, wacht);
   }
+  // ---- bewaking van de MEDIAverbinding (ouderunit) -----------------------
+  // Het datakanaal en de beeld/geluid-verbinding zijn twee losse verbindingen
+  // met elk hun eigen onderhandeling. Lukt de eerste wel en de tweede niet,
+  // dan meldt de app zich "verbonden" terwijl er nooit beeld komt: de hartslag
+  // kijkt namelijk alleen naar het datakanaal, ziet niets mis, en dus volgt er
+  // geen nieuwe poging en geen foutmelding. Precies het gemelde geval
+  // "verbinding gelegd maar geen beeld en geluid".
+  const MEDIA_WACHT = window.BABYFOON_MEDIA_WACHT || 9000;
+  const MEDIA_POGINGEN = 3;
+  let mediaTimer = null;
+  let mediaPogingen = 0;
+  let mediaBevestigd = false;
+  let vorigeMediaBytes = -1;
+
+  function stopMediaWatchdog() {
+    if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
+  }
+  function mediaKomtBinnen() {
+    // Beeld dat écht loopt: afmetingen én oplopende bytes.
+    const v = $('video');
+    return !!(v && v.videoWidth > 0);
+  }
+  function startMediaWatchdog() {
+    if (role !== 'parent') return;
+    stopMediaWatchdog();
+    mediaBevestigd = false;
+    vorigeMediaBytes = -1;
+    const begin = Date.now();
+    mediaTimer = setInterval(async () => {
+      if (shuttingDown || role !== 'parent') { stopMediaWatchdog(); return; }
+      // Zolang er geen goedkeuring is, is wachten normaal.
+      if (!linkApproved) return;
+      let bytes = 0;
+      if (mediaPc && mediaPc.getStats) {
+        try {
+          const st = await mediaPc.getStats();
+          st.forEach((r) => {
+            if (r.type === 'inbound-rtp' && (r.kind === 'video' || r.kind === 'audio') && r.bytesReceived) bytes += r.bytesReceived;
+          });
+        } catch (e) {}
+      }
+      const loopt = mediaKomtBinnen() && bytes > vorigeMediaBytes;
+      if (loopt) {
+        mediaBevestigd = true;
+        mediaPogingen = 0;
+        setPlaceholderSpinner(false);
+        const ph = $('placeholder'); if (ph) ph.classList.add('hidden');
+        stopMediaWatchdog();
+        return;
+      }
+      vorigeMediaBytes = bytes;
+      if (Date.now() - begin < MEDIA_WACHT) return;
+      // Te lang niets. Vraag de babyunit het beeld opnieuw te sturen; dat is
+      // veel lichter dan de hele verbinding opnieuw opbouwen.
+      if (mediaPogingen < MEDIA_POGINGEN) {
+        mediaPogingen++;
+        setParentStatus(T('connecting'));
+        sendControl({ cmd: 'recall' });
+        // klok opnieuw laten lopen voor de volgende poging
+        stopMediaWatchdog();
+        setTimeout(() => { if (!shuttingDown && !mediaBevestigd) startMediaWatchdog(); }, 500);
+        return;
+      }
+      // Opgegeven: dít is een echte fout en hoort niet als eindeloos rondje
+      // te blijven staan.
+      stopMediaWatchdog();
+      connectFailed('connectFailed');
+    }, 3000);
+  }
+
   function connectSucceeded() {
     clearAuthWatchdog();
     clearConnectTimers();
@@ -582,7 +696,33 @@
   // (wifi weg, batterij leeg, browser gedood) soms uit. Daarom bewaken we
   // ook de onderliggende RTCPeerConnection-status…
   const ICE_GRACE = window.BABYFOON_ICE_GRACE || 8000;
+  // Onthoudt welke soorten netwerkpaden gevonden zijn. Bij een mislukte
+  // koppeling is dat het verschil tussen "de app is stuk" en "dit netwerk
+  // laat geen directe verbinding toe":
+  //   host  = zelfde netwerk
+  //   srflx = eigen publieke adres bekend (via STUN)
+  //   relay = via een doorgeefserver (TURN) — nodig bij streng afgeschermde
+  //           netwerken en bij veel mobiele providers
+  const kandidaatSoorten = {};
+  function volgKandidaten(pc) {
+    if (!pc || pc.__bfKand) return;
+    pc.__bfKand = true;
+    try {
+      pc.addEventListener('icecandidate', (e) => {
+        if (!e.candidate || !e.candidate.candidate) return;
+        const m = /typ (\w+)/.exec(e.candidate.candidate);
+        if (m) kandidaatSoorten[m[1]] = (kandidaatSoorten[m[1]] || 0) + 1;
+      });
+    } catch (e) {}
+  }
+  function netwerkDiagnose() {
+    const s = Object.keys(kandidaatSoorten);
+    if (!s.length) return 'host:0';
+    return s.map((k) => k + ':' + kandidaatSoorten[k]).join(' ');
+  }
+
   function watchMediaPc(pc) {
+    volgKandidaten(pc);
     if (!pc || pc.__bfWatched) return;
     pc.__bfWatched = true;
     pc.addEventListener('connectionstatechange', () => {
@@ -675,6 +815,8 @@
         clearAuthWatchdog();
         connectSucceeded();
         linkApproved = true;
+        mediaPogingen = 0;
+        startMediaWatchdog();
         // Alleen als er vóór de herverbinding werd teruggepraat gaat de
         // microfoon weer open; anders blijft hij dicht (zie ensureMic).
         if (talking) ensureMic().then((s) => { if (s) startTalkback(); });
@@ -712,6 +854,11 @@
         }
         case 'talk':
           setBabyDuplex(!!msg.on);
+          break;
+        case 'recall':
+          // De ouderunit ziet geen beeld. Nieuwe media-oproep opzetten; de
+          // oude verbinding kan stilletjes gesneuveld zijn.
+          hercallOuder();
           break;
         case 'flip':
           babyCycleCamera();
@@ -794,7 +941,8 @@
     }
   }
 
-  function openBabyPeer() {
+  async function openBabyPeer() {
+    if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     if (peer) { try { peer.destroy(); } catch (e) {} }
     const code = makeCode(6);
     currentCode = code;
@@ -1109,6 +1257,7 @@
     }, CONNECT_TIMEOUT);
     const babyId = currentBabyId;
     pairStap = 0; setPairStap(1); setParentStatus(T('connecting'));
+    if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     peer = new Peer(peerOptions());
     peer.on('open', () => {
       mark('peerOpen');
@@ -2264,6 +2413,28 @@
     await attachVideoTrack(nt, sender);
     return true;
   }
+  // Nieuwe media-oproep naar de al toegelaten ouderunit. Wordt aangeroepen als
+  // die meldt dat er geen beeld binnenkomt. De oude oproep wordt eerst netjes
+  // gesloten, anders blijven er twee verbindingen naast elkaar staan.
+  let hercallBezig = false;
+  async function hercallOuder() {
+    if (role !== 'baby' || hercallBezig || shuttingDown) return;
+    if (!approvedPeer || !localStream || !peer) return;
+    hercallBezig = true;
+    try {
+      if (mediaPc) { try { mediaPc.close(); } catch (e) {} mediaPc = null; }
+      const call = peer.call(approvedPeer, localStream, CALL_OPTS);
+      if (call) {
+        mediaPc = call.peerConnection || mediaPc;
+        watchMediaPc(mediaPc);
+        setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
+      }
+    } catch (e) {
+    } finally {
+      setTimeout(() => { hercallBezig = false; }, 2000);
+    }
+  }
+
   // Herstel van camera/microfoon als het besturingssysteem het spoor hard
   // beëindigt (bv. na lang op de achtergrond of scherm-uit op sommige
   // toestellen) — dezelfde aanpak als flipCamera(), maar automatisch
@@ -2589,6 +2760,8 @@
   // De QR bevat "#CODE.token": de korte kamercode plus het toegangstoken.
   // Een oudere QR (alleen "#CODE") blijft ook werken; dan vraagt de babyunit
   // om toestemming, precies zoals bij handmatig intypen.
+  laadEigenIce();
+
   (function autoJoinFromHash() {
     const h = (location.hash || '').replace(/^#/, '').trim();
     if (!h) return;

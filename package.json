@@ -13,7 +13,8 @@
     "test:timing": "node test/e2e-timing.js",
     "build": "node build.js",
     "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'",
-    "test:oldbrowser": "node test/e2e-oldbrowser.js"
+    "test:oldbrowser": "node test/e2e-oldbrowser.js",
+    "test:media": "node test/e2e-media.js"
   },
   "engines": {
     "node": ">=18"

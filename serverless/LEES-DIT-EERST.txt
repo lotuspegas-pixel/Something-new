@@ -84,6 +84,44 @@ GOED OM TE WETEN
 - Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
   index.html is bewust één zelfstandig bestand.
 
+VERBINDING GARANDEREN OP ELK NETWERK (turn.json)
+------------------------------------------------
+Beeld en geluid gaan rechtstreeks tussen de twee toestellen. Dat lukt bijna
+altijd als beide op hetzelfde wifi-netwerk zitten. Zit het ene toestel op
+mobiel internet en het andere op wifi, of schermt het netwerk toestellen van
+elkaar af (gastennetwerk, hotel, kantoor), dan is er een doorgeefserver
+nodig. Zo'n server heet een TURN-server.
+
+De app heeft een gratis openbare TURN-server ingebouwd, maar die is niet
+betrouwbaar: hij is vaak overbelast of tijdelijk uit de lucht. Merk je dat
+koppelen soms niet lukt terwijl beide toestellen goed internet hebben, dan
+is dit meestal de oorzaak.
+
+Je kunt je eigen server instellen ZONDER de app aan te passen. Zet naast
+index.html een bestand met de naam turn.json:
+
+  {
+    "iceServers": [
+      { "urls": "stun:stun.l.google.com:19302" },
+      { "urls": "turn:jouwserver.nl:3478",
+        "username": "gebruiker",
+        "credential": "wachtwoord" }
+    ]
+  }
+
+Staat dat bestand er niet, dan blijft de standaardinstelling gelden.
+
+Waar haal je zo'n server?
+- Metered.ca en Twilio bieden TURN als dienst; er is meestal een gratis
+  startpakket dat voor thuisgebruik ruim voldoende is.
+- Cloudflare biedt TURN aan binnen zijn Realtime-dienst.
+- Zelf draaien kan met coturn op een kleine VPS.
+
+Zonder eigen TURN-server werkt de babyfoon prima zolang beide toestellen op
+hetzelfde wifi-netwerk zitten. Voor kijken via mobiel internet is een eigen
+server het verschil tussen "meestal" en "altijd".
+
+
 CONTACTFORMULIER
 ----------------
 Op contact.html staat een formulier dat rechtstreeks mailt naar

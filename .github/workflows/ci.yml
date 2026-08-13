@@ -51,3 +51,6 @@ jobs:
 
       - name: E2E — oude browsers (API's van Safari 12 gesloopt)
         run: npm run test:oldbrowser
+
+      - name: E2E — mediaverbinding valt weg terwijl datakanaal blijft
+        run: npm run test:media
