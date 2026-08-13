@@ -526,21 +526,30 @@
   const PAIR_STAPPEN = 5;
   let pairStap = 0;
   let pairStapTijd = 0;
+  let laatsteStatus = '';
   function setPairStap(n) {
     if (n <= pairStap) return;
     pairStap = n;
     pairStapTijd = Date.now();
+    // Alleen het stapachtervoegsel bijwerken. De statustekst zelf hoort bij de
+    // verbindingslogica: die zet er bij een herverbinding "Opnieuw verbinden…
+    // (2/5)" neer, en dat mag een stapwissel niet wegvegen. Dat gebeurde
+    // eerder wél, waardoor die mededeling na ruim 400 ms verdween — te kort
+    // om betrouwbaar te zien, en precies de reden dat de CI-controle er soms
+    // wel en soms niet op aansloeg.
+    if (laatsteStatus) toonStatus(laatsteStatus);
   }
-  function setParentStatus(txt) {
-    // De kop houdt de kale status (en bij herverbinden de pogingenteller).
+  function toonStatus(txt) {
     const el = $('connText'); if (el) el.textContent = txt;
-    // De tekst ónder het draaiende rondje krijgt de stap erbij. Daar kijkt de
-    // gebruiker naar als het hangt, en daar botst het niet met de teller.
     const ph = $('phText');
     if (ph) {
       ph.textContent = (role === 'parent' && pairStap > 0 && pairStap < PAIR_STAPPEN)
         ? txt + ' · ' + pairStap + '/' + PAIR_STAPPEN : txt;
     }
+  }
+  function setParentStatus(txt) {
+    laatsteStatus = txt;
+    toonStatus(txt);
   }
   function setPlaceholderSpinner(on) {
     const sp = document.querySelector('#placeholder .spinner');
@@ -1260,19 +1269,19 @@
     // herverbinding staat daar "Opnieuw verbinden… (2/5)" en die mededeling is
     // voor de gebruiker belangrijker dan "Verbinden…". Wel opnieuw doorgeven,
     // zodat de stapaanduiding onder het rondje meteen bijwerkt.
-    pairStap = 0; setPairStap(1);
-    const kop = $('connText');
-    setParentStatus(isRetry && kop && kop.textContent ? kop.textContent : T('connecting'));
+    pairStap = 0;
+    if (!isRetry) setParentStatus(T('connecting'));
+    setPairStap(1);
     if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     peer = new Peer(peerOptions());
     peer.on('open', () => {
       mark('peerOpen');
-      setPairStap(2); setParentStatus(T('connecting'));
+      setPairStap(2);
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
         mark('connOpen');
-        setPairStap(3); setParentStatus(T('connecting'));
+        setPairStap(3);
         // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
         // de babyunit eerst toestemming op het eigen scherm.
         try { conn.send({ cmd: 'hello', token: parentToken, device: deviceId }); } catch (e) {}
