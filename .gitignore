@@ -13,3 +13,8 @@ dist/
 
 # Delivery artifacts
 *.zip
+
+# Tijdelijke werkkopieën van achtergrond-agents. Dit zijn volledige
+# kopieën van de repo die automatisch worden opgeruimd; ze horen nooit
+# meegecommit te worden.
+.claude/worktrees/
