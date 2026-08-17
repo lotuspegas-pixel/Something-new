@@ -54,3 +54,9 @@ jobs:
 
       - name: E2E — mediaverbinding valt weg terwijl datakanaal blijft
         run: npm run test:media
+
+      - name: E2E — auditbevindingen (gedrag en weergave)
+        run: npm run test:audit
+
+      - name: Vertalingen compleet in alle 30 talen
+        run: npm run test:i18n
