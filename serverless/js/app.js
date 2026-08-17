@@ -1507,17 +1507,59 @@
       analyser = null;
     }
   }
+  // ---- niveaumeting zonder AudioContext ----------------------------------
+  // De balkjesmeter las het niveau uit een AudioContext. Die mag pas starten
+  // ná een tik van de gebruiker — en wie via de QR-code binnenkomt, tikt
+  // nergens op. Dan blijft die context slapen en staat de meter dood stil.
+  // WebRTC levert het geluidsniveau echter ook rechtstreeks, zonder context.
+  // Dat is nu de terugval; lukt de context later alsnog, dan wint die weer
+  // want die meet fijner.
+  function niveauViaWebRTC() {
+    if (!mediaPc || !mediaPc.getReceivers) return null;
+    try {
+      const r = mediaPc.getReceivers().find((x) => x.track && x.track.kind === 'audio');
+      if (!r || !r.getSynchronizationSources) return null;
+      const bronnen = r.getSynchronizationSources();
+      if (!bronnen || !bronnen.length) return null;
+      let hoogste = 0;
+      for (const b of bronnen) if (typeof b.audioLevel === 'number' && b.audioLevel > hoogste) hoogste = b.audioLevel;
+      // audioLevel loopt van 0 tot 1 maar zit in de praktijk laag; zelfde
+      // schaling als de contextmeting zodat de balkjes gelijk uitslaan.
+      return Math.min(100, Math.round(hoogste * 300));
+    } catch (e) { return null; }
+  }
+
+  // Zodra de gebruiker ergens tikt mag de AudioContext alsnog starten. Eén
+  // keer koppelen is genoeg; daarna gaat de fijnere meting vanzelf werken.
+  (function wekAudioBijTik() {
+    const wek = () => {
+      try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+    };
+    ['pointerdown', 'touchstart', 'keydown'].forEach((ev) => {
+      document.addEventListener(ev, wek, { passive: true });
+    });
+  })();
+
   const meterBuf = new Uint8Array(256);
   let amBars = [];
   let soundEventCooldown = 0;
   function meterLoop() {
     let level = 0;
-    if (analyser) {
+    let gemeten = false;
+    // Eerst de fijne meting, maar alleen als de context echt loopt: een
+    // slapende context geeft stilte terug en dat is niet te onderscheiden
+    // van een stille kamer.
+    if (analyser && audioCtx && audioCtx.state === 'running') {
       const n = analyser.fftSize / 2;
       analyser.getByteTimeDomainData(meterBuf.subarray(0, n));
       let sum = 0;
       for (let i = 0; i < n; i++) { const v = (meterBuf[i] - 128) / 128; sum += v * v; }
       level = Math.min(100, Math.round(Math.sqrt(sum / n) * 300));
+      gemeten = true;
+    }
+    if (!gemeten && role === 'parent') {
+      const viaRtc = niveauViaWebRTC();
+      if (viaRtc !== null) level = viaRtc;
     }
     for (let i = 0; i < vuBars.length; i++) {
       const h = Math.max(0.12, Math.min(1, (level / 100) * (0.7 + Math.random() * 0.6)));
