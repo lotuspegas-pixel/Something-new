@@ -211,7 +211,45 @@
   let micChain = null;   // { src, gain, comp, dest, uit, ruw }
   let micGainTimer = null;
 
-  function bouwMicKeten(ruwSpoor) {
+  // Alle beschikbare microfoons openen en samen laten meeluisteren. Een
+  // telefoon of tablet heeft er meestal meerdere (onder, boven, soms achter);
+  // de browser opent er standaard één. Door ze allemaal te openen en bij
+  // elkaar op te tellen wordt geluid uit de hele kamer opgepikt in plaats van
+  // alleen uit de richting van die ene microfoon.
+  //
+  // Niet elk toestel staat dit toe: iOS geeft vaak maar één ingang vrij, en
+  // sommige toestellen weigeren een tweede opname zodra er al één loopt. Elke
+  // extra microfoon is daarom optioneel — mislukt hij, dan gaan we door met wat
+  // we hebben. Er is altijd minstens de eerste.
+  let extraMicStreams = [];
+  async function openExtraMicrofoons(alGeopendSpoor) {
+    stopExtraMicrofoons();
+    const uit = [];
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return uit;
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const ingangen = devs.filter((d) => d.kind === 'audioinput' && d.deviceId && d.deviceId !== 'default');
+      if (ingangen.length < 2) return uit;
+      let huidigId = '';
+      try { if (alGeopendSpoor && alGeopendSpoor.getSettings) huidigId = alGeopendSpoor.getSettings().deviceId || ''; } catch (e) {}
+      for (const d of ingangen) {
+        if (d.deviceId === huidigId) continue;
+        try {
+          const st = await getMedia({ audio: Object.assign({ deviceId: { exact: d.deviceId } }, MIC_MONITOR), video: false });
+          const t = st.getAudioTracks()[0];
+          if (t) { extraMicStreams.push(st); uit.push(t); }
+          else { try { st.getTracks().forEach((x) => x.stop()); } catch (e) {} }
+        } catch (e) { /* deze microfoon kan niet mee; geen probleem */ }
+      }
+    } catch (e) {}
+    return uit;
+  }
+  function stopExtraMicrofoons() {
+    try { extraMicStreams.forEach((st) => st.getTracks().forEach((t) => t.stop())); } catch (e) {}
+    extraMicStreams = [];
+  }
+
+  function bouwMicKeten(ruwSpoor, extraSporen) {
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC || !ruwSpoor) return null;
@@ -220,6 +258,17 @@
       if (!audioCtx.createMediaStreamDestination || !audioCtx.createDynamicsCompressor) return null;
       const src = audioCtx.createMediaStreamSource(new MediaStream([ruwSpoor]));
       const gain = audioCtx.createGain();
+      // Elke extra microfoon komt op dezelfde versterkingstrap binnen. Ze
+      // worden bij elkaar opgeteld, dus geluid uit welke hoek dan ook komt
+      // door. De begrenzer verderop vangt op dat de som luider is dan één
+      // microfoon alleen.
+      const extraBronnen = [];
+      (extraSporen || []).forEach((t) => {
+        try {
+          const b = audioCtx.createMediaStreamSource(new MediaStream([t]));
+          extraBronnen.push(b);
+        } catch (e) {}
+      });
       gain.gain.value = MIC_GAIN_START;
       const comp = audioCtx.createDynamicsCompressor();
       // Begrenzer: pas laat ingrijpen, dan stevig. Zo blijft zacht geluid
@@ -230,10 +279,12 @@
       comp.attack.value = 0.005;
       comp.release.value = 0.25;
       const dest = audioCtx.createMediaStreamDestination();
-      src.connect(gain); gain.connect(comp); comp.connect(dest);
+      src.connect(gain);
+      extraBronnen.forEach((b) => { try { b.connect(gain); } catch (e) {} });
+      gain.connect(comp); comp.connect(dest);
       const uit = dest.stream.getAudioTracks()[0];
       if (!uit) return null;
-      return { src: src, gain: gain, comp: comp, dest: dest, uit: uit, ruw: ruwSpoor };
+      return { src: src, extra: extraBronnen, gain: gain, comp: comp, dest: dest, uit: uit, ruw: ruwSpoor };
     } catch (e) { return null; }
   }
 
@@ -241,6 +292,7 @@
     if (micGainTimer) { clearInterval(micGainTimer); micGainTimer = null; }
     if (!micChain) return;
     try { micChain.src.disconnect(); } catch (e) {}
+    try { (micChain.extra || []).forEach((b) => b.disconnect()); } catch (e) {}
     try { micChain.gain.disconnect(); } catch (e) {}
     try { micChain.comp.disconnect(); } catch (e) {}
     micChain = null;
@@ -249,12 +301,13 @@
   // Vervangt het audiospoor van een opgenomen stream door de versterkte versie.
   // Lukt dat niet (oude WebKit kan hier stilte geven), dan blijft het ruwe
   // spoor gewoon staan — liever onversterkt dan niets.
-  function versterkMic(stream) {
+  async function versterkMic(stream) {
     if (!stream || !stream.getAudioTracks) return stream;
     const ruw = stream.getAudioTracks()[0];
     if (!ruw) return stream;
     sloopMicKeten();
-    const keten = bouwMicKeten(ruw);
+    const extra = await openExtraMicrofoons(ruw);
+    const keten = bouwMicKeten(ruw, extra);
     if (!keten) return stream;
     micChain = keten;
     try {
@@ -476,6 +529,19 @@
     $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
     startParentDevice();
     startHeartbeat();
+    const qs = $('qualitySelect');
+    if (qs && !qs.__gekoppeld) {
+      qs.__gekoppeld = true;
+      qs.value = kwaliteitKeuze;
+      qs.addEventListener('change', () => { kwaliteitKeuze = qs.value; stuurKwaliteit(); });
+      // Netwerk kan onderweg wisselen (wifi naar 4G); daar meteen op reageren.
+      try {
+        const c = navigator.connection;
+        if (c && c.addEventListener) c.addEventListener('change', () => { if (kwaliteitKeuze === 'auto') stuurKwaliteit(); });
+      } catch (e) {}
+    }
+    stuurKwaliteit();
+
     sendControl({ cmd: 'ping' });
     sendControl({ cmd: 'getCaps' }); // camera-lijst + LED-ondersteuning opvragen
   }
@@ -791,6 +857,7 @@
     try { lullaby.stop(); } catch (e) {}
     try { if (localStream) localStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    try { stopExtraMicrofoons(); } catch (e) {}
     // even wachten zodat het afscheidsbericht het andere toestel nog haalt
     setTimeout(() => {
       try { if (peer) peer.destroy(); } catch (e) {}
@@ -872,6 +939,21 @@
         case 'talk':
           setBabyDuplex(!!msg.on);
           break;
+        case 'quality': {
+          const stand = String(msg.stand || 'hoog');
+          if (stand === 'geluid') {
+            babyZetVideo(false);
+          } else {
+            const nieuwProfiel = stand === 'zuinig' ? LICHT : (oudToestel() ? LICHT : ZWAAR);
+            const anders = nieuwProfiel !== camProfiel;
+            camProfiel = nieuwProfiel;
+            babyZetVideo(true);
+            // Alleen opnieuw openen als het profiel echt verandert; anders
+            // knippert het beeld nodeloos.
+            if (anders) verlaagCamera();
+          }
+          break;
+        }
         case 'recall':
           // De ouderunit ziet geen beeld. Nieuwe media-oproep opzetten; de
           // oude verbinding kan stilletjes gesneuveld zijn.
@@ -1217,7 +1299,7 @@
       });
       // Zachte geluiden hoorbaar maken vóór het verzenden. Lukt de
       // versterkingstrap niet, dan gaat het ruwe spoor gewoon mee.
-      versterkMic(localStream);
+      await versterkMic(localStream);
     } catch (e) {
       toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
       showScreen('screenSetup');
@@ -1507,6 +1589,46 @@
       analyser = null;
     }
   }
+  // ---- kwaliteitskeuze (ouderunit stuurt, babyunit voert uit) -------------
+  // De gebruiker kiest zelf wat past. "Automatisch" kijkt naar het netwerk van
+  // de OUDERUNIT, want daar zit de kijker en daar wordt de data verbruikt.
+  //   hoog    beeld + geluid, scherp
+  //   zuinig  beeld + geluid, kleiner beeld en minder beelden per seconde
+  //   geluid  alleen geluid, camera uit
+  // Let op: navigator.connection bestaat niet op iPhone en iPad. Daar kan
+  // "automatisch" het netwerk niet zien en kiest hij bewust beeld + geluid;
+  // wie op mobiel internet data wil sparen zet het daar zelf op zuinig of
+  // alleen geluid. Dat staat ook zo in de uitleg.
+  let kwaliteitKeuze = 'auto';
+  function netwerkSoort() {
+    try {
+      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (!c) return null;
+      return { effectief: c.effectiveType || null, spaarstand: !!c.saveData };
+    } catch (e) { return null; }
+  }
+  function bepaalKwaliteit() {
+    if (kwaliteitKeuze !== 'auto') return kwaliteitKeuze;
+    const n = netwerkSoort();
+    if (!n || !n.effectief) return 'hoog';       // onbekend (o.a. iOS): beeld aan
+    if (n.spaarstand) return 'geluid';
+    if (n.effectief === 'slow-2g' || n.effectief === '2g' || n.effectief === '3g') return 'geluid';
+    return 'hoog';
+  }
+  function toonKwaliteit(stand) {
+    const el = $('qualityNow');
+    if (!el) return;
+    const naam = stand === 'geluid' ? T('qualityAudio') : (stand === 'zuinig' ? T('qualitySaver') : T('qualityHigh'));
+    const n = netwerkSoort();
+    el.textContent = naam + (kwaliteitKeuze === 'auto' && n && n.effectief ? ' · ' + n.effectief : '');
+  }
+  function stuurKwaliteit() {
+    if (role !== 'parent') return;
+    const stand = bepaalKwaliteit();
+    toonKwaliteit(stand);
+    sendControl({ cmd: 'quality', stand: stand });
+  }
+
   // ---- niveaumeting zonder AudioContext ----------------------------------
   // De balkjesmeter las het niveau uit een AudioContext. Die mag pas starten
   // ná een tik van de gebruiker — en wie via de QR-code binnenkomt, tikt
@@ -2148,6 +2270,17 @@
   let babyStarted = false;
   let facing = 'environment';
   let micOn = true;
+  // Camera aan of uit op de babyunit. Staat bewust op modulniveau: behalve de
+  // knoppen op het toestel zelf gebruikt ook het kwaliteitscommando van de
+  // ouderunit dit (stand "alleen geluid" zet de camera uit).
+  function babyZetVideo(on) {
+    if (localStream) localStream.getVideoTracks().forEach((t) => (t.enabled = on));
+    const swCam = $('swCam'); if (swCam) swCam.classList.toggle('on', on);
+    const sc = $('bScreen'); if (sc) sc.classList.toggle('privacy', !on);
+    const swAO = $('swAudioOnly'); if (swAO) swAO.classList.toggle('on', !on);
+    sendControl({ cmd: 'videoState', on: on }); // ouderunit toont poster + "Alleen geluid"
+  }
+
   function startBabyDevice() {
     if (babyStarted) return;
     babyStarted = true;
@@ -2158,12 +2291,9 @@
     const cp = $('copyBabyDash'); if (cp) cp.onclick = () => copyText(code);
 
     const swCam = $('swCam'), swMic = $('swMic'), swAO = $('swAudioOnly'), swPriv = $('swPrivacy');
-    const setVideoEnabled = (on) => {
-      if (localStream) localStream.getVideoTracks().forEach((t) => (t.enabled = on));
-      if (swCam) swCam.classList.toggle('on', on);
-      $('bScreen') && $('bScreen').classList.toggle('privacy', !on);
-      sendControl({ cmd: 'videoState', on: on }); // ouderunit toont poster + "Audio only"
-    };
+    // Zelfde functie als hierboven op modulniveau; alias zodat de bestaande
+    // knop-koppelingen hieronder ongewijzigd blijven werken.
+    const setVideoEnabled = babyZetVideo;
     // Camera-toggle
     $('tgCam').onclick = () => { const on = !swCam.classList.contains('on'); setVideoEnabled(on); if (swAO) swAO.classList.toggle('on', !on); if (swPriv) swPriv.classList.toggle('on', !on); };
     // Microfoon-toggle

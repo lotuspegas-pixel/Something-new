@@ -84,6 +84,28 @@ GOED OM TE WETEN
 - Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
   index.html is bewust één zelfstandig bestand.
 
+KWALITEIT KIEZEN (DATAVERBRUIK)
+-------------------------------
+Op de ouderunit staat bij Instellingen een keuze "Kwaliteit":
+
+  Automatisch                    kijkt naar het netwerk van de ouderunit
+  Beeld + geluid (scherp)        volle kwaliteit
+  Beeld + geluid (databesparend) kleiner beeld, minder beelden per seconde
+  Alleen geluid                  camera uit, veruit het zuinigst
+
+Automatisch schakelt op 2G en 3G over naar alleen geluid en laat op 4G, 5G
+en wifi het beeld aan. Staat de spaarstand van de telefoon aan, dan kiest
+hij ook alleen geluid.
+
+LET OP: iPhone en iPad geven websites geen informatie over het netwerk.
+Daar kan "Automatisch" dus niet zien of je op wifi of op mobiel zit en
+kiest hij beeld + geluid. Wil je op zo'n toestel data sparen, zet de keuze
+dan zelf op databesparend of alleen geluid.
+
+Onder de keuze staat "In gebruik": daar zie je welke stand er op dit moment
+werkelijk actief is.
+
+
 VERBINDING GARANDEREN OP ELK NETWERK (turn.json)
 ------------------------------------------------
 Beeld en geluid gaan rechtstreeks tussen de twee toestellen. Dat lukt bijna

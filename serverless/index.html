@@ -597,6 +597,13 @@
               <div class="set-row"><span data-i18n="volume">Volume</span><input type="range" id="setVolume" min="0" max="100" value="80" aria-label="Volume" /><b id="setVolumeVal">80</b></div>
               <div class="set-row"><span data-i18n="brightness">Brightness</span><input type="range" id="setBrightness" min="30" max="130" value="100" aria-label="Brightness" /><b id="setBrightnessVal">100%</b></div>
               <div class="set-row"><span data-i18n="zoom">Zoom</span><input type="range" id="setZoom" min="10" max="30" value="10" aria-label="Zoom" /><b id="setZoomVal">1.0×</b></div>
+              <div class="set-row"><span data-i18n="qualityLabel">Quality</span><select id="qualitySelect" class="cam-select" aria-label="Quality">
+                <option value="auto" data-i18n="qualityAuto">Automatic</option>
+                <option value="hoog" data-i18n="qualityHigh">Video + sound (sharp)</option>
+                <option value="zuinig" data-i18n="qualitySaver">Video + sound (data saving)</option>
+                <option value="geluid" data-i18n="qualityAudio">Sound only</option>
+              </select></div>
+              <div class="set-row"><span data-i18n="qualityNow">In use</span><b id="qualityNow">—</b></div>
               <div class="set-row hidden" id="rowCamera"><span data-i18n="cameraLabel">Camera</span><select id="camSelect" class="cam-select" aria-label="Camera"></select></div>
               <div class="set-row hidden" id="rowLed"><span data-i18n="ledLight">LED light</span><button class="pillbtn" id="ledToggle" type="button" data-i18n="off2">Off</button></div>
               <div class="set-row"><span data-i18n="room">Room</span><b id="roomLabel2">—</b></div>

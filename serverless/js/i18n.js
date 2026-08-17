@@ -90,6 +90,12 @@
       approveAllow: 'Allow',
       approveDeny: 'Deny',
       authRefused: 'The baby unit refused this device.',
+      qualityLabel: 'Quality',
+      qualityAuto: 'Automatic',
+      qualityHigh: 'Video + sound (sharp)',
+      qualitySaver: 'Video + sound (data saving)',
+      qualityAudio: 'Sound only',
+      qualityNow: 'In use',
       waitingApproval: 'Waiting for approval on the baby unit…',
       off: 'OFF',
       record: 'Record',
@@ -889,6 +895,12 @@
   // deze Object.assign-lagen vullen alleen ontbrekende sleutels aan.
   // ------------------------------------------------------------------
   Object.assign(S.zh, {
+    qualityLabel: '画质',
+    qualityAuto: '自动',
+    qualityHigh: '画面 + 声音（清晰）',
+    qualitySaver: '画面 + 声音（省流量）',
+    qualityAudio: '仅声音',
+    qualityNow: '使用中',
     onlyOneCamera: '此设备只有一个摄像头', cameraSwitchFailed: '切换失败——仍是同一个摄像头',
     waitingApproval: '正在等待宝宝端授权…',
     metaTitle: '免费婴儿监护器 — 浏览器里的 BabyPhone.online', metaDesc: '用两台手机组成免费的婴儿监护器，实时视频和声音。无需安装应用、无需注册账号，任何内容都不会被保存，打开浏览器即可使用。',
@@ -932,6 +944,12 @@
     mediaError: "摄像头/麦克风不可用。请使用 https，或在 Chrome/Firefox 中打开。",
   });
   Object.assign(S.hi, {
+    qualityLabel: 'गुणवत्ता',
+    qualityAuto: 'स्वचालित',
+    qualityHigh: 'वीडियो + ध्वनि (स्पष्ट)',
+    qualitySaver: 'वीडियो + ध्वनि (डेटा बचत)',
+    qualityAudio: 'केवल ध्वनि',
+    qualityNow: 'उपयोग में',
     onlyOneCamera: 'इस डिवाइस में केवल एक ही कैमरा है', cameraSwitchFailed: 'बदलना विफल — वही कैमरा चालू रहा',
     waitingApproval: 'बेबी यूनिट पर स्वीकृति की प्रतीक्षा…',
     metaTitle: 'मुफ़्त बेबी मॉनिटर ऐप — BabyPhone.online', metaDesc: 'दो फ़ोन को मुफ़्त बेबी मॉनिटर बनाएँ — लाइव वीडियो और आवाज़ के साथ। कोई ऐप नहीं, कोई अकाउंट नहीं, कुछ भी सहेजा नहीं जाता। सीधे ब्राउज़र में।',
@@ -975,6 +993,12 @@
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    qualityLabel: 'Calidad',
+    qualityAuto: 'Automática',
+    qualityHigh: 'Vídeo + sonido (nítido)',
+    qualitySaver: 'Vídeo + sonido (ahorro)',
+    qualityAudio: 'Solo sonido',
+    qualityNow: 'En uso',
     onlyOneCamera: 'Este dispositivo solo tiene una cámara', cameraSwitchFailed: 'No se pudo cambiar: siguió la misma cámara',
     waitingApproval: 'Esperando la autorización en la unidad del bebé…',
     metaTitle: 'Vigilabebés gratis en el navegador — BabyPhone.online', metaDesc: 'Convierte dos móviles en un vigilabebés gratis con vídeo y sonido en directo. Sin app, sin cuenta y sin guardar nada. En cualquier navegador.',
@@ -1020,6 +1044,12 @@
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    qualityLabel: 'Qualité',
+    qualityAuto: 'Automatique',
+    qualityHigh: 'Image + son (net)',
+    qualitySaver: 'Image + son (économe)',
+    qualityAudio: 'Son uniquement',
+    qualityNow: 'Utilisé',
     onlyOneCamera: 'Cet appareil n\'a qu\'une seule caméra', cameraSwitchFailed: 'Échec du changement — la même caméra est restée active',
     waitingApproval: 'En attente d\'autorisation sur l\'unité bébé…',
     metaTitle: 'Babyphone gratuit dans le navigateur — BabyPhone.online', metaDesc: 'Transformez deux téléphones en babyphone gratuit avec image et son en direct. Sans appli, sans compte, rien n’est enregistré. Dans votre navigateur.',
@@ -1065,6 +1095,12 @@
     mediaError: "Caméra/micro indisponibles. Utilisez https ou ouvrez dans Chrome/Firefox.",
   });
   Object.assign(S.ar, {
+    qualityLabel: 'الجودة',
+    qualityAuto: 'تلقائي',
+    qualityHigh: 'صورة وصوت (واضح)',
+    qualitySaver: 'صورة وصوت (توفير)',
+    qualityAudio: 'الصوت فقط',
+    qualityNow: 'قيد الاستخدام',
     onlyOneCamera: 'هذا الجهاز يحتوي على كاميرا واحدة فقط', cameraSwitchFailed: 'فشل التبديل — بقيت الكاميرا نفسها',
     waitingApproval: 'في انتظار الموافقة على وحدة الطفل…',
     metaTitle: 'جهاز مراقبة الرضيع مجانًا — BabyPhone.online', metaDesc: 'حوّل هاتفين إلى جهاز مراقبة رضيع مجاني بالصوت والفيديو المباشر. بلا تطبيق وبلا حساب، ولا يُحفظ أي شيء. يعمل في أي متصفح.',
@@ -1108,6 +1144,12 @@
     mediaError: "الكاميرا/الميكروفون غير متاحين. استخدم https أو افتح في Chrome/Firefox.",
   });
   Object.assign(S.bn, {
+    qualityLabel: 'মান',
+    qualityAuto: 'স্বয়ংক্রিয়',
+    qualityHigh: 'ভিডিও + শব্দ (স্পষ্ট)',
+    qualitySaver: 'ভিডিও + শব্দ (ডেটা সাশ্রয়)',
+    qualityAudio: 'শুধু শব্দ',
+    qualityNow: 'ব্যবহৃত',
     onlyOneCamera: 'এই ডিভাইসে কেবল একটি ক্যামেরা আছে', cameraSwitchFailed: 'বদলানো যায়নি — একই ক্যামেরা চালু থাকল',
     waitingApproval: 'বেবি ইউনিটে অনুমোদনের অপেক্ষায়…',
     metaTitle: 'ফ্রি বেবি মনিটর অ্যাপ — BabyPhone.online', metaDesc: 'দুটি ফোনকে বিনামূল্যের বেবি মনিটরে বদলে নিন — লাইভ ভিডিও ও শব্দ সহ। কোনো অ্যাপ নয়, অ্যাকাউন্ট নয়, কিছুই সংরক্ষণ হয় না।',
@@ -1151,6 +1193,12 @@
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    qualityLabel: 'Qualidade',
+    qualityAuto: 'Automática',
+    qualityHigh: 'Vídeo + som (nítido)',
+    qualitySaver: 'Vídeo + som (poupança)',
+    qualityAudio: 'Apenas som',
+    qualityNow: 'Em uso',
     onlyOneCamera: 'Este dispositivo só tem uma câmara', cameraSwitchFailed: 'Falha ao trocar — a mesma câmara continuou ativa',
     waitingApproval: 'A aguardar aprovação na unidade do bebé…',
     metaTitle: 'Babá eletrônica grátis no navegador — BabyPhone.online', metaDesc: 'Transforme dois celulares em uma babá eletrônica grátis com vídeo e som ao vivo. Sem app, sem conta e sem guardar nada. Direto no navegador.',
@@ -1196,6 +1244,12 @@
     mediaError: "Câmera/microfone indisponíveis. Use https ou abra no Chrome/Firefox.",
   });
   Object.assign(S.ru, {
+    qualityLabel: 'Качество',
+    qualityAuto: 'Автоматически',
+    qualityHigh: 'Видео и звук (чётко)',
+    qualitySaver: 'Видео и звук (экономно)',
+    qualityAudio: 'Только звук',
+    qualityNow: 'Используется',
     onlyOneCamera: 'На этом устройстве только одна камера', cameraSwitchFailed: 'Не удалось переключить — осталась та же камера',
     waitingApproval: 'Ожидание подтверждения на детском блоке…',
     metaTitle: 'Бесплатная радионяня в браузере — BabyPhone.online', metaDesc: 'Превратите два телефона в бесплатную радионяню с видео и звуком в реальном времени. Без приложения, без аккаунта, ничего не сохраняется.',
@@ -1240,6 +1294,12 @@
     mediaError: "Камера/микрофон недоступны. Используйте https или откройте в Chrome/Firefox.",
   });
   Object.assign(S.ur, {
+    qualityLabel: 'معیار',
+    qualityAuto: 'خودکار',
+    qualityHigh: 'ویڈیو + آواز (واضح)',
+    qualitySaver: 'ویڈیو + آواز (ڈیٹا بچت)',
+    qualityAudio: 'صرف آواز',
+    qualityNow: 'زیر استعمال',
     onlyOneCamera: 'اس ڈیوائس میں صرف ایک کیمرہ ہے', cameraSwitchFailed: 'تبدیلی ناکام — وہی کیمرہ چلتا رہا',
     waitingApproval: 'بے بی یونٹ پر منظوری کا انتظار…',
     metaTitle: 'مفت بے بی مانیٹر — BabyPhone.online', metaDesc: 'دو فون کو مفت بے بی مانیٹر بنائیں، لائیو ویڈیو اور آواز کے ساتھ۔ کوئی ایپ نہیں، کوئی اکاؤنٹ نہیں، کچھ محفوظ نہیں ہوتا۔',
@@ -1283,6 +1343,12 @@
     mediaError: "کیمرہ/مائیک دستیاب نہیں۔ https استعمال کریں یا Chrome/Firefox میں کھولیں۔",
   });
   Object.assign(S.id, {
+    qualityLabel: 'Kualitas',
+    qualityAuto: 'Otomatis',
+    qualityHigh: 'Video + suara (tajam)',
+    qualitySaver: 'Video + suara (hemat data)',
+    qualityAudio: 'Hanya suara',
+    qualityNow: 'Digunakan',
     onlyOneCamera: 'Perangkat ini hanya punya satu kamera', cameraSwitchFailed: 'Gagal beralih — kamera yang sama tetap aktif',
     waitingApproval: 'Menunggu persetujuan di unit bayi…',
     metaTitle: 'Baby monitor gratis di browser — BabyPhone.online', metaDesc: 'Ubah dua ponsel menjadi baby monitor gratis dengan video dan suara langsung. Tanpa aplikasi, tanpa akun, tidak ada yang disimpan.',
@@ -1327,6 +1393,12 @@
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    qualityLabel: 'Qualität',
+    qualityAuto: 'Automatisch',
+    qualityHigh: 'Bild + Ton (scharf)',
+    qualitySaver: 'Bild + Ton (datensparend)',
+    qualityAudio: 'Nur Ton',
+    qualityNow: 'In Verwendung',
     onlyOneCamera: 'Dieses Gerät hat nur eine Kamera', cameraSwitchFailed: 'Wechsel fehlgeschlagen — dieselbe Kamera blieb aktiv',
     waitingApproval: 'Warte auf Freigabe am Babyphone…',
     metaTitle: 'Kostenloses Babyphone im Browser — BabyPhone.online', metaDesc: 'Mach aus zwei Handys ein kostenloses Babyphone mit Live-Bild und -Ton. Ohne App, ohne Konto, nichts wird gespeichert. Läuft in jedem Browser.',
@@ -1372,6 +1444,12 @@
     mediaError: "Kamera/Mikrofon nicht verfügbar. Nutze https oder öffne die Seite in Chrome/Firefox.",
   });
   Object.assign(S.ja, {
+    qualityLabel: '画質',
+    qualityAuto: '自動',
+    qualityHigh: '映像＋音声（高画質）',
+    qualitySaver: '映像＋音声（省データ）',
+    qualityAudio: '音声のみ',
+    qualityNow: '使用中',
     onlyOneCamera: 'この端末にはカメラが1つしかありません', cameraSwitchFailed: '切り替えに失敗しました — 同じカメラのままです',
     waitingApproval: 'ベビーユニットの許可を待っています…',
     metaTitle: '無料のベビーモニター — ブラウザで使う BabyPhone.online', metaDesc: 'スマホ2台が無料のベビーモニターに。ライブ映像と音声をそのまま届けます。アプリ不要、登録不要、録画は一切保存されません。ブラウザだけで使えます。',
@@ -1415,6 +1493,12 @@
     mediaError: "カメラ/マイクを使用できません。httpsを使うか、Chrome/Firefoxで開いてください。",
   });
   Object.assign(S.mr, {
+    qualityLabel: 'गुणवत्ता',
+    qualityAuto: 'स्वयंचलित',
+    qualityHigh: 'व्हिडिओ + आवाज (स्पष्ट)',
+    qualitySaver: 'व्हिडिओ + आवाज (डेटा बचत)',
+    qualityAudio: 'फक्त आवाज',
+    qualityNow: 'वापरात',
     onlyOneCamera: 'या उपकरणात फक्त एकच कॅमेरा आहे', cameraSwitchFailed: 'बदलणे अयशस्वी — तोच कॅमेरा सुरू राहिला',
     waitingApproval: 'बेबी युनिटवर मंजुरीची प्रतीक्षा…',
     metaTitle: 'मोफत बेबी मॉनिटर — BabyPhone.online', metaDesc: 'दोन फोनचे मोफत बेबी मॉनिटरमध्ये रूपांतर करा — थेट व्हिडिओ आणि आवाजासह. अ‍ॅप नाही, खाते नाही, काहीही जतन होत नाही. थेट ब्राउझरमध्ये.',
@@ -1458,6 +1542,12 @@
     mediaError: "कॅमेरा/माइक उपलब्ध नाही. https वापरा किंवा Chrome/Firefox मध्ये उघडा.",
   });
   Object.assign(S.te, {
+    qualityLabel: 'నాణ్యత',
+    qualityAuto: 'స్వయంచాలకం',
+    qualityHigh: 'వీడియో + శబ్దం (స్పష్టం)',
+    qualitySaver: 'వీడియో + శబ్దం (డేటా ఆదా)',
+    qualityAudio: 'శబ్దం మాత్రమే',
+    qualityNow: 'వాడుకలో',
     onlyOneCamera: 'ఈ పరికరంలో ఒకే కెమెరా ఉంది', cameraSwitchFailed: 'మార్చడం విఫలమైంది — అదే కెమెరా కొనసాగింది',
     waitingApproval: 'బేబీ యూనిట్‌లో ఆమోదం కోసం వేచి ఉంది…',
     metaTitle: 'ఉచిత బేబీ మానిటర్ — BabyPhone.online', metaDesc: 'రెండు ఫోన్లను ఉచిత బేబీ మానిటర్‌గా మార్చండి — ప్రత్యక్ష వీడియో మరియు శబ్దంతో. యాప్ అవసరం లేదు, ఖాతా అవసరం లేదు, ఏదీ నిల్వ చేయబడదు.',
@@ -1501,6 +1591,12 @@
     mediaError: "కెమెరా/మైక్ అందుబాటులో లేవు. https వాడండి లేదా Chrome/Firefox లో తెరవండి.",
   });
   Object.assign(S.tr, {
+    qualityLabel: 'Kalite',
+    qualityAuto: 'Otomatik',
+    qualityHigh: 'Görüntü + ses (net)',
+    qualitySaver: 'Görüntü + ses (tasarruf)',
+    qualityAudio: 'Yalnızca ses',
+    qualityNow: 'Kullanımda',
     onlyOneCamera: 'Bu cihazda yalnızca bir kamera var', cameraSwitchFailed: 'Değiştirilemedi — aynı kamera açık kaldı',
     waitingApproval: 'Bebek ünitesinde onay bekleniyor…',
     metaTitle: 'Ücretsiz bebek telsizi — tarayıcıda BabyPhone.online', metaDesc: 'İki telefonu canlı görüntü ve sesle ücretsiz bir bebek telsizine dönüştürün. Uygulama yok, hesap yok, hiçbir şey kaydedilmez.',
@@ -1545,6 +1641,12 @@
     mediaError: "Kamera/mikrofon kullanılamıyor. https kullanın veya Chrome/Firefox'ta açın.",
   });
   Object.assign(S.ta, {
+    qualityLabel: 'தரம்',
+    qualityAuto: 'தானியங்கி',
+    qualityHigh: 'காணொளி + ஒலி (தெளிவு)',
+    qualitySaver: 'காணொளி + ஒலி (சிக்கனம்)',
+    qualityAudio: 'ஒலி மட்டும்',
+    qualityNow: 'பயன்பாட்டில்',
     onlyOneCamera: 'இந்தச் சாதனத்தில் ஒரே ஒரு கேமரா மட்டுமே உள்ளது', cameraSwitchFailed: 'மாற்ற முடியவில்லை — அதே கேமரா தொடர்ந்தது',
     waitingApproval: 'குழந்தை சாதனத்தில் அனுமதிக்காகக் காத்திருக்கிறது…',
     metaTitle: 'இலவச பேபி மானிட்டர் — BabyPhone.online', metaDesc: 'இரண்டு தொலைபேசிகளை இலவச பேபி மானிட்டராக மாற்றுங்கள் — நேரலை காணொலி மற்றும் ஒலியுடன். செயலி வேண்டாம், கணக்கு வேண்டாம், எதுவும் சேமிக்கப்படாது.',
@@ -1588,6 +1690,12 @@
     mediaError: "கேமரா/மைக் கிடைக்கவில்லை. https பயன்படுத்துங்கள் அல்லது Chrome/Firefox இல் திறங்கள்.",
   });
   Object.assign(S.vi, {
+    qualityLabel: 'Chất lượng',
+    qualityAuto: 'Tự động',
+    qualityHigh: 'Hình + tiếng (sắc nét)',
+    qualitySaver: 'Hình + tiếng (tiết kiệm)',
+    qualityAudio: 'Chỉ tiếng',
+    qualityNow: 'Đang dùng',
     onlyOneCamera: 'Thiết bị này chỉ có một máy ảnh', cameraSwitchFailed: 'Chuyển đổi thất bại — vẫn là máy ảnh cũ',
     waitingApproval: 'Đang chờ phê duyệt trên thiết bị em bé…',
     metaTitle: 'Máy báo khóc miễn phí — BabyPhone.online', metaDesc: 'Biến hai điện thoại thành máy báo khóc miễn phí với hình ảnh và âm thanh trực tiếp. Không cần ứng dụng, không cần tài khoản, không lưu gì cả.',
@@ -1631,6 +1739,12 @@
     mediaError: "Camera/micro không khả dụng. Dùng https hoặc mở bằng Chrome/Firefox.",
   });
   Object.assign(S.ko, {
+    qualityLabel: '품질',
+    qualityAuto: '자동',
+    qualityHigh: '영상 + 소리 (선명)',
+    qualitySaver: '영상 + 소리 (데이터 절약)',
+    qualityAudio: '소리만',
+    qualityNow: '사용 중',
     onlyOneCamera: '이 기기에는 카메라가 하나뿐입니다', cameraSwitchFailed: '전환 실패 — 같은 카메라가 유지되었습니다',
     waitingApproval: '베이비 유닛의 승인을 기다리는 중…',
     metaTitle: '무료 베이비 모니터 — 브라우저의 BabyPhone.online', metaDesc: '휴대폰 두 대로 무료 베이비 모니터를 만드세요. 실시간 영상과 소리를 그대로 전달하며, 앱 설치도 계정도 필요 없고 아무것도 저장되지 않습니다.',
@@ -1674,6 +1788,12 @@
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    qualityLabel: 'Qualità',
+    qualityAuto: 'Automatica',
+    qualityHigh: 'Video + audio (nitido)',
+    qualitySaver: 'Video + audio (risparmio)',
+    qualityAudio: 'Solo audio',
+    qualityNow: 'In uso',
     onlyOneCamera: 'Questo dispositivo ha una sola fotocamera', cameraSwitchFailed: 'Cambio non riuscito — è rimasta la stessa fotocamera',
     waitingApproval: 'In attesa di approvazione sull\'unità bambino…',
     metaTitle: 'Baby monitor gratis nel browser — BabyPhone.online', metaDesc: 'Trasforma due telefoni in un baby monitor gratuito con video e audio dal vivo. Senza app, senza account, nulla viene salvato. Solo il browser.',
@@ -1719,6 +1839,12 @@
     mediaError: "Fotocamera/microfono non disponibili. Usa https o apri in Chrome/Firefox.",
   });
   Object.assign(S.th, {
+    qualityLabel: 'คุณภาพ',
+    qualityAuto: 'อัตโนมัติ',
+    qualityHigh: 'ภาพ + เสียง (คมชัด)',
+    qualitySaver: 'ภาพ + เสียง (ประหยัดเน็ต)',
+    qualityAudio: 'เสียงเท่านั้น',
+    qualityNow: 'กำลังใช้',
     onlyOneCamera: 'อุปกรณ์นี้มีกล้องเพียงตัวเดียว', cameraSwitchFailed: 'สลับไม่สำเร็จ — ยังเป็นกล้องเดิม',
     waitingApproval: 'กำลังรอการอนุมัติที่เครื่องเด็ก…',
     metaTitle: 'เบบี้มอนิเตอร์ฟรี — BabyPhone.online', metaDesc: 'เปลี่ยนโทรศัพท์สองเครื่องให้เป็นเบบี้มอนิเตอร์ฟรี พร้อมภาพและเสียงสด ไม่ต้องติดตั้งแอป ไม่ต้องสมัครสมาชิก และไม่มีการบันทึกข้อมูลใด ๆ',
@@ -1762,6 +1888,12 @@
     mediaError: "กล้อง/ไมค์ใช้งานไม่ได้ ใช้ https หรือเปิดใน Chrome/Firefox",
   });
   Object.assign(S.gu, {
+    qualityLabel: 'ગુણવત્તા',
+    qualityAuto: 'આપોઆપ',
+    qualityHigh: 'વિડિયો + અવાજ (સ્પષ્ટ)',
+    qualitySaver: 'વિડિયો + અવાજ (ડેટા બચત)',
+    qualityAudio: 'ફક્ત અવાજ',
+    qualityNow: 'ઉપયોગમાં',
     onlyOneCamera: 'આ ઉપકરણમાં ફક્ત એક જ કૅમેરા છે', cameraSwitchFailed: 'બદલવામાં નિષ્ફળ — એ જ કૅમેરા ચાલુ રહ્યો',
     waitingApproval: 'બેબી યુનિટ પર મંજૂરીની રાહ જોવાઈ રહી છે…',
     metaTitle: 'મફત બેબી મોનિટર — BabyPhone.online', metaDesc: 'બે ફોનને મફત બેબી મોનિટરમાં ફેરવો — જીવંત વીડિયો અને અવાજ સાથે. કોઈ એપ નહીં, કોઈ ખાતું નહીં, કશું સાચવવામાં આવતું નથી.',
@@ -1805,6 +1937,12 @@
     mediaError: "કૅમેરો/માઇક ઉપલબ્ધ નથી. https વાપરો અથવા Chrome/Firefox માં ખોલો.",
   });
   Object.assign(S.fa, {
+    qualityLabel: 'کیفیت',
+    qualityAuto: 'خودکار',
+    qualityHigh: 'تصویر و صدا (واضح)',
+    qualitySaver: 'تصویر و صدا (کم‌مصرف)',
+    qualityAudio: 'فقط صدا',
+    qualityNow: 'در حال استفاده',
     onlyOneCamera: 'این دستگاه فقط یک دوربین دارد', cameraSwitchFailed: 'تعویض ناموفق بود — همان دوربین فعال ماند',
     waitingApproval: 'در انتظار تأیید در دستگاه نوزاد…',
     metaTitle: 'مانیتور نوزاد رایگان — BabyPhone.online', metaDesc: 'دو گوشی را به مانیتور نوزاد رایگان با تصویر و صدای زنده تبدیل کنید. بدون برنامه، بدون حساب کاربری و بدون ذخیره‌سازی. مستقیم در مرورگر.',
@@ -1848,6 +1986,12 @@
     mediaError: "دوربین/میکروفون در دسترس نیست. از https استفاده کنید یا در Chrome/Firefox باز کنید.",
   });
   Object.assign(S.pl, {
+    qualityLabel: 'Jakość',
+    qualityAuto: 'Automatycznie',
+    qualityHigh: 'Obraz + dźwięk (ostry)',
+    qualitySaver: 'Obraz + dźwięk (oszczędny)',
+    qualityAudio: 'Tylko dźwięk',
+    qualityNow: 'W użyciu',
     onlyOneCamera: 'To urządzenie ma tylko jedną kamerę', cameraSwitchFailed: 'Nie udało się przełączyć — została ta sama kamera',
     waitingApproval: 'Czekam na zgodę na jednostce dziecka…',
     metaTitle: 'Darmowa niania elektroniczna — BabyPhone.online', metaDesc: 'Zamień dwa telefony w darmową nianię elektroniczną z obrazem i dźwiękiem na żywo. Bez aplikacji, bez konta, nic nie jest zapisywane.',
@@ -1892,6 +2036,12 @@
     mediaError: "Kamera/mikrofon niedostępne. Użyj https lub otwórz w Chrome/Firefox.",
   });
   Object.assign(S.uk, {
+    qualityLabel: 'Якість',
+    qualityAuto: 'Автоматично',
+    qualityHigh: 'Відео та звук (чітко)',
+    qualitySaver: 'Відео та звук (економно)',
+    qualityAudio: 'Лише звук',
+    qualityNow: 'Використовується',
     onlyOneCamera: 'На цьому пристрої лише одна камера', cameraSwitchFailed: 'Не вдалося перемкнути — залишилася та сама камера',
     waitingApproval: 'Очікування підтвердження на дитячому блоці…',
     metaTitle: 'Безкоштовна радіоняня — BabyPhone.online', metaDesc: 'Перетворіть два телефони на безкоштовну радіоняню з відео та звуком у реальному часі. Без застосунку, без акаунта, нічого не зберігається.',
@@ -1935,6 +2085,12 @@
     mediaError: "Камера/мікрофон недоступні. Використайте https або відкрийте у Chrome/Firefox.",
   });
   Object.assign(S.nl, {
+    qualityLabel: 'Kwaliteit',
+    qualityAuto: 'Automatisch',
+    qualityHigh: 'Beeld + geluid (scherp)',
+    qualitySaver: 'Beeld + geluid (databesparend)',
+    qualityAudio: 'Alleen geluid',
+    qualityNow: 'In gebruik',
     onlyOneCamera: 'Dit toestel heeft maar één camera', cameraSwitchFailed: 'Wisselen mislukt — dezelfde camera bleef aan',
     waitingApproval: 'Wacht op toestemming bij de babyunit…',
     metaTitle: 'Gratis babyfoon app online — BabyPhone.online', metaDesc: 'Maak van twee telefoons een gratis babyfoon met live beeld en geluid. Geen app installeren, geen account, niets wordt opgeslagen. In je browser.',
@@ -1947,6 +2103,12 @@
     stopParentQ: "Ouderunit stoppen?", stopBabyQ: "Babyunit stoppen?", noMic: "Geen microfoontoegang", mediaError: "Camera/microfoon niet beschikbaar. Gebruik https of open in Chrome/Firefox.",
   });
   Object.assign(S.pa, {
+    qualityLabel: 'ਗੁਣਵੱਤਾ',
+    qualityAuto: 'ਆਪਣੇ-ਆਪ',
+    qualityHigh: 'ਵੀਡੀਓ + ਆਵਾਜ਼ (ਸਾਫ਼)',
+    qualitySaver: 'ਵੀਡੀਓ + ਆਵਾਜ਼ (ਡਾਟਾ ਬਚਤ)',
+    qualityAudio: 'ਸਿਰਫ਼ ਆਵਾਜ਼',
+    qualityNow: 'ਵਰਤੋਂ ਵਿੱਚ',
     onlyOneCamera: 'ਇਸ ਡਿਵਾਈਸ ਵਿੱਚ ਸਿਰਫ਼ ਇੱਕ ਹੀ ਕੈਮਰਾ ਹੈ', cameraSwitchFailed: 'ਬਦਲਣਾ ਅਸਫਲ — ਉਹੀ ਕੈਮਰਾ ਚਾਲੂ ਰਿਹਾ',
     waitingApproval: 'ਬੇਬੀ ਯੂਨਿਟ ਉੱਤੇ ਮਨਜ਼ੂਰੀ ਦੀ ਉਡੀਕ…',
     metaTitle: 'ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ — BabyPhone.online', metaDesc: 'ਦੋ ਫ਼ੋਨਾਂ ਨੂੰ ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾਓ — ਲਾਈਵ ਵੀਡੀਓ ਅਤੇ ਆਵਾਜ਼ ਨਾਲ। ਕੋਈ ਐਪ ਨਹੀਂ, ਕੋਈ ਖਾਤਾ ਨਹੀਂ, ਕੁਝ ਵੀ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ।',
@@ -1990,6 +2152,12 @@
     mediaError: "ਕੈਮਰਾ/ਮਾਈਕ ਉਪਲਬਧ ਨਹੀਂ। https ਵਰਤੋ ਜਾਂ Chrome/Firefox ਵਿੱਚ ਖੋਲ੍ਹੋ।",
   });
   Object.assign(S.sw, {
+    qualityLabel: 'Ubora',
+    qualityAuto: 'Kiotomatiki',
+    qualityHigh: 'Video + sauti (wazi)',
+    qualitySaver: 'Video + sauti (kuokoa data)',
+    qualityAudio: 'Sauti pekee',
+    qualityNow: 'Inatumika',
     onlyOneCamera: 'Kifaa hiki kina kamera moja tu', cameraSwitchFailed: 'Kubadilisha kumeshindikana — kamera ile ile imebaki',
     waitingApproval: 'Inasubiri idhini kwenye kifaa cha mtoto…',
     metaTitle: 'Kifuatiliaji cha mtoto bila malipo — BabyPhone.online', metaDesc: 'Geuza simu mbili kuwa kifuatiliaji cha mtoto bila malipo, chenye video na sauti moja kwa moja. Hakuna programu, hakuna akaunti, hakuna kinachohifadhiwa.',
@@ -2033,6 +2201,12 @@
     mediaError: "Kamera/maikrofoni haipatikani. Tumia https au fungua kwenye Chrome/Firefox.",
   });
   Object.assign(S.ha, {
+    qualityLabel: 'Inganci',
+    qualityAuto: 'Ta atomatik',
+    qualityHigh: 'Bidiyo + sauti (bayyananne)',
+    qualitySaver: 'Bidiyo + sauti (tanadin data)',
+    qualityAudio: 'Sauti kawai',
+    qualityNow: 'Ana amfani',
     onlyOneCamera: 'Na\'urar nan tana da kyamara ɗaya kawai', cameraSwitchFailed: 'Sauyawa ya gaza — kyamara ɗaya ta ci gaba',
     waitingApproval: 'Ana jiran amincewa a na\'urar jariri…',
     metaTitle: 'Na’urar sa ido kan jariri kyauta — BabyPhone.online', metaDesc: 'Mai da wayoyi biyu zuwa na’urar sa ido kan jariri kyauta mai bidiyo da sauti kai tsaye. Babu manhaja, babu asusu, ba a adana komai.',
@@ -2076,6 +2250,12 @@
     mediaError: "Kyamara/makirufo ba ya samuwa. Yi amfani da https ko buɗe a Chrome/Firefox.",
   });
   Object.assign(S.ro, {
+    qualityLabel: 'Calitate',
+    qualityAuto: 'Automat',
+    qualityHigh: 'Video + sunet (clar)',
+    qualitySaver: 'Video + sunet (economic)',
+    qualityAudio: 'Doar sunet',
+    qualityNow: 'În uz',
     onlyOneCamera: 'Acest dispozitiv are o singură cameră', cameraSwitchFailed: 'Comutarea a eșuat — a rămas aceeași cameră',
     waitingApproval: 'Se așteaptă aprobarea pe unitatea bebelușului…',
     metaTitle: 'Babyphone gratuit în browser — BabyPhone.online', metaDesc: 'Transformă două telefoane într-un babyphone gratuit, cu imagine și sunet live. Fără aplicație, fără cont, nimic nu este stocat.',
