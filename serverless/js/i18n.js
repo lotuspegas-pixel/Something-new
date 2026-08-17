@@ -2732,6 +2732,408 @@
     ledOff: "LED oprit",
   });
 
+  // ------------------------------------------------------------------
+  // Aanvullingen n.a.v. de audit: technische diagnose achter een uitklap,
+  // de eerlijke privacy- en audioclaims, de wachttekst van de babyunit en
+  // de knop die het huilalarm scherpstelt. In alle 30 talen, zodat er niets
+  // stil op Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    techDetails: 'Technical details',
+    waitingReconnect: 'Waiting for the parent unit',
+    p2pEncrypted: 'Encrypted, directly between your devices',
+    rawAudio: 'Unprocessed — soft sounds stay audible',
+    alarmTest: 'Test alarm sound',
+    alarmTestHint: 'Tap once so the cry alarm can make a sound on this device.',
+    alarmSilent: 'Crying detected — alarm stayed silent',
+  });
+  Object.assign(S.zh, {
+    techDetails: '技术细节',
+    waitingReconnect: '正在等待家长端',
+    p2pEncrypted: '加密传输，直接在你的设备之间',
+    rawAudio: '未经处理 — 轻微的声音也听得见',
+    alarmTest: '测试警报声',
+    alarmTestHint: '请轻触一次，让哭声警报可以在本设备上发出声音。',
+    alarmSilent: '检测到哭声 — 警报没有发声',
+  });
+  Object.assign(S.hi, {
+    techDetails: 'तकनीकी विवरण',
+    waitingReconnect: 'पैरेंट यूनिट का इंतज़ार',
+    p2pEncrypted: 'एन्क्रिप्टेड, सीधे आपके डिवाइसों के बीच',
+    rawAudio: 'बिना प्रोसेसिंग — धीमी आवाज़ें भी सुनाई देती हैं',
+    alarmTest: 'अलार्म ध्वनि जाँचें',
+    alarmTestHint: 'एक बार टैप करें ताकि रोने का अलार्म इस डिवाइस पर आवाज़ कर सके।',
+    alarmSilent: 'रोना पहचाना गया — अलार्म चुप रहा',
+  });
+  Object.assign(S.es, {
+    techDetails: 'Detalles técnicos',
+    waitingReconnect: 'Esperando la unidad de padres',
+    p2pEncrypted: 'Cifrado, directamente entre tus dispositivos',
+    rawAudio: 'Sin procesar: los sonidos suaves siguen audibles',
+    alarmTest: 'Probar sonido de alarma',
+    alarmTestHint: 'Toca una vez para que la alarma de llanto pueda sonar en este dispositivo.',
+    alarmSilent: 'Llanto detectado: la alarma no sonó',
+  });
+  Object.assign(S.fr, {
+    techDetails: 'Détails techniques',
+    waitingReconnect: 'En attente de l\'unité parent',
+    p2pEncrypted: 'Chiffré, directement entre vos appareils',
+    rawAudio: 'Non traité — les sons faibles restent audibles',
+    alarmTest: 'Tester le son d\'alarme',
+    alarmTestHint: 'Touchez une fois pour que l\'alarme de pleurs puisse sonner sur cet appareil.',
+    alarmSilent: 'Pleurs détectés — l\'alarme est restée muette',
+  });
+  Object.assign(S.ar, {
+    techDetails: 'تفاصيل تقنية',
+    waitingReconnect: 'في انتظار جهاز الوالدين',
+    p2pEncrypted: 'مشفّر، مباشرةً بين أجهزتك',
+    rawAudio: 'بدون معالجة — تبقى الأصوات الخافتة مسموعة',
+    alarmTest: 'اختبار صوت التنبيه',
+    alarmTestHint: 'انقر مرة واحدة حتى يتمكن تنبيه البكاء من إصدار صوت على هذا الجهاز.',
+    alarmSilent: 'تم رصد بكاء — بقي التنبيه صامتًا',
+  });
+  Object.assign(S.bn, {
+    techDetails: 'কারিগরি বিবরণ',
+    waitingReconnect: 'প্যারেন্ট ইউনিটের অপেক্ষায়',
+    p2pEncrypted: 'এনক্রিপ্টেড, সরাসরি আপনার ডিভাইসের মধ্যে',
+    rawAudio: 'প্রক্রিয়াবিহীন — মৃদু শব্দও শোনা যায়',
+    alarmTest: 'অ্যালার্ম শব্দ পরীক্ষা করুন',
+    alarmTestHint: 'একবার ট্যাপ করুন যাতে কান্নার অ্যালার্ম এই ডিভাইসে শব্দ করতে পারে।',
+    alarmSilent: 'কান্না শনাক্ত — অ্যালার্ম নীরব ছিল',
+  });
+  Object.assign(S.pt, {
+    techDetails: 'Detalhes técnicos',
+    waitingReconnect: 'Aguardando a unidade dos pais',
+    p2pEncrypted: 'Criptografado, diretamente entre os seus dispositivos',
+    rawAudio: 'Sem processamento — sons suaves continuam audíveis',
+    alarmTest: 'Testar som do alarme',
+    alarmTestHint: 'Toque uma vez para que o alarme de choro possa emitir som neste dispositivo.',
+    alarmSilent: 'Choro detectado — o alarme ficou em silêncio',
+  });
+  Object.assign(S.ru, {
+    techDetails: 'Технические сведения',
+    waitingReconnect: 'Ожидание родительского блока',
+    p2pEncrypted: 'Шифрование, напрямую между вашими устройствами',
+    rawAudio: 'Без обработки — тихие звуки остаются слышны',
+    alarmTest: 'Проверить звук тревоги',
+    alarmTestHint: 'Коснитесь один раз, чтобы сигнал плача мог звучать на этом устройстве.',
+    alarmSilent: 'Обнаружен плач — сигнал остался беззвучным',
+  });
+  Object.assign(S.ur, {
+    techDetails: 'تکنیکی تفصیلات',
+    waitingReconnect: 'پیرنٹ یونٹ کا انتظار',
+    p2pEncrypted: 'خفیہ کردہ، براہِ راست آپ کے آلات کے درمیان',
+    rawAudio: 'بغیر پروسیسنگ — ہلکی آوازیں بھی سنائی دیتی ہیں',
+    alarmTest: 'الارم کی آواز جانچیں',
+    alarmTestHint: 'ایک بار ٹیپ کریں تاکہ رونے کا الارم اس ڈیوائس پر آواز نکال سکے۔',
+    alarmSilent: 'رونا پہچانا گیا — الارم خاموش رہا',
+  });
+  Object.assign(S.id, {
+    techDetails: 'Detail teknis',
+    waitingReconnect: 'Menunggu unit orang tua',
+    p2pEncrypted: 'Terenkripsi, langsung antar perangkat Anda',
+    rawAudio: 'Tanpa pemrosesan — suara lembut tetap terdengar',
+    alarmTest: 'Uji suara alarm',
+    alarmTestHint: 'Ketuk sekali agar alarm tangisan dapat berbunyi di perangkat ini.',
+    alarmSilent: 'Tangisan terdeteksi — alarm tetap senyap',
+  });
+  Object.assign(S.de, {
+    techDetails: 'Technische Details',
+    waitingReconnect: 'Warten auf die Elterneinheit',
+    p2pEncrypted: 'Verschlüsselt, direkt zwischen deinen Geräten',
+    rawAudio: 'Unbearbeitet — leise Geräusche bleiben hörbar',
+    alarmTest: 'Alarmton testen',
+    alarmTestHint: 'Einmal tippen, damit der Schreialarm auf diesem Gerät Ton geben darf.',
+    alarmSilent: 'Weinen erkannt — Alarm blieb stumm',
+  });
+  Object.assign(S.ja, {
+    techDetails: '技術的な詳細',
+    waitingReconnect: '親機を待っています',
+    p2pEncrypted: '暗号化され、あなたの端末どうしで直接',
+    rawAudio: '未加工 — かすかな音も聞こえます',
+    alarmTest: 'アラーム音をテスト',
+    alarmTestHint: '一度タップすると、泣き声アラームがこの端末で音を鳴らせます。',
+    alarmSilent: '泣き声を検知 — アラームは鳴りませんでした',
+  });
+  Object.assign(S.mr, {
+    techDetails: 'तांत्रिक तपशील',
+    waitingReconnect: 'पालक युनिटची प्रतीक्षा',
+    p2pEncrypted: 'एन्क्रिप्टेड, थेट तुमच्या डिव्हाइसदरम्यान',
+    rawAudio: 'प्रक्रिया न केलेले — हलके आवाजही ऐकू येतात',
+    alarmTest: 'अलार्मचा आवाज तपासा',
+    alarmTestHint: 'एकदा टॅप करा, म्हणजे रडण्याचा अलार्म या डिव्हाइसवर आवाज करू शकेल.',
+    alarmSilent: 'रडणे आढळले — अलार्म शांत राहिला',
+  });
+  Object.assign(S.te, {
+    techDetails: 'సాంకేతిక వివరాలు',
+    waitingReconnect: 'పేరెంట్ యూనిట్ కోసం వేచి ఉంది',
+    p2pEncrypted: 'ఎన్‌క్రిప్ట్ చేయబడింది, నేరుగా మీ పరికరాల మధ్య',
+    rawAudio: 'ప్రాసెస్ చేయని ధ్వని — మెల్లని శబ్దాలూ వినిపిస్తాయి',
+    alarmTest: 'అలారం శబ్దాన్ని పరీక్షించండి',
+    alarmTestHint: 'ఒకసారి నొక్కండి, అప్పుడు ఏడుపు అలారం ఈ పరికరంలో శబ్దం చేయగలదు.',
+    alarmSilent: 'ఏడుపు గుర్తించబడింది — అలారం మౌనంగా ఉంది',
+  });
+  Object.assign(S.tr, {
+    techDetails: 'Teknik ayrıntılar',
+    waitingReconnect: 'Ebeveyn ünitesi bekleniyor',
+    p2pEncrypted: 'Şifreli, doğrudan cihazlarınız arasında',
+    rawAudio: 'İşlenmemiş — hafif sesler de duyulur',
+    alarmTest: 'Alarm sesini dene',
+    alarmTestHint: 'Ağlama alarmının bu cihazda ses çıkarabilmesi için bir kez dokunun.',
+    alarmSilent: 'Ağlama algılandı — alarm sessiz kaldı',
+  });
+  Object.assign(S.ta, {
+    techDetails: 'தொழில்நுட்ப விவரங்கள்',
+    waitingReconnect: 'பெற்றோர் சாதனத்திற்காகக் காத்திருக்கிறது',
+    p2pEncrypted: 'குறியாக்கம் செய்யப்பட்டு, நேரடியாக உங்கள் சாதனங்களுக்கு இடையே',
+    rawAudio: 'பதப்படுத்தப்படாதது — மெல்லிய ஒலிகளும் கேட்கும்',
+    alarmTest: 'அலாரம் ஒலியைச் சோதிக்கவும்',
+    alarmTestHint: 'அழுகை அலாரம் இந்தச் சாதனத்தில் ஒலிக்க ஒருமுறை தட்டவும்.',
+    alarmSilent: 'அழுகை கண்டறியப்பட்டது — அலாரம் ஒலிக்கவில்லை',
+  });
+  Object.assign(S.vi, {
+    techDetails: 'Chi tiết kỹ thuật',
+    waitingReconnect: 'Đang chờ thiết bị cha mẹ',
+    p2pEncrypted: 'Được mã hoá, trực tiếp giữa các thiết bị của bạn',
+    rawAudio: 'Không xử lý — âm thanh nhỏ vẫn nghe rõ',
+    alarmTest: 'Thử âm báo động',
+    alarmTestHint: 'Chạm một lần để báo động tiếng khóc có thể phát ra âm thanh trên thiết bị này.',
+    alarmSilent: 'Phát hiện tiếng khóc — báo động không phát ra tiếng',
+  });
+  Object.assign(S.ko, {
+    techDetails: '기술 세부정보',
+    waitingReconnect: '부모 기기를 기다리는 중',
+    p2pEncrypted: '암호화되어 내 기기끼리 직접 연결',
+    rawAudio: '가공하지 않음 — 작은 소리도 들립니다',
+    alarmTest: '알람 소리 테스트',
+    alarmTestHint: '한 번 눌러야 울음 알람이 이 기기에서 소리를 낼 수 있습니다.',
+    alarmSilent: '울음 감지 — 알람이 소리를 내지 못했습니다',
+  });
+  Object.assign(S.it, {
+    techDetails: 'Dettagli tecnici',
+    waitingReconnect: 'In attesa dell\'unità genitore',
+    p2pEncrypted: 'Crittografato, direttamente tra i tuoi dispositivi',
+    rawAudio: 'Non elaborato — i suoni deboli restano udibili',
+    alarmTest: 'Prova il suono dell\'allarme',
+    alarmTestHint: 'Tocca una volta per permettere all\'allarme pianto di emettere suono su questo dispositivo.',
+    alarmSilent: 'Pianto rilevato — l\'allarme è rimasto muto',
+  });
+  Object.assign(S.th, {
+    techDetails: 'รายละเอียดทางเทคนิค',
+    waitingReconnect: 'กำลังรออุปกรณ์ฝั่งพ่อแม่',
+    p2pEncrypted: 'เข้ารหัส ส่งตรงระหว่างอุปกรณ์ของคุณ',
+    rawAudio: 'ไม่ผ่านการปรับแต่ง — เสียงเบายังได้ยิน',
+    alarmTest: 'ทดสอบเสียงเตือน',
+    alarmTestHint: 'แตะหนึ่งครั้งเพื่อให้เสียงเตือนการร้องไห้ดังบนอุปกรณ์นี้ได้',
+    alarmSilent: 'ตรวจพบการร้องไห้ — เสียงเตือนไม่ดัง',
+  });
+  Object.assign(S.gu, {
+    techDetails: 'તકનીકી વિગતો',
+    waitingReconnect: 'પેરેન્ટ યુનિટની રાહ જોવાય છે',
+    p2pEncrypted: 'એન્ક્રિપ્ટેડ, સીધું તમારાં ઉપકરણો વચ્ચે',
+    rawAudio: 'પ્રોસેસ કર્યા વગર — ધીમા અવાજ પણ સંભળાય છે',
+    alarmTest: 'એલાર્મ અવાજ ચકાસો',
+    alarmTestHint: 'એક વાર ટૅપ કરો જેથી રડવાનું એલાર્મ આ ઉપકરણ પર અવાજ કરી શકે.',
+    alarmSilent: 'રડવાનું જણાયું — એલાર્મ શાંત રહ્યું',
+  });
+  Object.assign(S.fa, {
+    techDetails: 'جزئیات فنی',
+    waitingReconnect: 'در انتظار دستگاه والدین',
+    p2pEncrypted: 'رمزگذاری‌شده، مستقیم میان دستگاه‌های شما',
+    rawAudio: 'بدون پردازش — صداهای آرام هم شنیده می‌شوند',
+    alarmTest: 'آزمایش صدای هشدار',
+    alarmTestHint: 'یک بار ضربه بزنید تا هشدار گریه بتواند روی این دستگاه صدا بدهد.',
+    alarmSilent: 'گریه شناسایی شد — هشدار بی‌صدا ماند',
+  });
+  Object.assign(S.pl, {
+    techDetails: 'Szczegóły techniczne',
+    waitingReconnect: 'Oczekiwanie na jednostkę rodzica',
+    p2pEncrypted: 'Szyfrowane, bezpośrednio między Twoimi urządzeniami',
+    rawAudio: 'Bez obróbki — ciche dźwięki pozostają słyszalne',
+    alarmTest: 'Przetestuj dźwięk alarmu',
+    alarmTestHint: 'Dotknij raz, aby alarm płaczu mógł wydać dźwięk na tym urządzeniu.',
+    alarmSilent: 'Wykryto płacz — alarm pozostał cichy',
+  });
+  Object.assign(S.uk, {
+    techDetails: 'Технічні деталі',
+    waitingReconnect: 'Очікування батьківського пристрою',
+    p2pEncrypted: 'Зашифровано, напряму між вашими пристроями',
+    rawAudio: 'Без обробки — тихі звуки лишаються чутними',
+    alarmTest: 'Перевірити звук тривоги',
+    alarmTestHint: 'Торкніться один раз, щоб сигнал плачу міг звучати на цьому пристрої.',
+    alarmSilent: 'Виявлено плач — сигнал не пролунав',
+  });
+  Object.assign(S.nl, {
+    techDetails: 'Technische details',
+    waitingReconnect: 'Wacht op de ouderunit',
+    p2pEncrypted: 'Versleuteld, rechtstreeks tussen je apparaten',
+    rawAudio: 'Onbewerkt — zachte geluiden blijven hoorbaar',
+    alarmTest: 'Alarmgeluid testen',
+    alarmTestHint: 'Tik één keer, zodat het huilalarm op dit apparaat geluid mag maken.',
+    alarmSilent: 'Gehuil gedetecteerd — alarm bleef stil',
+  });
+  Object.assign(S.pa, {
+    techDetails: 'ਤਕਨੀਕੀ ਵੇਰਵੇ',
+    waitingReconnect: 'ਪੇਰੈਂਟ ਯੂਨਿਟ ਦੀ ਉਡੀਕ',
+    p2pEncrypted: 'ਐਨਕ੍ਰਿਪਟਡ, ਸਿੱਧਾ ਤੁਹਾਡੇ ਡਿਵਾਈਸਾਂ ਵਿਚਕਾਰ',
+    rawAudio: 'ਬਿਨਾਂ ਪ੍ਰੋਸੈਸਿੰਗ — ਹੌਲੀ ਆਵਾਜ਼ਾਂ ਵੀ ਸੁਣਾਈ ਦਿੰਦੀਆਂ ਹਨ',
+    alarmTest: 'ਅਲਾਰਮ ਆਵਾਜ਼ ਪਰਖੋ',
+    alarmTestHint: 'ਇੱਕ ਵਾਰ ਟੈਪ ਕਰੋ ਤਾਂ ਜੋ ਰੋਣ ਦਾ ਅਲਾਰਮ ਇਸ ਡਿਵਾਈਸ \'ਤੇ ਆਵਾਜ਼ ਕਰ ਸਕੇ।',
+    alarmSilent: 'ਰੋਣਾ ਪਛਾਣਿਆ ਗਿਆ — ਅਲਾਰਮ ਚੁੱਪ ਰਿਹਾ',
+  });
+  Object.assign(S.sw, {
+    techDetails: 'Maelezo ya kiufundi',
+    waitingReconnect: 'Inasubiri kifaa cha mzazi',
+    p2pEncrypted: 'Imesimbwa, moja kwa moja kati ya vifaa vyako',
+    rawAudio: 'Bila kuchakatwa — sauti hafifu bado zinasikika',
+    alarmTest: 'Jaribu sauti ya kengele',
+    alarmTestHint: 'Gusa mara moja ili kengele ya kilio iweze kutoa sauti kwenye kifaa hiki.',
+    alarmSilent: 'Kilio kimetambuliwa — kengele ilibaki kimya',
+  });
+  Object.assign(S.ha, {
+    techDetails: 'Bayanan fasaha',
+    waitingReconnect: 'Ana jiran na\'urar iyaye',
+    p2pEncrypted: 'An ɓoye, kai tsaye tsakanin na\'urorinka',
+    rawAudio: 'Ba a sarrafa ba — ana jin ƙananan sautuka',
+    alarmTest: 'Gwada sautin ƙararrawa',
+    alarmTestHint: 'Danna sau ɗaya don ƙararrawar kuka ta iya yin sauti a wannan na\'urar.',
+    alarmSilent: 'An gano kuka — ƙararrawa ta yi shiru',
+  });
+  Object.assign(S.ro, {
+    techDetails: 'Detalii tehnice',
+    waitingReconnect: 'Se așteaptă unitatea părinte',
+    p2pEncrypted: 'Criptat, direct între dispozitivele tale',
+    rawAudio: 'Neprelucrat — sunetele slabe rămân audibile',
+    alarmTest: 'Testează sunetul de alarmă',
+    alarmTestHint: 'Atinge o dată pentru ca alarma de plâns să poată suna pe acest dispozitiv.',
+    alarmSilent: 'Plâns detectat — alarma a rămas silențioasă',
+  });
+
+  // ------------------------------------------------------------------
+  // Aanvullingen n.a.v. de audit. In alle 30 talen, zodat er niets stil op
+  // Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    netSlow: 'slow network',
+    netFast: 'fast network',
+  });
+  Object.assign(S.zh, {
+    netSlow: '网络较慢',
+    netFast: '网络较快',
+  });
+  Object.assign(S.hi, {
+    netSlow: 'धीमा नेटवर्क',
+    netFast: 'तेज़ नेटवर्क',
+  });
+  Object.assign(S.es, {
+    netSlow: 'red lenta',
+    netFast: 'red rápida',
+  });
+  Object.assign(S.fr, {
+    netSlow: 'réseau lent',
+    netFast: 'réseau rapide',
+  });
+  Object.assign(S.ar, {
+    netSlow: 'شبكة بطيئة',
+    netFast: 'شبكة سريعة',
+  });
+  Object.assign(S.bn, {
+    netSlow: 'ধীর নেটওয়ার্ক',
+    netFast: 'দ্রুত নেটওয়ার্ক',
+  });
+  Object.assign(S.pt, {
+    netSlow: 'rede lenta',
+    netFast: 'rede rápida',
+  });
+  Object.assign(S.ru, {
+    netSlow: 'медленная сеть',
+    netFast: 'быстрая сеть',
+  });
+  Object.assign(S.ur, {
+    netSlow: 'سست نیٹ ورک',
+    netFast: 'تیز نیٹ ورک',
+  });
+  Object.assign(S.id, {
+    netSlow: 'jaringan lambat',
+    netFast: 'jaringan cepat',
+  });
+  Object.assign(S.de, {
+    netSlow: 'langsames Netz',
+    netFast: 'schnelles Netz',
+  });
+  Object.assign(S.ja, {
+    netSlow: '低速な回線',
+    netFast: '高速な回線',
+  });
+  Object.assign(S.mr, {
+    netSlow: 'संथ नेटवर्क',
+    netFast: 'वेगवान नेटवर्क',
+  });
+  Object.assign(S.te, {
+    netSlow: 'నెమ్మది నెట్‌వర్క్',
+    netFast: 'వేగవంతమైన నెట్‌వర్క్',
+  });
+  Object.assign(S.tr, {
+    netSlow: 'yavaş ağ',
+    netFast: 'hızlı ağ',
+  });
+  Object.assign(S.ta, {
+    netSlow: 'மெதுவான நெட்வொர்க்',
+    netFast: 'வேகமான நெட்வொர்க்',
+  });
+  Object.assign(S.vi, {
+    netSlow: 'mạng chậm',
+    netFast: 'mạng nhanh',
+  });
+  Object.assign(S.ko, {
+    netSlow: '느린 네트워크',
+    netFast: '빠른 네트워크',
+  });
+  Object.assign(S.it, {
+    netSlow: 'rete lenta',
+    netFast: 'rete veloce',
+  });
+  Object.assign(S.th, {
+    netSlow: 'เครือข่ายช้า',
+    netFast: 'เครือข่ายเร็ว',
+  });
+  Object.assign(S.gu, {
+    netSlow: 'ધીમું નેટવર્ક',
+    netFast: 'ઝડપી નેટવર્ક',
+  });
+  Object.assign(S.fa, {
+    netSlow: 'شبکه کند',
+    netFast: 'شبکه سریع',
+  });
+  Object.assign(S.pl, {
+    netSlow: 'wolna sieć',
+    netFast: 'szybka sieć',
+  });
+  Object.assign(S.uk, {
+    netSlow: 'повільна мережа',
+    netFast: 'швидка мережа',
+  });
+  Object.assign(S.nl, {
+    netSlow: 'traag netwerk',
+    netFast: 'snel netwerk',
+  });
+  Object.assign(S.pa, {
+    netSlow: 'ਹੌਲੀ ਨੈੱਟਵਰਕ',
+    netFast: 'ਤੇਜ਼ ਨੈੱਟਵਰਕ',
+  });
+  Object.assign(S.sw, {
+    netSlow: 'mtandao wa polepole',
+    netFast: 'mtandao wa kasi',
+  });
+  Object.assign(S.ha, {
+    netSlow: 'hanyar sadarwa a hankali',
+    netFast: 'hanyar sadarwa mai sauri',
+  });
+  Object.assign(S.ro, {
+    netSlow: 'rețea lentă',
+    netFast: 'rețea rapidă',
+  });
+
   const STORE_KEY = 'babyfoon.lang';
   let current = 'en';
   const listeners = [];

@@ -2755,3 +2755,146 @@ body.app-mode .pair-box {
 .vcard-poster {
   position: absolute;
 }
+
+
+/* =========================================================================
+   Toestandsstijlen die de JS al zette maar die nergens gedefinieerd waren.
+   Dit is de laatst geladen stylesheet, dus deze regels winnen.
+   ========================================================================= */
+
+/* De wachtpil onder de kamercode op de babyunit krijgt `warn` zodra de unit
+   niet koppelbaar is. Zonder deze regel bleef die pil er rustig uitzien en
+   draaide er zelfs nog een "bezig"-rondje naast de tekst dat de verbinding
+   verbroken is. */
+.waiting-pill.warn {
+  color: var(--bp-pink-hover);
+  background: rgba(255, 111, 158, 0.14);
+  border-color: rgba(255, 111, 158, 0.4);
+}
+.waiting-pill.warn .spinner {
+  display: none;
+}
+
+/* Uitklapbare technische diagnose onder een mislukte koppelpoging. De
+   hoofdmelding ("Verbinden lukt niet…") blijft daarmee leesbaar voor een ouder;
+   "host:1 · 2/5" staat eronder voor wie het nodig heeft. */
+.pair-diag {
+  margin-top: 8px;
+  text-align: center;
+  font: 600 12px "Nunito", sans-serif;
+  color: var(--bp-navy);
+  opacity: 0.72;
+}
+.pair-diag > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.pair-diag > summary::-webkit-details-marker {
+  display: none;
+}
+.pair-diag > summary::before {
+  content: "\25B8\00A0";
+}
+.pair-diag[open] > summary::before {
+  content: "\25BE\00A0";
+}
+.pair-diag code {
+  display: block;
+  margin-top: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  word-break: break-word;
+}
+.pair-diag.hidden {
+  display: none;
+}
+
+/* "Alarmgeluid testen": zichtbare stap die het huilalarm scherpstelt zolang de
+   AudioContext van deze browser nog niet mag spelen. Zonder die ene tik blijft
+   het alarm op een telefoon stil — juist in het QR-scenario, waar de ouder het
+   scherm na het scannen niet meer aanraakt. */
+.alarm-arm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 11px 14px;
+  border-radius: 16px;
+  background: rgba(255, 111, 158, 0.1);
+  border: 1px solid rgba(255, 111, 158, 0.34);
+  color: var(--bp-navy);
+  font: 600 12.5px "Nunito", sans-serif;
+}
+.alarm-arm > span {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+.alarm-arm.hidden {
+  display: none;
+}
+
+/* De "Crying detected"-pil stond in een verborgen compat-blok en was daardoor
+   nooit te zien. Nu staat hij op het monitorscherm en heeft hij ruimte nodig. */
+#dviewMonitor > .alert-pill {
+  margin: 0 0 12px;
+}
+
+/* Babyunit terwijl de browser nog om camera- en microfoontoegang vraagt: er is
+   dan nog geen kamercode en geen QR, dus die vakken (en de knoppen die erbij
+   horen) horen er ook niet te staan. Zonder dit las het scherm als "wachten op
+   de ouderunit" met een code van puntjes — precies de verkeerde aanwijzing. */
+#screenPairBaby.wacht-op-toestemming .pair-box > h4,
+#screenPairBaby.wacht-op-toestemming #babyCodeText,
+#screenPairBaby.wacht-op-toestemming #babyQR,
+#screenPairBaby.wacht-op-toestemming .qr-hint,
+#screenPairBaby.wacht-op-toestemming .pair-actions {
+  display: none;
+}
+#screenPairBaby.wacht-op-toestemming .waiting-pill {
+  margin: 0;
+}
+
+/* Meldingenstrook boven het beeld op het ouderdashboard.
+   #dviewMonitor is een raster met benoemde gebieden; een kind zonder gebied
+   belandt in een impliciete rij helemaal onderaan (onder het gebeurtenislog).
+   Daarom krijgt de strook een eigen rij boven "video", in beide indelingen. */
+body.app-mode #dviewMonitor.dview.active,
+#dviewMonitor.dview.active {
+  grid-template-areas:
+    "alert controls"
+    "video controls"
+    "audio controls"
+    "music music"
+    "stats stats"
+    "events events";
+}
+@media (max-width: 900px) {
+  body.app-mode #dviewMonitor.dview.active,
+  #dviewMonitor.dview.active {
+    grid-template-areas:
+      "alert"
+      "video"
+      "audio"
+      "controls"
+      "music"
+      "stats"
+      "events";
+  }
+}
+#dviewMonitor > .monitor-alerts {
+  grid-area: alert;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#dviewMonitor > .monitor-alerts.hidden {
+  display: none;
+}
+#dviewMonitor > .monitor-alerts > .alert-pill {
+  margin: 0;
+}
+#dviewMonitor > .monitor-alerts > .alarm-arm {
+  margin: 0;
+}

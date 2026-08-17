@@ -416,6 +416,7 @@
         </div>
         <div class="connecting-row hidden" id="parentConnecting"><div class="spinner"></div><span data-i18n="connecting">Connecting…</span></div>
         <div class="pair-error hidden" id="parentError" role="alert"></div>
+        <details class="pair-diag hidden" id="parentDiagBox"><summary data-i18n="techDetails">Technical details</summary><code id="parentDiag"></code></details>
       </div>
       <div class="backlink"><a href="#" id="parentBack">← <span data-i18n="back">Back</span></a></div>
     </section>
@@ -478,9 +479,16 @@
             <div class="vcard-badge live"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
             <div class="vcard-ph" id="placeholder"><div class="spinner"></div><div id="phText" data-i18n="connecting">Connecting…</div><button class="btn hidden" id="phRetry" type="button" data-i18n="retry">Try again</button></div>
             <div class="vcard-focus"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div>
-            <div class="vcard-hd"><span data-i18n="hd">HD</span><span class="sig sm"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+            <div class="vcard-hd"><span id="vcardHd" data-i18n="hd">HD</span><span class="sig sm"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
           </div>
 
+          <div class="monitor-alerts hidden" id="monitorAlerts">
+            <div class="alert-pill hidden" id="cryAlert" role="status" data-i18n="cryingDetected">Crying detected</div>
+            <div class="alarm-arm hidden" id="alarmArm" role="status">
+              <span data-i18n="alarmTestHint">Tap once so the cry alarm can make a sound on this device.</span>
+              <button class="pillbtn" id="btnAlarmTest" type="button" data-i18n="alarmTest">Test alarm sound</button>
+            </div>
+          </div>
           <div class="ameter">
             <div class="ameter-top">
               <span class="ameter-label"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="liveAudio">Live audio</span></span>
@@ -514,7 +522,7 @@
           </div>
 
           <div class="statcards">
-            <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div><b class="ok" data-i18n="on2">On</b><small data-i18n="autoNoise">Auto noise reduction</small></div>
+            <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div><b class="ok" data-i18n="on2">On</b><small id="audioFocusSub" data-i18n="rawAudio">Unprocessed — soft sounds stay audible</small></div>
             <div class="statcard tap" id="cardSleep" role="button" tabindex="0"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 9v4l2.5 2M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="sleepTimer">Sleep timer</span></div><b id="sleepVal" data-i18n="off2">Off</b><small data-i18n="sleepSub">Stops lullaby after time</small></div>
             <div class="statcard tap" id="cardPrivacy" role="button" tabindex="0"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M2 12a10 6.5 0 0 0 20 0 10 6.5 0 0 0-20 0z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg><span data-i18n="videoPrivacy">Video privacy</span></div><b id="privVal" data-i18n="cameraVisible">Camera visible</b><small data-i18n="tapHideVideo">Tap to hide the video</small></div>
             <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="3" y="8" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M21 11v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b id="battVal">—</b><small id="battSub" data-i18n="battWaiting">Waiting…</small></div>
@@ -577,6 +585,10 @@
                 <button class="pillbtn" id="alToggle" type="button">On</button>
               </div>
               <div class="set-row">
+                <span data-i18n="alarmTest">Test alarm sound</span>
+                <button class="pillbtn" id="btnAlarmTest2" type="button" data-i18n="alarmTest">Test alarm sound</button>
+              </div>
+              <div class="set-row">
                 <span data-i18n="sensitivity">Sensitivity</span>
                 <input type="range" id="alSens" min="0" max="100" value="55" aria-label="Cry alert sensitivity" />
                 <b id="alSensVal">55%</b>
@@ -617,7 +629,6 @@
       <div class="hidden" id="parentCompat" aria-hidden="true">
         <span id="clock"></span><span id="dbText"></span>
         <div id="vu"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="alert-pill hidden" id="cryAlert" data-i18n="cryingDetected">Crying detected</div>
       </div>
     </section>
 
@@ -643,14 +654,14 @@
           <div class="vcard-poster" aria-hidden="true"><img class="poster-cam" src="assets/mark.png" alt="" width="589" height="700" /><div class="poster-label"><span class="pl-camoff" data-i18n="posterCameraOff">Camera off</span><span class="pl-offline" data-i18n="posterOffline">Offline</span></div></div>
           <video id="bPreview" autoplay playsinline muted aria-label="Camera preview"></video>
           <div class="vcard-ph hidden" id="bPlaceholder"><div class="spinner"></div><div id="bStatus" data-i18n="startingCamera">Starting camera…</div></div>
-          <div class="vcard-focus"><span class="dot ok" id="bConnDot"></span><span data-i18n="cameraActive">Camera</span> <b data-i18n="on2">On</b></div>
+          <div class="vcard-focus"><span class="dot ok" id="bConnDot"></span><span data-i18n="cameraLabel">Camera</span> <b id="bCamState" data-i18n="on2">On</b></div>
           <button class="vcard-shade" id="tgPrivacyBtn" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6M9.9 5.1A9.6 9.6 0 0 1 12 5c5 0 9 4.5 9 7 0 1-1 2.6-2.7 4M6.6 6.6C4.2 8.1 3 10 3 12c0 2 3 6 9 6 1 0 2-.2 2.9-.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="privacyShade">Privacy shade</span></button>
         </div>
 
         <div class="bstat-row">
-          <div class="bstat"><div class="bstat-h"><span class="dot ok"></span><span id="bConn" data-i18n="connected">Connected</span></div><small data-i18n="excellentConn">Excellent connection</small><b id="bLatency">— ms</b></div>
+          <div class="bstat"><div class="bstat-h"><span class="dot ok"></span><span id="bConn" data-i18n="connected">Connected</span></div><small id="bConnSub" data-i18n="excellentConn">Excellent connection</small><b id="bLatency">— ms</b></div>
           <div class="bstat"><div class="bstat-h"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="3" y="8" width="16" height="9" rx="2" stroke="var(--ok)" stroke-width="1.7"/><rect x="5" y="10" width="9" height="5" fill="var(--ok)"/><path d="M21 11v3" stroke="var(--ok)" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b class="big" id="bBatt">—</b><small class="ok" id="bBattSub" data-i18n="battWaiting">Waiting…</small></div>
-          <div class="bstat"><div class="bstat-h"><span data-i18n="room">Room</span></div><b class="big code" id="bRoom">—</b><small><svg viewBox="0 0 24 24" fill="none" width="13" height="13" style="vertical-align:-2px"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <span data-i18n="localOnly">Local network only</span></small></div>
+          <div class="bstat"><div class="bstat-h"><span data-i18n="room">Room</span></div><b class="big code" id="bRoom">—</b><small><svg viewBox="0 0 24 24" fill="none" width="13" height="13" style="vertical-align:-2px"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <span data-i18n="p2pEncrypted">Encrypted, directly between your devices</span></small></div>
         </div>
 
         <div class="bgrid">
@@ -661,7 +672,7 @@
               <button class="icon-btn" id="copyBabyDash" type="button" data-i18n-title="copyCode" title="Copy code" aria-label="Copy room code"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8"/></svg></button>
             </div>
             <div class="bpair-qrrow">
-              <div class="bpair-qr" id="babyDashQR"></div>
+              <div class="bpair-qr" id="babyDashQR" role="button" tabindex="0" aria-label="Enlarge QR code" data-i18n-title="qrZoomHint"></div>
               <div class="bpair-scan"><b data-i18n="scanToConnect">Scan to connect</b><small data-i18n="useParentScan">Use the parent unit to scan</small></div>
             </div>
           </div>

@@ -4,10 +4,10 @@
     { "file": "thequietbetweenheartbeats.mp3", "title": "The Quiet Between Heartbeats" },
     { "file": "sleepybaby.mp3",                "title": "Sleepy Baby" },
     { "file": "sleepybaby_version_2.mp3",      "title": "Sleepy Baby II" },
-    { "file": "slaapmaarkleintje.mp3",         "title": "Slaap maar, kleintje" },
-    { "file": "slaapmaarkleintje2.mp3",        "title": "Slaap maar, kleintje II" },
-    { "file": "slaapkleintje.mp3",             "title": "Slaap, kleintje" },
-    { "file": "zachtvoorjeslapen.mp3",         "title": "Zacht voor je slapen" },
-    { "file": "papahoudtdewacht.mp3",          "title": "Papa houdt de wacht" }
+    { "file": "slaapmaarkleintje.mp3",         "title": "Sleep Now, Little One" },
+    { "file": "slaapmaarkleintje2.mp3",        "title": "Sleep Now, Little One II" },
+    { "file": "slaapkleintje.mp3",             "title": "Sleep, Little One" },
+    { "file": "zachtvoorjeslapen.mp3",         "title": "Softly Before Sleep" },
+    { "file": "papahoudtdewacht.mp3",          "title": "Daddy Keeps Watch" }
   ]
 }

@@ -64,6 +64,9 @@ const copies = [
   'how-it-works.html', 'blog.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.jpg',
   '.htaccess', 'LEES-DIT-EERST.txt', 'contact-send.php',
+  // app.js haalt dit bij élke paginalading op; zonder bestand gaf dat een 404
+  // in de console van zowel de baby- als de ouderunit.
+  'turn.json',
 ];
 for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
 fs.cpSync(path.join(SL, 'music'), path.join(OUT, 'music'), { recursive: true });

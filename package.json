@@ -14,7 +14,9 @@
     "build": "node build.js",
     "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'",
     "test:oldbrowser": "node test/e2e-oldbrowser.js",
-    "test:media": "node test/e2e-media.js"
+    "test:media": "node test/e2e-media.js",
+    "test:audit": "node test/e2e-audit.js",
+    "test:i18n": "node test/i18n-parity.js"
   },
   "engines": {
     "node": ">=18"
