@@ -865,6 +865,29 @@
     }, meldAanPeer ? 220 : 0);
   }
 
+  // --------------------------------------------------- statustegels babyunit
+  //
+  // De vier tegels onderaan het babydashboard (nachtlampje, slaapliedje,
+  // huil-alarm, slaaptimer) worden allemaal door de ouderunit bediend. Hun
+  // stand stond alleen als tekst in de tegel zelf, en `I18n.apply()` schrijft
+  // bij elke taalwissel de standaardtekst uit `data-i18n` terug — een lopende
+  // slaaptimer van "14 min" werd dan weer "Uit". De werkelijke stand staat
+  // daarom hier, en de tegels worden eruit opgebouwd.
+  const babyTegels = { night: false, sleepMin: 0, cry: false };
+  function renderBabyTiles() {
+    const zet = (id, tekst, aan) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = tekst;
+      el.classList.toggle('ok', !!aan);
+    };
+    const spelend = lullaby.isPlaying();
+    zet('tileNight', babyTegels.night ? T('on2') : T('off2'), babyTegels.night);
+    zet('tileLullaby', spelend ? T('on2') : T('off2'), spelend);
+    zet('tileCry', babyTegels.cry ? T('on2') : T('off2'), babyTegels.cry);
+    zet('tileSleep', babyTegels.sleepMin ? babyTegels.sleepMin + ' min' : T('off2'), !!babyTegels.sleepMin);
+  }
+
   // ------------------------------------------------------------------ besturingscommando's
   function handleControl(msg) {
     // Toegang geweigerd door de babyunit: meteen stoppen met proberen.
@@ -901,6 +924,12 @@
         linkApproved = true;
         mediaPogingen = 0;
         startMediaWatchdog();
+        // Pas hier staat het besturingskanaal aan bééde kanten open. Alles wat
+        // de ouderunit eerder stuurt (in parentConnected, meteen bij
+        // conn.open) valt bij de babyunit nog in de toegangspoort en wordt
+        // weggegooid — die luistert daar alleen naar 'hello'. De stand van het
+        // huil-alarm, die de babyunit als tegel toont, gaat daarom hier mee.
+        sendControl({ cmd: 'cryAlert', on: alarmOn });
         // Alleen als er vóór de herverbinding werd teruggepraat gaat de
         // microfoon weer open; anders blijft hij dicht (zie ensureMic).
         if (talking) ensureMic().then((s) => { if (s) startTalkback(); });
@@ -912,7 +941,7 @@
         case 'lullaby': {
           if (msg.on) { babyStopMusic(); lullaby.play(msg.id); }
           else lullaby.stop();
-          const tl = $('tileLullaby'); if (tl) { tl.textContent = lullaby.isPlaying() ? T('on2') : T('off2'); tl.classList.toggle('ok', lullaby.isPlaying()); }
+          renderBabyTiles();
           sendControl({ cmd: 'lullabyState', id: lullaby.isPlaying() ? lullaby.currentName() : null });
           break;
         }
@@ -928,12 +957,18 @@
           const on = !!msg.on;
           $('nightlight').classList.toggle('hidden', !on);
           if (on) $('nightlight').style.opacity = Math.max(0.12, (msg.level == null ? 60 : msg.level) / 100).toFixed(2);
-          const tn = $('tileNight'); if (tn) { tn.textContent = on ? T('on2') : T('off2'); tn.classList.toggle('ok', on); }
+          babyTegels.night = on;
+          renderBabyTiles();
           break;
         }
         case 'sleepTimer': {
-          const ts = $('tileSleep');
-          if (ts) { ts.textContent = msg.min ? msg.min + ' min' : T('off2'); ts.classList.toggle('ok', !!msg.min); }
+          babyTegels.sleepMin = +msg.min || 0;
+          renderBabyTiles();
+          break;
+        }
+        case 'cryAlert': {
+          babyTegels.cry = !!msg.on;
+          renderBabyTiles();
           break;
         }
         case 'talk':
@@ -2170,6 +2205,11 @@
       $('btnAlarm').classList.toggle('on', alarmOn);
       const at = $('alToggle');
       if (at) { at.classList.toggle('on', alarmOn); at.textContent = alarmOn ? T('on2') : T('off2'); }
+      // De babyunit toont het huil-alarm als tegel naast nachtlampje,
+      // slaapliedje en slaaptimer. Die drie werden al doorgegeven, deze niet:
+      // de tegel stond hard op "Aan" en bleef daar staan, ook nadat de ouder
+      // het alarm had uitgezet. Nu volgt hij de werkelijke stand.
+      sendControl({ cmd: 'cryAlert', on: alarmOn });
     };
     $('btnAlarm').onclick = () => {
       alarmOn = !alarmOn;
@@ -2278,7 +2318,29 @@
     const swCam = $('swCam'); if (swCam) swCam.classList.toggle('on', on);
     const sc = $('bScreen'); if (sc) sc.classList.toggle('privacy', !on);
     const swAO = $('swAudioOnly'); if (swAO) swAO.classList.toggle('on', !on);
+    syncSwitchRows();
     sendControl({ cmd: 'videoState', on: on }); // ouderunit toont poster + "Alleen geluid"
+  }
+
+  /**
+   * De schakelrijen op de babyunit tonen hun stand net zo als de
+   * bedieningsknoppen van de ouderunit: de hele knop kleurt op als hij aan
+   * staat. Het schuifje blijft staan als aanwijzing dát het een schakelaar is,
+   * maar de klasse `on` op de rij draagt de status — dat is precies wat
+   * `.ctrlbtn.on` op de ouderunit doet.
+   *
+   * Wordt ook aangeroepen bij een stand die van buitenaf verandert (de
+   * ouderunit kan met "alleen geluid" de camera uitzetten), zodat de knop nooit
+   * iets anders toont dan de werkelijke toestand.
+   */
+  function syncSwitchRows() {
+    document.querySelectorAll('[role="switch"]').forEach((row) => {
+      const sw = row.querySelector('.switch');
+      if (!sw) return;
+      const aan = sw.classList.contains('on');
+      row.classList.toggle('on', aan);
+      row.setAttribute('aria-checked', aan ? 'true' : 'false');
+    });
   }
 
   function startBabyDevice() {
@@ -2314,6 +2376,9 @@
     if (flipCam) flipCam.onclick = () => babyCycleCamera();
 
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) endSession(true); };
+    // beginstand van de schakelknoppen en statustegels meteen goed tonen
+    syncSwitchRows();
+    renderBabyTiles();
     enableWakeLock();
     reportBattery();
     reportCameras();
@@ -2868,6 +2933,9 @@
         renderTorchUI();
       } else if (role === 'baby' && babyStarted) {
         if (controlConn && controlConn.open) set('bConn', T('connected'));
+        // I18n.apply() heeft de tegels net op hun standaardtekst gezet; hier
+        // komt de werkelijke stand terug (in de nieuwe taal).
+        renderBabyTiles();
       }
     });
   }
@@ -2968,6 +3036,34 @@
     startParentConnect(h);
   })();
 
+  /**
+   * Vulling van de schuifregelaars.
+   *
+   * De browser tekende het spoor in zijn eigen kleur — op dit lichte thema een
+   * bijna zwarte balk dwars door de instellingen. Met een eigen spoor is die
+   * weg, maar dan verdwijnt ook het gekleurde deel dat laat zien hoe ver de
+   * regelaar staat. Die stand komt hier terug als CSS-variabele.
+   *
+   * Puur presentatie: raakt geen enkele waarde of functie aan.
+   */
+  (function volgSchuifvulling() {
+    const bij = (el) => {
+      if (!el) return;
+      const min = +el.min || 0;
+      const max = el.max === '' ? 100 : +el.max;
+      const pct = max > min ? ((+el.value - min) / (max - min)) * 100 : 0;
+      el.style.setProperty('--vulling', pct.toFixed(1) + '%');
+    };
+    const alle = () => document.querySelectorAll('.set-row input[type="range"]').forEach(bij);
+    document.addEventListener('input', (e) => {
+      if (e.target && e.target.matches && e.target.matches('.set-row input[type="range"]')) bij(e.target);
+    });
+    alle();
+    // De instellingen staan in een verborgen deelweergave; bij het openen van
+    // een weergave nog eens langs, zodat de vulling ook daar meteen klopt.
+    document.querySelectorAll('.dnav').forEach((b) => b.addEventListener('click', () => setTimeout(alle, 0)));
+  })();
+
   // ---------------------------------------------------------- toegankelijkheid
   // Alle inline SVG's zijn decoratief; knoppen dragen tekst of aria-label.
   document.querySelectorAll('svg').forEach((s) => s.setAttribute('aria-hidden', 'true'));
@@ -2980,12 +3076,12 @@
     }
   });
   // aria-checked meebewegen met de visuele switch-status.
+  //
+  // Bewust ÁLLE schakelrijen bijwerken en niet alleen de aangetikte: één tik op
+  // "Camera" zet ook "Alleen geluid" en "Privacyscherm" om, en die twee rijen
+  // bleven anders op hun oude aria-checked staan.
   document.addEventListener('click', (e) => {
-    const row = e.target && e.target.closest && e.target.closest('[role="switch"]');
-    if (row) {
-      const sw = row.querySelector('.switch');
-      if (sw) row.setAttribute('aria-checked', sw.classList.contains('on') ? 'true' : 'false');
-    }
+    if (e.target && e.target.closest && e.target.closest('[role="switch"]')) syncSwitchRows();
   });
 
   document.addEventListener('pointerdown', () => {

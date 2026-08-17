@@ -1264,3 +1264,215 @@ body.app-mode #dviewMonitor .mplayer { grid-area: music; }
   body.app-mode .dash-topbar .lang-pill { flex: 0 1 auto; min-width: 0; }
   body.app-mode .dash-topbar .lang-pill .lang-select { max-width: clamp(0px, 12vw, 96px); }
 }
+
+/* ===========================================================================
+   ÉÉN KNOPTAAL VOOR BABYUNIT ÉN OUDERUNIT
+   ---------------------------------------------------------------------------
+   Klacht: "de knoppen van de babyunit zien er anders uit dan die van de
+   ouderunit". Dat klopt en het was te meten. Voor functies die op beide
+   toestellen hetzelfde doen stonden er twee complete componentfamilies:
+
+     ouderunit   .ctrlbtn   losse witte kaart, radius 16px, icoonvlak,
+                            AAN = hele knop merkblauw met witte tekst
+     babyunit    .btgl      rij in één grote kaart, radius 0px, haarlijn
+                            ertussen, AAN = klein schuifje van 44x26px
+     babyunit    .btile     losse kaart, radius 24px, icoon gecentreerd
+                            bóven het label; het equivalent op de ouderunit
+                            (.statcard) is juist een aaneengesloten strook
+                            met het icoon links náást het label
+
+   Gemeten op 390/430/1280px vóór deze sectie:
+     .ctrlbtn  hoogte 101px (76px op 1280), radius 16px
+     .btgl     hoogte  70px,                radius  0px
+     .btile    hoogte 126px,                radius 24px
+
+   Drie vormen, drie radii en twee verschillende manieren om "aan" te tonen.
+   Hieronder volgt de babyunit de ouderunit, want daar staan de
+   referentieschermen op. Er wordt niets nieuws bedacht: .btgl krijgt de vorm
+   en de statustaal van .ctrlbtn, en .btiles krijgt de strook van .statcards.
+   Alle element-ID's blijven ongewijzigd.
+
+   Let op: assets/brand-theme.css laadt ná dit bestand en gebruikt !important
+   op .bcard/.btile/.switch. Daarom staat dat hier ook.
+   =========================================================================== */
+
+/* --- 1. de togglelijst is geen kaart meer, maar een stapel losse knoppen --- */
+body.app-mode .bdash .bcard.btoggles {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  padding: 0;
+  gap: 12px;
+}
+
+/* --- 2. elke schakelrij is nu dezelfde knop als op de ouderunit --- */
+body.app-mode .bdash .btgl {
+  border-top: 0;
+  border: 1px solid var(--bp-line, rgba(110, 159, 222, 0.28));
+  border-radius: var(--qa-r-control);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 #fff;
+  color: var(--bp-navy, #0C2F63);
+  min-height: 58px;
+  padding: 10px 14px;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.08s ease;
+}
+body.app-mode .bdash .btgl:hover {
+  border-color: rgba(47, 143, 240, 0.5);
+  background: rgba(245, 250, 255, 0.96);
+}
+body.app-mode .bdash .btgl:active { transform: scale(0.97); }
+
+/* AAN — exact dezelfde vulling, tekstkleur en schaduw als .ctrlbtn.on */
+body.app-mode .bdash .btgl.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 12px 28px rgba(47, 143, 240, 0.28) !important;
+}
+body.app-mode .bdash .btgl.on .btgl-t b,
+body.app-mode .bdash .btgl.on .btgl-t small { color: #fff !important; }
+body.app-mode .bdash .btgl.on .btgl-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: #fff !important;
+  border-color: transparent !important;
+}
+body.app-mode .bdash .btgl.on .btgl-arrow { color: #fff; }
+
+/* Het icoonvlak krijgt dezelfde maat als op de ouderunit (.cb-ic is 40px). */
+body.app-mode .bdash .btgl-ic { width: 40px; height: 40px; }
+
+/* Het schuifje blijft staan — het vertelt dat de rij een schakelaar is — maar
+   het draagt de status niet langer alleen. Op een blauwe knop zou het blauwe
+   schuifje onzichtbaar zijn, dus daar wordt het wit met een blauwe knop. */
+body.app-mode .bdash .btgl.on .switch {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: none !important;
+}
+body.app-mode .bdash .btgl.on .switch::after { background: #fff; }
+/* Aanraakdoel van 44px zonder het schuifje zelf op te blazen. */
+body.app-mode .bdash .switch { position: relative; }
+body.app-mode .bdash .switch::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 48px; height: 44px; transform: translate(-50%, -50%);
+}
+
+/* --- 3. de statustegels lezen als de statuskaarten van de ouderunit ---
+   Ouderunit: één aaneengesloten strook, icoon klein en links náást het label,
+   waarde eronder. De babyunit had vier losse kaarten met een groot gecentreerd
+   icoonvlak. Zelfde inhoud, dus nu ook dezelfde vorm. */
+body.app-mode .bdash .btiles {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--qa-r-panel);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 18px 50px rgba(12, 47, 99, 0.07), inset 0 1px 0 #fff;
+}
+body.app-mode .bdash .btile {
+  min-width: 0;
+  min-height: 112px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  padding: 15px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'ic label' 'value value';
+  align-items: center;
+  column-gap: 7px;
+  row-gap: 8px;
+  align-content: center;
+}
+body.app-mode .bdash .btile + .btile { border-left: 1px solid rgba(110, 159, 222, 0.18) !important; }
+@media (max-width: 860px) {
+  body.app-mode .bdash .btile + .btile { border-left: 0 !important; }
+  body.app-mode .bdash .btile:nth-child(even) { border-left: 1px solid rgba(110, 159, 222, 0.18) !important; }
+  body.app-mode .bdash .btile:nth-child(n + 3) { border-top: 1px solid rgba(110, 159, 222, 0.18) !important; }
+}
+/* icoon: even klein en zonder vlak, net als .sc-h svg op de ouderunit */
+body.app-mode .bdash .btile .bt-ic {
+  grid-area: ic;
+  width: 15px; height: 15px;
+  margin: 0;
+  background: none !important;
+  border: 0 !important;
+  color: var(--bp-blue, #2F8FF0) !important;
+}
+body.app-mode .bdash .btile .bt-ic svg { width: 15px; height: 15px; }
+body.app-mode .bdash .btile b { grid-area: label; margin-bottom: 0; }
+/* justify-self: anders rekt het groene "Aan"-pilletje over de hele tegel uit,
+   want een rastercel vult standaard haar breedte. */
+body.app-mode .bdash .btile small { grid-area: value; justify-self: start; }
+
+/* --- 4. één pictogramkleur voor dezelfde functie op beide units ---
+   assets/brand-theme.css kleurde het tweede en vierde icoon van de
+   bedieningsrij roze op plaats-nummer (:nth-child), niet op betekenis. Dat
+   trof "Slaapliedje" en "Huil-alarm", terwijl exact diezelfde twee functies op
+   de babyunit blauw zijn — en het verschoof mee zodra er een knop bij komt.
+   Roze blijft gereserveerd voor wat het al betekent: opnemen en stoppen. */
+body.app-mode #dviewMonitor .ctrlbtn:nth-child(2):not(.danger) .cb-ic,
+body.app-mode #dviewMonitor .ctrlbtn:nth-child(4):not(.danger) .cb-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(95, 174, 255, 0.13) !important;
+}
+/* ... behalve wanneer de knop aan staat: dan wit vlak met blauw pictogram. */
+body.app-mode #dviewMonitor .ctrlbtn.on .cb-ic,
+body.app-mode #dviewMonitor .ctrlbtn.active .cb-ic { background: #fff !important; }
+body.app-mode #dviewMonitor .ctrlbtn.active .cb-ic { color: var(--bp-pink, #FF6F9E) !important; }
+
+/* --- 5. schuifregelaars: de onbenutte helft was bijna zwart ---
+   Zonder eigen opmaak tekent de browser het spoor in zijn eigen kleur; op dit
+   lichte thema gaf dat een donkerbruine balk dwars door de instellingen. Nu
+   dezelfde lichte lijn als de randen elders, met de merkblauwe knop. */
+body.app-mode .dash .set-row input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  background: transparent;
+}
+/* Het afgelegde deel blijft merkblauw: de stand moet in één blik af te lezen
+   zijn. `--vulling` wordt door js/app.js bijgehouden (zie volgSchuifvulling). */
+body.app-mode .dash .set-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--bp-blue, #2F8FF0) 0 var(--vulling, 0%),
+    rgba(110, 159, 222, 0.26) var(--vulling, 0%) 100%);
+}
+body.app-mode .dash .set-row input[type="range"]::-moz-range-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--bp-blue, #2F8FF0) 0 var(--vulling, 0%),
+    rgba(110, 159, 222, 0.26) var(--vulling, 0%) 100%);
+}
+body.app-mode .dash .set-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; margin-top: -7px;
+  border-radius: 50%; border: 0;
+  background: var(--bp-blue, #2F8FF0);
+  box-shadow: 0 2px 6px rgba(12, 47, 99, 0.28);
+}
+body.app-mode .dash .set-row input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%; border: 0;
+  background: var(--bp-blue, #2F8FF0);
+  box-shadow: 0 2px 6px rgba(12, 47, 99, 0.28);
+}
+
+/* --- 6. "Auto" bij de geluidsmeter is een aflezing, geen knop ---
+   Het stond op cursor:pointer en zag eruit als een knop, maar er hing niets
+   aan: aantikken deed niets. Het is nu duidelijk een statuslabel. */
+body.app-mode .dash .ameter-mode { cursor: default; }
+
+/* --- 7. de herhaalknop bij de slaapliedjes was 42px breed --- */
+body.app-mode .dash .mrepeat { min-width: 44px; justify-content: center; }
