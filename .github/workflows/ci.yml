@@ -58,5 +58,8 @@ jobs:
       - name: E2E — auditbevindingen (gedrag en weergave)
         run: npm run test:audit
 
+      - name: E2E — scherm uit, achtergrond en onderbroken sporen
+        run: npm run test:background
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n

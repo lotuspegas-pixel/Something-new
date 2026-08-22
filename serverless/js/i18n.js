@@ -3134,6 +3134,282 @@
     netFast: 'rețea rapidă',
   });
 
+
+  // ------------------------------------------------------------------
+  // Scherm-uit (blackout) en onderbroken sporen. In alle 30 talen, zodat
+  // de eerlijke uitleg over vergrendelen nergens stil op Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    screenOff: 'Screen off',
+    screenOffSub: 'Dark screen, sound keeps running',
+    blackoutHint: 'Screen is dark — sound keeps playing. Tap to wake.',
+    lockScreenWarn: 'Screen off keeps this page open: camera, microphone and sound keep working. Locking the phone or switching to another app does stop them — on iPhone and iPad the system pauses the browser and no website can prevent that.',
+    streamPaused: 'Baby unit interrupted — no sound coming in',
+    streamResumed: 'Baby unit is sending sound again',
+    micInterrupted: 'Interrupted by the phone — restoring…',
+  });
+  Object.assign(S.zh, {
+    screenOff: '关闭屏幕',
+    screenOffSub: '屏幕变黑，声音继续',
+    blackoutHint: '屏幕已变黑 — 声音继续播放。点按可唤醒。',
+    lockScreenWarn: '“关闭屏幕”会让本页面保持打开：摄像头、麦克风和声音继续工作。但锁定手机或切换到其他应用会让它们停止 — 在 iPhone 和 iPad 上系统会暂停浏览器，任何网站都无法阻止。',
+    streamPaused: '宝宝端被中断 — 没有声音传入',
+    streamResumed: '宝宝端重新开始传声',
+    micInterrupted: '被手机中断 — 正在恢复…',
+  });
+  Object.assign(S.hi, {
+    screenOff: 'स्क्रीन बंद',
+    screenOffSub: 'स्क्रीन काली, आवाज़ चालू रहती है',
+    blackoutHint: 'स्क्रीन काली है — आवाज़ चलती रहती है। जगाने के लिए टैप करें।',
+    lockScreenWarn: '“स्क्रीन बंद” इस पेज को खुला रखता है: कैमरा, माइक्रोफ़ोन और आवाज़ चलते रहते हैं। फ़ोन लॉक करने या दूसरे ऐप पर जाने से वे रुक जाते हैं — iPhone और iPad पर सिस्टम ब्राउज़र को रोक देता है और कोई भी वेबसाइट इसे नहीं रोक सकती।',
+    streamPaused: 'बेबी यूनिट बाधित — कोई आवाज़ नहीं आ रही',
+    streamResumed: 'बेबी यूनिट फिर से आवाज़ भेज रही है',
+    micInterrupted: 'फ़ोन ने बाधित किया — बहाल किया जा रहा है…',
+  });
+  Object.assign(S.es, {
+    screenOff: 'Pantalla apagada',
+    screenOffSub: 'Pantalla oscura, el sonido sigue',
+    blackoutHint: 'La pantalla está oscura: el sonido sigue sonando. Toca para despertar.',
+    lockScreenWarn: '«Pantalla apagada» mantiene esta página abierta: la cámara, el micrófono y el sonido siguen funcionando. Bloquear el teléfono o cambiar a otra app sí los detiene: en iPhone y iPad el sistema pausa el navegador y ninguna web puede evitarlo.',
+    streamPaused: 'Unidad del bebé interrumpida: no entra sonido',
+    streamResumed: 'La unidad del bebé vuelve a enviar sonido',
+    micInterrupted: 'Interrumpido por el teléfono: restaurando…',
+  });
+  Object.assign(S.fr, {
+    screenOff: 'Écran éteint',
+    screenOffSub: 'Écran noir, le son continue',
+    blackoutHint: 'L’écran est noir — le son continue. Touchez pour réveiller.',
+    lockScreenWarn: '« Écran éteint » garde cette page ouverte : la caméra, le micro et le son continuent de fonctionner. Verrouiller le téléphone ou passer à une autre appli les arrête — sur iPhone et iPad le système met le navigateur en pause et aucun site ne peut l’empêcher.',
+    streamPaused: 'Unité bébé interrompue — aucun son ne parvient',
+    streamResumed: 'L’unité bébé envoie de nouveau du son',
+    micInterrupted: 'Interrompu par le téléphone — restauration…',
+  });
+  Object.assign(S.ar, {
+    screenOff: 'إطفاء الشاشة',
+    screenOffSub: 'شاشة مظلمة، والصوت يستمر',
+    blackoutHint: 'الشاشة مظلمة — الصوت مستمر. المس للإيقاظ.',
+    lockScreenWarn: '«إطفاء الشاشة» يُبقي هذه الصفحة مفتوحة: الكاميرا والميكروفون والصوت تستمر بالعمل. أما قفل الهاتف أو الانتقال إلى تطبيق آخر فيوقفها — على iPhone وiPad يوقف النظام المتصفح ولا يستطيع أي موقع منع ذلك.',
+    streamPaused: 'وحدة الرضيع متوقفة — لا يصل أي صوت',
+    streamResumed: 'وحدة الرضيع تُرسل الصوت من جديد',
+    micInterrupted: 'انقطع بسبب الهاتف — جارٍ الاستعادة…',
+  });
+  Object.assign(S.bn, {
+    screenOff: 'স্ক্রিন বন্ধ',
+    screenOffSub: 'স্ক্রিন অন্ধকার, শব্দ চালু থাকে',
+    blackoutHint: 'স্ক্রিন অন্ধকার — শব্দ চলতে থাকে। জাগাতে ট্যাপ করুন।',
+    lockScreenWarn: '“স্ক্রিন বন্ধ” এই পাতাটি খোলা রাখে: ক্যামেরা, মাইক্রোফোন ও শব্দ কাজ করতে থাকে। ফোন লক করলে বা অন্য অ্যাপে গেলে সেগুলো থেমে যায় — iPhone ও iPad-এ সিস্টেম ব্রাউজার থামিয়ে দেয় এবং কোনো ওয়েবসাইট তা ঠেকাতে পারে না।',
+    streamPaused: 'শিশু ইউনিট বিঘ্নিত — কোনো শব্দ আসছে না',
+    streamResumed: 'শিশু ইউনিট আবার শব্দ পাঠাচ্ছে',
+    micInterrupted: 'ফোন বাধা দিয়েছে — পুনরুদ্ধার করা হচ্ছে…',
+  });
+  Object.assign(S.pt, {
+    screenOff: 'Tela desligada',
+    screenOffSub: 'Tela escura, o som continua',
+    blackoutHint: 'A tela está escura — o som continua tocando. Toque para acordar.',
+    lockScreenWarn: '“Tela desligada” mantém esta página aberta: câmera, microfone e som continuam funcionando. Bloquear o telefone ou mudar para outro app faz com que parem — no iPhone e no iPad o sistema pausa o navegador e nenhum site pode impedir isso.',
+    streamPaused: 'Unidade do bebê interrompida — não chega som',
+    streamResumed: 'A unidade do bebê está enviando som novamente',
+    micInterrupted: 'Interrompido pelo telefone — restaurando…',
+  });
+  Object.assign(S.ru, {
+    screenOff: 'Выключить экран',
+    screenOffSub: 'Тёмный экран, звук продолжается',
+    blackoutHint: 'Экран тёмный — звук продолжает играть. Коснитесь, чтобы разбудить.',
+    lockScreenWarn: '«Выключить экран» оставляет эту страницу открытой: камера, микрофон и звук продолжают работать. Блокировка телефона или переход в другое приложение всё же их останавливает — на iPhone и iPad система приостанавливает браузер, и ни один сайт не может этому помешать.',
+    streamPaused: 'Детский блок прерван — звук не поступает',
+    streamResumed: 'Детский блок снова передаёт звук',
+    micInterrupted: 'Прервано телефоном — восстановление…',
+  });
+  Object.assign(S.ur, {
+    screenOff: 'اسکرین بند',
+    screenOffSub: 'اسکرین تاریک، آواز جاری رہتی ہے',
+    blackoutHint: 'اسکرین تاریک ہے — آواز چلتی رہتی ہے۔ جگانے کے لیے ٹیپ کریں۔',
+    lockScreenWarn: '”اسکرین بند“ اس صفحے کو کھلا رکھتا ہے: کیمرہ، مائیکروفون اور آواز کام کرتے رہتے ہیں۔ فون لاک کرنے یا دوسری ایپ پر جانے سے یہ رک جاتے ہیں — iPhone اور iPad پر سسٹم براؤزر کو روک دیتا ہے اور کوئی ویب سائٹ اسے نہیں روک سکتی۔',
+    streamPaused: 'بے بی یونٹ منقطع — کوئی آواز نہیں آ رہی',
+    streamResumed: 'بے بی یونٹ دوبارہ آواز بھیج رہا ہے',
+    micInterrupted: 'فون نے مداخلت کی — بحال کیا جا رہا ہے…',
+  });
+  Object.assign(S.id, {
+    screenOff: 'Layar mati',
+    screenOffSub: 'Layar gelap, suara tetap jalan',
+    blackoutHint: 'Layar gelap — suara tetap terdengar. Ketuk untuk membangunkan.',
+    lockScreenWarn: '“Layar mati” menjaga halaman ini tetap terbuka: kamera, mikrofon, dan suara terus bekerja. Mengunci ponsel atau berpindah ke aplikasi lain akan menghentikannya — di iPhone dan iPad sistem menjeda browser dan tidak ada situs yang bisa mencegahnya.',
+    streamPaused: 'Unit bayi terputus — tidak ada suara masuk',
+    streamResumed: 'Unit bayi mengirim suara lagi',
+    micInterrupted: 'Terputus oleh ponsel — sedang memulihkan…',
+  });
+  Object.assign(S.de, {
+    screenOff: 'Bildschirm aus',
+    screenOffSub: 'Dunkler Bildschirm, Ton bleibt an',
+    blackoutHint: 'Bildschirm ist dunkel — der Ton läuft weiter. Zum Aufwecken tippen.',
+    lockScreenWarn: '„Bildschirm aus“ hält diese Seite offen: Kamera, Mikrofon und Ton laufen weiter. Das Handy zu sperren oder zu einer anderen App zu wechseln stoppt sie dagegen — auf iPhone und iPad pausiert das System den Browser, und keine Website kann das verhindern.',
+    streamPaused: 'Babyeinheit unterbrochen — es kommt kein Ton an',
+    streamResumed: 'Babyeinheit sendet wieder Ton',
+    micInterrupted: 'Vom Telefon unterbrochen — wird wiederhergestellt…',
+  });
+  Object.assign(S.ja, {
+    screenOff: '画面オフ',
+    screenOffSub: '画面は暗く、音はそのまま',
+    blackoutHint: '画面は暗くなっています — 音は流れ続けます。タップで復帰。',
+    lockScreenWarn: '「画面オフ」はこのページを開いたままにします：カメラ、マイク、音はそのまま動きます。ただし端末をロックしたり他のアプリに切り替えると停止します — iPhone や iPad ではシステムがブラウザを一時停止し、どのウェブサイトもそれを防げません。',
+    streamPaused: '赤ちゃん機が中断 — 音が届いていません',
+    streamResumed: '赤ちゃん機が再び音を送っています',
+    micInterrupted: '端末により中断 — 復旧中…',
+  });
+  Object.assign(S.mr, {
+    screenOff: 'स्क्रीन बंद',
+    screenOffSub: 'स्क्रीन काळी, आवाज सुरू राहतो',
+    blackoutHint: 'स्क्रीन काळी आहे — आवाज सुरू राहतो. जागे करण्यासाठी टॅप करा.',
+    lockScreenWarn: '“स्क्रीन बंद” हे पान उघडे ठेवते: कॅमेरा, मायक्रोफोन आणि आवाज सुरू राहतात. फोन लॉक केल्यास किंवा दुसऱ्या अ‍ॅपवर गेल्यास ते थांबतात — iPhone आणि iPad वर सिस्टीम ब्राउझर थांबवते आणि कोणतीही वेबसाइट ते रोखू शकत नाही.',
+    streamPaused: 'बाळ युनिट खंडित — आवाज येत नाही',
+    streamResumed: 'बाळ युनिट पुन्हा आवाज पाठवत आहे',
+    micInterrupted: 'फोनने खंडित केले — पुनर्संचयित करत आहे…',
+  });
+  Object.assign(S.te, {
+    screenOff: 'స్క్రీన్ ఆఫ్',
+    screenOffSub: 'స్క్రీన్ చీకటి, శబ్దం కొనసాగుతుంది',
+    blackoutHint: 'స్క్రీన్ చీకటిగా ఉంది — శబ్దం కొనసాగుతుంది. మేల్కొలపడానికి నొక్కండి.',
+    lockScreenWarn: '“స్క్రీన్ ఆఫ్” ఈ పేజీని తెరిచి ఉంచుతుంది: కెమెరా, మైక్రోఫోన్, శబ్దం పనిచేస్తూనే ఉంటాయి. ఫోన్‌ను లాక్ చేయడం లేదా వేరే యాప్‌కు మారడం వాటిని ఆపుతుంది — iPhone మరియు iPadలో సిస్టమ్ బ్రౌజర్‌ను నిలిపివేస్తుంది, దీన్ని ఏ వెబ్‌సైట్ కూడా ఆపలేదు.',
+    streamPaused: 'పాప యూనిట్ అంతరాయం — శబ్దం రావడం లేదు',
+    streamResumed: 'పాప యూనిట్ మళ్లీ శబ్దం పంపుతోంది',
+    micInterrupted: 'ఫోన్ అంతరాయం కలిగించింది — పునరుద్ధరిస్తోంది…',
+  });
+  Object.assign(S.tr, {
+    screenOff: 'Ekranı kapat',
+    screenOffSub: 'Ekran karanlık, ses devam eder',
+    blackoutHint: 'Ekran karanlık — ses çalmaya devam ediyor. Uyandırmak için dokunun.',
+    lockScreenWarn: '“Ekranı kapat” bu sayfayı açık tutar: kamera, mikrofon ve ses çalışmaya devam eder. Telefonu kilitlemek veya başka bir uygulamaya geçmek ise onları durdurur — iPhone ve iPad’de sistem tarayıcıyı duraklatır ve hiçbir web sitesi bunu engelleyemez.',
+    streamPaused: 'Bebek ünitesi kesildi — ses gelmiyor',
+    streamResumed: 'Bebek ünitesi yeniden ses gönderiyor',
+    micInterrupted: 'Telefon kesintiye uğrattı — geri yükleniyor…',
+  });
+  Object.assign(S.ta, {
+    screenOff: 'திரையை அணை',
+    screenOffSub: 'திரை இருட்டு, ஒலி தொடரும்',
+    blackoutHint: 'திரை இருட்டாக உள்ளது — ஒலி தொடர்ந்து ஒலிக்கும். எழுப்ப தட்டவும்.',
+    lockScreenWarn: '“திரையை அணை” இந்தப் பக்கத்தைத் திறந்தே வைக்கும்: கேமரா, ஒலிவாங்கி, ஒலி தொடர்ந்து இயங்கும். ஆனால் தொலைபேசியைப் பூட்டினாலோ வேறு ஆப்பிற்கு மாறினாலோ அவை நின்றுவிடும் — iPhone மற்றும் iPad-இல் அமைப்பு உலாவியை நிறுத்துகிறது; எந்த இணையதளமும் அதைத் தடுக்க முடியாது.',
+    streamPaused: 'குழந்தை யூனிட் தடைபட்டது — ஒலி வரவில்லை',
+    streamResumed: 'குழந்தை யூனிட் மீண்டும் ஒலி அனுப்புகிறது',
+    micInterrupted: 'தொலைபேசி தடை செய்தது — மீட்கப்படுகிறது…',
+  });
+  Object.assign(S.vi, {
+    screenOff: 'Tắt màn hình',
+    screenOffSub: 'Màn hình tối, âm thanh vẫn chạy',
+    blackoutHint: 'Màn hình đang tối — âm thanh vẫn phát. Chạm để đánh thức.',
+    lockScreenWarn: '“Tắt màn hình” giữ trang này mở: camera, micro và âm thanh vẫn hoạt động. Khóa điện thoại hoặc chuyển sang ứng dụng khác thì chúng sẽ dừng — trên iPhone và iPad hệ thống tạm dừng trình duyệt và không trang web nào ngăn được điều đó.',
+    streamPaused: 'Thiết bị bé bị gián đoạn — không có tiếng truyền về',
+    streamResumed: 'Thiết bị bé đang gửi tiếng trở lại',
+    micInterrupted: 'Bị điện thoại làm gián đoạn — đang khôi phục…',
+  });
+  Object.assign(S.ko, {
+    screenOff: '화면 끄기',
+    screenOffSub: '화면은 어둡고, 소리는 계속',
+    blackoutHint: '화면이 어둡습니다 — 소리는 계속 재생됩니다. 깨우려면 탭하세요.',
+    lockScreenWarn: '“화면 끄기”는 이 페이지를 열어 둡니다: 카메라, 마이크, 소리가 계속 작동합니다. 하지만 휴대폰을 잠그거나 다른 앱으로 전환하면 멈춥니다 — iPhone과 iPad에서는 시스템이 브라우저를 일시 중지하며, 어떤 웹사이트도 이를 막을 수 없습니다.',
+    streamPaused: '베이비 유닛 중단 — 소리가 들어오지 않습니다',
+    streamResumed: '베이비 유닛이 다시 소리를 보냅니다',
+    micInterrupted: '휴대폰에 의해 중단됨 — 복구 중…',
+  });
+  Object.assign(S.it, {
+    screenOff: 'Schermo spento',
+    screenOffSub: 'Schermo scuro, l’audio continua',
+    blackoutHint: 'Lo schermo è scuro — l’audio continua. Tocca per riattivare.',
+    lockScreenWarn: '“Schermo spento” tiene aperta questa pagina: fotocamera, microfono e audio continuano a funzionare. Bloccare il telefono o passare a un’altra app invece li ferma — su iPhone e iPad il sistema mette in pausa il browser e nessun sito può impedirlo.',
+    streamPaused: 'Unità bimbo interrotta — non arriva audio',
+    streamResumed: 'L’unità bimbo invia di nuovo audio',
+    micInterrupted: 'Interrotto dal telefono — ripristino in corso…',
+  });
+  Object.assign(S.th, {
+    screenOff: 'ปิดหน้าจอ',
+    screenOffSub: 'จอมืด เสียงยังทำงาน',
+    blackoutHint: 'หน้าจอมืดอยู่ — เสียงยังเล่นต่อ แตะเพื่อปลุก',
+    lockScreenWarn: '“ปิดหน้าจอ” จะเปิดหน้านี้ค้างไว้ กล้อง ไมโครโฟน และเสียงยังทำงานต่อ แต่การล็อกเครื่องหรือสลับไปแอปอื่นจะทำให้หยุด — บน iPhone และ iPad ระบบจะหยุดเบราว์เซอร์ชั่วคราว และไม่มีเว็บไซต์ใดป้องกันได้',
+    streamPaused: 'เครื่องฝั่งทารกถูกขัดจังหวะ — ไม่มีเสียงเข้ามา',
+    streamResumed: 'เครื่องฝั่งทารกส่งเสียงอีกครั้ง',
+    micInterrupted: 'ถูกโทรศัพท์ขัดจังหวะ — กำลังกู้คืน…',
+  });
+  Object.assign(S.gu, {
+    screenOff: 'સ્ક્રીન બંધ',
+    screenOffSub: 'સ્ક્રીન કાળી, અવાજ ચાલુ રહે છે',
+    blackoutHint: 'સ્ક્રીન કાળી છે — અવાજ ચાલુ રહે છે. જગાડવા ટૅપ કરો.',
+    lockScreenWarn: '“સ્ક્રીન બંધ” આ પાનું ખુલ્લું રાખે છે: કૅમેરા, માઇક્રોફોન અને અવાજ ચાલુ રહે છે. ફોન લૉક કરવાથી કે બીજી ઍપ પર જવાથી તે બંધ થાય છે — iPhone અને iPad પર સિસ્ટમ બ્રાઉઝરને થોભાવે છે અને કોઈ વેબસાઇટ તે રોકી શકતી નથી.',
+    streamPaused: 'બેબી યુનિટ ખોરવાયું — અવાજ આવતો નથી',
+    streamResumed: 'બેબી યુનિટ ફરી અવાજ મોકલે છે',
+    micInterrupted: 'ફોને ખલેલ પાડી — પુનઃસ્થાપિત થઈ રહ્યું છે…',
+  });
+  Object.assign(S.fa, {
+    screenOff: 'خاموش کردن صفحه',
+    screenOffSub: 'صفحه تاریک، صدا ادامه دارد',
+    blackoutHint: 'صفحه تاریک است — صدا ادامه دارد. برای بیدار کردن ضربه بزنید.',
+    lockScreenWarn: '«خاموش کردن صفحه» این صفحه را باز نگه می‌دارد: دوربین، میکروفون و صدا به کار خود ادامه می‌دهند. اما قفل کردن گوشی یا رفتن به برنامه‌ای دیگر آن‌ها را متوقف می‌کند — در iPhone و iPad سیستم مرورگر را متوقف می‌کند و هیچ وب‌سایتی نمی‌تواند جلوی آن را بگیرد.',
+    streamPaused: 'دستگاه نوزاد قطع شد — صدایی نمی‌رسد',
+    streamResumed: 'دستگاه نوزاد دوباره صدا می‌فرستد',
+    micInterrupted: 'گوشی وقفه ایجاد کرد — در حال بازیابی…',
+  });
+  Object.assign(S.pl, {
+    screenOff: 'Wyłącz ekran',
+    screenOffSub: 'Ciemny ekran, dźwięk działa dalej',
+    blackoutHint: 'Ekran jest ciemny — dźwięk gra dalej. Dotknij, aby obudzić.',
+    lockScreenWarn: '„Wyłącz ekran” utrzymuje tę stronę otwartą: kamera, mikrofon i dźwięk działają dalej. Zablokowanie telefonu lub przejście do innej aplikacji je zatrzymuje — na iPhonie i iPadzie system wstrzymuje przeglądarkę i żadna witryna nie może temu zapobiec.',
+    streamPaused: 'Jednostka dziecka przerwana — nie dociera dźwięk',
+    streamResumed: 'Jednostka dziecka znów wysyła dźwięk',
+    micInterrupted: 'Przerwane przez telefon — trwa przywracanie…',
+  });
+  Object.assign(S.uk, {
+    screenOff: 'Вимкнути екран',
+    screenOffSub: 'Темний екран, звук працює далі',
+    blackoutHint: 'Екран темний — звук лунає далі. Торкніться, щоб розбудити.',
+    lockScreenWarn: '«Вимкнути екран» тримає цю сторінку відкритою: камера, мікрофон і звук продовжують працювати. Блокування телефона чи перехід в інший застосунок їх зупиняє — на iPhone та iPad система призупиняє браузер, і жоден сайт не може цьому завадити.',
+    streamPaused: 'Дитячий блок перервано — звук не надходить',
+    streamResumed: 'Дитячий блок знову передає звук',
+    micInterrupted: 'Перервано телефоном — відновлення…',
+  });
+  Object.assign(S.nl, {
+    screenOff: 'Scherm uit',
+    screenOffSub: 'Donker scherm, geluid blijft aan',
+    blackoutHint: 'Scherm is donker — geluid blijft doorspelen. Tik om te wekken.',
+    lockScreenWarn: 'Scherm uit houdt deze pagina open: camera, microfoon en geluid blijven werken. Het toestel vergrendelen of naar een andere app wisselen stopt ze wél — op iPhone en iPad zet het systeem de browser stil en geen enkele website kan dat voorkomen.',
+    streamPaused: 'Babyunit onderbroken — er komt geen geluid binnen',
+    streamResumed: 'Babyunit stuurt weer geluid',
+    micInterrupted: 'Onderbroken door de telefoon — bezig met herstellen…',
+  });
+  Object.assign(S.pa, {
+    screenOff: 'ਸਕਰੀਨ ਬੰਦ',
+    screenOffSub: 'ਸਕਰੀਨ ਹਨੇਰੀ, ਆਵਾਜ਼ ਚੱਲਦੀ ਰਹਿੰਦੀ ਹੈ',
+    blackoutHint: 'ਸਕਰੀਨ ਹਨੇਰੀ ਹੈ — ਆਵਾਜ਼ ਚੱਲਦੀ ਰਹਿੰਦੀ ਹੈ। ਜਗਾਉਣ ਲਈ ਟੈਪ ਕਰੋ।',
+    lockScreenWarn: '“ਸਕਰੀਨ ਬੰਦ” ਇਸ ਪੰਨੇ ਨੂੰ ਖੁੱਲ੍ਹਾ ਰੱਖਦਾ ਹੈ: ਕੈਮਰਾ, ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਤੇ ਆਵਾਜ਼ ਚੱਲਦੇ ਰਹਿੰਦੇ ਹਨ। ਫ਼ੋਨ ਲਾਕ ਕਰਨ ਜਾਂ ਹੋਰ ਐਪ ’ਤੇ ਜਾਣ ਨਾਲ ਇਹ ਰੁਕ ਜਾਂਦੇ ਹਨ — iPhone ਅਤੇ iPad ’ਤੇ ਸਿਸਟਮ ਬ੍ਰਾਊਜ਼ਰ ਨੂੰ ਰੋਕ ਦਿੰਦਾ ਹੈ ਅਤੇ ਕੋਈ ਵੈੱਬਸਾਈਟ ਇਸ ਨੂੰ ਨਹੀਂ ਰੋਕ ਸਕਦੀ।',
+    streamPaused: 'ਬੇਬੀ ਯੂਨਿਟ ਵਿੱਚ ਰੁਕਾਵਟ — ਕੋਈ ਆਵਾਜ਼ ਨਹੀਂ ਆ ਰਹੀ',
+    streamResumed: 'ਬੇਬੀ ਯੂਨਿਟ ਮੁੜ ਆਵਾਜ਼ ਭੇਜ ਰਿਹਾ ਹੈ',
+    micInterrupted: 'ਫ਼ੋਨ ਨੇ ਰੋਕਿਆ — ਬਹਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…',
+  });
+  Object.assign(S.sw, {
+    screenOff: 'Zima skrini',
+    screenOffSub: 'Skrini giza, sauti inaendelea',
+    blackoutHint: 'Skrini ni giza — sauti inaendelea. Gusa ili kuamsha.',
+    lockScreenWarn: '“Zima skrini” huweka ukurasa huu wazi: kamera, maikrofoni na sauti vinaendelea kufanya kazi. Kufunga simu au kubadili kwenda programu nyingine hukomesha vitu hivyo — kwenye iPhone na iPad mfumo husimamisha kivinjari na hakuna tovuti inayoweza kuzuia hilo.',
+    streamPaused: 'Kitengo cha mtoto kimekatizwa — hakuna sauti inayoingia',
+    streamResumed: 'Kitengo cha mtoto kinatuma sauti tena',
+    micInterrupted: 'Imekatizwa na simu — inarejeshwa…',
+  });
+  Object.assign(S.ha, {
+    screenOff: 'Kashe allo',
+    screenOffSub: 'Allo duhu, sauti na ci gaba',
+    blackoutHint: 'Allon yana duhu — sauti tana ci gaba. Taɓa domin farkarwa.',
+    lockScreenWarn: '“Kashe allo” yana barin wannan shafin a buɗe: kyamara, makurufo da sauti suna ci gaba da aiki. Kulle wayar ko sauya zuwa wata manhaja yana tsayar da su — a iPhone da iPad tsarin yana dakatar da burauza kuma babu gidan yanar gizo da zai iya hana hakan.',
+    streamPaused: 'An katse na’urar jariri — babu sautin da ke shigowa',
+    streamResumed: 'Na’urar jariri tana sake aika sauti',
+    micInterrupted: 'Wayar ta katse — ana dawo da shi…',
+  });
+  Object.assign(S.ro, {
+    screenOff: 'Ecran stins',
+    screenOffSub: 'Ecran întunecat, sunetul continuă',
+    blackoutHint: 'Ecranul este întunecat — sunetul continuă. Atinge pentru a trezi.',
+    lockScreenWarn: '„Ecran stins” ține această pagină deschisă: camera, microfonul și sunetul continuă să funcționeze. Blocarea telefonului sau trecerea la altă aplicație le oprește — pe iPhone și iPad sistemul pune browserul pe pauză și niciun site nu poate împiedica asta.',
+    streamPaused: 'Unitatea bebeluș întreruptă — nu vine sunet',
+    streamResumed: 'Unitatea bebeluș trimite din nou sunet',
+    micInterrupted: 'Întrerupt de telefon — se restaurează…',
+  });
+
   const STORE_KEY = 'babyfoon.lang';
   let current = 'en';
   const listeners = [];

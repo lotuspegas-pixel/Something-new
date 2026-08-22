@@ -467,6 +467,7 @@
               <div class="dsb-item"><small data-i18n="room">Room</small><b id="roomLabel">—</b></div>
               <div class="dsb-item"><small data-i18n="signal">Signal</small><span class="sig" id="signal"><i></i><i></i><i></i><i></i></span></div>
               <div class="dsb-item"><small data-i18n="latency">Latency</small><b id="rttVal">— ms</b></div>
+              <button class="dsb-fs" id="btnScreenOff" type="button" data-i18n-title="screenOff" title="Screen off" aria-label="Screen off"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="3" y="4" width="18" height="13" rx="2.2" stroke="currentColor" stroke-width="1.8"/><path d="M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 10.6A3.6 3.6 0 0 1 11 7a3.6 3.6 0 0 0 .6 6.9 3.6 3.6 0 0 0 3.9-3.3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
               <button class="dsb-fs" id="btnFullscreen" data-i18n-title="fullscreen" title="Fullscreen" aria-label="Fullscreen"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
           </div>
@@ -484,6 +485,7 @@
 
           <div class="monitor-alerts hidden" id="monitorAlerts">
             <div class="alert-pill hidden" id="cryAlert" role="status" data-i18n="cryingDetected">Crying detected</div>
+            <div class="alert-pill hidden" id="streamAlert" role="status" data-i18n="streamPaused">Baby unit interrupted — no sound coming in</div>
             <div class="alarm-arm hidden" id="alarmArm" role="status">
               <span data-i18n="alarmTestHint">Tap once so the cry alarm can make a sound on this device.</span>
               <button class="pillbtn" id="btnAlarmTest" type="button" data-i18n="alarmTest">Test alarm sound</button>
@@ -619,6 +621,7 @@
               <div class="set-row hidden" id="rowCamera"><span data-i18n="cameraLabel">Camera</span><select id="camSelect" class="cam-select" aria-label="Camera"></select></div>
               <div class="set-row hidden" id="rowLed"><span data-i18n="ledLight">LED light</span><button class="pillbtn" id="ledToggle" type="button" data-i18n="off2">Off</button></div>
               <div class="set-row"><span data-i18n="room">Room</span><b id="roomLabel2">—</b></div>
+              <div class="btip" id="parentLockTip"><span data-i18n="lockScreenWarn">Screen off keeps this page open: camera, microphone and sound keep working.</span></div>
             </div>
             
           </div>
@@ -682,6 +685,7 @@
             <button class="btgl btgl-act" id="tgFlipCam" type="button"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 7.5h3l1.1-1.7a1 1 0 0 1 .84-.45h6.12a1 1 0 0 1 .84.45L17 7.5h3a1 1 0 0 1 1 1V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.3 12.4a2.9 2.9 0 0 1 5.1-1.4M14.7 13a2.9 2.9 0 0 1-5.1 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14.4 9.6v1.6h-1.6M9.6 15.4v-1.6h1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="btgl-t"><b data-i18n="switchCamera">Switch camera</b><small id="flipCamNote" data-i18n="switchCameraSub">Front / back camera</small></div><span class="btgl-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
             <div class="btgl" id="tgMic" role="switch" aria-checked="true" tabindex="0"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="btgl-t"><b data-i18n="microphone">Microphone</b><small data-i18n="audioStreaming">Audio streaming</small></div><span class="switch on" id="swMic"></span></div>
             <div class="btgl" id="tgAudioOnly" role="switch" aria-checked="false" tabindex="0"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 9v6M8 5v14M12 8v8M16 6v12M20 10v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="btgl-t"><b data-i18n="audioOnly">Audio only</b><small data-i18n="audioOnlySub">Stream audio without video</small></div><span class="switch" id="swAudioOnly"></span></div>
+            <button class="btgl btgl-act" id="tgScreenOff" type="button"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="4" width="18" height="13" rx="2.2" stroke="currentColor" stroke-width="1.8"/><path d="M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 10.6A3.6 3.6 0 0 1 11 7a3.6 3.6 0 0 0 .6 6.9 3.6 3.6 0 0 0 3.9-3.3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="btgl-t"><b data-i18n="screenOff">Screen off</b><small data-i18n="screenOffSub">Dark screen, sound keeps running</small></div><span class="btgl-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
             <div class="btgl" id="tgPrivacy" role="switch" aria-checked="false" tabindex="0"><div class="btgl-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6M9.9 5.1A9.6 9.6 0 0 1 12 5c5 0 9 4.5 9 7 0 1-1 2.6-2.7 4M6.6 6.6C4.2 8.1 3 10 3 12c0 2 3 6 9 6 1 0 2-.2 2.9-.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="btgl-t"><b data-i18n="privacyShade">Privacy shade</b><small data-i18n="hideVideoKeepAudio">Hide video, keep audio</small></div><span class="switch" id="swPrivacy"></span></div>
           </div>
         </div>
@@ -694,6 +698,7 @@
         </div>
 
         <div class="btip"><span data-i18n="babyTip">Tip: keep this browser open and the phone on its charger to stay connected.</span></div>
+        <div class="btip" id="babyLockTip"><span data-i18n="lockScreenWarn">Screen off keeps this page open: camera, microphone and sound keep working.</span></div>
       </div>
 
       <!-- compat: verborgen bediening voor bestaande baby-logica -->
@@ -705,6 +710,9 @@
     </section>
 
     <div class="nightlight-full hidden" id="nightlight"><div data-i18n="nightlightOverlay">💡 Night‑light on (turned on by parent)</div></div>
+    <!-- Scherm-uit: de pagina blijft op de voorgrond (camera, microfoon en
+         geluid lopen door), alleen het beeld gaat op zwart. Tik = wekken. -->
+    <div class="blackout hidden" id="blackout" role="button" tabindex="0" data-i18n-title="screenOff" title="Screen off"><span id="blackoutHint" data-i18n="blackoutHint">Screen is dark — sound keeps playing. Tap to wake.</span></div>
     <canvas id="scratch" class="hidden"></canvas>
     <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 

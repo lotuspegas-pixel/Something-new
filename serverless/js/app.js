@@ -315,6 +315,7 @@
       stream.addTrack(keten.uit);
     } catch (e) { return stream; }
     startMicGainRegeling();
+    bewaakRuweMic();
     return stream;
   }
 
@@ -540,6 +541,9 @@
     $('connText').textContent = T('connected');
     $('placeholder').classList.add('hidden');
     $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+    // Verse verbinding: een oude "babyunit onderbroken"-melding hoort weg.
+    babyStreamGedempt = { audio: false, video: false };
+    toonStreamMelding();
     startParentDevice();
     startHeartbeat();
     const qs = $('qualitySelect');
@@ -1083,6 +1087,21 @@
         }
         const bl = $('btnLullaby'); if (bl) bl.classList.toggle('on', playing);
         renderChips();
+      } else if (msg.cmd === 'streamState') {
+        const kind = msg.kind === 'video' ? 'video' : 'audio';
+        const gedempt = !!msg.muted;
+        if (babyStreamGedempt[kind] !== gedempt) {
+          babyStreamGedempt[kind] = gedempt;
+          if (kind === 'audio') {
+            const sleutel = gedempt ? 'streamPaused' : 'streamResumed';
+            toonStreamMelding();
+            toast(T(sleutel));
+            addEvent('connect', T(sleutel), '');
+            // Zonder geluid van de babyunit is dit hetzelfde risico als een
+            // wegval: de ouder moet het merken, ook met het scherm zwart.
+            if (gedempt) triggerConnectionLostAlert();
+          }
+        }
       } else if (msg.cmd === 'videoState') {
         remoteVideoOff = !msg.on;
         applyPrivacyUI();
@@ -1343,6 +1362,11 @@
   function stopBabyWatchers() {
     if (micKetenTimer) { clearInterval(micKetenTimer); micKetenTimer = null; }
     if (encoderTimer) { clearInterval(encoderTimer); encoderTimer = null; }
+    // Een geplande heropening van een gedempt spoor mag niet meer afgaan
+    // nadat de sessie is beëindigd.
+    ['audio', 'video'].forEach((k) => {
+      if (muteHerstelTimers[k]) { clearTimeout(muteHerstelTimers[k]); muteHerstelTimers[k] = null; }
+    });
   }
   function watchMicKeten() {
     if (role !== 'baby' || micKetenGecontroleerd || !micChain) return;
@@ -1956,6 +1980,18 @@
     b.classList.toggle('hidden', !(role === 'parent' && alarmOn && !alarmScherp()));
     toonMeldingenStrook();
   }
+  // De babyunit meldt dat zijn camera of microfoon is stilgezet door het
+  // toestel (scherm op slot, andere app ervoor, inkomend gesprek). Dat is
+  // precies het geval waarin een babyfoon er nog wél verbonden uitziet maar
+  // niets meer doorgeeft. Daarom een eigen, duidelijk zichtbare melding —
+  // niet dezelfde als "verbinding verbroken", want de verbinding staat nog.
+  let babyStreamGedempt = { audio: false, video: false };
+  function toonStreamMelding() {
+    const b = $('streamAlert');
+    if (!b) return;
+    b.classList.toggle('hidden', !(role === 'parent' && babyStreamGedempt.audio));
+    toonMeldingenStrook();
+  }
   // De strook boven het beeld heeft een eigen rij in het raster van het
   // ouderdashboard. Staat er niets in, dan hoort die rij er ook niet te zijn.
   function toonMeldingenStrook() {
@@ -2066,6 +2102,8 @@
     $('video').muted = muted || volume === 0;
     const h = $('volHub'); if (h) h.textContent = muted ? '⌀' : volume;
     const n = $('volNeedle'); if (n) n.style.transform = 'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
+    // De bediening op het vergrendelscherm moet dezelfde stand tonen.
+    updateMediaSession(!(muted || volume === 0));
   }
   function setSliderKnob(elm, pct) {
     elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
@@ -2569,9 +2607,14 @@
       applyPrivacyUI();
     };
 
+    // Scherm uit: zwart scherm, geluid blijft doorspelen. Zie setBlackout().
+    if ($('btnScreenOff')) $('btnScreenOff').onclick = () => setBlackout(true);
+
     toonAlarmBanner();
+    toonStreamMelding();
     meterLoop(); statsLoop();
     enableWakeLock();
+    updateMediaSession(!(muted || volume === 0));
   }
 
   // ================================================================== BABYUNIT
@@ -2661,6 +2704,10 @@
     // Zichtbare "Wissel camera"-knop op de babyunit (voor/achter of volgende lens)
     const flipCam = $('tgFlipCam');
     if (flipCam) flipCam.onclick = () => babyCycleCamera();
+    // Scherm uit op de babyunit: het beeld gaat zwart, maar de pagina blijft
+    // draaien — dus camera en microfoon blijven doorzenden. Zie setBlackout().
+    const scherm = $('tgScreenOff');
+    if (scherm) scherm.onclick = () => setBlackout(true);
 
     $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) endSession(true); };
     // beginstand van de schakelknoppen en statustegels meteen goed tonen
@@ -2712,6 +2759,7 @@
         const zender = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
         if (zender) { try { await zender.replaceTrack(keten.uit); } catch (e) {} }
         startMicGainRegeling();
+        bewaakRuweMic();
       }
       duplexOn = on;
     } catch (e) {
@@ -2987,8 +3035,56 @@
   // toestellen) — dezelfde aanpak als flipCamera(), maar automatisch
   // getriggerd in plaats van door een tik van de gebruiker.
   let recoveringVideo = false, recoveringAudio = false;
+  // Hoe lang een gedempt spoor mag blijven hangen voordat we de camera of
+  // microfoon écht opnieuw openen. Kort genoeg om een nacht niet in stilte
+  // te laten verstrijken, lang genoeg om een hapering van een seconde niet
+  // met een volledige heropening te beantwoorden.
+  const MUTE_HERSTEL_MS = window.BABYFOON_MUTE_HERSTEL || 4000;
+  let spoorGedempt = { audio: false, video: false };
+  let muteHerstelTimers = { audio: null, video: null };
   function watchTrackEnd(track, kind) {
     track.onended = () => { if (!shuttingDown && role === 'baby') recoverBabyTrack(kind); };
+    // Scherm-uit, een inkomend telefoongesprek of een app-wissel beëindigt
+    // een spoor meestal NIET — het wordt "muted": het leeft nog, maar er
+    // komen geen samples meer door. Zonder deze afhandeling hoorde de
+    // ouderunit stilte zonder dat iemand het merkte, en dat is voor een
+    // babyfoon het gevaarlijkste geval dat er is.
+    track.onmute = () => { if (!shuttingDown && role === 'baby') meldSpoorGedempt(kind, true); };
+    track.onunmute = () => { if (!shuttingDown && role === 'baby') meldSpoorGedempt(kind, false); };
+    // Was het spoor al gedempt op het moment dat we het gingen bewaken, dan
+    // komt er geen event meer; dan meteen zelf melden.
+    if (track.muted) meldSpoorGedempt(kind, true);
+  }
+  // Meldt een onderbreking aan de babyunit zelf én aan de ouderunit, en
+  // plant een echte heropening als het spoor gedempt blijft. iOS laat een
+  // spoor soms voorgoed gedempt staan; alleen een nieuwe getUserMedia haalt
+  // het geluid dan terug.
+  function meldSpoorGedempt(kind, gedempt) {
+    if (role !== 'baby') return;
+    gedempt = !!gedempt;
+    if (spoorGedempt[kind] === gedempt) return;
+    spoorGedempt[kind] = gedempt;
+    sendControl({ cmd: 'streamState', kind: kind, muted: gedempt });
+    if (kind === 'audio') zetBabyConnSub(gedempt ? 'micInterrupted' : 'excellentConn');
+    if (muteHerstelTimers[kind]) { clearTimeout(muteHerstelTimers[kind]); muteHerstelTimers[kind] = null; }
+    if (!gedempt) return;
+    muteHerstelTimers[kind] = setTimeout(() => {
+      muteHerstelTimers[kind] = null;
+      if (shuttingDown || role !== 'baby') return;
+      if (!spoorGedempt[kind]) return;
+      // Alleen heropenen zodra de pagina weer zichtbaar is: op de achtergrond
+      // geeft getUserMedia toch een spoor terug dat meteen weer gedempt is.
+      if (document.visibilityState !== 'visible') return;
+      recoverBabyTrack(kind);
+    }, MUTE_HERSTEL_MS);
+  }
+  // Het spoor dat in localStream zit is aan audiozijde de UITGANG van de
+  // versterkingstrap (een MediaStreamDestination). Die raakt nooit gedempt,
+  // ook niet als de echte microfoon stilvalt. De bewaking moet daarom op het
+  // RUWE microfoonspoor zitten dat de keten voedt.
+  function bewaakRuweMic() {
+    if (!micChain || !micChain.ruw) return;
+    watchTrackEnd(micChain.ruw, 'audio');
   }
   async function recoverBabyTrack(kind) {
     if (shuttingDown || role !== 'baby' || !localStream) return;
@@ -3013,38 +3109,67 @@
         if (!nt) nt = await openCam(true);
         if (!nt) throw new Error('no camera');
         await attachVideoTrack(nt, sender);
+        // Vers spoor: was er een onderbreking gemeld, dan is die nu voorbij —
+        // ook als er nooit een 'unmute' langskwam (iOS levert die lang niet
+        // altijd). Was er niets gemeld, dan hoort er ook nu niets gemeld te
+        // worden.
+        if (spoorGedempt.video) meldSpoorGedempt('video', false);
         toast(T('cameraRecovered'));
         return;
       }
+      // ---- microfoon ----
+      // Eerst álles dicht wat nog op de microfoon zit. Dat is niet netjesheid
+      // maar noodzaak: iOS geeft een tweede opname pas vrij als de eerste
+      // écht gestopt is, en tot dat moment krijg je een spoor terug dat
+      // meteen weer gedempt is. Zowel de UITGANG van de versterkingstrap (die
+      // in localStream zit) als het RUWE spoor dat de trap voedt moeten weg,
+      // plus de eventuele extra microfoons.
+      const oudRuw = micChain ? micChain.ruw : null;
+      const ot = localStream.getTracks().find((t) => t.kind === kind);
+      // De microfoon-uit-keuze van de persoon bij het bedje mag een herstel
+      // niet stilzwijgend terugdraaien.
+      const wasAan = ot ? ot.enabled : micOn;
+      sloopMicKeten();
+      stopExtraMicrofoons();
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      if (oudRuw && oudRuw !== ot) { try { oudRuw.stop(); } catch (e) {} }
       // Onbewerkte microfoon, net als bij het openen: geen AGC/ruisonderdrukking,
       // anders klinkt de babyunit na een herstel ineens anders dan daarvoor.
-      const constraints = { audio: MIC_MONITOR, video: false };
-      const ns = await getMedia(constraints);
-      const nt = ns.getTracks()[0];
-      const ot = localStream.getTracks().find((t) => t.kind === kind);
+      const ns = await getMedia({ audio: MIC_MONITOR, video: false });
+      const nt = ns.getAudioTracks()[0];
+      if (!nt) throw new Error('no mic');
+      nt.enabled = wasAan;
       const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === kind);
       if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
-      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
       localStream.addTrack(nt);
       watchTrackEnd(nt, kind);
-      if (kind === 'audio') {
-        duplexOn = false; // verse microfoon = weer onbewerkt
-        // Ook na een herstel weer versterken, anders is de babyunit ineens
-        // veel zachter dan daarvoor.
-        sloopMicKeten();
-        const k = bouwMicKeten(nt);
-        if (k) {
-          micChain = k;
-          try { localStream.removeTrack(nt); localStream.addTrack(k.uit); } catch (e) {}
-          const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
-          if (z) { try { await z.replaceTrack(k.uit); } catch (e) {} }
-          startMicGainRegeling();
-        }
+      duplexOn = false; // verse microfoon = weer onbewerkt
+      // Ook na een herstel weer versterken, anders is de babyunit ineens
+      // veel zachter dan daarvoor.
+      const k = bouwMicKeten(nt);
+      if (k) {
+        micChain = k;
+        try { localStream.removeTrack(nt); localStream.addTrack(k.uit); } catch (e) {}
+        try { k.uit.enabled = wasAan; } catch (e) {}
+        const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+        if (z) { try { await z.replaceTrack(k.uit); } catch (e) {} }
+        startMicGainRegeling();
+        bewaakRuweMic();
       }
+      // Het verse spoor is per definitie niet meer gedempt; de ouderunit mag
+      // de waarschuwing weer weghalen.
+      if (spoorGedempt[kind]) meldSpoorGedempt(kind, false);
       toast(T('cameraRecovered'));
     } catch (e) {
-      // Stil laten mislukken — recoverBabyTrack wordt opnieuw geprobeerd
-      // zodra de voorgrond-wacht (visibilitychange) het weer detecteert.
+      // Het oude spoor is hierboven al gesloten — dat moest, anders geeft
+      // iOS geen nieuwe vrij. Blijft het daardoor bij niets, dan komt er ook
+      // geen 'ended' of 'mute' meer die ons wakker schudt: dus zelf opnieuw
+      // proberen. Een babyfoon hoort te blijven proberen zolang de sessie
+      // loopt; het toestel kan een minuut later wél meewerken.
+      if (!shuttingDown && role === 'baby' && localStream &&
+          !localStream.getTracks().some((t) => t.kind === kind && t.readyState === 'live')) {
+        setTimeout(() => { recoverBabyTrack(kind); }, 2000);
+      }
     } finally {
       if (kind === 'video') recoveringVideo = false; else recoveringAudio = false;
     }
@@ -3152,24 +3277,48 @@
   let wl = null;
   let noSleepVideo = null;
   let wakeLockWatchStarted = false;
+  let noSleepTekenTimer = null;
   function startNoSleepFallback() {
     if (noSleepVideo) return;
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = 1; canvas.height = 1;
-      canvas.getContext('2d').fillRect(0, 0, 1, 1);
-      if (!canvas.captureStream) return;
-      const stream = canvas.captureStream(1);
+      canvas.width = 2; canvas.height = 2;
+      const ctx = canvas.getContext('2d');
+      if (!ctx || !canvas.captureStream) return;
+      ctx.fillRect(0, 0, 2, 2);
+      const stream = canvas.captureStream(2);
       const v = document.createElement('video');
-      v.muted = true; v.loop = true; v.setAttribute('playsinline', '');
+      // muted MOET ook als attribuut staan: WebKit beoordeelt de
+      // autoplay-toestemming op het attribuut, niet op de eigenschap. Zonder
+      // dat weigert play() en houdt dit filmpje dus helemaal niets wakker.
+      v.muted = true;
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+      v.setAttribute('autoplay', '');
+      v.loop = true;
       v.style.cssText = 'position:fixed;left:-1px;top:-1px;width:1px;height:1px;opacity:0.01;pointer-events:none;';
       v.srcObject = stream;
       document.body.appendChild(v);
-      v.play().catch(() => {});
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
       noSleepVideo = v;
+      // Een canvas dat nooit verandert levert na het eerste beeldje geen
+      // frames meer; de browser ziet dan geen "spelende video" en laat het
+      // scherm alsnog uitvallen. Daarom blijven we tekenen zolang de truc
+      // nodig is — twee gevulde pixels per halve seconde, verwaarloosbaar.
+      if (noSleepTekenTimer) clearInterval(noSleepTekenTimer);
+      let aan = false;
+      noSleepTekenTimer = setInterval(() => {
+        if (!noSleepVideo) return;
+        aan = !aan;
+        try { ctx.fillStyle = aan ? '#010101' : '#000000'; ctx.fillRect(0, 0, 2, 2); } catch (e) {}
+        // Een tabwissel pauzeert het filmpje; bij terugkeer weer starten.
+        if (noSleepVideo.paused) { try { const q = noSleepVideo.play(); if (q && q.catch) q.catch(() => {}); } catch (e) {} }
+      }, 500);
     } catch (e) {}
   }
   function stopNoSleepFallback() {
+    if (noSleepTekenTimer) { clearInterval(noSleepTekenTimer); noSleepTekenTimer = null; }
     if (!noSleepVideo) return;
     try { noSleepVideo.pause(); noSleepVideo.remove(); } catch (e) {}
     noSleepVideo = null;
@@ -3192,11 +3341,100 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') requestWakeLock();
     });
+    // pageshow/focus als vangnet: oudere iOS Safari vuurt visibilitychange
+    // niet altijd, en zonder heraanvraag valt het scherm daarna alsnog uit.
+    window.addEventListener('pageshow', () => { if (!wl) requestWakeLock(); });
+    window.addEventListener('focus', () => { if (!wl) requestWakeLock(); });
     // Periodieke gezondheidscheck: sommige browsers/energiestanden laten de
     // lock los zonder dat er een zichtbaarheidswijziging plaatsvond.
     setInterval(() => {
       if (document.visibilityState === 'visible' && !wl) requestWakeLock();
     }, 20000);
+  }
+
+  // ------------------------------------------------------------- scherm uit
+  // Wat de gebruiker wil ("scherm uit, geluid blijft") kan een website op
+  // iOS niet echt: zodra het toestel vergrendelt of je naar een andere app
+  // wisselt, zet WebKit de pagina stil — geen enkele web-API kan dat
+  // tegenhouden. Wat wél kan is het scherm zwart máken terwijl de pagina op
+  // de voorgrond blijft draaien. Beeld weg, geen licht in de kamer, en
+  // camera/microfoon/geluid lopen gewoon door. De wake lock blijft daarbij
+  // juist aan: valt het scherm alsnog écht uit, dan stopt het geluid.
+  let blackoutOn = false;
+  function setBlackout(aan) {
+    const el = $('blackout');
+    if (!el) return;
+    blackoutOn = !!aan;
+    el.classList.toggle('hidden', !blackoutOn);
+    if (blackoutOn) {
+      // De hint opnieuw laten uitdoven bij elke keer aanzetten.
+      const h = $('blackoutHint');
+      if (h) { h.style.animation = 'none'; void h.offsetWidth; h.style.animation = ''; }
+      requestWakeLock();
+      try { el.focus(); } catch (e) {}
+    }
+    // Nooit stilte als bijwerking: geluid en meter expliciet doorstarten.
+    hervatWeergave();
+  }
+  // Eén plek voor "speel alsjeblieft weer af". Wordt aangeroepen na elke
+  // terugkeer naar de voorgrond en bij het aan/uit zetten van scherm-uit.
+  // iOS weigert de eerste play() na een onderbreking regelmatig, dus een
+  // paar korte herkansingen.
+  function hervatWeergave() {
+    try {
+      if (audioCtx && audioCtx.state === 'suspended') {
+        const r = audioCtx.resume();
+        if (r && r.catch) r.catch(() => {});
+      }
+    } catch (e) {}
+    if (role !== 'parent') return;
+    const v = $('video');
+    if (!v) return;
+    let pogingen = 0;
+    const speel = () => {
+      if (shuttingDown) return;
+      try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+      if (++pogingen < 4 && v.paused) setTimeout(speel, 400);
+    };
+    speel();
+  }
+
+  // ------------------------------------------------------------ MediaSession
+  // Op een vergrendelscherm of in het bedieningspaneel verschijnt hiermee
+  // "BabyPhone.online" met een pauzeknop in plaats van niets. Belangrijk:
+  // pauze/stop DEMPEN alleen — de verbinding met de babyunit blijft staan.
+  // Een babyfoon die van de verbinding valt omdat er per ongeluk op een
+  // koptelefoonknop werd gedrukt is precies wat je niet wilt.
+  function updateMediaSession(spelend) {
+    if (role !== 'parent') return;
+    if (!('mediaSession' in navigator)) return;
+    const ms = navigator.mediaSession;
+    try {
+      if (window.MediaMetadata) {
+        ms.metadata = new MediaMetadata({
+          title: 'BabyPhone.online',
+          artist: currentCode ? T('room') + ' ' + currentCode : T('parentUnit'),
+          album: T('liveAudio'),
+        });
+      }
+    } catch (e) {}
+    try { ms.playbackState = spelend ? 'playing' : 'paused'; } catch (e) {}
+    if (updateMediaSession.gekoppeld) return;
+    updateMediaSession.gekoppeld = true;
+    const zet = (naam, fn) => { try { ms.setActionHandler(naam, fn); } catch (e) {} };
+    zet('play', () => {
+      muted = false;
+      if (!volume) volume = 60;
+      const sv = $('setVolume'); if (sv) sv.value = String(volume);
+      applyVolume();
+      hervatWeergave();
+    });
+    const demp = () => { muted = true; applyVolume(); };
+    zet('pause', demp);
+    zet('stop', demp);
+    // Spoelen slaat nergens op bij een live stream; expliciet leegmaken zodat
+    // het besturingssysteem er geen knoppen voor toont.
+    ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'].forEach((n) => zet(n, null));
   }
 
   // ------------------------------------------------------------------ i18n
@@ -3382,6 +3620,14 @@
     const v = $('video'); if (v) v.play().catch(() => {});
   }, { once: true });
 
+  // Tik (of Enter/spatie via de toetsenbord-afhandelaar hierboven) op het
+  // zwarte scherm haalt het beeld terug. Ook Escape, want dat is wat je
+  // op een computer probeert.
+  if ($('blackout')) $('blackout').onclick = () => setBlackout(false);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && blackoutOn) { e.preventDefault(); setBlackout(false); }
+  });
+
   // ------------------------------------------------ voorgrond-wacht (herstel na scherm-uit/achtergrond)
   // Mobiele browsers bevriezen timers en kunnen camera/mic onderbreken
   // zodra het tabblad verborgen is (scherm op slot, even een andere app
@@ -3396,7 +3642,14 @@
     // flow (of de expliciete mislukt-status met hertik-knop) met rust.
     if (!wasConnected && !reconnectTimer && !connectTimer) return;
     const pcOk = mediaPc && mediaPc.connectionState === 'connected';
-    const trackOk = remoteStream && remoteStream.getVideoTracks().some((t) => t.readyState === 'live');
+    // Ook een verbinding zónder beeld is gezond: bij "alleen geluid", een
+    // privacyscherm of camera-uit op de babyunit zijn er geen levende
+    // videosporen. Werd daar alleen op gekeken, dan gooide élke terugkeer uit
+    // de achtergrond zo'n verbinding weg en herverbond de app nodeloos —
+    // precies op het moment dat de ouder weer wilde luisteren.
+    const leeft = (l) => !!l && l.some((t) => t.readyState === 'live');
+    const trackOk = !!remoteStream &&
+      (leeft(remoteStream.getVideoTracks()) || leeft(remoteStream.getAudioTracks()));
     const heartbeatOk = (Date.now() - lastControlAt) < HEARTBEAT_TIMEOUT * 2;
     if (pcOk && trackOk && heartbeatOk && !reconnectTimer) return; // gezond, niets doen
     clearConnectTimers();
@@ -3405,22 +3658,31 @@
   }
   function checkBabyHealthOnResume() {
     if (shuttingDown || role !== 'baby' || !localStream) return;
-    localStream.getTracks().forEach((t) => { if (t.readyState === 'ended') recoverBabyTrack(t.kind); });
+    // Naast de sporen ín localStream ook het ruwe microfoonspoor: dat zit in
+    // de versterkingstrap en is juist het spoor dat het toestel stilzet.
+    const sporen = localStream.getTracks().slice();
+    if (micChain && micChain.ruw && sporen.indexOf(micChain.ruw) < 0) sporen.push(micChain.ruw);
+    sporen.forEach((t) => {
+      // 'ended' = het toestel heeft camera/microfoon vrijgegeven.
+      // 'muted' = het spoor leeft nog maar levert niets (scherm-uit, andere
+      // app ervoor, inkomend gesprek). Allebei betekenen: opnieuw openen,
+      // want anders blijft het bij de ouder stil zonder foutmelding.
+      if (t.readyState === 'ended' || t.muted) recoverBabyTrack(t.kind);
+    });
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       // Een AudioContext die opgeschort blijft na terugkeer uit de
       // achtergrond bevriest de geluidsmeter en daarmee het huilalarm.
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
-      if (role === 'parent') { const v = $('video'); if (v) v.play().catch(() => {}); }
+      hervatWeergave();
       checkParentHealthOnResume();
       checkBabyHealthOnResume();
     }
   });
   // Sommige (vooral oudere iOS Safari-)versies vuren visibilitychange niet
   // altijd betrouwbaar; pageshow/focus als extra vangnet.
-  window.addEventListener('pageshow', () => { checkParentHealthOnResume(); checkBabyHealthOnResume(); });
-  window.addEventListener('focus', () => { checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+  window.addEventListener('pageshow', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+  window.addEventListener('focus', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
 
   window.addEventListener('pagehide', () => {
     shuttingDown = true;

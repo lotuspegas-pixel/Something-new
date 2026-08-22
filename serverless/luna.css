@@ -838,6 +838,42 @@ button {
   text-align: center;
 }
 
+/* -------------------------------------------------------------- scherm uit
+   "Scherm uit" is géén echte schermvergrendeling: de pagina blijft gewoon op
+   de voorgrond draaien, zodat camera, microfoon en geluid doorlopen. Alleen
+   het beeld gaat op zwart — op een OLED-scherm kost dat vrijwel geen stroom
+   en het geeft 's nachts geen licht in de kamer. De hint dooft langzaam weg
+   zodat er na een halve minuut werkelijk niets meer te zien is. */
+.blackout {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: #000;
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  padding: 0 24px 14vh;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.blackout span {
+  max-width: 26ch;
+  text-align: center;
+  line-height: 1.7;
+  color: #EDEFF4;
+  font: 700 13px 'Nunito', sans-serif;
+  opacity: 0.5;
+  animation: blackout-dim 24s ease-in forwards;
+}
+@keyframes blackout-dim {
+  0% { opacity: 0.5; }
+  60% { opacity: 0.5; }
+  100% { opacity: 0.05; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blackout span { animation: none; opacity: 0.25; }
+}
+
 /* full-screen nightlight on baby */
 .nightlight-full {
   position: fixed;
