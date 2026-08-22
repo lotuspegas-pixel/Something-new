@@ -55,7 +55,7 @@ const { ExpressPeerServer } = require('peer');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const ROOT = path.join(__dirname, '..', 'serverless');
+const ROOT = process.env.APP_ROOT || path.join(__dirname, '..', 'serverless');
 const WEB_PORT = +(process.env.WEB_PORT || 8177);
 const PEER_PORT = +(process.env.PEER_PORT || 9037);
 
@@ -385,6 +385,21 @@ const METERS = `
     check('3: wegval gedetecteerd, herverbinding gepland', gepland);
 
     await s.ouder.evaluate(() => { window.__ws = 0; });
+    // Ook het hervatten van de weergave telt mee: hervatWeergave() start bij
+    // elke aanroep een eigen reeks herkansingen van play(). Zonder samenvoegen
+    // levert één wake-moment (drie listeners × meerdere gebeurtenissen) een
+    // stortvloed play()-aanroepen op die elkaars promise afbreken.
+    await s.ouder.evaluate(() => {
+      window.__playN = 0;
+      const v = document.getElementById('video');
+      if (!v) return;
+      const orig = v.play.bind(v);
+      v.play = function () { window.__playN++; return orig(); };
+      // Precies het geval waar hervatWeergave() voor bedoeld is: het toestel
+      // heeft de weergave onderbroken, dus play() moet echt iets doen. Alleen
+      // dán loopt de reeks herkansingen (4 per aanroep) helemaal af.
+      try { v.pause(); } catch (e) {}
+    });
     // Scherm aan: één moment, vijf gebeurtenissen — zoals een telefoon ze levert.
     await s.ouder.evaluate(() => {
       document.dispatchEvent(new Event('visibilitychange'));
@@ -397,6 +412,9 @@ const METERS = `
     const pogingen = await s.ouder.evaluate(() => window.__ws);
     check('3: vijf wake-gebeurtenissen leveren hooguit één nieuwe koppelpoging op (' +
       pogingen + ' aanmeldingen bij de koppelserver)', pogingen <= 2);
+    const plays = await s.ouder.evaluate(() => window.__playN);
+    check('3: één wake-moment levert geen stortvloed play()-aanroepen op (' +
+      plays + 'x)', plays <= 10);
     await s.cP.close();
   }
 

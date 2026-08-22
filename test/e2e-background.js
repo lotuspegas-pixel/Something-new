@@ -98,6 +98,40 @@ const INIT = (peerPort) => `
   })();
 `;
 
+// Zelfde init, maar met TWEE microfooningangen. De echte fake-camera van
+// Chromium levert er maar één, en dan slaat openExtraMicrofoons() zichzelf
+// over — precies de code die we hier willen zien draaien. We doen dus alsof
+// er een tweede ingang is en halen de exacte deviceId er weer af vlak voordat
+// de browser hem te zien krijgt, zodat de nepmicrofoon gewoon antwoordt.
+const INIT_TWEE_MICS = (peerPort) => INIT(peerPort) + `
+  window.__extraMicN = 0;
+  (function () {
+    if (!navigator.mediaDevices) return;
+    const md = navigator.mediaDevices;
+    const enu = md.enumerateDevices.bind(md);
+    md.enumerateDevices = function () {
+      return enu().then(function (l) {
+        const a = l.filter(function (d) { return d.kind === 'audioinput'; })[0];
+        if (!a) return l;
+        const eerste = { kind: 'audioinput', deviceId: 'mic-een', groupId: 'g1', label: 'Mic 1', toJSON: function () { return this; } };
+        const tweede = { kind: 'audioinput', deviceId: 'mic-twee', groupId: 'g2', label: 'Mic 2', toJSON: function () { return this; } };
+        return l.filter(function (d) { return d.kind !== 'audioinput'; }).concat([eerste, tweede]);
+      });
+    };
+    const gum = md.getUserMedia.bind(md);
+    md.getUserMedia = function (c) {
+      try {
+        if (c && c.audio && c.audio.deviceId && c.audio.deviceId.exact) {
+          window.__extraMicN++;
+          c = Object.assign({}, c, { audio: Object.assign({}, c.audio) });
+          delete c.audio.deviceId;
+        }
+      } catch (e) {}
+      return gum(c);
+    };
+  })();
+`;
+
 // Zelfde init, maar zónder Wake Lock API — zo komt de terugvaltruc
 // (stil filmpje afspelen) aan bod, net als op iOS vóór 16.4.
 const INIT_ZONDER_WAKELOCK = (peerPort) => INIT(peerPort) + `
@@ -348,6 +382,106 @@ const INIT_ZONDER_WAKELOCK = (peerPort) => INIT(peerPort) + `
   });
   check('Een gepauzeerd terugval-filmpje start binnen 1,5 s vanzelf weer', herstart);
   await D.cp.close(); await D.cb.close();
+
+  // ==================================================================
+  // 9 — scherm-uit mag een wéggevallen verbinding niet verbergen
+  //
+  // Het zwarte scherm ligt als vaste laag (z-index 3000) over ÁLLE schermen
+  // heen. Raakt de babyfoon intussen de verbinding kwijt, dan schrijft de
+  // ouderunit netjes een foutmelding, zet het bolletje uit en slaat alarm —
+  // maar de ouder ziet daar niets van: het scherm blijft gewoon zwart. Voor
+  // een babyfoon is dat het gevaarlijkste geval dat er is: het lijkt alsof
+  // er meegeluisterd wordt terwijl er niets meer binnenkomt. Zodra de app
+  // het opgeeft, moet het zwarte scherm dus wijken.
+  // ==================================================================
+  const E = await paar(INIT(PEER_PORT), INIT(PEER_PORT) + `
+    // Snel opgeven, anders duurt deze test een halve minuut.
+    window.BABYFOON_RECONNECT_DELAYS = [400];
+  `);
+  check('Opzet E: ouderunit heeft beeld van de babyunit (' + E.beeld + 'px)', E.beeld > 0);
+  await E.parent.click('#btnScreenOff');
+  await sleep(400);
+  const zwartE = await E.parent.evaluate(() => {
+    const b = document.getElementById('blackout');
+    return !!b && !b.classList.contains('hidden');
+  });
+  check('Opzet E: het scherm staat op zwart vóór de wegval', zwartE);
+
+  // De babyunit valt weg terwijl het scherm zwart is.
+  await E.cb.close();
+  let opgegeven = false;
+  let statusE = '';
+  for (let i = 0; i < 120; i++) {
+    const s = await E.parent.evaluate(() => {
+      const e = document.getElementById('parentError');
+      const c = document.getElementById('connText');
+      return {
+        fout: !!e && !e.classList.contains('hidden') && e.textContent.trim().length > 3,
+        tekst: c ? c.textContent.trim() : '',
+      };
+    });
+    statusE = s.tekst;
+    if (s.fout) { opgegeven = true; break; }
+    await sleep(300);
+  }
+  check('Opzet E: de ouderunit geeft het op en toont een foutmelding (status: "' + statusE + '")', opgegeven);
+  await sleep(600);
+  const naWegval = await E.parent.evaluate(() => {
+    const b = document.getElementById('blackout');
+    const e = document.getElementById('parentError');
+    return {
+      zwart: !!b && !b.classList.contains('hidden'),
+      melding: !!e && !e.classList.contains('hidden') ? e.textContent.trim() : '',
+    };
+  });
+  check('Het zwarte scherm wijkt zodra de verbinding weg is (nu ' +
+    (naWegval.zwart ? 'nog zwart' : 'weer zichtbaar') + ', melding: "' + naWegval.melding + '")',
+  opgegeven && !naWegval.zwart);
+  await E.cp.close();
+
+  // ==================================================================
+  // 10 — na een microfoonherstel moeten de EXTRA microfoons terugkomen
+  //
+  // De babyunit opent alle microfoons van het toestel en telt ze bij elkaar
+  // op, zodat geluid uit de hele kamer wordt opgepikt. Het herstelpad sluit
+  // ze allemaal (dat moet: iOS geeft een tweede opname pas vrij als de eerste
+  // écht dicht is), maar bouwde de keten daarna weer op zonder ze opnieuw te
+  // openen. Gevolg: na één onderbreking luistert de babyunit de rest van de
+  // nacht met één microfoon in plaats van alle.
+  // ==================================================================
+  const F = await paar(INIT_TWEE_MICS(PEER_PORT), INIT(PEER_PORT));
+  check('Opzet F: ouderunit heeft beeld van de babyunit (' + F.beeld + 'px)', F.beeld > 0);
+  let extraVoor = 0;
+  for (let i = 0; i < 40; i++) {
+    extraVoor = await F.baby.evaluate(() => window.__extraMicN || 0);
+    if (extraVoor > 0) break;
+    await sleep(250);
+  }
+  check('Testopzet: de babyunit opent bij de start een extra microfoon (' + extraVoor + 'x)', extraVoor > 0);
+
+  // Het toestel zet het ruwe microfoonspoor stil; de app hoort te herstellen.
+  const gedemptF = await F.baby.evaluate(() => {
+    const t = (window.__sporen || []).filter((x) => x.kind === 'audio' && x.readyState === 'live')[0];
+    if (!t) return 'geen microfoonspoor gevonden';
+    try { Object.defineProperty(t, 'muted', { get: () => true, configurable: true }); } catch (e) {}
+    t.dispatchEvent(new Event('mute'));
+    return '';
+  });
+  check('Testopzet F: het ruwe microfoonspoor kon stilgezet worden' + (gedemptF ? ' — ' + gedemptF : ''), gedemptF === '');
+
+  const gumVoorF = await F.baby.evaluate(() => window.__gumN || 0);
+  let herstelF = false;
+  for (let i = 0; i < 40; i++) {
+    herstelF = (await F.baby.evaluate(() => window.__gumN || 0)) > gumVoorF;
+    if (herstelF) break;
+    await sleep(250);
+  }
+  check('Opzet F: de babyunit heeft de microfoon opnieuw geopend', herstelF);
+  await sleep(1500);
+  const extraNa = await F.baby.evaluate(() => window.__extraMicN || 0);
+  check('Na het herstel luistert de babyunit weer met álle microfoons (' +
+    extraVoor + ' → ' + extraNa + ')', herstelF && extraNa > extraVoor);
+  await F.cp.close(); await F.cb.close();
 
   if (errs.length) { console.log('\nPAGINAFOUTEN:\n' + errs.join('\n')); fail = true; } else console.log('\nGEEN PAGINAFOUTEN');
   await browser.close(); web.close();

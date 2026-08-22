@@ -94,6 +94,16 @@
     toastTimer = setTimeout(() => t.classList.add('hidden'), 3000);
   }
   function showScreen(id) {
+    // Het zwarte scherm hoort bij het ouder- en babydashboard. Belandt de app
+    // op een ander scherm (sessie beëindigd, terug naar het begin), dan zou
+    // die vaste zwarte laag er overheen blijven liggen en het nieuwe scherm
+    // onzichtbaar maken.
+    // (Alleen aanroepen als het zwart écht aan staat: bij het opstarten draait
+    // showScreen vóór de regel die blackoutOn aanmaakt.)
+    const bl = $('blackout');
+    if (bl && !bl.classList.contains('hidden') && id !== 'screenParent' && id !== 'screenBaby') {
+      setBlackout(false);
+    }
     ['screenSetup', 'screenPairBaby', 'screenPairParent', 'screenParent', 'screenBaby'].forEach(
       (s) => $(s).classList.toggle('hidden', s !== id)
     );
@@ -719,6 +729,13 @@
     if (dbox) dbox.classList.remove('hidden');
     try { if (typeof addEvent === 'function') addEvent('connect', msg, diag); } catch (e) {}
     if (parentStarted) {
+      // Het zwarte scherm ("scherm uit") ligt als vaste laag over álles heen,
+      // ook over deze foutmelding, het uitgezette bolletje en de hertik-knop.
+      // Zolang de app nog aan het herverbinden is laten we het zwart staan —
+      // dat is juist waar het voor bedoeld is. Maar zodra we het OPGEVEN mag
+      // de ouder dat niet missen: dan lijkt een zwart scherm op een werkende
+      // babyfoon terwijl er niets meer binnenkomt. Scherm dus terug.
+      setBlackout(false);
       $('connDot').classList.add('off');
       setParentStatus(msg);
       $('placeholder').classList.remove('hidden');
@@ -3339,8 +3356,13 @@
       watchTrackEnd(nt, kind);
       duplexOn = false; // verse microfoon = weer onbewerkt
       // Ook na een herstel weer versterken, anders is de babyunit ineens
-      // veel zachter dan daarvoor.
-      const k = bouwMicKeten(nt);
+      // veel zachter dan daarvoor. En net als bij het openen doen álle
+      // microfoons van het toestel weer mee: hierboven zijn ze allemaal
+      // gesloten (dat moest voor iOS), dus zonder deze regel luistert de
+      // babyunit na één onderbreking de rest van de nacht met één microfoon
+      // en valt het geluid uit de rest van de kamer weg.
+      const extra = await openExtraMicrofoons(nt);
+      const k = bouwMicKeten(nt, extra);
       if (k) {
         micChain = k;
         try { localStream.removeTrack(nt); localStream.addTrack(k.uit); } catch (e) {}
