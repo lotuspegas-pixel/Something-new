@@ -483,6 +483,48 @@ const INIT_ZONDER_WAKELOCK = (peerPort) => INIT(peerPort) + `
     extraVoor + ' → ' + extraNa + ')', herstelF && extraNa > extraVoor);
   await F.cp.close(); await F.cb.close();
 
+  // ==================================================================
+  // G — een spoor dat vanzelf terugkomt lokt GEEN heropening uit
+  // ==================================================================
+  // De tegenhanger van scenario 3. Daar blijft het spoor gedempt en hoort de
+  // babyunit de microfoon écht opnieuw te openen. Hier komt het spoor binnen
+  // een seconde vanzelf terug — precies wat iOS vlak na terugkeer uit de
+  // achtergrond doet. Meteen alles afbreken en getUserMedia opnieuw aanroepen
+  // is dan verspild werk: het geluid valt onnodig weg en bij mislukken volgt
+  // een keten van herkansingen. Dat is instabiliteit die de gebruiker merkt.
+  const G = await paar();
+  check('Opzet G: ouderunit heeft beeld van de babyunit (' + G.beeld + 'px)', G.beeld > 0);
+  const gumVoorG = await G.baby.evaluate(() => {
+    const t = (window.__sporen || []).filter((x) => x.kind === 'audio' && x.readyState === 'live')[0];
+    if (t) {
+      window.__spoorG = t;
+      try { Object.defineProperty(t, 'muted', { get: () => true, configurable: true }); } catch (e) {}
+    }
+    return window.__gumN || 0;
+  });
+  await G.baby.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  // Na 800 ms herstelt het spoor zichzelf, zoals het toestel dat doet.
+  await sleep(800);
+  await G.baby.evaluate(() => {
+    const t = window.__spoorG;
+    if (!t) return;
+    try { Object.defineProperty(t, 'muted', { get: () => false, configurable: true }); } catch (e) {}
+    t.dispatchEvent(new Event('unmute'));
+  });
+  // Ruim langer wachten dan de wachttijd voor heropenen (4 s), zodat een
+  // geplande heropening zeker afgevuurd zou zijn als hij er nog stond.
+  await sleep(6000);
+  const gumNaG = await G.baby.evaluate(() => window.__gumN || 0);
+  check('Een spoor dat vanzelf terugkomt lokt GEEN heropening van de microfoon uit (' +
+    gumVoorG + ' → ' + gumNaG + ')', gumNaG === gumVoorG);
+  // En de ouderunit mag er dan ook geen waarschuwing over laten staan.
+  const pilG = await G.parent.evaluate(() => {
+    const e = document.getElementById('streamAlert');
+    return !!e && !e.classList.contains('hidden');
+  });
+  check('Ouderunit laat geen waarschuwing staan na een spoor dat vanzelf terugkwam', !pilG);
+  await G.cp.close(); await G.cb.close();
+
   if (errs.length) { console.log('\nPAGINAFOUTEN:\n' + errs.join('\n')); fail = true; } else console.log('\nGEEN PAGINAFOUTEN');
   await browser.close(); web.close();
   console.log('\nRESULTAAT: ' + (fail ? 'MISLUKT' : 'GESLAAGD'));

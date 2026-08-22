@@ -3279,6 +3279,17 @@
     if (kind === 'audio') zetBabyConnSub(gedempt ? 'micInterrupted' : 'excellentConn');
     if (muteHerstelTimers[kind]) { clearTimeout(muteHerstelTimers[kind]); muteHerstelTimers[kind] = null; }
     if (!gedempt) return;
+    planMuteHerstel(kind);
+  }
+  // Plant het écht heropenen van camera of microfoon, met wachttijd. Apart
+  // van meldSpoorGedempt() omdat het ook ná terugkeer uit de achtergrond
+  // nodig is: raakt een spoor gedempt terwijl de pagina verborgen is, dan
+  // verloopt deze timer zonder iets te doen (heropenen heeft op de
+  // achtergrond geen zin) en blijft `spoorGedempt` op waar staan. Een
+  // volgende melding komt er dan niet meer — de toestand is immers niet
+  // veranderd — en zonder deze herplanning bleef het spoor voorgoed stil.
+  function planMuteHerstel(kind) {
+    if (muteHerstelTimers[kind]) return; // er staat er al een
     muteHerstelTimers[kind] = setTimeout(() => {
       muteHerstelTimers[kind] = null;
       if (shuttingDown || role !== 'baby') return;
@@ -3896,11 +3907,24 @@
     const sporen = localStream.getTracks().slice();
     if (micChain && micChain.ruw && sporen.indexOf(micChain.ruw) < 0) sporen.push(micChain.ruw);
     sporen.forEach((t) => {
-      // 'ended' = het toestel heeft camera/microfoon vrijgegeven.
-      // 'muted' = het spoor leeft nog maar levert niets (scherm-uit, andere
-      // app ervoor, inkomend gesprek). Allebei betekenen: opnieuw openen,
-      // want anders blijft het bij de ouder stil zonder foutmelding.
-      if (t.readyState === 'ended' || t.muted) recoverBabyTrack(t.kind);
+      // 'ended' = het toestel heeft camera/microfoon vrijgegeven. Dat komt
+      // niet vanzelf goed, dus meteen opnieuw openen.
+      if (t.readyState === 'ended') { recoverBabyTrack(t.kind); return; }
+      // 'muted' = het spoor leeft nog maar levert even niets (scherm-uit,
+      // andere app ervoor, inkomend gesprek). Vlak ná terugkeer uit de
+      // achtergrond staat een spoor vaak nog kort gedempt en komt het binnen
+      // een seconde vanzelf terug. Hier meteen alles afbreken en getUserMedia
+      // opnieuw aanroepen leverde dan een volledige heropening op die nergens
+      // voor nodig was — en bij mislukken een keten van herkansingen. Daarom
+      // langs dezelfde wachttijd als elke andere demping: blijft het spoor
+      // stil, dan wordt het alsnog heropend; komt het vanzelf terug, dan
+      // haalt de 'unmute'-afhandeling de geplande heropening weg.
+      //
+      // Eerst melden: is het 'mute'-event gemist (het toestel dempte terwijl
+      // de pagina bevroren was), dan staat de gedempt-status nog op onwaar en
+      // zou de geplande heropening zichzelf meteen afbreken. Stond die status
+      // al goed, dan doet dit niets en plant de regel erna de heropening.
+      if (t.muted) { meldSpoorGedempt(t.kind, true); planMuteHerstel(t.kind); }
     });
   }
   document.addEventListener('visibilitychange', () => {
