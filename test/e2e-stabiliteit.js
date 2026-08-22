@@ -370,19 +370,48 @@ const METERS = `
   if (doe(3)) {
     // Lange wachttijd, zodat binnen het meetvenster alleen de wake-gebeurtenissen
     // een poging kunnen starten.
-    const OUDER = 'window.BABYFOON_RECONNECT_DELAYS = [20000];';
-    const s = await koppel('WAKE', '', OUDER);
+    //
+    // De babyunit valt hier stil zónder het besturingskanaal netjes te sluiten.
+    // Dat is bewust: eerst sloot deze test de browsercontext hard af, en dan
+    // wordt de wegval normaal binnen milliseconden opgemerkt via het
+    // 'close'-event (lokaal gemeten: 7–158 ms). Maar dat event komt niet
+    // gegarandeerd aan — op de CI-machine bleef het uit, viel de detectie terug
+    // op de hartslag van standaard 15 s, en dat was precies even lang als het
+    // wachtvenster hieronder. De opzet-stap racete dus zijn eigen timeout en de
+    // suite faalde wisselvallig. Door de babyunit stil te laten vallen loopt de
+    // detectie áltijd via de hartslag (hier 6 s) en is de opzet deterministisch
+    // — bovendien is dit de realistische variant: een telefoon die buiten bereik
+    // raakt of leeg is stuurt ook geen afsluitbericht. Dit scenario meet het
+    // samenvoegen van wake-gebeurtenissen; hóe snel een wegval wordt opgemerkt
+    // hoort bij scenario 2 en wordt daar apart gecontroleerd.
+    const OUDER = `
+      window.BABYFOON_RECONNECT_DELAYS = [20000];
+      window.BABYFOON_HEARTBEAT_TIMEOUT = 6000;
+    `;
+    const BABY = `
+      (function () {
+        var S = RTCDataChannel.prototype.send;
+        RTCDataChannel.prototype.send = function () {
+          if (window.__stil) return;
+          return S.apply(this, arguments);
+        };
+      })();
+    `;
+    const s = await koppel('WAKE', BABY, OUDER);
     check('3: eerst gewoon live beeld (' + s.w + 'px)', s.w > 0);
 
-    await s.cB.close(); // babyunit valt weg → ouderunit plant één poging over 20 s
+    // Babyunit zwijgt vanaf nu → de ouderunit merkt dat via de hartslag en
+    // plant één poging over 20 s.
+    await s.baby.evaluate(() => { window.__stil = true; });
     let gepland = false;
     const tW = Date.now();
-    while (Date.now() - tW < 15000) {
+    while (Date.now() - tW < 20000) {
       gepland = await s.ouder.evaluate(() => window.__statuses.some((t) => /\(\d+\/\d+\)/.test(t)));
       if (gepland) break;
       await sleep(150);
     }
-    check('3: wegval gedetecteerd, herverbinding gepland', gepland);
+    check('3: wegval gedetecteerd, herverbinding gepland (' +
+      (Date.now() - tW) + ' ms)', gepland);
 
     await s.ouder.evaluate(() => { window.__ws = 0; });
     // Scherm aan: één moment, vijf gebeurtenissen — zoals een telefoon ze levert.
@@ -397,7 +426,7 @@ const METERS = `
     const pogingen = await s.ouder.evaluate(() => window.__ws);
     check('3: vijf wake-gebeurtenissen leveren hooguit één nieuwe koppelpoging op (' +
       pogingen + ' aanmeldingen bij de koppelserver)', pogingen <= 2);
-    await s.cP.close();
+    await s.cP.close(); await s.cB.close();
   }
 
   // ==================================================================
