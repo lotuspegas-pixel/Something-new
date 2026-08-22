@@ -61,5 +61,8 @@ jobs:
       - name: E2E — scherm uit, achtergrond en onderbroken sporen
         run: npm run test:background
 
+      - name: E2E — stabiliteit (koppelserver weg, trage herverbinding, wake-storm)
+        run: npm run test:stability
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n
