@@ -589,10 +589,68 @@
   let wasConnected = false;
   let shuttingDown = false;
 
+  // Wachttijd voor poging `n`: oplopend volgens de tabel, met een bovengrens
+  // (de laatste waarde) en een beetje toeval erbovenop. Dat toeval is geen
+  // franje: zonder jitter komen twee toestellen die tegelijk wegvielen ook
+  // telkens tegelijk terug, botsen ze opnieuw en ontstaat er een golf van
+  // pogingen die elkaar in stand houdt. De bovengrens zorgt dat de babyfoon
+  // 's nachts blijft proberen zonder de koppelserver te bestoken.
+  function backoffMs(poging) {
+    const i = Math.max(0, Math.min(poging, RECONNECT_DELAYS.length - 1));
+    const basis = RECONNECT_DELAYS[i] || 2000;
+    const jitter = basis * 0.25 * (Math.random() * 2 - 1);
+    return Math.max(250, Math.round(basis + jitter));
+  }
+
   function clearConnectTimers() {
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
     clearAuthWatchdog();
+  }
+
+  // ------------------------------------------- koppelserver (broker) kwijt
+  // BELANGRIJK ONDERSCHEID. De koppelserver brengt twee toestellen bij elkaar;
+  // dáárna lopen beeld, geluid én het besturingskanaal rechtstreeks tussen de
+  // toestellen. Valt de koppelserver weg (een gedeelde, gratis dienst over een
+  // mobiele verbinding — dat gebeurt regelmatig), dan is er met de lopende
+  // verbinding niets aan de hand.
+  //
+  // Toch brak de app haar hele verbinding af zodra PeerJS 'network' meldde:
+  // peer.destroy(), nieuwe peer, opnieuw koppelen — inclusief zwart beeld en
+  // een nieuwe media-onderhandeling. En de 'disconnected'-tak riep meteen
+  // peer.reconnect() aan, zonder wachttijd: bij een onbereikbare server
+  // leverde dat een aaneengesloten stroom nieuwe websockets op. Dat samen is
+  // het gemelde "blijft reconnecten".
+  //
+  // Vanaf nu: alleen ons opnieuw aanmelden, met oplopende wachttijd, en de
+  // lopende verbinding met rust laten.
+  let brokerAttempt = 0;
+  let brokerTimer = null;
+  function stopBrokerHerstel() {
+    if (brokerTimer) { clearTimeout(brokerTimer); brokerTimer = null; }
+  }
+  function planBrokerHerstel(dezePeer) {
+    if (shuttingDown || brokerTimer || reconnectTimer) return;
+    // Een gebeurtenis van een peer die we al vervangen hebben, negeren we:
+    // anders stuurt een oude, opgeruimde verbinding de nieuwe aan.
+    if (!dezePeer || dezePeer !== peer || dezePeer.destroyed) return;
+    // Alleen melden dat er niet gekoppeld kan worden als er ook echt niemand
+    // meekijkt. Loopt er een sessie, dan merkt die niets van een wegvallende
+    // koppelserver en zou "verbinding verbroken" naast live beeld staan.
+    if (role === 'baby' && !(controlConn && controlConn.open)) toonBabyKoppelbaar(false);
+    brokerTimer = setTimeout(() => {
+      brokerTimer = null;
+      if (shuttingDown || !peer || peer !== dezePeer || peer.destroyed) return;
+      if (!peer.disconnected) { brokerAttempt = 0; return; } // is alweer terug
+      try { peer.reconnect(); } catch (e) {}
+      // Lukt het niet, dan volgt er zo weer een 'disconnected' en plannen we
+      // opnieuw — met de volgende, langere wachttijd.
+    }, backoffMs(brokerAttempt++));
+  }
+  // Aanmelding gelukt (ook ná een herstel): teller terug naar nul.
+  function brokerTerug() {
+    brokerAttempt = 0;
+    stopBrokerHerstel();
   }
   // Koppelen bestaat uit vijf stappen. Bleef de ouderunit hangen, dan zag je
   // alleen een draaiend rondje en was niet te achterhalen wáár het misging.
@@ -672,7 +730,7 @@
   function scheduleParentReconnect() {
     if (shuttingDown || reconnectTimer) return;
     if (reconnectAttempt >= RECONNECT_DELAYS.length) { connectFailed(); return; }
-    const delay = RECONNECT_DELAYS[reconnectAttempt++];
+    const delay = backoffMs(reconnectAttempt++);
     $('connDot').classList.add('off');
     setParentStatus(T('reconnecting') + ' (' + reconnectAttempt + '/' + RECONNECT_DELAYS.length + ')');
     if (parentStarted) { $('placeholder').classList.remove('hidden'); setPlaceholderSpinner(true); }
@@ -716,8 +774,13 @@
   let mediaBevestigd = false;
   let vorigeMediaBytes = -1;
 
+  let mediaHerstartTimer = null;
   function stopMediaWatchdog() {
     if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
+    // Ook de "over 500 ms opnieuw beginnen"-afspraak opruimen. Bleef die
+    // staan, dan startte hij de bewaking alsnog op — midden in een
+    // herverbinding die er intussen voor in de plaats was gekomen.
+    if (mediaHerstartTimer) { clearTimeout(mediaHerstartTimer); mediaHerstartTimer = null; }
   }
   function mediaKomtBinnen() {
     // Beeld dat écht loopt: afmetingen én oplopende bytes.
@@ -780,13 +843,20 @@
         sendControl({ cmd: 'recall' });
         // klok opnieuw laten lopen voor de volgende poging
         stopMediaWatchdog();
-        setTimeout(() => { if (!shuttingDown && !mediaBevestigd) startMediaWatchdog(); }, 500);
+        mediaHerstartTimer = setTimeout(() => {
+          mediaHerstartTimer = null;
+          if (!shuttingDown && !mediaBevestigd) startMediaWatchdog();
+        }, 500);
         return;
       }
-      // Opgegeven: dít is een echte fout en hoort niet als eindeloos rondje
-      // te blijven staan.
+      // Drie keer om nieuw beeld gevraagd en nog steeds niets: de lichte
+      // reparatie helpt niet. Nu pas escaleren naar een volledige
+      // herverbinding — die probeert het met backoff opnieuw en komt vanzelf
+      // bij de expliciete faalstatus uit als ook dat niet lukt. Meteen
+      // opgeven was hier de verkeerde volgorde: een babyfoon hoort te blijven
+      // proberen.
       stopMediaWatchdog();
-      connectFailed('connectFailed');
+      onPeerDrop();
     }, 3000);
   }
 
@@ -837,22 +907,75 @@
     return s.map((k) => k + ':' + kandidaatSoorten[k]).join(' ');
   }
 
+  // Eén plek waar de media-verbinding van eigenaar wisselt. De vórige
+  // RTCPeerConnection MOET hier weg. Bleef die staan (bij elke 'recall' en bij
+  // elke hernieuwde goedkeuring gebeurde dat), dan hield hij niet alleen
+  // bandbreedte en eventueel een doorgeefserver bezet — zijn bewaking stond er
+  // ook nog op. Tientallen seconden later meldt zo'n verlaten verbinding
+  // alsnog 'failed', en dan brak de bewaking van de OUDE verbinding de verse,
+  // gezonde verbinding af. Dat is letterlijk "verbonden en tóch opnieuw
+  // verbinden".
+  function zetMediaPc(pc) {
+    if (mediaPc && mediaPc !== pc) {
+      const oud = mediaPc;
+      oud.__bfDood = true;
+      if (oud.__bfGrace) { clearTimeout(oud.__bfGrace); oud.__bfGrace = null; }
+      try { oud.close(); } catch (e) {}
+    }
+    mediaPc = pc || null;
+    if (mediaPc) watchMediaPc(mediaPc);
+    return mediaPc;
+  }
+  // Beeld en geluid zijn weg, maar het besturingskanaal leeft nog? Dan is een
+  // vólledige herverbinding (koppelserver, kanaal, toestemming, alles opnieuw)
+  // veel te zwaar en juist de reden dat het "onstabiel" voelt. Vraag eerst
+  // alleen de media opnieuw op: dat is één nieuwe media-onderhandeling — met
+  // verse ICE-kandidaten, dus het effect van een ICE-restart — terwijl de
+  // toestemming en het besturingskanaal overeind blijven. Pas als dát niet
+  // helpt volgt de volle herverbinding (zie startMediaWatchdog).
+  function mediaHerstel(pc) {
+    if (shuttingDown || pc !== mediaPc) return;
+    if (role === 'baby') { hercallOuder(); return; }
+    if (controlConn && controlConn.open && linkApproved) {
+      sendControl({ cmd: 'recall' });
+      mediaPogingen = 0;
+      startMediaWatchdog();
+      return;
+    }
+    onPeerDrop();
+  }
   function watchMediaPc(pc) {
     volgKandidaten(pc);
     if (!pc || pc.__bfWatched) return;
     pc.__bfWatched = true;
     pc.addEventListener('connectionstatechange', () => {
-      if (shuttingDown) return;
-      if (pc.connectionState === 'failed') { onPeerDrop(); return; }
-      if (pc.connectionState === 'disconnected') {
-        // ICE krijgt even om zelf te herstellen; daarna als verbroken behandelen.
-        // Een korte wifi-hapering duurt vaak enkele seconden en herstelt vanzelf.
-        // Te snel afbreken betekende: verbinding opnieuw opbouwen terwijl de
-        // oude er zo weer was — wat als "onstabiel beeld" voelt. Deze marge
-        // vangt de gewone haperingen op; een échte wegval wordt alsnog binnen
-        // HEARTBEAT_TIMEOUT opgemerkt.
-        setTimeout(() => {
-          if (!shuttingDown && pc.connectionState === 'disconnected') onPeerDrop();
+      // Verlaten verbinding: niet meer onze zorg. Zonder deze regel praatte
+      // een afgedankte verbinding namens de levende mee.
+      if (shuttingDown || pc.__bfDood || pc !== mediaPc) return;
+      const st = pc.connectionState;
+      if (st === 'connected') {
+        // Hersteld binnen de marge: de geplande ingreep vervalt.
+        if (pc.__bfGrace) { clearTimeout(pc.__bfGrace); pc.__bfGrace = null; }
+        return;
+      }
+      if (st === 'failed') {
+        if (pc.__bfGrace) { clearTimeout(pc.__bfGrace); pc.__bfGrace = null; }
+        mediaHerstel(pc);
+        return;
+      }
+      if (st === 'disconnected') {
+        // 'disconnected' is TIJDELIJK: ICE krijgt even om zelf te herstellen.
+        // Een korte wifi-hapering duurt vaak enkele seconden en gaat vanzelf
+        // over. Te snel ingrijpen betekende: opnieuw opbouwen terwijl de oude
+        // verbinding er zo weer was — precies wat als "onstabiel beeld" voelt.
+        // Eén marge tegelijk: bij heen-en-weer flakkeren stapelden er anders
+        // timers op die elkaar later alsnog aanzetten.
+        if (pc.__bfGrace) return;
+        pc.__bfGrace = setTimeout(() => {
+          pc.__bfGrace = null;
+          if (shuttingDown || pc.__bfDood || pc !== mediaPc) return;
+          const nu = pc.connectionState;
+          if (nu === 'disconnected' || nu === 'failed') mediaHerstel(pc);
         }, ICE_GRACE);
       }
     });
@@ -867,9 +990,22 @@
     lastControlAt = Date.now();
     heartbeatId = setInterval(() => {
       if (shuttingDown || role !== 'parent' || !wasConnected || reconnectTimer) return;
-      if (controlConn && controlConn.open) {
-        try { controlConn.send({ cmd: 'ping' }); } catch (e) {}
-      }
+      // Alleen oordelen over een verbinding die ECHT in bedrijf is. Tijdens
+      // een lopende koppelpoging (kanaal nog niet open, of de babyunit heeft
+      // ons nog niet toegelaten) bewijst stilte niets: daar zijn de koppel- en
+      // toestemmingsbewaking voor.
+      //
+      // Zonder deze voorwaarde sloeg de hartslag meteen ná een wachttijd toe.
+      // `lastControlAt` wordt namelijk alleen ververst door binnenkomend
+      // verkeer, en tijdens de backoff staat de hartslag stil. Kwam de
+      // wachttijd boven HEARTBEAT_TIMEOUT (de tabel loopt tot 30 s), dan was
+      // de waarde bij de start van de verse poging al verlopen en riep de
+      // eerstvolgende tik — binnen vier seconden — onPeerDrop() aan. Elke
+      // herverbinding kreeg zo hooguit vier seconden om te slagen; op een
+      // mobiel netwerk met TURN is dat structureel te weinig, en de app gaf op
+      // met "verbinding mislukt" terwijl de verbinding onderweg was.
+      if (!linkApproved || !controlConn || !controlConn.open) return;
+      try { controlConn.send({ cmd: 'ping' }); } catch (e) {}
       if (Date.now() - lastControlAt > HEARTBEAT_TIMEOUT) {
         lastControlAt = Date.now(); // niet nogmaals vuren tijdens dezelfde herverbindingspoging
         onPeerDrop();
@@ -892,6 +1028,8 @@
     try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { stopExtraMicrofoons(); } catch (e) {}
     try { stopBabyWatchers(); } catch (e) {}
+    try { stopBrokerHerstel(); } catch (e) {}
+    try { stopMediaWatchdog(); } catch (e) {}
     // even wachten zodat het afscheidsbericht het andere toestel nog haalt
     setTimeout(() => {
       try { if (peer) peer.destroy(); } catch (e) {}
@@ -1108,7 +1246,6 @@
   }
 
   // ------------------------------------------------------------------ koppelen: baby
-  let babyBrokerAttempt = 0;
   // Toont of de babyunit op dit moment te koppelen is. Is hij dat niet, dan
   // wordt de QR-code doorzichtig en verschijnt de bekende "verbinding kwijt"-
   // melding: dan hoef je niet te scannen, want er kan niets aankomen.
@@ -1144,14 +1281,22 @@
 
   async function openBabyPeer() {
     if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
+    stopBrokerHerstel();
+    brokerAttempt = 0;
     if (peer) { try { peer.destroy(); } catch (e) {} }
     const code = makeCode(6);
     currentCode = code;
     $('babyCodeText').textContent = '······';
     if (!sessionToken) sessionToken = makeToken();
     peer = new Peer(PEER_PREFIX + code, peerOptions());
+    // Vasthouden WELKE peer bij deze handlers hoort. PeerJS levert zijn
+    // gebeurtenissen asynchroon af, dus een opgeruimde peer kan nog van zich
+    // laten horen nadat er al een nieuwe staat — en die stuurde dan de nieuwe
+    // aan.
+    const mijnPeer = peer;
     peer.on('open', () => {
-      babyBrokerAttempt = 0;
+      if (mijnPeer !== peer) return;
+      brokerTerug();
       toonBabyKoppelbaar(true);
       $('babyCodeText').textContent = code;
       $('babyOfferCode').value = code;
@@ -1175,18 +1320,13 @@
       call.on('stream', playTalkback);
       call.on('close', () => setBabyDuplex(false));
     });
-    peer.on('disconnected', () => {
-      // Broker kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
-      // kamercode geldig blijft en de ouderunit kan herverbinden.
-      if (shuttingDown) return;
-      // Zolang de babyunit niet bij de koppelserver is aangemeld, is zijn
-      // QR-code onbruikbaar: een ouderunit die hem scant blijft dan eindeloos
-      // draaien zonder dat iemand weet waarom. Dat moet zichtbaar zijn.
-      toonBabyKoppelbaar(false);
-      const d = RECONNECT_DELAYS[Math.min(babyBrokerAttempt++, RECONNECT_DELAYS.length - 1)];
-      setTimeout(() => { if (!shuttingDown) { try { peer.reconnect(); } catch (e) {} } }, d);
-    });
-    peer.on('error', (err) => onPeerError(err, 'baby'));
+    // Koppelserver kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
+    // kamercode geldig blijft en de ouderunit kan herverbinden. Zolang de
+    // babyunit niet is aangemeld is zijn QR-code onbruikbaar; planBrokerHerstel
+    // zet dat ook zichtbaar in beeld. Eén timer tegelijk — meerdere
+    // 'disconnected'-meldingen achter elkaar plantten er anders evenveel.
+    peer.on('disconnected', () => planBrokerHerstel(mijnPeer));
+    peer.on('error', (err) => onPeerError(err, 'baby', mijnPeer));
   }
   // --------------------------------------------------------- toegangscontrole
   // Laat een ouderunit pas toe als die het token uit de QR-code meestuurt.
@@ -1219,8 +1359,11 @@
       try {
         const call = peer.call(conn.peer, localStream, CALL_OPTS);
         if (call) {
-          mediaPc = call.peerConnection || mediaPc;
-          watchMediaPc(mediaPc);
+          // Via zetMediaPc: bij een hernieuwde goedkeuring (herverbinding van
+          // hetzelfde toestel) bleef de vorige media-oproep anders gewoon
+          // doorzenden én bewaakt, met een spookmelding "verbroken" tot
+          // gevolg zodra die alsnog sneuvelde.
+          zetMediaPc(call.peerConnection || mediaPc);
           setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
         }
       } catch (e) {}
@@ -1514,9 +1657,28 @@
     const pcn = $('parentConnecting');
     if (pcn) pcn.classList.remove('hidden');
     // Bij herverbinden: oude peer volledig opruimen en opnieuw beginnen.
-    if (peer) { try { peer.destroy(); } catch (e) {} peer = null; controlConn = null; mediaPc = null; }
+    stopBrokerHerstel();
+    brokerAttempt = 0;
+    if (peer) {
+      // VOLGORDE IS HIER ALLES. peer.destroy() sluit het oude besturingskanaal,
+      // en dat kanaal meldt zijn 'close' meteen. attachControl() ziet dan
+      // `controlConn === conn` — want controlConn wees nog naar het oude
+      // kanaal — en las die nette opruiming als een wégval: onPeerDrop(),
+      // dus meteen nóg een herverbinding bovenop de poging die we hier net
+      // beginnen. Elke poging kostte zo twee beurten uit de tabel, en bij de
+      // laatste beurt gaf de app op het moment van starten al op met
+      // "verbinding mislukt". Eerst loskoppelen, dan pas opruimen.
+      controlConn = null;
+      try { peer.destroy(); } catch (e) {}
+      peer = null;
+      zetMediaPc(null);
+    }
     talkCall = null;
     linkApproved = false;
+    // De hartslag meet stilte sinds het laatste bericht. Zonder deze regel nam
+    // hij de stilte van vóór de wegval mee de verse poging in en vuurde hij
+    // meteen weer "verbinding verbroken".
+    lastControlAt = Date.now();
     currentBabyId = PEER_PREFIX + code;
     // De microfoon voor terugpraten wordt hier NIET meer opgevraagd. Hij is
     // niet nodig om beeld te krijgen, maar het opvragen duurt op een telefoon
@@ -1542,8 +1704,19 @@
     setPairStap(1);
     if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     peer = new Peer(peerOptions());
+    // Zie openBabyPeer: gebeurtenissen van een al vervangen peer mogen de
+    // nieuwe niet aansturen.
+    const mijnPeer = peer;
     peer.on('open', () => {
+      if (mijnPeer !== peer) return;
       mark('peerOpen');
+      brokerTerug();
+      // 'open' komt óók terug na een geslaagde HERaanmelding bij de
+      // koppelserver. Staat het besturingskanaal dan nog open, dan is er niets
+      // aan de hand en zou een tweede kanaal alleen maar een nieuwe
+      // media-onderhandeling — en dus een beeldhapering — veroorzaken. Precies
+      // dat gebeurde bij elke hapering van de koppelserver.
+      if (controlConn && controlConn.open) return;
       setPairStap(2);
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
@@ -1569,8 +1742,10 @@
       // Het antwoord draagt óók het opus-profiel: dit is de kant die de
       // babyunit vertelt met welke bitrate hij mag coderen.
       call.answer(undefined, CALL_OPTS);
-      mediaPc = call.peerConnection || mediaPc;
-      watchMediaPc(mediaPc);
+      // Via zetMediaPc: een 'recall' levert een NIEUWE media-verbinding op. De
+      // vorige bleef hier achter — open, doorlopend én bewaakt — en trok
+      // tientallen seconden later alsnog aan de bel.
+      zetMediaPc(call.peerConnection || mediaPc);
       call.on('stream', (s) => {
         mark('firstTrack');
         remoteStream = s;
@@ -1591,10 +1766,18 @@
         if (talking) ensureMic().then((x) => { if (x) startTalkback(); });
       });
     });
-    peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
-    peer.on('error', (err) => onPeerError(err, 'parent'));
+    // Alleen ons opnieuw aanmelden bij de koppelserver, met oplopende
+    // wachttijd. Nooit meer meteen-en-onbeperkt peer.reconnect() aanroepen:
+    // bij een onbereikbare server leverde dat een aaneengesloten stroom
+    // nieuwe websockets op.
+    peer.on('disconnected', () => planBrokerHerstel(mijnPeer));
+    peer.on('error', (err) => onPeerError(err, 'parent', mijnPeer));
   }
-  function onPeerError(err, r) {
+  function onPeerError(err, r, dezePeer) {
+    // Fout van een peer die we al vervangen hebben: negeren. Zulke late
+    // meldingen braken anders de verse poging af die er net voor in de plaats
+    // was gekomen.
+    if (dezePeer && dezePeer !== peer) return;
     const type = err && err.type;
     if (type === 'unavailable-id' && r === 'baby') {
       openBabyPeer(); // code net bezet → nieuwe code
@@ -1614,8 +1797,20 @@
       return;
     }
     if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+      // Dit zijn fouten van de KOPPELSERVER, niet van de verbinding met het
+      // andere toestel. Loopt die verbinding nog (het besturingskanaal staat
+      // open), dan is er niets te herstellen aan de babyfoon zelf: beeld,
+      // geluid en bediening gaan rechtstreeks en merken hier niets van. Alleen
+      // opnieuw aanmelden dus.
+      //
+      // Voorheen brak de ouderunit hier haar hele verbinding af — peer
+      // vernietigen, nieuwe peer, opnieuw koppelen — en dat terwijl de
+      // koppelserver op dat moment juist onbereikbaar was, dus die nieuwe
+      // poging kón niet lukken. Eén hapering van een gedeelde, gratis
+      // koppelserver zette de babyfoon zo minutenlang uit.
+      if (controlConn && controlConn.open) { planBrokerHerstel(dezePeer || peer); return; }
       if (r === 'parent') { scheduleParentReconnect(); return; }
-      toast(T('connectionLost'));
+      planBrokerHerstel(dezePeer || peer);
       return;
     }
     try { console.warn('peer error', type, err); } catch (e) {}
@@ -2969,11 +3164,10 @@
     if (!approvedPeer || !localStream || !peer) return;
     hercallBezig = true;
     try {
-      if (mediaPc) { try { mediaPc.close(); } catch (e) {} mediaPc = null; }
+      zetMediaPc(null); // oude oproep netjes sluiten én zijn bewaking losmaken
       const call = peer.call(approvedPeer, localStream, CALL_OPTS);
       if (call) {
-        mediaPc = call.peerConnection || mediaPc;
-        watchMediaPc(mediaPc);
+        zetMediaPc(call.peerConnection || mediaPc);
         setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
       }
     } catch (e) {
@@ -3390,15 +3584,32 @@
   // echte status en grijpen we meteen in — in plaats van te wachten op een
   // wachttijd die intussen zinloos is geworden. Dit is de directe fix voor
   // "herverbinden blijft laden, geen beeld meer" na scherm-uit.
+  // Eén wake-moment levert in de praktijk meerdere gebeurtenissen op:
+  // visibilitychange, pageshow én focus komen vlak na elkaar binnen (op iOS
+  // soms nog vaker). Elk daarvan begon hier een compleet nieuwe koppelpoging
+  // — inclusief peer.destroy() van de poging die drie regels eerder gestart
+  // was. Zo maakte het aanzetten van het scherm van één herverbinding er vijf
+  // die elkaar allemaal ophieven: de app "bleef reconnecten" en kwam nergens.
+  // Eén controle per wake-moment is genoeg.
+  const HERVAT_SAMENVOEGTIJD = 1500;
+  let laatsteHervatCheck = 0;
   function checkParentHealthOnResume() {
     if (shuttingDown || role !== 'parent' || !parentStarted) return;
+    const nu = Date.now();
+    if (nu - laatsteHervatCheck < HERVAT_SAMENVOEGTIJD) return;
+    laatsteHervatCheck = nu;
     // Nog nooit verbonden geweest en geen poging onderweg: laat de normale
     // flow (of de expliciete mislukt-status met hertik-knop) met rust.
     if (!wasConnected && !reconnectTimer && !connectTimer) return;
     const pcOk = mediaPc && mediaPc.connectionState === 'connected';
     const trackOk = remoteStream && remoteStream.getVideoTracks().some((t) => t.readyState === 'live');
-    const heartbeatOk = (Date.now() - lastControlAt) < HEARTBEAT_TIMEOUT * 2;
+    const heartbeatOk = (nu - lastControlAt) < HEARTBEAT_TIMEOUT * 2;
     if (pcOk && trackOk && heartbeatOk && !reconnectTimer) return; // gezond, niets doen
+    // Er loopt al een poging (connectTimer draait, er staat geen wachttijd
+    // meer voor): die zijn gang laten gaan. Hem afbreken en van voren af aan
+    // beginnen maakt herverbinden alleen maar trager — en op een toestel dat
+    // vaak van scherm wisselt kwam het daardoor nooit meer tot een verbinding.
+    if (connectTimer && !reconnectTimer) return;
     clearConnectTimers();
     reconnectAttempt = 0;
     startParentConnect(currentCode, true);
@@ -3425,6 +3636,9 @@
   window.addEventListener('pagehide', () => {
     shuttingDown = true;
     try { stopBabyWatchers(); } catch (e) {}
+    try { stopBrokerHerstel(); } catch (e) {}
+    try { stopMediaWatchdog(); } catch (e) {}
+    try { clearConnectTimers(); } catch (e) {}
     if (recorder) try { recorder.stop(); } catch (e) {}
     if (peer) try { peer.destroy(); } catch (e) {}
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
