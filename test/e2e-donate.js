@@ -40,8 +40,30 @@ const MIME = {
 // De betaallink wordt in index.html op één regel gezet. Die regel vullen we
 // hier in — precies zoals de eigenaar dat doet — in plaats van de waarde er
 // achteraf in te injecteren: dan zou de test het echte mechanisme overslaan.
-const CONFIG_REGEL = "window.BABYFOON_DONATE_URL = '';";
+// Bewust een patroon en geen letterlijke regel: de eigenaar vult hier zijn
+// echte betaallink in, en dan moet deze test nog steeds beide standen kunnen
+// zetten — mét link én zonder.
+const CONFIG_PATROON = /window\.BABYFOON_DONATE_URL\s*=\s*'([^']*)';/g;
 let donatieLink = '';
+
+// In index.html staat dezelfde regel twee keer: één keer als voorbeeld in het
+// uitleg-commentaar erboven, en daarna de echte. De eerste treffer pakken gaf
+// een test die stilletjes niets deed — het voorbeeld werd vervangen en de
+// echte regel bleef staan. Daarom expliciet de LAATSTE treffer.
+function vervangConfig(html, waarde) {
+  const treffers = html.match(CONFIG_PATROON);
+  if (!treffers || !treffers.length) return null;
+  const laatste = treffers[treffers.length - 1];
+  const pos = html.lastIndexOf(laatste);
+  return html.slice(0, pos) +
+    "window.BABYFOON_DONATE_URL = '" + waarde + "';" +
+    html.slice(pos + laatste.length);
+}
+function leesConfig(html) {
+  const treffers = html.match(CONFIG_PATROON);
+  if (!treffers || !treffers.length) return '';
+  return treffers[treffers.length - 1].replace(/.*'([^']*)'.*/, '$1');
+}
 const web = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
   if (p === '/') p = '/index.html';
@@ -50,14 +72,12 @@ const web = http.createServer((req, res) => {
     res.statusCode = 404; return res.end('nf');
   }
   res.setHeader('Content-Type', MIME[path.extname(fp)] || 'application/octet-stream');
-  if (p === '/index.html' && donatieLink) {
-    let html = fs.readFileSync(fp, 'utf8');
-    if (html.indexOf(CONFIG_REGEL) < 0) {
+  if (p === '/index.html') {
+    const html = vervangConfig(fs.readFileSync(fp, 'utf8'), donatieLink);
+    if (html === null) {
       res.statusCode = 500;
       return res.end('CONFIGREGEL_NIET_GEVONDEN');
     }
-    html = html.replace(CONFIG_REGEL,
-      "window.BABYFOON_DONATE_URL = '" + donatieLink + "';");
     return res.end(html);
   }
   fs.createReadStream(fp).pipe(res);
@@ -121,6 +141,14 @@ const LINK = 'https://donate.stripe.com/test_abc123';
       noopener: (e.getAttribute('rel') || '').indexOf('noopener') >= 0,
     };
   });
+
+  // ---------------------------------------------------------------- 0
+  // De site zoals hij wordt uitgeleverd hoort een ingevulde betaallink te
+  // hebben. Zonder deze controle merk je pas ná het uploaden dat de knop
+  // ontbreekt, en dan mist er stilletjes een donatiemogelijkheid.
+  const ingevuld = leesConfig(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
+  check('De uitgeleverde site heeft een ingevulde Stripe-betaallink (' +
+    (ingevuld || 'LEEG') + ')', /^https:\/\/(donate|buy)\.stripe\.com\/.+/.test(ingevuld));
 
   // ---------------------------------------------------------------- 1
   let s = await open('', '');
