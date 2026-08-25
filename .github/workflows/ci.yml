@@ -70,5 +70,8 @@ jobs:
       - name: E2E — veiligheidsartikel (alle 30 talen leesbaar)
         run: npm run test:securitypage
 
+      - name: E2E — gidsartikel (alle 30 talen leesbaar)
+        run: npm run test:blogpage
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n
