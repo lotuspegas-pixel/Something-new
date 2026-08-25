@@ -164,3 +164,36 @@ controleer ze in hPanel onder DNS als berichten in de spammap belanden.
 
 Het formulier slaat niets op. Naam, e-mailadres, telefoonnummer en bericht
 gaan alleen de mail in.
+
+
+DONATIEKNOP (STRIPE)
+--------------------
+Bovenin de startpagina staat een donatieknop. Die is standaard VERBORGEN
+totdat je je eigen Stripe-betaallink invult. Dat is met opzet: een
+donatieknop die naar een dode pagina leidt kost meer vertrouwen dan hij
+oplevert.
+
+Zo zet je hem aan:
+1. Ga in je Stripe-dashboard naar Producten -> Betaallinks (Payment Links)
+   en maak een link aan voor een donatie.
+   - Kies "Klant bepaalt het bedrag" als je vrije bedragen wilt, of zet
+     een paar vaste bedragen klaar.
+   - Zet bij de betaalmethoden aan wat je wilt aanbieden. Kaart werkt
+     wereldwijd; iDEAL, Bancontact, Apple Pay en Google Pay kun je per
+     land aanzetten in Stripe.
+2. Kopieer de volledige URL (die begint met https://donate.stripe.com/ of
+   https://buy.stripe.com/).
+3. Open index.html, zoek op BABYFOON_DONATE_URL en zet de link ertussen:
+
+       window.BABYFOON_DONATE_URL = 'https://donate.stripe.com/jouwlink';
+
+4. Upload index.html opnieuw. De knop verschijnt vanzelf.
+
+De knoptekst staat in alle 30 talen. De betaalpagina van Stripe opent in
+de taal die de bezoeker op de site heeft gekozen, voor zover Stripe die
+taal ondersteunt; anders kiest Stripe zelf op basis van de browser.
+
+Er wordt niets op deze website opgeslagen. De bezoeker gaat naar de
+beveiligde betaalpagina van Stripe; betaalgegevens komen nooit langs deze
+site. Denk er wel aan om in je privacyverklaring te vermelden dat je
+Stripe gebruikt voor donaties.

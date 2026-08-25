@@ -3689,8 +3689,43 @@
         // komt de werkelijke stand terug (in de nieuwe taal).
         renderBabyTiles();
       }
+      zetDonatieknop();
     });
   }
+
+  // ------------------------------------------------------------ donaties
+  // De donatieknop in de bovenbalk wijst naar een Stripe-betaalpagina. De
+  // URL staat op één plek in index.html (BABYFOON_DONATE_URL). Is die niet
+  // ingevuld, dan blijft de knop verborgen: een donatieknop die naar een
+  // dode pagina leidt kost meer vertrouwen dan hij oplevert.
+  //
+  // Stripe kent zijn eigen lijst met talen. Staat de gekozen sitetaal daar
+  // niet in, dan sturen we géén locale mee en kiest Stripe zelf op basis van
+  // de browser — een onbekende waarde meesturen zou de betaalpagina laten
+  // struikelen, en dat is het laatste wat je wilt op het moment dat iemand
+  // wíl doneren.
+  const STRIPE_TALEN = [
+    'bg', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fil', 'fr', 'hr',
+    'hu', 'id', 'it', 'ja', 'ko', 'lt', 'lv', 'ms', 'mt', 'nb', 'nl', 'pl',
+    'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'vi', 'zh',
+  ];
+  function zetDonatieknop() {
+    const knop = $('donateBtn');
+    if (!knop) return;
+    let url = '';
+    try { url = String(window.BABYFOON_DONATE_URL || '').trim(); } catch (e) {}
+    if (!url) { knop.classList.add('hidden'); return; }
+    let taal = '';
+    try { taal = I18n.current; } catch (e) {}
+    if (taal && STRIPE_TALEN.indexOf(taal) >= 0) {
+      url += (url.indexOf('?') >= 0 ? '&' : '?') + 'locale=' + encodeURIComponent(taal);
+    }
+    knop.setAttribute('href', url);
+    knop.classList.remove('hidden');
+  }
+  // Bewust hier en niet hierboven bij de i18n-opzet: STRIPE_TALEN is een
+  // `const` en zou daar nog in zijn dode zone staan.
+  zetDonatieknop();
 
   // ------------------------------------------------------ browser-ondersteuning
   // Zonder WebRTC (RTCPeerConnection + getUserMedia) kan de app helemaal

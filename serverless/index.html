@@ -227,6 +227,15 @@
             </span>
           </a>
           <div class="lp-nav-right">
+            <!-- Donatieknop. Blijft BABYFOON_DONATE_URL leeg, dan blijft deze
+                 knop verborgen: een donatieknop die naar een dode pagina leidt
+                 kost meer vertrouwen dan hij oplevert. De URL staat op één
+                 plek, onderaan dit bestand. -->
+            <a class="bp-donate hidden" id="donateBtn" href="#" target="_blank"
+               rel="noopener" data-i18n-title="donateTitle" data-i18n-aria="donateTitle">
+              <svg class="bp-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.6-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.6 12c-2.1 4.3-9.6 9-9.6 9z"/></svg>
+              <span class="bp-donate-label" data-i18n="donateBtn">Support us</span>
+            </a>
             <a href="privacy.html" class="lp-navlink" data-i18n="navPrivacy">Privacy</a>
             <a href="#lp-choose" class="lp-navlink" data-i18n="howTitle">How it works</a>
             <span class="lang-pill">
@@ -800,6 +809,23 @@
           toon('Niet-afgehandelde fout: ' + (r && r.message ? r.message : String(r)));
         });
       })();
+    </script>
+    <!-- ============================================================
+         DONATIES — hier zet je je eigen Stripe-betaallink neer.
+         ============================================================
+         Maak in je Stripe-dashboard een Payment Link aan (Producten →
+         Betaallinks) en plak de volledige URL hieronder, bijvoorbeeld:
+
+           window.BABYFOON_DONATE_URL = 'https://donate.stripe.com/xxxxxxxx';
+
+         Laat je dit leeg, dan blijft de donatieknop verborgen. Er wordt
+         niets op deze website opgeslagen: de bezoeker gaat naar de
+         beveiligde betaalpagina van Stripe en betaalgegevens komen hier
+         nooit langs. De taal van die pagina volgt automatisch de taal die
+         de bezoeker op deze site heeft gekozen.
+         ============================================================ -->
+    <script>
+      window.BABYFOON_DONATE_URL = '';
     </script>
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/jsQR.js"></script>

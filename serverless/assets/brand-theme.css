@@ -2898,3 +2898,87 @@ body.app-mode #dviewMonitor.dview.active,
 #dviewMonitor > .monitor-alerts > .alarm-arm {
   margin: 0;
 }
+
+/* ================================================================
+   14. Donatieknop in de bovenbalk
+   ----------------------------------------------------------------
+   BabyPhone.online is gratis en advertentievrij; deze knop leidt naar
+   een Stripe-betaalpagina. De selectors staan bewust op `.lp .bp-donate`:
+   luna.css zet `.lp a { color: inherit }` en dat wint anders op
+   specificiteit, waardoor de knoptekst donkerblauw in plaats van wit
+   werd.
+   ================================================================ */
+.lp .bp-donate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(135deg, #ff8db2 0%, #ff6f9e 100%);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px rgba(255, 111, 158, 0.32);
+  transition: transform 180ms var(--bp-ease), box-shadow 180ms var(--bp-ease),
+    filter 180ms var(--bp-ease);
+}
+
+.lp .bp-donate:hover,
+.lp .bp-donate:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(255, 111, 158, 0.42);
+  filter: saturate(1.06);
+}
+
+.lp .bp-donate:active {
+  transform: translateY(0);
+}
+
+.lp .bp-donate .bp-heart {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: #fff;
+}
+
+/* Eén zachte hartslag per 5 s. Respecteert "verminder beweging". */
+@media (prefers-reduced-motion: no-preference) {
+  .lp .bp-donate .bp-heart {
+    animation: bp-hb 5s var(--bp-ease) infinite;
+  }
+}
+
+@keyframes bp-hb {
+  0%, 88%, 100% { transform: scale(1); }
+  92% { transform: scale(1.18); }
+  96% { transform: scale(1.06); }
+}
+
+/* Smalle telefoons: het label valt weg, het hart blijft. Zonder de extra
+   ruimte hieronder liep de taalkeuze tussen 361 en 390 px buiten beeld —
+   gemeten met een doorlopende sweep van 320 tot 1440 px. */
+@media (max-width: 720px) {
+  .lp .bp-donate {
+    padding: 10px 13px;
+    gap: 0;
+  }
+
+  .lp .bp-donate .bp-donate-label {
+    display: none;
+  }
+
+  .lp .bp-donate .bp-heart {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+@media (max-width: 470px) {
+  .lp .lang-pill .globe { display: none; }
+  .lp .lang-pill { padding-inline: 10px; max-width: 104px; }
+}

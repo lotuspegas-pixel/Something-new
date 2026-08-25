@@ -64,5 +64,8 @@ jobs:
       - name: E2E — stabiliteit (koppelserver weg, trage herverbinding, wake-storm)
         run: npm run test:stability
 
+      - name: E2E — donatieknop (Stripe-link, 30 talen, geen overloop)
+        run: npm run test:donate
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n

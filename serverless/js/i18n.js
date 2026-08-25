@@ -3410,6 +3410,134 @@
     micInterrupted: 'Întrerupt de telefon — se restaurează…',
   });
 
+  // ------------------------------------------------------------------
+  // Donatieknop. BabyPhone.online is gratis en advertentievrij; de knop
+  // in de bovenbalk leidt naar een Stripe-betaalpagina. `donateBtn` is het
+  // korte label op de knop, `donateTitle` de langere omschrijving die als
+  // tooltip én als naam voor de schermlezer dient — dat laatste is nodig
+  // omdat het label op smalle telefoons wegvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    donateBtn: 'Support us',
+    donateTitle: 'Support BabyPhone.online — keep it free and ad-free',
+  });
+  Object.assign(S.zh, {
+    donateBtn: '支持我们',
+    donateTitle: '支持 BabyPhone.online — 保持免费且无广告',
+  });
+  Object.assign(S.hi, {
+    donateBtn: 'सहयोग करें',
+    donateTitle: 'BabyPhone.online का समर्थन करें — इसे मुफ़्त और विज्ञापन-मुक्त रखें',
+  });
+  Object.assign(S.es, {
+    donateBtn: 'Apóyanos',
+    donateTitle: 'Apoya BabyPhone.online — mantenlo gratis y sin anuncios',
+  });
+  Object.assign(S.fr, {
+    donateBtn: 'Nous soutenir',
+    donateTitle: 'Soutenez BabyPhone.online — gratuit et sans publicité',
+  });
+  Object.assign(S.ar, {
+    donateBtn: 'ادعمنا',
+    donateTitle: 'ادعم BabyPhone.online — لإبقائه مجانيًا وبدون إعلانات',
+  });
+  Object.assign(S.bn, {
+    donateBtn: 'সহায়তা করুন',
+    donateTitle: 'BabyPhone.online-কে সহায়তা করুন — বিনামূল্যে ও বিজ্ঞাপনমুক্ত রাখুন',
+  });
+  Object.assign(S.pt, {
+    donateBtn: 'Apoie-nos',
+    donateTitle: 'Apoie o BabyPhone.online — mantenha-o gratuito e sem anúncios',
+  });
+  Object.assign(S.ru, {
+    donateBtn: 'Поддержать',
+    donateTitle: 'Поддержите BabyPhone.online — чтобы он оставался бесплатным и без рекламы',
+  });
+  Object.assign(S.ur, {
+    donateBtn: 'ہماری مدد کریں',
+    donateTitle: 'BabyPhone.online کی مدد کریں — اسے مفت اور اشتہارات سے پاک رکھیں',
+  });
+  Object.assign(S.id, {
+    donateBtn: 'Dukung kami',
+    donateTitle: 'Dukung BabyPhone.online — agar tetap gratis dan tanpa iklan',
+  });
+  Object.assign(S.de, {
+    donateBtn: 'Unterstützen',
+    donateTitle: 'Unterstütze BabyPhone.online — kostenlos und werbefrei',
+  });
+  Object.assign(S.ja, {
+    donateBtn: '応援する',
+    donateTitle: 'BabyPhone.online を応援する — 無料・広告なしを守る',
+  });
+  Object.assign(S.mr, {
+    donateBtn: 'पाठिंबा द्या',
+    donateTitle: 'BabyPhone.online ला पाठिंबा द्या — ते मोफत आणि जाहिरातमुक्त ठेवा',
+  });
+  Object.assign(S.te, {
+    donateBtn: 'మద్దతు ఇవ్వండి',
+    donateTitle: 'BabyPhone.online కు మద్దతు ఇవ్వండి — ఉచితంగా, ప్రకటనలు లేకుండా ఉంచండి',
+  });
+  Object.assign(S.tr, {
+    donateBtn: 'Bize destek ol',
+    donateTitle: 'BabyPhone.online’a destek olun — ücretsiz ve reklamsız kalsın',
+  });
+  Object.assign(S.ta, {
+    donateBtn: 'ஆதரவு தாருங்கள்',
+    donateTitle: 'BabyPhone.online-க்கு ஆதரவு தாருங்கள் — இலவசமாகவும் விளம்பரமின்றியும் இருக்க',
+  });
+  Object.assign(S.vi, {
+    donateBtn: 'Ủng hộ',
+    donateTitle: 'Ủng hộ BabyPhone.online — giữ cho ứng dụng miễn phí và không quảng cáo',
+  });
+  Object.assign(S.ko, {
+    donateBtn: '후원하기',
+    donateTitle: 'BabyPhone.online 후원하기 — 무료와 광고 없는 상태를 유지',
+  });
+  Object.assign(S.it, {
+    donateBtn: 'Sostienici',
+    donateTitle: 'Sostieni BabyPhone.online — gratuito e senza pubblicità',
+  });
+  Object.assign(S.th, {
+    donateBtn: 'สนับสนุนเรา',
+    donateTitle: 'สนับสนุน BabyPhone.online — ให้ใช้ฟรีและไม่มีโฆษณา',
+  });
+  Object.assign(S.gu, {
+    donateBtn: 'સહયોગ કરો',
+    donateTitle: 'BabyPhone.online ને ટેકો આપો — તેને મફત અને જાહેરાત-મુક્ત રાખો',
+  });
+  Object.assign(S.fa, {
+    donateBtn: 'حمایت کنید',
+    donateTitle: 'از BabyPhone.online حمایت کنید — رایگان و بدون تبلیغات بماند',
+  });
+  Object.assign(S.pl, {
+    donateBtn: 'Wesprzyj nas',
+    donateTitle: 'Wesprzyj BabyPhone.online — żeby pozostał bezpłatny i bez reklam',
+  });
+  Object.assign(S.uk, {
+    donateBtn: 'Підтримати',
+    donateTitle: 'Підтримайте BabyPhone.online — щоб він залишався безкоштовним і без реклами',
+  });
+  Object.assign(S.nl, {
+    donateBtn: 'Steun ons',
+    donateTitle: 'Steun BabyPhone.online — gratis en zonder advertenties',
+  });
+  Object.assign(S.pa, {
+    donateBtn: 'ਸਾਥ ਦਿਓ',
+    donateTitle: 'BabyPhone.online ਦਾ ਸਾਥ ਦਿਓ — ਇਸਨੂੰ ਮੁਫ਼ਤ ਅਤੇ ਇਸ਼ਤਿਹਾਰ-ਮੁਕਤ ਰੱਖੋ',
+  });
+  Object.assign(S.sw, {
+    donateBtn: 'Tuunge mkono',
+    donateTitle: 'Unga mkono BabyPhone.online — iendelee kuwa bure na bila matangazo',
+  });
+  Object.assign(S.ha, {
+    donateBtn: 'Ku tallafa mana',
+    donateTitle: 'Ka tallafa wa BabyPhone.online — ya ci gaba da kasancewa kyauta kuma babu tallace-tallace',
+  });
+  Object.assign(S.ro, {
+    donateBtn: 'Susține-ne',
+    donateTitle: 'Susține BabyPhone.online — gratuit și fără reclame',
+  });
+
   const STORE_KEY = 'babyfoon.lang';
   let current = 'en';
   const listeners = [];
@@ -3471,6 +3599,11 @@
     });
     scope.querySelectorAll('[data-i18n-title]').forEach((el) => {
       el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    });
+    // Voor knoppen waarvan het label op smalle schermen wegvalt: `display:none`
+    // haalt de tekst ook uit de schermlezer, dus die heeft een eigen naam nodig.
+    scope.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
     });
     listeners.forEach((fn) => {
       try { fn(); } catch (e) { /* noop */ }
