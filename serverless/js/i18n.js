@@ -3538,6 +3538,23 @@
     donateTitle: 'Susține BabyPhone.online — gratuit și fără reclame',
   });
 
+  // ------------------------------------------------------------------
+  // Link in de voettekst naar security.html — het artikel dat uitlegt hoe
+  // de verbinding beveiligd is. Die pagina heeft een eigen vertaaltabel;
+  // dit is alleen het woord op de link.
+  // ------------------------------------------------------------------
+  const VEILIGHEID = {
+    en: 'Security', zh: '安全', hi: 'सुरक्षा', es: 'Seguridad', fr: 'Sécurité',
+    ar: 'الأمان', bn: 'নিরাপত্তা', pt: 'Segurança', ru: 'Безопасность', ur: 'سیکیورٹی',
+    id: 'Keamanan', de: 'Sicherheit', ja: 'セキュリティ', mr: 'सुरक्षा', te: 'భద్రత',
+    tr: 'Güvenlik', ta: 'பாதுகாப்பு', vi: 'Bảo mật', ko: '보안', it: 'Sicurezza',
+    th: 'ความปลอดภัย', gu: 'સુરક્ષા', fa: 'امنیت', pl: 'Bezpieczeństwo', uk: 'Безпека',
+    nl: 'Veiligheid', pa: 'ਸੁਰੱਖਿਆ', sw: 'Usalama', ha: 'Tsaro', ro: 'Securitate',
+  };
+  Object.keys(VEILIGHEID).forEach(function (code) {
+    if (S[code]) S[code].footSecurity = VEILIGHEID[code];
+  });
+
   const STORE_KEY = 'babyfoon.lang';
   let current = 'en';
   const listeners = [];

@@ -61,7 +61,7 @@ fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 const copies = [
   'privacy.html', 'terms.html', 'contact.html', 'accessibility.html',
-  'how-it-works.html', 'blog.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
+  'how-it-works.html', 'blog.html', 'security.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.jpg',
   '.htaccess', 'LEES-DIT-EERST.txt', 'contact-send.php',
   // app.js haalt dit bij élke paginalading op; zonder bestand gaf dat een 404

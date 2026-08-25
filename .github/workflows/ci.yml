@@ -67,5 +67,8 @@ jobs:
       - name: E2E — donatieknop (Stripe-link, 30 talen, geen overloop)
         run: npm run test:donate
 
+      - name: E2E — veiligheidsartikel (alle 30 talen leesbaar)
+        run: npm run test:securitypage
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n

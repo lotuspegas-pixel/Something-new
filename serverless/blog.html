@@ -230,7 +230,7 @@
     </article>
 
     <footer>
-      <a href="./">Home</a>·<a href="how-it-works.html">How it works</a>·<a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="contact.html">Contact</a>
+      <a href="./">Home</a>·<a href="how-it-works.html">How it works</a>·<a href="security.html" id="secLink">Security</a>·<a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="contact.html">Contact</a>
       <div style="margin-top:8px">© 2026 BabyPhone.online — part of Arcana Synthetica. All audio files are made by and copyright of Arcana Synthetica.</div>
     </footer>
   </div>
@@ -289,6 +289,8 @@
       });
       // app-links behouden de taal
       var q = current === 'en' ? './' : ('./?lang=' + current);
+      var sl = document.getElementById('secLink');
+      if (sl) sl.setAttribute('href', current === 'en' ? 'security.html' : ('security.html?lang=' + current));
       ['brandLink', 'backLink', 'ctaLink'].forEach(function (id) { var el = document.getElementById(id); if (el) el.setAttribute('href', q); });
     }
     function setLang(code) {

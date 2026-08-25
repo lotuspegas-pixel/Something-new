@@ -19,7 +19,8 @@
     "test:i18n": "node test/i18n-parity.js",
     "test:background": "node test/e2e-background.js",
     "test:stability": "node test/e2e-stabiliteit.js",
-    "test:donate": "node test/e2e-donate.js"
+    "test:donate": "node test/e2e-donate.js",
+    "test:securitypage": "node test/e2e-security-page.js"
   },
   "engines": {
     "node": ">=18"
