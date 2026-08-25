@@ -10,8 +10,18 @@
     "test": "node test/e2e.js",
     "test:serverless": "node test/e2e-serverless.js",
     "test:reconnect": "node test/e2e-reconnect.js",
+    "test:timing": "node test/e2e-timing.js",
     "build": "node build.js",
-    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done && node --check functions/entitlement-worker.mjs'"
+    "lint": "bash -c 'node -c server.js && for f in serverless/js/*.js public/js/*.js test/*.js; do node -c \"$f\" || exit 1; done'",
+    "test:oldbrowser": "node test/e2e-oldbrowser.js",
+    "test:media": "node test/e2e-media.js",
+    "test:audit": "node test/e2e-audit.js",
+    "test:i18n": "node test/i18n-parity.js",
+    "test:background": "node test/e2e-background.js",
+    "test:stability": "node test/e2e-stabiliteit.js",
+    "test:donate": "node test/e2e-donate.js",
+    "test:securitypage": "node test/e2e-security-page.js",
+    "test:blogpage": "node test/e2e-blog-page.js"
   },
   "engines": {
     "node": ">=18"
@@ -22,8 +32,9 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "playwright": "^1.40.0",
-    "peer": "^1.0.2"
+    "acorn": "^8.18.0",
+    "peer": "^1.0.2",
+    "playwright": "^1.40.0"
   },
   "license": "MIT"
 }

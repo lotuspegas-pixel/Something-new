@@ -33,7 +33,6 @@ jobs:
           for f in serverless/js/*.js public/js/*.js test/*.js; do
             [ -e "$f" ] && node -c "$f"
           done
-          node --check functions/entitlement-worker.mjs
 
       - name: E2E — server variant
         run: |
@@ -46,3 +45,33 @@ jobs:
 
       - name: E2E — serverless variant (pairing, views, reconnect)
         run: npm run test:serverless
+
+      - name: E2E — tijd tot eerste beeld (snelheidsregressie)
+        run: npm run test:timing
+
+      - name: E2E — oude browsers (API's van Safari 12 gesloopt)
+        run: npm run test:oldbrowser
+
+      - name: E2E — mediaverbinding valt weg terwijl datakanaal blijft
+        run: npm run test:media
+
+      - name: E2E — auditbevindingen (gedrag en weergave)
+        run: npm run test:audit
+
+      - name: E2E — scherm uit, achtergrond en onderbroken sporen
+        run: npm run test:background
+
+      - name: E2E — stabiliteit (koppelserver weg, trage herverbinding, wake-storm)
+        run: npm run test:stability
+
+      - name: E2E — donatieknop (Stripe-link, 30 talen, geen overloop)
+        run: npm run test:donate
+
+      - name: E2E — veiligheidsartikel (alle 30 talen leesbaar)
+        run: npm run test:securitypage
+
+      - name: E2E — gidsartikel (alle 30 talen leesbaar)
+        run: npm run test:blogpage
+
+      - name: Vertalingen compleet in alle 30 talen
+        run: npm run test:i18n

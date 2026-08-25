@@ -31,6 +31,7 @@ body.app-mode {
 .dash-title { display: flex; align-items: center; gap: 12px; }
 .dash-title-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(232, 130, 94, 0.14); color: var(--d-accent); display: grid; place-items: center; flex: 0 0 auto; }
 .dash-title-ic.baby { background: rgba(232, 130, 94, 0.14); }
+.dash-title-ic.cam img { width: auto; height: 28px; display: block; filter: drop-shadow(0 4px 7px rgba(0,0,0,.4)); }
 .dash-title h1 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0; }
 .dash-title .tld { color: var(--d-accent); font-weight: 600; }
 .dash-title small { color: var(--d-muted); font-size: 12.5px; font-weight: 700; }
@@ -86,7 +87,7 @@ body.app-mode {
 .ameter-bars i { flex: 1; height: 20%; border-radius: 2px; background: linear-gradient(180deg, var(--d-accent), var(--d-accent2)); opacity: 0.35; transition: height 0.08s, opacity 0.08s; }
 .ameter-scale { display: flex; justify-content: space-between; margin-top: 8px; color: var(--d-muted); font: 700 10px 'Nunito', sans-serif; }
 
-.ctrlrow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.ctrlrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 12px; }
 .ctrlbtn { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 18px 8px; border-radius: 16px; background: var(--d-surf); border: 1px solid var(--d-line); color: var(--d-text); cursor: pointer; font: 700 12.5px 'Nunito', sans-serif; transition: 0.15s; }
 .ctrlbtn .cb-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--d-surf2); display: grid; place-items: center; color: var(--d-muted); }
 .ctrlbtn:hover { border-color: rgba(255,255,255,0.14); }
@@ -94,6 +95,9 @@ body.app-mode {
 .ctrlbtn.on .cb-ic { background: rgba(255, 255, 255, 0.18); color: #fff; }
 .ctrlbtn.danger .cb-ic { color: var(--d-accent); }
 .ctrlbtn.danger { color: #F1A08A; }
+.ctrlbtn.active { background: linear-gradient(150deg, #E5484D, #C22C31); border-color: transparent; color: #fff; box-shadow: 0 10px 24px rgba(229, 72, 77, 0.35); }
+.ctrlbtn.active .cb-ic { background: rgba(255, 255, 255, 0.18); color: #fff; animation: recPulse 1.4s ease-in-out infinite; }
+@keyframes recPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .statcards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .statcard { background: var(--d-surf); border: 1px solid var(--d-line); border-radius: 16px; padding: 15px; }
@@ -151,6 +155,13 @@ body.app-mode {
 .btgl-t { flex: 1; }
 .btgl-t b { display: block; font: 700 14px 'Nunito', sans-serif; color: var(--d-text); }
 .btgl-t small { color: var(--d-muted); font-size: 12px; font-weight: 600; }
+/* Actieknop-variant van een .btgl-rij (bv. "Wissel camera") — een echte
+   <button>, dus reset de knop-stijlen zodat hij op de rijen lijkt. */
+button.btgl { width: 100%; margin: 0; text-align: left; background: none; color: inherit; font: inherit; cursor: pointer; }
+button.btgl:hover { background: var(--d-surf2); }
+button.btgl:hover .btgl-ic { color: #fff; }
+.btgl-arrow { flex: 0 0 auto; color: var(--d-muted); display: grid; place-items: center; }
+button.btgl:hover .btgl-arrow { color: var(--d-text); }
 .switch { width: 44px; height: 26px; border-radius: 100px; background: var(--d-surf2); border: 1px solid var(--d-line); position: relative; cursor: pointer; flex: 0 0 auto; transition: background 0.2s; }
 .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #7C879B; transition: 0.2s; }
 .switch.on { background: linear-gradient(150deg, #EC8A63, var(--d-accent2)); border-color: transparent; }
@@ -205,6 +216,7 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .dash-brand { display: inline-flex; align-items: center; gap: 10px; font: 700 20px 'Quicksand', sans-serif; color: #fff; }
 .dash-brand .tld { color: var(--d-accent, #E8825E); font-weight: 600; }
 .dash-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, #EC8A63, #E0714B); display: grid; place-items: center; box-shadow: 0 5px 14px rgba(224,113,75,.35); }
+.dash-logo-img { height: 52px; width: auto; display: block; }
 .dash-topright { display: flex; align-items: center; gap: 12px; }
 .dash-gear { width: 40px; height: 40px; border-radius: 12px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); color: #8C95A8; display: grid; place-items: center; cursor: pointer; }
 .dash { padding-top: 8px; }
@@ -216,12 +228,33 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .dash-status .dsb-item + .dsb-item { border-left: 1px solid rgba(255,255,255,.07); padding-left: 12px; }
 .dash-status .dsb-fs { margin-left: 4px; width: 30px; height: 30px; }
 
-/* ---- nursery poster in the video card ---- */
-.vcard-poster { position: absolute; inset: 0; z-index: 0; }
-.vcard-poster svg { width: 100%; height: 100%; display: block; }
+/* ---- scherm zonder beeld: alleen het camera-icoon + één groot label ----
+   "Offline" als er geen verbinding is, "Camera off" zodra de camera bewust
+   uit staat (privacy shade / audio-only). Verder bewust leeg. */
+.vcard-poster {
+  position: absolute; inset: 0; z-index: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(10px, 2.2vw, 22px);
+  background: #0A1524;
+}
+.poster-cam {
+  width: auto; height: clamp(78px, 26%, 168px); display: block;
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.55));
+}
+.poster-label {
+  font: 800 clamp(19px, 3.6vw, 34px) 'Quicksand', sans-serif;
+  color: #99A3B5; letter-spacing: 0.01em; text-align: center;
+}
+/* standaard "Offline"; bij privacy/camera-uit "Camera off" */
+.pl-camoff { display: none; }
+.vcard.privacy .pl-camoff { display: inline; }
+.vcard.privacy .pl-offline { display: none; }
+
 .vcard video { z-index: 1; background: transparent; }
 .vcard .vcard-ph, .vcard .vcard-badge, .vcard .vcard-focus, .vcard .vcard-hd, .vcard .vcard-shade, .vcard .night-veil { z-index: 2; }
-.vcard.privacy .vcard-poster { filter: brightness(.7) blur(2px); }
+/* De "Verbinden…"-laag dekt het poster af, zodat er nooit twee teksten
+   tegelijk in beeld staan. */
+.vcard-ph:not(.hidden) { background: #0A1524; }
 
 
 /* deelweergaven via de zijbalk (Parent Unit) */
@@ -240,6 +273,8 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .set-row b { min-width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
 .pillbtn { border: 1px solid var(--d-line); background: var(--d-surf2); color: var(--d-muted); border-radius: 999px; padding: 7px 18px; font: 700 13px 'Nunito', sans-serif; cursor: pointer; }
 .pillbtn.on { background: rgba(78, 208, 138, 0.14); border-color: rgba(78, 208, 138, 0.4); color: var(--d-ok); }
+.cam-select { flex: 1; min-width: 0; background: var(--d-surf2); border: 1px solid var(--d-line); color: var(--d-text); border-radius: 10px; padding: 8px 12px; font: 700 13px 'Nunito', sans-serif; outline: none; }
+.cam-select option { color: #111; }
 .musicbtn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--d-line); background: var(--d-surf2); color: var(--d-text); border-radius: 12px; padding: 10px 16px; font: 700 13.5px 'Nunito', sans-serif; cursor: pointer; margin-bottom: 12px; }
 .musicbtn.on { background: rgba(232, 130, 94, 0.14); border-color: rgba(232, 130, 94, 0.4); color: var(--d-accent); }
 .dash .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -261,3 +296,1183 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .plus-cta { background: linear-gradient(135deg, #EC8A63, #E0714B); border: none; }
 .plus-state { color: var(--d-muted); font-size: 13px; font-weight: 700; }
 .plus-state.ok { color: var(--d-ok); }
+
+/* =========================================================================
+   LIQUID GLASS — dashboards (Parent Unit + Baby Unit)
+   Zelfde glastokens als luna.css (daar gedefinieerd op :root).
+   ========================================================================= */
+body.app-mode {
+  background:
+    radial-gradient(80% 55% at 12% 0%, var(--brand-tint-pink) 0%, rgba(255, 245, 248, 0) 60%),
+    radial-gradient(85% 60% at 92% 8%, var(--brand-tint-blue) 0%, rgba(245, 250, 255, 0) 62%),
+    linear-gradient(180deg, #FFFFFF 0%, var(--brand-tint-blue) 100%) no-repeat fixed;
+  background-color: #FFFFFF;
+  color: var(--brand-navy);
+}
+
+/* kaarten / panelen */
+.dpanel,
+.statcard,
+.evlog,
+.ameter,
+.bcard,
+.bstat,
+.btile,
+.dash-side,
+.dash-status,
+.dash-statusbar,
+.bpair-code,
+.plus-panel {
+  background-color: var(--lg-fill);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+}
+.dpanel { border-radius: 22px; }
+.statcard, .bcard, .bstat, .btile, .evlog, .ameter { border-radius: 18px; }
+.dash-side { border-radius: 22px; }
+
+/* topbalk als zwevende glasstrook. Let op: .dash-topbar is een gecentreerde
+   1200px-container, dus een rand-tot-rand balk zou afgekapt lijken — vandaar
+   een echte zwevende pil met marge en ronde hoeken. */
+.dash-topbar {
+  background-color: rgba(255, 255, 255, 0.045);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge-soft);
+  border-radius: 20px;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+  margin: 14px auto 0;
+  padding: 12px 18px;
+  width: calc(100% - 28px);
+}
+
+/* bedieningsknoppen: helderder glas, accent-status blijft ongewijzigd */
+.ctrlbtn,
+.btgl,
+.pillbtn,
+.dash-gear,
+.dsb-fs,
+.cam-select,
+.talk-big,
+.musicbtn,
+.btn-stop {
+  background-color: var(--lg-fill-2);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+  box-shadow: var(--lg-shadow-sm), var(--lg-inset);
+}
+.ctrlbtn .cb-ic,
+.btgl-ic,
+.dash-title-ic {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: var(--lg-sheen);
+  border: 1px solid var(--lg-edge-soft);
+}
+
+/* actieve/aan-status: gekleurd glas i.p.v. vlakke vulling */
+.ctrlbtn.on,
+.talk-big.on {
+  background: var(--brand-blue);
+  background-image: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 8px 18px rgba(47, 143, 240, 0.26);
+  color: #fff;
+}
+.ctrlbtn.active {
+  background-image: var(--lg-sheen), linear-gradient(150deg, #E5484D, #C22C31);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 30px rgba(229, 72, 77, 0.36), var(--lg-inset);
+}
+.btn-stop {
+  background: var(--brand-pink);
+  background-image: none;
+  border-color: var(--brand-pink);
+  color: #fff;
+}
+
+/* zijbalk-navigatie */
+.dnav.active {
+  background-color: rgba(47, 143, 240, 0.14);
+  background-image: var(--lg-sheen);
+  border: 1px solid rgba(47, 143, 240, 0.3);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+}
+
+/* videokaart: frame van glas, beeld zelf blijft ondoorzichtig */
+.vcard {
+  border: 1px solid var(--lg-edge);
+  box-shadow: var(--lg-shadow), var(--lg-inset);
+}
+/* overlays óp het beeld — hier is echte doorkijk juist het effect */
+.vcard-badge,
+.vcard-focus,
+.vcard-hd,
+.vcard-shade {
+  background-color: rgba(12, 47, 99, 0.5);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 40%, rgba(255, 255, 255, 0) 70%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: var(--lg-blur-sm);
+  backdrop-filter: var(--lg-blur-sm);
+}
+
+/* scheidingslijnen subtieler op glas */
+.set-row { border-bottom-color: var(--lg-edge-soft); }
+
+/* Terugval zonder backdrop-filter: dekkender maken voor leesbaarheid. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .dpanel, .statcard, .evlog, .ameter, .bcard, .bstat, .btile, .dash-side,
+  .dash-status, .dash-statusbar, .bpair-code, .plus-panel, .dash-topbar,
+  .ctrlbtn, .btgl, .pillbtn, .dash-gear, .dsb-fs, .cam-select, .talk-big, .musicbtn {
+    background-color: rgba(19, 30, 51, 0.94);
+  }
+}
+
+/* =========================================================================
+   LICHT MERKTHEMA — dashboards. De meeste kleuren lopen via de --d-*
+   tokens, dus die omzetten kantelt het grootste deel automatisch; daarna
+   nog de plekken die een vaste donkere kleur hadden.
+   ========================================================================= */
+.dash, .bdash {
+  --d-bg: #FFFFFF;
+  --d-surf: rgba(255, 255, 255, 0.62);
+  --d-surf2: rgba(255, 255, 255, 0.82);
+  --d-line: rgba(110, 159, 222, 0.26);
+  --d-text: var(--brand-navy);
+  --d-muted: var(--brand-muted);
+  --d-accent: var(--brand-blue);
+  --d-accent2: var(--brand-blue-hover);
+  --d-ok: #2FB37A;
+}
+.dash-title h1 { color: var(--brand-navy); }
+.dash-title .tld { color: var(--brand-pink); }
+.dash-logo { background: var(--brand-blue); }
+
+/* videokaart: lichte kaart, het beeld zelf blijft uiteraard ongemoeid */
+.vcard { background: linear-gradient(180deg, #EAF3FF 0%, #DCEBFB 100%); }
+.vcard .night-veil { background: rgba(12, 47, 99, 0.42); }
+/* scherm zonder beeld: licht paneel met het merkicoon */
+.vcard-poster { background: linear-gradient(180deg, var(--brand-tint-blue) 0%, #E6F0FC 100%); }
+.poster-cam { filter: drop-shadow(0 14px 26px rgba(12, 47, 99, 0.22)); }
+.poster-label { color: var(--brand-muted); }
+/* dekkend, in de navy van de brandtheme: verbergt de poster eronder tijdens verbinden */
+.vcard-ph:not(.hidden) { background: linear-gradient(145deg, #0C2F63, #143F77 52%, #0A244D); }
+
+/* pillen óp het beeld blijven donker glas — daar ligt video onder */
+.vcard-badge .rec-dot { background: var(--brand-pink); box-shadow: 0 0 8px var(--brand-pink); }
+
+/* alarm-/opnamestatus in merkroze i.p.v. rood-oranje */
+.ctrlbtn.active {
+  background: var(--brand-pink);
+  background-image: none;
+  border-color: var(--brand-pink);
+  box-shadow: 0 8px 18px rgba(255, 111, 158, 0.28);
+  color: #fff;
+}
+.ctrlbtn.danger { color: var(--brand-pink-hover); }
+.ctrlbtn.danger .cb-ic { color: var(--brand-pink); }
+.btn-stop { color: #fff; }
+
+/* Plus-paneel */
+.plus-badge { background: var(--brand-pink); color: #fff; }
+.plus-feats li::before { color: var(--brand-blue); }
+
+/* schuifregelaars in merkblauw */
+input[type="range"] { accent-color: var(--brand-blue); }
+
+/* resterende vaste witte teksten die nu op licht glas staan */
+.dash-title h1.pu,
+.dash-brand,
+.statcard b,
+.bstat b,
+.bcard-h span,
+.btile b,
+body.app-mode .pair-head h1 { color: var(--brand-navy); }
+button.btgl:hover .btgl-ic { color: var(--brand-blue); }
+.dnav:hover { color: var(--brand-blue); background: rgba(47, 143, 240, 0.08); }
+body.app-mode .bigcode-input {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--brand-navy);
+  border: 1px solid var(--lg-edge);
+  box-shadow: inset 0 2px 8px rgba(12, 47, 99, 0.08);
+}
+.talk-big.on {
+  background: var(--brand-blue);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(47, 143, 240, 0.26);
+}
+.dash-title-ic.cam img { filter: drop-shadow(0 3px 6px rgba(12, 47, 99, 0.2)); }
+
+/* ---------------------------------------------------------------------------
+   Videokaart mag op smalle schermen nooit inklappen (iOS Safari)
+
+   Alle kinderen van .vcard staan op position:absolute — de video, de poster,
+   de statuspillen. De kaart heeft dus géén inhoud die hoogte oplevert en
+   ontleent haar hoogte volledig aan aspect-ratio. Op desktop is dat geen
+   probleem omdat de brandtheme daar ook een min-height meegeeft (480px/410px),
+   maar onder 680px zet die juist `min-height: 0`. WebKit maakt daar 0px van,
+   waardoor bij de ouderunit het beeld volledig verdwijnt terwijl het geluid
+   gewoon doorloopt.
+
+   Een echte hoogte-ondergrens haalt die afhankelijkheid weg. De waarden liggen
+   net onder wat aspect-ratio oplevert (gemeten 64,7–69,7vw resp. 43,1–45,6vw
+   bij 320–680px), zodat aspect-ratio blijft winnen waar die wél werkt en de
+   weergave daar ongewijzigd blijft.
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  #dviewMonitor.dview .vcard { min-height: 64vw; }
+  .bdash .vcard.baby { min-height: 43vw; }
+}
+
+/* ---------------------------------------------------------------------------
+   Babyunit op laptop/desktop: koppelkaart vult haar hoogte
+
+   .bgrid is een 2-koloms grid met de standaard align-items:stretch, dus de
+   koppelkaart krijgt de hoogte van de togglelijst ernaast (388px) terwijl haar
+   inhoud maar ~220px is. Dat liet ruim 165px dode ruimte onderin achter.
+
+   De QR-rij groeit nu mee en centreert zichzelf in de restruimte, en de QR is
+   op deze schermen groter — dat vult de kaart én maakt de code makkelijker
+   scanbaar vanaf de ouderunit.
+   --------------------------------------------------------------------------- */
+@media (min-width: 861px) {
+  .bcard.bpair { display: flex; flex-direction: column; }
+  .bcard.bpair .bpair-qrrow { flex: 1 1 auto; }
+  .bcard.bpair .bpair-qr { width: 164px; height: 164px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Videobeeld binnen de afgeronde hoeken houden
+
+   De brandtheme geeft .vcard een backdrop-filter. Daardoor krijgt de kaart een
+   eigen compositielaag en clipt `overflow: hidden` de <video> niet meer langs
+   de border-radius: het beeld stak vierkant uit alle vier de hoeken. Achter een
+   ondoorzichtig videopaneel valt er ook niets te vervagen, dus de filter kan
+   hier weg. De radius wordt daarnaast doorgegeven aan de lagen die tot de rand
+   doorlopen, zodat het ook goed gaat op engines die anders samenstellen.
+   --------------------------------------------------------------------------- */
+.dash .vcard,
+.bdash .vcard {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.vcard > video,
+.vcard > .vcard-poster,
+.vcard > .vcard-ph,
+.vcard > .night-veil { border-radius: inherit; }
+
+/* ---------------------------------------------------------------------------
+   Bedieningsknoppen ouderunit: alles in één oogopslag
+
+   De brandtheme maakt van .ctrlrow onder 680px een horizontaal scrollende
+   strip (overflow-x + scroll-snap, vaste tegels van 112px). Van de 7 knoppen
+   waren er zo maar ~3 zichtbaar; "Stop" viel buiten beeld en je moest zijwaarts
+   scrollen om erbij te komen. Voor een babyfoon moet elke bedieningsknop
+   direct bereikbaar zijn, dus terug naar een raster dat doorloopt op meerdere
+   rijen: 7 knoppen passen in 3 kolommen zonder scrollen.
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  #dviewMonitor.dview .ctrlrow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+  #dviewMonitor.dview .ctrlbtn {
+    flex: 1 1 auto;
+    min-height: 82px;
+    scroll-snap-align: none;
+  }
+}
+@media (max-width: 380px) {
+  #dviewMonitor.dview .ctrlrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===========================================================================
+   ÉÉN CONTAINERGEOMETRIE VOOR BEIDE UNITS
+
+   .dash-topbar staat bij de ouderunit náást .dash en bij de babyunit ín
+   .bdash. Daardoor rekende width:100% tegen een andere ouder: bij de
+   ouderunit stak de balk (incl. tandwielknop) buiten de inhoudkaarten en
+   liep de pagina horizontaal over; bij de babyunit was hij juist smaller.
+   Ook verschilden de maxbreedtes (1520 vs 1320).
+
+   Hieronder krijgen container én topbalk overal exact dezelfde linker- en
+   rechterrand, en schalen ze mee met het scherm.
+   =========================================================================== */
+:root { --app-max: 1320px; --app-gutter: 34px; }
+@media (max-width: 680px) { :root { --app-gutter: 20px; } }
+
+body.app-mode .dash,
+body.app-mode .bdash {
+  width: min(var(--app-max), calc(100% - var(--app-gutter)));
+  max-width: none;
+  margin-inline: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* ouderunit: topbalk is een broer van .dash → zelfde breedte als de container */
+#screenParent > .dash-topbar {
+  width: min(var(--app-max), calc(100% - var(--app-gutter)));
+  margin-inline: auto;
+}
+/* babyunit: topbalk zit ín .bdash → vult die exact */
+.bdash > .dash-topbar { width: 100%; margin-left: 0; margin-right: 0; }
+
+/* ---------------------------------------------------------------------------
+   Topbalk schaalt mee met het scherm
+
+   De inhoud (merk + taalkeuze + tandwiel) vroeg 407px terwijl er op een
+   360px-scherm maar 308px beschikbaar was, en min-width:auto verhinderde
+   krimpen — vandaar dat het tandwiel buiten de balk stak en de pagina
+   horizontaal meescrolde. Alles hieronder schaalt vloeiend mee; de taalnaam
+   kort af in plaats van de balk op te rekken.
+   --------------------------------------------------------------------------- */
+#screenParent > .dash-topbar,
+.bdash > .dash-topbar {
+  gap: clamp(8px, 2vw, 14px);
+  padding-left: clamp(12px, 3vw, 18px);
+  padding-right: clamp(12px, 3vw, 18px);
+  flex-wrap: nowrap;
+}
+.dash-topbar .dash-brand { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.dash-topbar .dash-topright { flex: 0 1 auto; min-width: 0; gap: clamp(6px, 1.6vw, 12px); }
+.dash-topbar .bp-brand-icon { width: clamp(26px, 7vw, 42px); height: auto; flex: 0 0 auto; }
+.dash-topbar .bp-wordmark { font-size: clamp(13px, 3.6vw, 20px); min-width: 0; overflow: hidden; }
+.dash-topbar .lang-pill { min-width: 0; padding-left: clamp(8px, 2vw, 14px); padding-right: clamp(8px, 2vw, 14px); }
+.dash-topbar .lang-pill .lang-select {
+  max-width: clamp(56px, 18vw, 150px);
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.dash-topbar .dash-gear { flex: 0 0 auto; width: clamp(34px, 9vw, 40px); height: clamp(34px, 9vw, 40px); }
+
+/* ---------------------------------------------------------------------------
+   Geen loze scrollruimte onderaan op mobiel
+
+   .dash en .bdash stonden op min-height:100vh. Op iOS is 100vh de hoogte
+   inclusief de browserbalken, dus groter dan wat je ziet: onderaan de
+   babyunit kon je doorscrollen zonder dat er nog iets kwam. dvh volgt het
+   werkelijk zichtbare gebied; browsers zonder dvh houden de 100vh hierboven.
+   --------------------------------------------------------------------------- */
+@supports (min-height: 100dvh) {
+  body.app-mode .dash,
+  body.app-mode .bdash { min-height: 100dvh; }
+  body.content-page { min-height: 100dvh; }
+}
+
+/* ===========================================================================
+   ÉÉN STATUSTAAL VOOR ALLE BEDIENINGEN
+
+   UIT      = neutrale witte kaart met grijsblauw icoon
+   AAN      = merkblauw met witte tekst en wit icoonvlak
+   OPNEMEN  = roze met pulserend icoon (bewust anders dan "aan")
+   STOPPEN  = roze (destructief)
+
+   Nodig omdat de brandtheme alleen .ctrlbtn.active kende en niet .ctrlbtn.on
+   — precies de klasse die terugpraten, slaapliedje, nachtlampje en het
+   huil-alarm gebruiken. Die vier gaven dus géén enkele visuele terugkoppeling.
+   Daarnaast kleurde de theme de eerste knop altijd blauw, waardoor
+   "Terugpraten" permanent aan leek te staan.
+   =========================================================================== */
+
+/* eerste knop niet meer standaard oplichten — alleen als hij écht aan staat */
+body.app-mode #dviewMonitor .ctrlbtn:first-child:not(.on):not(.active) {
+  color: var(--bp-navy, #0C2F63) !important;
+  border-color: var(--bp-line, rgba(110, 159, 222, 0.28)) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+body.app-mode #dviewMonitor .ctrlbtn:first-child:not(.on):not(.active) .cb-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(47, 143, 240, 0.12) !important;
+}
+
+/* AAN — geldt voor de bedieningsknoppen én de tegels op de babyunit */
+body.app-mode .ctrlbtn.on,
+body.app-mode .btile.on,
+body.app-mode .bctrl.on,
+body.app-mode .musicbtn.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 12px 28px rgba(47, 143, 240, 0.28) !important;
+}
+body.app-mode .ctrlbtn.on .cb-ic,
+body.app-mode .btile.on .bt-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: #fff !important;
+}
+body.app-mode .ctrlbtn.on b,
+body.app-mode .ctrlbtn.on small,
+body.app-mode .btile.on b,
+body.app-mode .btile.on small,
+body.app-mode .btile.on span { color: #fff !important; }
+
+/* OPNEMEN — roze zodat het niet te verwarren is met een gewone "aan" */
+body.app-mode .ctrlbtn.active {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-pink-soft, #FF8DB2), var(--bp-pink, #FF6F9E)) !important;
+  box-shadow: 0 12px 28px rgba(255, 111, 158, 0.3) !important;
+}
+body.app-mode .ctrlbtn.active .cb-ic {
+  color: var(--bp-pink, #FF6F9E) !important;
+  background: #fff !important;
+}
+
+/* duidelijke, gelijke UIT-staat voor de tegels op de babyunit */
+body.app-mode .btile:not(.on) .bt-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(47, 143, 240, 0.12) !important;
+}
+
+/* zichtbare indruk-terugkoppeling op alle bedieningen */
+body.app-mode .ctrlbtn:active,
+body.app-mode .btile:active,
+body.app-mode .switch:active { transform: scale(0.97); }
+body.app-mode .ctrlbtn,
+body.app-mode .btile { transition: background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.08s ease; }
+
+/* pil-schakelaars (o.a. huil-alarm aan/uit) volgen dezelfde statustaal */
+body.app-mode .pillbtn.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 10px 22px rgba(47, 143, 240, 0.26) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Toestemmingsvraag op de babyunit
+
+   Verschijnt wanneer iemand alleen de kamercode heeft ingetypt (dus zonder het
+   token uit de QR-code). Zo kan niemand ongemerkt meekijken: de ouder bij de
+   baby beslist zelf. Bewust een blokkerende laag over het hele scherm, want
+   dit is een veiligheidsvraag die niet gemist mag worden.
+   --------------------------------------------------------------------------- */
+.approve-wrap {
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(6, 20, 44, 0.55);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.approve-wrap.hidden { display: none; }
+.approve-box {
+  width: min(420px, 100%);
+  background: #fff; color: var(--bp-navy, #0C2F63);
+  border-radius: 22px; padding: clamp(20px, 5vw, 28px);
+  box-shadow: 0 30px 80px rgba(12, 47, 99, 0.35);
+  text-align: center;
+}
+.approve-box h2 { font: 800 clamp(18px, 4.6vw, 22px) 'Quicksand', sans-serif; margin: 0 0 10px; }
+.approve-box p { font-size: clamp(14px, 3.6vw, 15px); line-height: 1.55; color: #2B4E80; margin: 0 0 20px; }
+.approve-actions { display: flex; gap: 10px; }
+.approve-actions .btn { flex: 1 1 0; min-height: 48px; border-radius: 999px; }
+
+/* ===========================================================================
+   QA-PASS — ÉÉN PRODUCT, TWEE UNITS
+   ---------------------------------------------------------------------------
+   Deze sectie is toegevoegd na een gemeten UX/visuele controle op 320–1920px
+   in het Engels, Nederlands en Duits, mét een echt verbonden sessie (dus niet
+   alleen met .hidden-klassen geschoven).
+
+   Belangrijk: dash.css wordt geladen VÓÓR assets/brand-theme.css. Alles hier
+   heeft daarom bewust een hogere specificiteit (meestal `body.app-mode …`) en
+   waar de brandtheme zelf `!important` gebruikt, gebruiken we dat ook. Dat is
+   geen luiheid maar een noodzaak van de laadvolgorde.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1. HOEKRADII — van 14 losse waarden naar één schaal
+
+   Gemeten vóór deze fix stonden er veertien verschillende hoekradii door
+   elkaar op kaartniveau: 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 26, 28 en
+   30px. De babyunit gebruikte overal 18px (en 12px voor de tip), de ouderunit
+   22–28px. Twee schermen van hetzelfde product zagen er daardoor uit alsof ze
+   uit twee ontwerpen kwamen — precies de klacht.
+
+   Nu vier tokens, gekozen naar de rol van het vlak:
+     28px  beeld/hero  — de videokaart op beide units
+     24px  paneel      — alle kaarten en containers
+     16px  bediening   — knoppen, navigatie-items, statusstroken
+     12px  icoonvlak   — de kleine gekleurde vierkantjes achter een icoon
+   --------------------------------------------------------------------------- */
+/* Let op: de tokens staan op body en niet op .dash/.bdash. De topbalk van de
+   ouderunit is namelijk een broer van .dash, geen kind — met tokens op .dash
+   erfde die niets en viel border-radius terug op 0px (gemeten: 0px i.p.v.
+   24px op 390px). */
+body.app-mode {
+  --qa-r-hero: 28px;
+  --qa-r-panel: 24px;
+  --qa-r-control: 16px;
+  --qa-r-chip: 12px;
+}
+
+/* beeld/hero — de babyunit stond op 30px, de ouderunit op 28px (22px onder
+   680px). Beide volgen nu dezelfde waarde op élke breedte. */
+body.app-mode #dviewMonitor .vcard,
+body.app-mode .bdash .vcard.baby { border-radius: var(--qa-r-hero); }
+
+/* paneelvlakken */
+body.app-mode .dash-topbar,
+body.app-mode .dash-titlerow,
+body.app-mode .dash-side,
+body.app-mode #dviewMonitor .ctrlrow,
+body.app-mode #dviewMonitor .statcards,
+body.app-mode #dviewMonitor .ameter,
+body.app-mode .bdash .bcard,
+body.app-mode .bdash .bstat,
+body.app-mode .bdash .btile { border-radius: var(--qa-r-panel); }
+body.app-mode .dpanel,
+body.app-mode .evlog { border-radius: var(--qa-r-panel) !important; }
+body.app-mode .pair-wrap .pair-box { border-radius: var(--qa-r-panel); }
+
+/* bedieningsvlakken (knoppen en strookjes ter hoogte van een knop) */
+body.app-mode #dviewMonitor .ctrlbtn,
+body.app-mode .dash .dnav,
+body.app-mode .dash-status,
+body.app-mode .bdash .btn-stop,
+body.app-mode .dash .musicbtn,
+body.app-mode .dash .cam-select,
+body.app-mode .bdash .btip { border-radius: var(--qa-r-control); }
+
+/* icoonvlakken: waren 10, 11 en 12px door elkaar */
+body.app-mode .cb-ic,
+body.app-mode .btgl-ic,
+body.app-mode .btile .bt-ic,
+body.app-mode .evrow .ev-ic,
+body.app-mode .icon-btn,
+body.app-mode .dash-gear,
+body.app-mode .dsb-fs,
+body.app-mode .ameter-mode { border-radius: var(--qa-r-chip); }
+
+/* ---------------------------------------------------------------------------
+   2. TYPOGRAFIE — dezelfde rol, dezelfde tekststijl
+
+   Gemeten: de statuskaart op de ouderunit gebruikt kop 11,5px/700 in het
+   gedempte blauw en waarde 16px Quicksand; dezelfde kaart op de babyunit
+   gebruikte kop 13px in marineblauw, waarde 26px en subtekst 12px. Naast
+   elkaar op één bureaublad ogen dat twee producten. De babyunit volgt nu de
+   ouderunit, want dat is het scherm waar de referentiescreenshots op staan.
+   --------------------------------------------------------------------------- */
+body.app-mode .bdash .bstat-h {
+  font: 700 11.5px 'Nunito', sans-serif;
+  color: #557aa9 !important;
+  margin-bottom: 10px;
+}
+body.app-mode .bdash .bstat b,
+body.app-mode .bdash .bstat b.big { font: 700 16px 'Quicksand', sans-serif; }
+/* de kamercode blijft herkenbaar door de letterafstand, niet door een
+   afwijkende tekengrootte */
+body.app-mode .bdash .bstat b.code { letter-spacing: 3px; }
+body.app-mode .bdash .bstat small { font-size: 11.5px; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   3. AAN/UIT OP DE BABYUNIT WAS ONLEESBAAR
+
+   Gemeten: "Aan" (huil-alarm) en "Uit" (nachtlampje) werden allebei getekend
+   als 12px/700 in rgb(85,122,169) — exact dezelfde stijl. De groene aan-kleur
+   uit `.btile small.ok` werd overschreven door `.btile small{color:… !important}`
+   in de brandtheme. Op een babyfoon moet je in één oogopslag zien wat aan
+   staat; dit was dus een functioneel probleem, geen cosmetisch.
+
+   De tegel leest nu als de statuskaart van de ouderunit: klein gedempt label
+   bovenaan, grote waarde eronder, en de aan-stand krijgt de merkgroene kleur
+   plus een zacht vlak zodat het ook zonder kleurwaarneming opvalt.
+   --------------------------------------------------------------------------- */
+body.app-mode .bdash .btile b {
+  font: 700 11.5px 'Nunito', sans-serif;
+  color: #557aa9 !important;
+  margin-bottom: 2px;
+}
+body.app-mode .bdash .btile small {
+  display: inline-block;
+  font: 700 16px 'Quicksand', sans-serif;
+  color: var(--bp-navy, #0C2F63) !important;
+}
+body.app-mode .bdash .btile small.ok {
+  color: #1F9D6B !important;
+  background: rgba(31, 157, 107, 0.12);
+  border-radius: 999px;
+  padding: 2px 12px;
+}
+
+/* ---------------------------------------------------------------------------
+   4. BEDIENINGSKNOPPEN OUDERUNIT LIEPEN UIT HUN KNOP (900–1120px)
+
+   Gemeten op 1024px (en/nl/de): de zeven knoppen in de rechterkolom waren
+   66px hoog terwijl hun inhoud 75px vroeg — het label stak 10px onder de knop
+   uit en botste op de knop eronder; "Stop" viel zelfs buiten de kaart. Oorzaak:
+   de brandtheme zet de knoppen op `flex:1 1 0` in een kolom die op die breedte
+   maar 498px hoog is, terwijl `.ctrlbtn` uit dit bestand nog `flex-direction:
+   column` heeft (icoon bóven het label).
+
+   De brandtheme zet daar al `justify-content:flex-start` en `text-align:left`
+   — dat is de opmaak van een rij, niet van een tegel. We maken het dus echt
+   een rij: icoon links, label ernaast. Dan is 58px genoeg, past het op elke
+   breedte in die kolom, en zijn alle knoppen even hoog.
+   --------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  body.app-mode #dviewMonitor .ctrlbtn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  body.app-mode #dviewMonitor .ctrlbtn .cb-ic { flex: 0 0 auto; }
+  body.app-mode #dviewMonitor .ctrlbtn > span:not(.cb-ic) { flex: 1 1 auto; min-width: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   5. HET VIJFDE SLAAPLIEDJE WAS ONBEREIKBAAR
+
+   Gemeten: `.playlist` staat op `max-height:176px; overflow-y:auto`, maar de
+   vijf nummers vragen 212px. In de zijbalkweergave "Slaapliedjes" is er
+   verticaal onbeperkt ruimte (het paneel eindigt ruim boven de vouw), dus vier
+   nummers waren zichtbaar en "Soft Sleep Noise" alleen te vinden door in een
+   lijst zonder zichtbare scrollbalk te scrollen. De hoogtebeperking hoort bij
+   de compacte oude paneelweergave, niet bij deze pagina.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash .dview .playlist {
+  max-height: none;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------------------
+   6. AANRAAKDOELEN ONDER 44px
+
+   Gemeten (alle breedtes, alle talen): tandwiel 34–40px, volledig-schermknop
+   30×30, kopieerknop 36×36, pil-schakelaars 34px hoog, de taalkiezer 21px
+   hoog binnen een pil die er veel groter uitziet, en de schuifregelaars 16px
+   hoog. Op een telefoon die je 's nachts met één hand bedient is dat te klein.
+
+   Waar de kaart het toelaat groeit het vlak zelf; waar dat de opmaak zou
+   oprekken (de volledig-schermknop in de smalle statusbalk) vergroten we
+   alleen het aanraakgebied met een pseudo-element, zodat het beeld gelijk
+   blijft maar de vinger raak heeft.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash-topbar .dash-gear { width: 44px; height: 44px; }
+body.app-mode .bdash .icon-btn { width: 44px; height: 44px; }
+body.app-mode .dash .pillbtn { min-height: 44px; padding: 8px 20px; }
+body.app-mode .dash .musicbtn { min-height: 44px; }
+body.app-mode .bdash .btn-stop { min-height: 44px; }
+body.app-mode .bdash .vcard-shade { min-height: 44px; }
+
+/* Taalkiezer: de pil ís de knop, dus laat het <select> de pil helemaal vullen.
+   Let op de selector: de topbalk staat bij de ouderunit náást .dash (niet
+   erin), dus `.dash .lang-pill` raakte hem niet — vandaar `.dash-topbar`. */
+body.app-mode .dash-topbar .lang-pill,
+body.app-mode .dash .lang-pill,
+body.app-mode .bdash .lang-pill { min-height: 44px; padding-top: 0; padding-bottom: 0; }
+/* Een <select> rekt niet mee met align-self:stretch (Chromium behandelt het
+   als vervangen element), dus de hoogte staat hier expliciet. */
+body.app-mode .dash-topbar .lang-pill .lang-select,
+body.app-mode .dash .lang-pill .lang-select,
+body.app-mode .bdash .lang-pill .lang-select { align-self: stretch; min-height: 44px; padding-top: 0; padding-bottom: 0; }
+
+/* volledig-schermknop: beeld blijft klein, aanraakgebied wordt 44×44 */
+body.app-mode .dash-status .dsb-fs { position: relative; width: 36px; height: 36px; }
+body.app-mode .dash-status .dsb-fs::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 44px; height: 44px; transform: translate(-50%, -50%);
+}
+
+/* schuifregelaars: het spoor blijft dun, het aanraakvlak wordt 44px hoog */
+body.app-mode .dash .set-row input[type="range"] { height: 44px; }
+
+/* zijbalk op smalle schermen: minder binnenmarge zodat de zeven navigatie-
+   knoppen zo breed mogelijk worden (gemeten 43px → 44px op 360px). Onder
+   340px passen zeven doelen van 44px niet naast elkaar; dat is een grens van
+   het aantal items, niet van deze opmaak — zie het rapport. */
+@media (max-width: 460px) {
+  body.app-mode .dash-side { padding-left: 4px; padding-right: 4px; }
+  body.app-mode .dash-nav { gap: 2px; }
+  body.app-mode .dash .dnav { min-width: 40px; }
+}
+
+/* ---------------------------------------------------------------------------
+   7. HET WOORDMERK IN DE TOPBALK WERD AFGEKAPT
+
+   Gemeten: `.bp-wordmark` staat op `overflow:hidden` (nodig, anders duwt hij
+   de balk uit het scherm) mét `white-space:nowrap`. Op 320px werd er 24px
+   afgesneden en op 360px 5px — je las dus "Babyphone.Onlin". Er is geen
+   ellipsis, het is een harde knip midden in een letter.
+
+   Bovendien snijdt `line-height:1` de staarten van de "y" en de "p" eraf
+   (gemeten inhoud 18px in een vak van 16px, op élke breedte).
+
+   Onder 400px valt het woordmerk daarom netjes weg en draagt het merkicoon
+   het merk — exact wat de landingspagina onder 520px al doet. Boven die grens
+   krijgt de tekst genoeg regelhoogte om heel te blijven.
+   --------------------------------------------------------------------------- */
+body.app-mode .dash-topbar .bp-wordmark { line-height: 1.35; }
+@media (max-width: 399px) {
+  body.app-mode .dash-topbar .bp-wordmark { display: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   8. DE VIDEOKAART LAG OVER DE BEDIENINGSKNOPPEN HEEN (901–1270px)
+
+   Gemeten breedte van de videokaart tegenover de kolom waar hij in hoort:
+
+        960px  kolom 574px  →  kaart 729px  (147px te breed, 141px overlap)
+       1024px  kolom 638px  →  kaart 729px  ( 91px te breed,  77px overlap)
+       1200px  kolom 768px  →  kaart 853px  ( 85px te breed,  71px overlap)
+
+   Oorzaak: de brandtheme geeft `#dviewMonitor .vcard` zowel `aspect-ratio:16/9`
+   als `min-height:410px` (480px boven 1120px). Via de verhouding dwingt die
+   minimumhoogte ook een minimumbréédte af (410 × 16/9 = 729px). De rasterkolom
+   is `minmax(0, 1fr)` en groeit dus niet mee — de kaart stak simpelweg buiten
+   haar kolom.
+
+   En omdat .vcard `position:relative` heeft en .ctrlrow niet, tekent het beeld
+   bovenop de knoppen: op 1024px waren de icoonvlakken van "Terugpraten",
+   "Slaapliedje", "Nachtlampje", "Huil-alarm" en "Opnemen" onzichtbaar én niet
+   aanklikbaar, want de videolaag ving de klik.
+
+   De minimumhoogte kan weg: `aspect-ratio` levert vanzelf een grote kaart
+   zodra de kolom breed is (1280px → 477px hoog, praktisch de oude 480px). De
+   ondergrens onder 680px blijft staan; die vangt een ánder probleem op
+   (WebKit dat aspect-ratio negeert) en zit in een eigen mediaquery.
+   --------------------------------------------------------------------------- */
+@media (min-width: 681px) {
+  body.app-mode #dviewMonitor .vcard { min-height: 0; }
+}
+/* Restrisico: rond 960px rekte het raster de rij uit, waarna aspect-ratio de
+   bréédte uit die hoogte terugrekende en de kaart alsnog 28px te breed werd.
+   Een harde bovengrens op de kolombreedte sluit dat af — gemeten over
+   768–1920px is er nu nergens nog overlap. */
+body.app-mode #dviewMonitor .vcard { max-width: 100%; }
+
+/* ---------------------------------------------------------------------------
+   9. HET CAMERABEELD OP DE BABYUNIT DUWDE DE KOPPELKAART ONDER DE VOUW
+
+   Gemeten op 1280×900: de videokaart van de babyunit is 1246×623px, terwijl
+   dezelfde kaart op de ouderunit 848×477px is. De babyunit heeft geen zijkolom,
+   dus `aspect-ratio:16/8` over de volle breedte levert een beeld op dat hoger
+   is dan het monitorbeeld van de ouder — op één bureaublad naast elkaar zien
+   het daardoor twee verschillende producten.
+
+   Het kost ook onnodig veel pagina: op een laptopscherm van 900px stond de
+   koppelkaart (kamercode + QR, nodig om er een tweede ouderapparaat bij te
+   zetten) op y=955 en was de pagina 1565px hoog. Na de begrenzing staat de
+   kaart op y=810 en is de pagina 1417px — één scherm minder scrollen.
+
+   De hoogte volgt nu dezelfde bovengrens als de ouderunit. De kaart blijft
+   schermvullend breed (het beeld is `object-fit:cover`, dus er wordt alleen
+   iets meer boven en onder weggesneden — het richten van de camera blijft
+   prima werken).
+   --------------------------------------------------------------------------- */
+@media (min-width: 861px) {
+  body.app-mode .bdash .vcard.baby { max-height: clamp(300px, 38vw, 480px); }
+}
+
+/* ---------------------------------------------------------------------------
+   10. TAALNAAM ONNODIG AFGEKORT OP KLEINE SCHERMEN
+
+   De taalkeuze staat op `max-width: clamp(56px, 18vw, 150px)`; op 320px is dat
+   58px en las je "De…" in plaats van "Deutsch". Die krappe bovengrens was
+   nodig zolang het woordmerk ernaast stond. Sinds punt 7 verdwijnt het
+   woordmerk onder 400px, dus die ruimte is er nu wel: gemeten is er binnen de
+   topbalk 276px beschikbaar, waarvan merkicoon (26) + tandwiel (44) + marges
+   ongeveer 90px gebruiken.
+   --------------------------------------------------------------------------- */
+@media (max-width: 399px) {
+  body.app-mode .dash-topbar .lang-pill .lang-select { max-width: 140px; }
+}
+
+/* ---------------------------------------------------------------------------
+   11. RAFELIGE LAATSTE RIJ BEDIENINGSKNOPPEN OP TELEFOON
+
+   Zeven knoppen in een raster van drie kolommen geven 3 + 3 + 1: "Stoppen"
+   stond alleen naast twee gaten. Door de enige destructieve knop de volle
+   breedte te geven wordt het 3 + 3 + balk — netter, en de knop die je bewust
+   moet raken is meteen de grootste. Werkt ook in de tweekoloms-variant onder
+   380px (2 + 2 + 2 + balk).
+   --------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  body.app-mode #dviewMonitor .ctrlrow .ctrlbtn.danger { grid-column: 1 / -1; }
+}
+
+/* ---------------------------------------------------------------------------
+   Zijbalknavigatie: aanraakdoelen van 44px, óók op de smalste telefoons
+
+   Zeven items naast elkaar passen op 320px niet met 44px per doel: er is maar
+   ~276px beschikbaar, en 7×44 plus tussenruimte vraagt ruim 300px. Ze werden
+   daardoor 40px breed. In plaats van ze horizontaal te laten scrollen (waarbij
+   twee items buiten beeld verdwijnen) breekt de rij nu netjes af over twee
+   regels: vier en drie, met ruim 60px per doel.
+   --------------------------------------------------------------------------- */
+@media (max-width: 400px) {
+  body.app-mode .dash-nav {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  body.app-mode .dash .dnav {
+    flex: 1 1 calc(25% - 4px);
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Slaapliedjes direct onder de bedieningsknoppen
+
+   De playlist stond alleen in de zijbalkweergave "Slaapliedjes". Nu staat hij
+   ook op het monitorscherm, zodat je een nummer kunt kiezen zonder van
+   weergave te wisselen — met een knop om de lijst te herhalen.
+   --------------------------------------------------------------------------- */
+.mplayer {
+  background: var(--d-surf);
+  border: 1px solid var(--d-line);
+  border-radius: 24px;
+  padding: 14px 16px;
+}
+.mplayer-h {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+  font: 700 13px 'Quicksand', sans-serif; color: var(--d-text);
+}
+.mrepeat {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 44px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  font: 700 12.5px 'Nunito', sans-serif;
+  background: rgba(255, 255, 255, 0.75); color: var(--bp-navy, #0C2F63);
+  border: 1px solid var(--bp-line, rgba(110, 159, 222, 0.28));
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+body.app-mode .mrepeat.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 10px 22px rgba(47, 143, 240, 0.26) !important;
+}
+#monitorPlaylist { max-height: none; }
+@media (max-width: 460px) {
+  .mrepeat span { display: none; }   /* alleen het pictogram op smalle schermen */
+  .mrepeat { padding: 0 12px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Plaats voor de slaapliedjes in het monitorraster
+
+   #dviewMonitor is een grid met benoemde gebieden. Een nieuw blok zónder
+   gebied wordt automatisch achteraan geplaatst — de speler kwam daardoor
+   onder de statuskaarten terecht in plaats van direct onder de knoppen.
+   Hieronder krijgt hij een eigen rij, meteen na "controls".
+   --------------------------------------------------------------------------- */
+body.app-mode #dviewMonitor.dview.active {
+  grid-template-areas:
+    "video controls"
+    "audio controls"
+    "music music"
+    "stats stats"
+    "events events";
+}
+body.app-mode #dviewMonitor .mplayer { grid-area: music; }
+
+@media (max-width: 900px) {
+  body.app-mode #dviewMonitor.dview.active {
+    grid-template-areas:
+      "video"
+      "audio"
+      "controls"
+      "music"
+      "stats"
+      "events";
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Vier zichtbare correcties op de dashboards
+
+   1. Op 390px verdween het woordmerk uit de topbalk — er stond dan alleen een
+      klein icoontje naast een brede taalkiezer. Het schaalt nu mee en
+      verdwijnt pas onder 340px.
+   2. De navigatierij brak af als 4 + 3, waarbij de drie op de tweede rij
+      breder uitrekten dan de vier erboven. Nu even breed en gecentreerd.
+   3. "Wissel camera" loopt over twee regels, waardoor die knoppenrij hoger
+      werd dan de rij erboven. Het label krijgt nu altijd twee regels ruimte.
+   4. Het camerabeeld was op de babyunit het kleinste element op een pagina
+      vol grote kaarten, terwijl het juist de hoofdzaak is.
+
+   Let op: assets/brand-theme.css laadt ná dit bestand, dus deze regels hebben
+   bewust een hogere specificiteit (body.app-mode … ) om te winnen.
+   --------------------------------------------------------------------------- */
+/* Grens op 421px en niet op 341px. Reden: het merkblok heeft overflow:hidden
+   en beeldmerk + woordmerk + taalkiezer + tandwiel passen samen pas vanaf
+   ongeveer 412px in de balk. Daaronder werd het woordmerk afgekapt tot
+   "Babyphone.Onlin" — zichtbaar op iPhone SE (375), iPhone 12-15 (390) en
+   veel Androids (360). Het beeldmerk ernaast draagt het merk daar prima, en
+   "Ouderunit"/"Babyunit" staat er direct onder. */
+@media (min-width: 421px) {
+  body.app-mode .dash-topbar .bp-wordmark {
+    display: inline-flex !important;
+    font-size: clamp(12px, 3.4vw, 20px);
+  }
+}
+@media (max-width: 420px) {
+  body.app-mode .dash-topbar .bp-wordmark { display: none !important; }
+}
+
+@media (max-width: 400px) {
+  body.app-mode .dash .dash-nav { justify-content: center; }
+  body.app-mode .dash .dash-nav .dnav { flex: 0 0 calc(25% - 4px) !important; }
+}
+
+/* gelijke knophoogtes: het label krijgt altijd twee regels, ook als het er
+   maar één nodig heeft — zo blijven alle rijen even hoog */
+@media (max-width: 680px) {
+  body.app-mode #dviewMonitor .ctrlbtn > span:last-child {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 2.5em; text-align: center; line-height: 1.2;
+  }
+}
+
+/* babyunit: camerabeeld als hoofdzaak in beeld */
+@media (max-width: 860px) {
+  body.app-mode .bdash .vcard.baby { aspect-ratio: 4 / 3 !important; }
+}
+
+/* Statuskaarten babyunit naast elkaar op mobiel: drie korte feiten (verbonden,
+   batterij, kamer) namen gestapeld 316px in beslag — meer dan het camerabeeld
+   zelf. Naast elkaar past het in één rij en blijft het beeld de hoofdzaak. */
+@media (max-width: 860px) {
+  body.app-mode .bdash .bstat-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px;
+  }
+  body.app-mode .bdash .bstat { padding: 12px 10px; }
+  body.app-mode .bdash .bstat .big { font-size: clamp(15px, 4.2vw, 20px); }
+  body.app-mode .bdash .bstat small { font-size: 10.5px; line-height: 1.35; }
+}
+
+/* Woordmerk mag niet middenin een woord afbreken. Op smalle schermen krijgt
+   het merk voorrang op de taalnaam: die kort af (de globe blijft zichtbaar en
+   de keuzelijst blijft gewoon werken), zodat "Babyphone.Online" heel blijft. */
+@media (max-width: 480px) {
+  body.app-mode .dash-topbar .bp-wordmark { flex: 0 0 auto; overflow: visible; }
+  body.app-mode .dash-topbar .lang-pill { flex: 0 1 auto; min-width: 0; }
+  body.app-mode .dash-topbar .lang-pill .lang-select { max-width: clamp(0px, 12vw, 96px); }
+}
+
+/* ===========================================================================
+   ÉÉN KNOPTAAL VOOR BABYUNIT ÉN OUDERUNIT
+   ---------------------------------------------------------------------------
+   Klacht: "de knoppen van de babyunit zien er anders uit dan die van de
+   ouderunit". Dat klopt en het was te meten. Voor functies die op beide
+   toestellen hetzelfde doen stonden er twee complete componentfamilies:
+
+     ouderunit   .ctrlbtn   losse witte kaart, radius 16px, icoonvlak,
+                            AAN = hele knop merkblauw met witte tekst
+     babyunit    .btgl      rij in één grote kaart, radius 0px, haarlijn
+                            ertussen, AAN = klein schuifje van 44x26px
+     babyunit    .btile     losse kaart, radius 24px, icoon gecentreerd
+                            bóven het label; het equivalent op de ouderunit
+                            (.statcard) is juist een aaneengesloten strook
+                            met het icoon links náást het label
+
+   Gemeten op 390/430/1280px vóór deze sectie:
+     .ctrlbtn  hoogte 101px (76px op 1280), radius 16px
+     .btgl     hoogte  70px,                radius  0px
+     .btile    hoogte 126px,                radius 24px
+
+   Drie vormen, drie radii en twee verschillende manieren om "aan" te tonen.
+   Hieronder volgt de babyunit de ouderunit, want daar staan de
+   referentieschermen op. Er wordt niets nieuws bedacht: .btgl krijgt de vorm
+   en de statustaal van .ctrlbtn, en .btiles krijgt de strook van .statcards.
+   Alle element-ID's blijven ongewijzigd.
+
+   Let op: assets/brand-theme.css laadt ná dit bestand en gebruikt !important
+   op .bcard/.btile/.switch. Daarom staat dat hier ook.
+   =========================================================================== */
+
+/* --- 1. de togglelijst is geen kaart meer, maar een stapel losse knoppen --- */
+body.app-mode .bdash .bcard.btoggles {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  padding: 0;
+  gap: 12px;
+}
+
+/* --- 2. elke schakelrij is nu dezelfde knop als op de ouderunit --- */
+body.app-mode .bdash .btgl {
+  border-top: 0;
+  border: 1px solid var(--bp-line, rgba(110, 159, 222, 0.28));
+  border-radius: var(--qa-r-control);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 #fff;
+  color: var(--bp-navy, #0C2F63);
+  min-height: 58px;
+  padding: 10px 14px;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.08s ease;
+}
+body.app-mode .bdash .btgl:hover {
+  border-color: rgba(47, 143, 240, 0.5);
+  background: rgba(245, 250, 255, 0.96);
+}
+body.app-mode .bdash .btgl:active { transform: scale(0.97); }
+
+/* AAN — exact dezelfde vulling, tekstkleur en schaduw als .ctrlbtn.on */
+body.app-mode .bdash .btgl.on {
+  color: #fff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--bp-blue-light, #5FAEFF), var(--bp-blue, #2F8FF0)) !important;
+  box-shadow: 0 12px 28px rgba(47, 143, 240, 0.28) !important;
+}
+body.app-mode .bdash .btgl.on .btgl-t b,
+body.app-mode .bdash .btgl.on .btgl-t small { color: #fff !important; }
+body.app-mode .bdash .btgl.on .btgl-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: #fff !important;
+  border-color: transparent !important;
+}
+body.app-mode .bdash .btgl.on .btgl-arrow { color: #fff; }
+
+/* Het icoonvlak krijgt dezelfde maat als op de ouderunit (.cb-ic is 40px). */
+body.app-mode .bdash .btgl-ic { width: 40px; height: 40px; }
+
+/* Het schuifje blijft staan — het vertelt dat de rij een schakelaar is — maar
+   het draagt de status niet langer alleen. Op een blauwe knop zou het blauwe
+   schuifje onzichtbaar zijn, dus daar wordt het wit met een blauwe knop. */
+body.app-mode .bdash .btgl.on .switch {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: none !important;
+}
+body.app-mode .bdash .btgl.on .switch::after { background: #fff; }
+/* Aanraakdoel van 44px zonder het schuifje zelf op te blazen. */
+body.app-mode .bdash .switch { position: relative; }
+body.app-mode .bdash .switch::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 48px; height: 44px; transform: translate(-50%, -50%);
+}
+
+/* --- 3. de statustegels lezen als de statuskaarten van de ouderunit ---
+   Ouderunit: één aaneengesloten strook, icoon klein en links náást het label,
+   waarde eronder. De babyunit had vier losse kaarten met een groot gecentreerd
+   icoonvlak. Zelfde inhoud, dus nu ook dezelfde vorm. */
+body.app-mode .bdash .btiles {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--qa-r-panel);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 18px 50px rgba(12, 47, 99, 0.07), inset 0 1px 0 #fff;
+}
+body.app-mode .bdash .btile {
+  min-width: 0;
+  min-height: 112px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  padding: 15px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'ic label' 'value value';
+  align-items: center;
+  column-gap: 7px;
+  row-gap: 8px;
+  align-content: center;
+}
+body.app-mode .bdash .btile + .btile { border-left: 1px solid rgba(110, 159, 222, 0.18) !important; }
+@media (max-width: 860px) {
+  body.app-mode .bdash .btile + .btile { border-left: 0 !important; }
+  body.app-mode .bdash .btile:nth-child(even) { border-left: 1px solid rgba(110, 159, 222, 0.18) !important; }
+  body.app-mode .bdash .btile:nth-child(n + 3) { border-top: 1px solid rgba(110, 159, 222, 0.18) !important; }
+}
+/* icoon: even klein en zonder vlak, net als .sc-h svg op de ouderunit */
+body.app-mode .bdash .btile .bt-ic {
+  grid-area: ic;
+  width: 15px; height: 15px;
+  margin: 0;
+  background: none !important;
+  border: 0 !important;
+  color: var(--bp-blue, #2F8FF0) !important;
+}
+body.app-mode .bdash .btile .bt-ic svg { width: 15px; height: 15px; }
+body.app-mode .bdash .btile b { grid-area: label; margin-bottom: 0; }
+/* justify-self: anders rekt het groene "Aan"-pilletje over de hele tegel uit,
+   want een rastercel vult standaard haar breedte. */
+body.app-mode .bdash .btile small { grid-area: value; justify-self: start; }
+
+/* --- 4. één pictogramkleur voor dezelfde functie op beide units ---
+   assets/brand-theme.css kleurde het tweede en vierde icoon van de
+   bedieningsrij roze op plaats-nummer (:nth-child), niet op betekenis. Dat
+   trof "Slaapliedje" en "Huil-alarm", terwijl exact diezelfde twee functies op
+   de babyunit blauw zijn — en het verschoof mee zodra er een knop bij komt.
+   Roze blijft gereserveerd voor wat het al betekent: opnemen en stoppen. */
+body.app-mode #dviewMonitor .ctrlbtn:nth-child(2):not(.danger) .cb-ic,
+body.app-mode #dviewMonitor .ctrlbtn:nth-child(4):not(.danger) .cb-ic {
+  color: var(--bp-blue, #2F8FF0) !important;
+  background: rgba(95, 174, 255, 0.13) !important;
+}
+/* ... behalve wanneer de knop aan staat: dan wit vlak met blauw pictogram. */
+body.app-mode #dviewMonitor .ctrlbtn.on .cb-ic,
+body.app-mode #dviewMonitor .ctrlbtn.active .cb-ic { background: #fff !important; }
+body.app-mode #dviewMonitor .ctrlbtn.active .cb-ic { color: var(--bp-pink, #FF6F9E) !important; }
+
+/* --- 5. schuifregelaars: de onbenutte helft was bijna zwart ---
+   Zonder eigen opmaak tekent de browser het spoor in zijn eigen kleur; op dit
+   lichte thema gaf dat een donkerbruine balk dwars door de instellingen. Nu
+   dezelfde lichte lijn als de randen elders, met de merkblauwe knop. */
+body.app-mode .dash .set-row input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  background: transparent;
+}
+/* Het afgelegde deel blijft merkblauw: de stand moet in één blik af te lezen
+   zijn. `--vulling` wordt door js/app.js bijgehouden (zie volgSchuifvulling). */
+body.app-mode .dash .set-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--bp-blue, #2F8FF0) 0 var(--vulling, 0%),
+    rgba(110, 159, 222, 0.26) var(--vulling, 0%) 100%);
+}
+body.app-mode .dash .set-row input[type="range"]::-moz-range-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--bp-blue, #2F8FF0) 0 var(--vulling, 0%),
+    rgba(110, 159, 222, 0.26) var(--vulling, 0%) 100%);
+}
+body.app-mode .dash .set-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; margin-top: -7px;
+  border-radius: 50%; border: 0;
+  background: var(--bp-blue, #2F8FF0);
+  box-shadow: 0 2px 6px rgba(12, 47, 99, 0.28);
+}
+body.app-mode .dash .set-row input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%; border: 0;
+  background: var(--bp-blue, #2F8FF0);
+  box-shadow: 0 2px 6px rgba(12, 47, 99, 0.28);
+}
+
+/* --- 6. "Auto" bij de geluidsmeter is een aflezing, geen knop ---
+   Het stond op cursor:pointer en zag eruit als een knop, maar er hing niets
+   aan: aantikken deed niets. Het is nu duidelijk een statuslabel. */
+body.app-mode .dash .ameter-mode { cursor: default; }
+
+/* --- 7. de herhaalknop bij de slaapliedjes was 42px breed --- */
+body.app-mode .dash .mrepeat { min-width: 44px; justify-content: center; }

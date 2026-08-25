@@ -38,55 +38,6 @@ class LullabyPlayer {
     return this.name;
   }
 
-  // Frequenties (in Hz) voor noten.
-  static NOTE = {
-    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0,
-    A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
-    G3: 196.0, A3: 220.0, F3: 174.61, E3: 164.81,
-  };
-
-  static MELODIES = {
-    twinkle: {
-      label: 'Twinkle Twinkle',
-      tempo: 480,
-      notes: [
-        'C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', '-',
-        'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4', '-',
-        'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
-        'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
-      ],
-    },
-    brahms: {
-      label: 'Wiegelied (Brahms)',
-      tempo: 520,
-      notes: [
-        'E4', 'E4', 'G4', '-', 'E4', 'E4', 'G4', '-',
-        'E4', 'G4', 'C5', 'B4', 'A4', 'A4', 'G4', '-',
-        'D4', 'E4', 'F4', 'D4', 'E4', 'F4', '-', 'F4',
-        'A4', 'G4', 'F4', 'E4', 'D4', '-', 'C4', '-',
-      ],
-    },
-    frere: {
-      label: 'Frère Jacques',
-      tempo: 460,
-      notes: [
-        'C4', 'D4', 'E4', 'C4', 'C4', 'D4', 'E4', 'C4',
-        'E4', 'F4', 'G4', '-', 'E4', 'F4', 'G4', '-',
-        'G4', 'A4', 'G4', 'F4', 'E4', 'C4', 'G4', 'A4',
-        'G4', 'F4', 'E4', 'C4', 'C4', 'G3', 'C4', '-',
-      ],
-    },
-  };
-
-  static SOUNDS = {
-    regen: { label: 'Regen', type: 'rain' },
-    oceaan: { label: 'Oceaan', type: 'ocean' },
-    hartslag: { label: 'Hartslag', type: 'heartbeat' },
-    witte: { label: 'Witte ruis', type: 'noise', color: 'white' },
-  };
-
-  // Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
-  static ORDER = ['regen', 'oceaan', 'hartslag', 'witte'];
 
   static list() {
     return LullabyPlayer.ORDER.map((id) => ({
@@ -279,5 +230,59 @@ class LullabyPlayer {
     clearTimeout(this._noteTimer);
   }
 }
+
+// Statische klasse-velden (static X = ...) bestaan pas vanaf Safari 14.1.
+// Op iOS 12 is dat een syntaxfout bij het INLEZEN, waardoor dit hele bestand
+// ongeldig wordt en de app niet start. Als gewone toewijzingen na de class
+// werkt het overal hetzelfde.
+// Frequenties (in Hz) voor noten.
+LullabyPlayer.NOTE = {
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0,
+  A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
+  G3: 196.0, A3: 220.0, F3: 174.61, E3: 164.81,
+};
+
+LullabyPlayer.MELODIES = {
+  twinkle: {
+    label: 'Twinkle Twinkle',
+    tempo: 480,
+    notes: [
+      'C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', '-',
+      'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4', '-',
+      'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
+      'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
+    ],
+  },
+  brahms: {
+    label: 'Wiegelied (Brahms)',
+    tempo: 520,
+    notes: [
+      'E4', 'E4', 'G4', '-', 'E4', 'E4', 'G4', '-',
+      'E4', 'G4', 'C5', 'B4', 'A4', 'A4', 'G4', '-',
+      'D4', 'E4', 'F4', 'D4', 'E4', 'F4', '-', 'F4',
+      'A4', 'G4', 'F4', 'E4', 'D4', '-', 'C4', '-',
+    ],
+  },
+  frere: {
+    label: 'Frère Jacques',
+    tempo: 460,
+    notes: [
+      'C4', 'D4', 'E4', 'C4', 'C4', 'D4', 'E4', 'C4',
+      'E4', 'F4', 'G4', '-', 'E4', 'F4', 'G4', '-',
+      'G4', 'A4', 'G4', 'F4', 'E4', 'C4', 'G4', 'A4',
+      'G4', 'F4', 'E4', 'C4', 'C4', 'G3', 'C4', '-',
+    ],
+  },
+};
+
+// Regen en witte ruis zijn er bewust uit: die klonken te veel als ruis en
+// niet als rustgevende slaapmuziek.
+LullabyPlayer.SOUNDS = {
+  oceaan: { label: 'Oceaan', type: 'ocean' },
+  hartslag: { label: 'Hartslag', type: 'heartbeat' },
+};
+
+// Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
+LullabyPlayer.ORDER = ['oceaan', 'hartslag'];
 
 window.LullabyPlayer = LullabyPlayer;

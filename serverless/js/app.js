@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Serverloze babyfoon — Luna Unit.
+ * Serverloze babyfoon — BabyPhone.online.
  *
  * Twee apparaten koppelen zichzelf via een QR-code of koppelcode (handmatige
  * WebRTC-signalering). Daarna loopt beeld en geluid rechtstreeks peer-to-peer,
@@ -12,14 +12,50 @@
   // terugval-relay wanneer een direct pad onmogelijk is (carrier-grade NAT
   // op 4G/5G, symmetrische routers). De relay ziet alleen versleuteld
   // verkeer (DTLS-SRTP) en kan niet meekijken. Het gratis Open Relay
-  // Project is de best-effort standaard; vervang voor productie/Plus door
-  // een eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
+  // Project is de best-effort standaard; vervang voor productie door een
+  // eigen TURN-dienst via window.BABYFOON_ICE of window.BABYFOON_PEER.
+  // Eigen doorgeefserver instellen zonder de code aan te raken: leg een
+  // bestand turn.json naast index.html met de vorm
+  //   { "iceServers": [ { "urls": "turn:jouwserver:3478",
+  //                       "username": "...", "credential": "..." } ] }
+  // Zonder zo'n bestand blijven de standaardservers gelden. Dit wordt vroeg
+  // geladen; de eerste koppelpoging wacht er kort op (zie wachtOpIce).
+  let iceGeladen = false;
+  let iceWacht = null;
+  function laadEigenIce() {
+    if (iceWacht) return iceWacht;
+    iceWacht = new Promise((klaar) => {
+      let af = false;
+      const stop = () => { if (!af) { af = true; iceGeladen = true; klaar(); } };
+      setTimeout(stop, 2500); // nooit langer wachten dan dit
+      try {
+        fetch('turn.json', { cache: 'no-store' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => {
+            if (j && Array.isArray(j.iceServers) && j.iceServers.length) {
+              ICE.length = 0;
+              j.iceServers.forEach((x) => ICE.push(x));
+            }
+            stop();
+          })
+          .catch(stop);
+      } catch (e) { stop(); }
+    });
+    return iceWacht;
+  }
+
   const ICE = window.BABYFOON_ICE ||
-    ((window.Plus && Plus.isActive() && Plus.config && Plus.config.turn)
-      // Plus: dedicated relay van de eigenaar (betrouwbaarder dan best-effort)
-      ? [{ urls: 'stun:stun.l.google.com:19302' }, Plus.config.turn]
-      : [
-        { urls: 'stun:stun.l.google.com:19302' },
+    [
+        // Meerdere STUN-servers: met één server is dat een enkelvoudig
+        // faalpunt. Wordt er geen enkele bereikt, dan kent een toestel zijn
+        // eigen publieke adres niet en lukt koppelen alleen binnen hetzelfde
+        // netwerk.
+        { urls: [
+          'stun:stun.l.google.com:19302',
+          'stun:stun1.l.google.com:19302',
+          'stun:stun.cloudflare.com:3478',
+          'stun:stun.nextcloud.com:443',
+        ] },
         {
           urls: [
             'turn:openrelay.metered.ca:80',
@@ -29,12 +65,24 @@
           username: 'openrelayproject',
           credential: 'openrelayproject',
         },
-      ]);
+      ];
   const $ = (id) => document.getElementById(id);
   const T = (k) => (window.I18n ? window.I18n.t(k) : k);
   // Slaapmuziek-ID → i18n-sleutel (labels worden vertaald weergegeven).
   const TRACK_I18N = { regen: 'trackRain', oceaan: 'trackOcean', hartslag: 'trackHeartbeat', witte: 'trackWhite' };
   const trackLabel = (tr) => T(TRACK_I18N[tr.id] || tr.id);
+
+  // ------------------------------------------------------------------ meten
+  // Tijdmeting van het koppelen. Staat uit tenzij window.BABYFOON_TRACE aan
+  // staat; dan verzamelt window.BABYFOON_MARKS per stap een tijdstempel in
+  // milliseconden. Zo is "hoe lang duurt het tot er beeld is" een meting en
+  // geen vermoeden — zie test/e2e-timing.js.
+  const TRACE = !!window.BABYFOON_TRACE;
+  if (TRACE) window.BABYFOON_MARKS = [];
+  function mark(name) {
+    if (!TRACE) return;
+    try { window.BABYFOON_MARKS.push({ name: name, t: Math.round(performance.now()) }); } catch (e) {}
+  }
 
   // ------------------------------------------------------------------ helpers
   let toastTimer = null;
@@ -46,6 +94,16 @@
     toastTimer = setTimeout(() => t.classList.add('hidden'), 3000);
   }
   function showScreen(id) {
+    // Het zwarte scherm hoort bij het ouder- en babydashboard. Belandt de app
+    // op een ander scherm (sessie beëindigd, terug naar het begin), dan zou
+    // die vaste zwarte laag er overheen blijven liggen en het nieuwe scherm
+    // onzichtbaar maken.
+    // (Alleen aanroepen als het zwart écht aan staat: bij het opstarten draait
+    // showScreen vóór de regel die blackoutOn aanmaakt.)
+    const bl = $('blackout');
+    if (bl && !bl.classList.contains('hidden') && id !== 'screenParent' && id !== 'screenBaby') {
+      setBlackout(false);
+    }
     ['screenSetup', 'screenPairBaby', 'screenPairParent', 'screenParent', 'screenBaby'].forEach(
       (s) => $(s).classList.toggle('hidden', s !== id)
     );
@@ -98,10 +156,296 @@
     }
     return s;
   }
+  // Capability-token: 128 bit willekeur die in de QR-code en de deellink zit.
+  // De korte kamercode dient alleen om elkaar te vínden op de broker; dit token
+  // is het eigenlijke toegangsbewijs. Wie alleen de code intypt (zonder QR)
+  // komt er niet zomaar in: de babyunit vraagt dan eerst om toestemming.
+  function makeToken() {
+    const a = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+    else for (let i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+    return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  // Vergelijking in constante tijd: geen timinglek over het token.
+  function sameToken(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+    let d = 0;
+    for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return d === 0;
+  }
+
   function peerOptions() {
     const opts = { config: { iceServers: ICE }, debug: 0 };
     if (window.BABYFOON_PEER) Object.assign(opts, window.BABYFOON_PEER);
     return opts;
+  }
+
+  // ------------------------------------------------------------------ geluid
+  // Een babyfoon is géén telefoongesprek. De spraakbewerking die browsers
+  // standaard op een microfoon zetten is afgestemd op praten en werkt hier
+  // juist tegen ons:
+  //   • autoGainControl draait in een stille kamer de versterking helemaal
+  //     open, blaast de ruisvloer op en klapt bij het eerste geluidje weer
+  //     dicht — dat hoor je als pompen en kraken.
+  //   • noiseSuppression is een spraakfilter: het poetst precies de zachte,
+  //     niet-spraakachtige geluiden weg die je bij een baby wél wilt horen
+  //     (ademhalen, draaien, zuchten) en laat op de opgeblazen ruisvloer
+  //     "musical noise" achter — het typische gekraak.
+  //   • echoCancellation zet de volledige spraakketen aan, inclusief de
+  //     niet-lineaire onderdrukking die het slaapliedje uit de eigen speaker
+  //     wegduikt en de microfoon daarbij dichtknijpt.
+  // De babyunit neemt daarom onbewerkt op. Zodra de ouder terugpraat is er
+  // wél een echopad (ouder → babyspeaker → babymicrofoon → ouder); alleen
+  // dán zetten we de echo-onderdrukking tijdelijk aan.
+  // channelCount/sampleRate zijn "ideal": zonder spraakbewerking geeft Chrome
+  // de ruwe apparaatstand terug (soms 2 kanalen op 44,1 kHz). Dat is geen
+  // probleem — het opus-fmtp hieronder dwingt het transport toch naar mono.
+  const MIC_MONITOR = {
+    echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+    channelCount: 1, sampleRate: 48000,
+  };
+  // ---- versterking van de babymicrofoon ----------------------------------
+  // De ingebouwde automatische versterking (autoGainControl) staat bewust uit:
+  // die regelt zo snel dat je hem hoort pompen, en samen met ruisonderdrukking
+  // gaf dat het gekraak waar eerder over geklaagd is. Maar zónder versterking
+  // is een stille kinderkamer ook werkelijk stil — zeker op een tablet die de
+  // spraakmicrofoon gebruikt in plaats van de luidsprekermicrofoon.
+  //
+  // Daarom een eigen trap: vaste versterking die LANGZAAM meebeweegt met het
+  // gemiddelde niveau, gevolgd door een begrenzer. Langzaam regelen is precies
+  // het verschil: het maakt zacht geluid hoorbaar zonder dat je het hoort
+  // ademen, en de begrenzer vangt een huilbui op zonder vervorming.
+  const MIC_GAIN_MIN = 1;
+  const MIC_GAIN_MAX = 14;
+  const MIC_GAIN_START = 5;
+  let micChain = null;   // { src, gain, comp, dest, uit, ruw }
+  let micGainTimer = null;
+
+  // Alle beschikbare microfoons openen en samen laten meeluisteren. Een
+  // telefoon of tablet heeft er meestal meerdere (onder, boven, soms achter);
+  // de browser opent er standaard één. Door ze allemaal te openen en bij
+  // elkaar op te tellen wordt geluid uit de hele kamer opgepikt in plaats van
+  // alleen uit de richting van die ene microfoon.
+  //
+  // Niet elk toestel staat dit toe: iOS geeft vaak maar één ingang vrij, en
+  // sommige toestellen weigeren een tweede opname zodra er al één loopt. Elke
+  // extra microfoon is daarom optioneel — mislukt hij, dan gaan we door met wat
+  // we hebben. Er is altijd minstens de eerste.
+  let extraMicStreams = [];
+  async function openExtraMicrofoons(alGeopendSpoor) {
+    stopExtraMicrofoons();
+    const uit = [];
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return uit;
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const ingangen = devs.filter((d) => d.kind === 'audioinput' && d.deviceId && d.deviceId !== 'default');
+      if (ingangen.length < 2) return uit;
+      let huidigId = '';
+      try { if (alGeopendSpoor && alGeopendSpoor.getSettings) huidigId = alGeopendSpoor.getSettings().deviceId || ''; } catch (e) {}
+      for (const d of ingangen) {
+        if (d.deviceId === huidigId) continue;
+        try {
+          const st = await getMedia({ audio: Object.assign({ deviceId: { exact: d.deviceId } }, MIC_MONITOR), video: false });
+          const t = st.getAudioTracks()[0];
+          if (t) { extraMicStreams.push(st); uit.push(t); }
+          else { try { st.getTracks().forEach((x) => x.stop()); } catch (e) {} }
+        } catch (e) { /* deze microfoon kan niet mee; geen probleem */ }
+      }
+    } catch (e) {}
+    return uit;
+  }
+  function stopExtraMicrofoons() {
+    try { extraMicStreams.forEach((st) => st.getTracks().forEach((t) => t.stop())); } catch (e) {}
+    extraMicStreams = [];
+  }
+
+  function bouwMicKeten(ruwSpoor, extraSporen) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC || !ruwSpoor) return null;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+      if (!audioCtx.createMediaStreamDestination || !audioCtx.createDynamicsCompressor) return null;
+      const src = audioCtx.createMediaStreamSource(new MediaStream([ruwSpoor]));
+      const gain = audioCtx.createGain();
+      // Elke extra microfoon komt op dezelfde versterkingstrap binnen. Ze
+      // worden bij elkaar opgeteld, dus geluid uit welke hoek dan ook komt
+      // door. De begrenzer verderop vangt op dat de som luider is dan één
+      // microfoon alleen.
+      const extraBronnen = [];
+      (extraSporen || []).forEach((t) => {
+        try {
+          const b = audioCtx.createMediaStreamSource(new MediaStream([t]));
+          extraBronnen.push(b);
+        } catch (e) {}
+      });
+      gain.gain.value = MIC_GAIN_START;
+      const comp = audioCtx.createDynamicsCompressor();
+      // Begrenzer: pas laat ingrijpen, dan stevig. Zo blijft zacht geluid
+      // ongemoeid en wordt alleen een piek afgevlakt.
+      comp.threshold.value = -12;
+      comp.knee.value = 6;
+      comp.ratio.value = 12;
+      comp.attack.value = 0.005;
+      comp.release.value = 0.25;
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(gain);
+      extraBronnen.forEach((b) => { try { b.connect(gain); } catch (e) {} });
+      gain.connect(comp); comp.connect(dest);
+      const uit = dest.stream.getAudioTracks()[0];
+      if (!uit) return null;
+      return { src: src, extra: extraBronnen, gain: gain, comp: comp, dest: dest, uit: uit, ruw: ruwSpoor };
+    } catch (e) { return null; }
+  }
+
+  function sloopMicKeten() {
+    if (micGainTimer) { clearInterval(micGainTimer); micGainTimer = null; }
+    if (!micChain) return;
+    try { micChain.src.disconnect(); } catch (e) {}
+    try { (micChain.extra || []).forEach((b) => b.disconnect()); } catch (e) {}
+    try { micChain.gain.disconnect(); } catch (e) {}
+    try { micChain.comp.disconnect(); } catch (e) {}
+    micChain = null;
+  }
+
+  // Vervangt het audiospoor van een opgenomen stream door de versterkte versie.
+  // Lukt dat niet (oude WebKit kan hier stilte geven), dan blijft het ruwe
+  // spoor gewoon staan — liever onversterkt dan niets.
+  async function versterkMic(stream) {
+    if (!stream || !stream.getAudioTracks) return stream;
+    const ruw = stream.getAudioTracks()[0];
+    if (!ruw) return stream;
+    sloopMicKeten();
+    const extra = await openExtraMicrofoons(ruw);
+    const keten = bouwMicKeten(ruw, extra);
+    if (!keten) return stream;
+    micChain = keten;
+    try {
+      stream.removeTrack(ruw);   // ruw spoor NIET stoppen: het voedt de keten
+      stream.addTrack(keten.uit);
+    } catch (e) { return stream; }
+    startMicGainRegeling();
+    bewaakRuweMic();
+    return stream;
+  }
+
+  // Langzame niveauregeling. Meet elke halve seconde het gemiddelde niveau en
+  // schuift de versterking hooguit een klein stapje op. Een huilbui zakt dus
+  // niet meteen weg en stilte wordt niet meteen opgeblazen.
+  function startMicGainRegeling() {
+    if (micGainTimer) clearInterval(micGainTimer);
+    let meter = null;
+    try {
+      meter = audioCtx.createAnalyser();
+      meter.fftSize = 1024;
+      meter.smoothingTimeConstant = 0.85;
+      micChain.src.connect(meter);
+    } catch (e) { meter = null; }
+    if (!meter) return;
+    const buf = new Uint8Array(meter.fftSize);
+    micGainTimer = setInterval(() => {
+      if (!micChain || role !== 'baby' || shuttingDown) return;
+      try {
+        meter.getByteTimeDomainData(buf);
+        let som = 0;
+        for (let i = 0; i < buf.length; i++) { const d = (buf[i] - 128) / 128; som += d * d; }
+        const rms = Math.sqrt(som / buf.length);            // 0..1, vóór versterking
+        const doelRms = 0.06;                                // rustig maar duidelijk hoorbaar
+        const huidig = micChain.gain.gain.value;
+        let gewenst = huidig;
+        if (rms > 0.0008) gewenst = doelRms / rms;           // stilte niet eindeloos opdraaien
+        gewenst = Math.max(MIC_GAIN_MIN, Math.min(MIC_GAIN_MAX, gewenst));
+        // Hooguit 8% per halve seconde: dat is te traag om te horen pompen.
+        const stap = huidig * 0.08;
+        const nieuw = gewenst > huidig ? Math.min(gewenst, huidig + stap) : Math.max(gewenst, huidig - stap);
+        if (micChain.gain.gain.setTargetAtTime) micChain.gain.gain.setTargetAtTime(nieuw, audioCtx.currentTime, 0.25);
+        else micChain.gain.gain.value = nieuw;
+      } catch (e) {}
+    }, 500);
+  }
+
+  // ---- opnameprofiel voor de babycamera --------------------------------
+  // Een oude tablet (bv. een iPad mini uit 2013 op iOS 12) kan 1280x720 niet
+  // in realtime coderen. De frames stapelen dan op en het beeld komt met een
+  // groeiende vertraging aan: het lijkt slowmotion. Zulke toestellen krijgen
+  // daarom meteen een lichter profiel. Herkenning gebeurt op browserleeftijd
+  // en het aantal processorkernen — geen van beide is waterdicht, maar samen
+  // vangen ze precies de toestellen die het niet trekken. Gaat het toch mis,
+  // dan schakelt watchEncoder() hieronder alsnog terug.
+  const ZWAAR = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } };
+  const LICHT = { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15, max: 20 } };
+  function oudToestel() {
+    try {
+      // replaceChildren kwam in Safari 14; ontbreekt die, dan is dit een
+      // browser (en dus vrijwel zeker een toestel) van vóór 2020.
+      if (typeof Element !== 'undefined' && !Element.prototype.replaceChildren) return true;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true;
+    } catch (e) {}
+    return false;
+  }
+  let camProfiel = oudToestel() ? LICHT : ZWAAR;
+
+  const MIC_DUPLEX = {
+    echoCancellation: true, noiseSuppression: false, autoGainControl: false,
+    channelCount: 1,
+  };
+  // De ouder práát wél: daar is de spraakbewerking juist op zijn plaats.
+  const MIC_TALKBACK = {
+    echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+    channelCount: 1,
+  };
+
+  // Opus staat standaard op "telefoongesprek": krappe bitrate, en de browser
+  // mag stilte weglaten. Voor een babyfoon willen we een ruime, vaste
+  // mono-bitrate mét in-band foutcorrectie en zonder DTX, zodat zacht geluid
+  // heel blijft en een verloren pakketje niet als een tik hoorbaar wordt.
+  const OPUS_FMTP = 'minptime=10;useinbandfec=1;usedtx=0;stereo=0;sprop-stereo=0;' +
+    'maxaveragebitrate=64000;maxplaybackrate=48000';
+  function tuneOpus(sdp) {
+    try {
+      const m = /a=rtpmap:(\d+)\s+opus\/48000/i.exec(sdp);
+      if (!m) return sdp;
+      const pt = m[1];
+      const fmtp = new RegExp('^a=fmtp:' + pt + ' .*$', 'm');
+      if (fmtp.test(sdp)) return sdp.replace(fmtp, 'a=fmtp:' + pt + ' ' + OPUS_FMTP);
+      return sdp.replace(new RegExp('^(a=rtpmap:' + pt + ' opus/48000[^\\r\\n]*)$', 'm'),
+        '$1\r\na=fmtp:' + pt + ' ' + OPUS_FMTP);
+    } catch (e) { return sdp; }
+  }
+  const CALL_OPTS = { sdpTransform: tuneOpus };
+
+  // Geluid krijgt expliciet voorrang en een ruime bovengrens, zodat de
+  // videostroom het niet kan verdringen.
+  function tuneAudioSender(pc) {
+    if (!pc || !pc.getSenders) return;
+    try {
+      pc.getSenders().forEach((s) => {
+        if (!s.track || s.track.kind !== 'audio' || !s.getParameters) return;
+        const p = s.getParameters();
+        if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+        p.encodings[0].maxBitrate = 64000;
+        p.encodings[0].networkPriority = 'high';
+        p.encodings[0].priority = 'high';
+        const r = s.setParameters(p);
+        if (r && r.catch) r.catch(() => {});
+      });
+    } catch (e) {}
+  }
+  // Een ontvangstbuffer die voortdurend meerekt is zélf een bron van gekraak:
+  // om de vertraging bij te sturen rekt de ontvanger de audio uit of kort hem
+  // in (insertedSamplesForDeceleration / removedSamplesForAcceleration). Een
+  // vaste, ruime buffer klinkt rustiger; bij een babyfoon weegt 150 ms extra
+  // vertraging niet op tegen schoon geluid. 0 = de browser zelf laten kiezen.
+  const JITTER_TARGET_MS = window.BABYFOON_JITTER_MS != null ? window.BABYFOON_JITTER_MS : 150;
+  function tuneAudioReceiver(pc) {
+    if (!pc || !pc.getReceivers || !(JITTER_TARGET_MS > 0)) return;
+    try {
+      pc.getReceivers().forEach((r) => {
+        if (r.track && r.track.kind === 'audio' && 'jitterBufferTarget' in r) {
+          r.jitterBufferTarget = JITTER_TARGET_MS;
+        }
+      });
+    } catch (e) {}
   }
 
   // ------------------------------------------------------------------ state
@@ -112,6 +456,22 @@
   let localStream = null;
   let remoteStream = null;
   let currentCode = null;
+  // --- toegangscontrole ---
+  let sessionToken = '';    // babyunit: het geheim uit de QR-code
+  let approvedPeer = '';    // babyunit: PeerJS-id van de huidige ouderunit
+  let approvedConn = null;  // babyunit: de levende verbinding met die ouderunit
+  // Babyunit: het TOESTEL dat toestemming heeft. Los van approvedPeer, want
+  // PeerJS geeft bij elke herverbinding een nieuw peer-id uit — daarop
+  // vergelijken betekent dat hetzelfde toestel na een wegval als "tweede
+  // apparaat" wordt gezien en opnieuw om toestemming moet vragen.
+  let approvedDevice = '';
+  let pendingApproval = null; // babyunit: verzoek dat op toestemming wacht
+  let deniedCount = 0;      // babyunit: teller tegen eindeloos vragen
+  let parentToken = '';     // ouderunit: token uit QR/deellink (leeg = handmatig)
+  // Ouderunit: vaste identiteit van dit toestel voor de duur van de pagina.
+  // Blijft staan als de PeerJS-verbinding opnieuw wordt opgebouwd, zodat de
+  // babyunit een herverbinding herkent als hetzelfde, al toegelaten toestel.
+  const deviceId = makeToken();
   const lullaby = new LullabyPlayer();
 
   function sendControl(obj) {
@@ -141,7 +501,14 @@
   function attachControl(conn) {
     controlConn = conn;
     conn.on('data', (d) => { lastControlAt = Date.now(); if (d && typeof d === 'object') handleControl(d); });
-    conn.on('close', onPeerDrop);
+    // Alleen het sluiten van het HUIDIGE kanaal is een wegval. Een oude,
+    // vervangen verbinding meldt zijn 'close' pas even later: bij de ouderunit
+    // gebeurt dat vlak nadat een nieuwe poging is gestart (peer.destroy()), en
+    // bij de babyunit zodra allow() het vorige kanaal opruimt. Zonder deze
+    // controle plande de ouderunit dan een tweede herverbinding bovenop de
+    // lopende poging en zette de babyunit zichzelf op "verbinding verbroken"
+    // terwijl er net weer iemand meekeek.
+    conn.on('close', () => { if (controlConn === conn) onPeerDrop(); });
   }
   function playTalkback(stream) {
     let a = $('talkbackAudio');
@@ -154,10 +521,25 @@
     a.srcObject = stream;
     a.play().catch(() => {});
   }
+  // De ondertekst van de eerste statuskaart op het babydashboard. De sleutel
+  // gaat mee in data-i18n, zodat een taalwissel de juiste zin terugschrijft en
+  // niet de standaardtekst uit de HTML.
+  function zetBabyConnSub(sleutel) {
+    const el = $('bConnSub');
+    if (!el) return;
+    el.setAttribute('data-i18n', sleutel);
+    el.textContent = T(sleutel);
+  }
   function babyConnected() {
     showScreen('screenBaby');
+    watchEncoder();   // houdt dit toestel het coderen bij?
+    watchMicKeten();  // komt er echt geluid door de versterkingstrap?
     $('bConnDot').classList.remove('off');
     $('bConn').textContent = T('connected');
+    // Ondertekst mee laten lopen. Stond hij vast op "Uitstekende verbinding",
+    // dan las het babydashboard bij een wegval tegelijk "Verbinding verbroken"
+    // en "Uitstekende verbinding".
+    zetBabyConnSub('excellentConn');
     const bl = $('bLatency'); if (bl) bl.textContent = T('live');
     startBabyDevice();
   }
@@ -169,21 +551,45 @@
     $('connText').textContent = T('connected');
     $('placeholder').classList.add('hidden');
     $('liveText').textContent = nightMode ? T('nightModeBadge') : T('live');
+    // Verse verbinding: een oude "babyunit onderbroken"-melding hoort weg.
+    babyStreamGedempt = { audio: false, video: false };
+    toonStreamMelding();
     startParentDevice();
     startHeartbeat();
+    const qs = $('qualitySelect');
+    if (qs && !qs.__gekoppeld) {
+      qs.__gekoppeld = true;
+      qs.value = kwaliteitKeuze;
+      qs.addEventListener('change', () => { kwaliteitKeuze = qs.value; stuurKwaliteit(); });
+      // Netwerk kan onderweg wisselen (wifi naar 4G); daar meteen op reageren.
+      try {
+        const c = navigator.connection;
+        if (c && c.addEventListener) c.addEventListener('change', () => { if (kwaliteitKeuze === 'auto') stuurKwaliteit(); });
+      } catch (e) {}
+    }
+    stuurKwaliteit();
+
     sendControl({ cmd: 'ping' });
+    sendControl({ cmd: 'getCaps' }); // camera-lijst + LED-ondersteuning opvragen
   }
   function onPeerDrop() {
     if (shuttingDown) return;
     if (role === 'parent') {
       $('connDot').classList.add('off');
       $('connText').textContent = T('connectionLost');
+      // Microfoon dicht zolang er geen verbinding is. Stond terugpraten aan,
+      // dan gaat hij na de herverbinding vanzelf weer open (zie 'authOk').
+      const wasTalking = talking;
+      stopTalkback(false);
+      talking = wasTalking;
+      triggerConnectionLostAlert();
       scheduleParentReconnect();
     } else if (role === 'baby') {
       // De babyunit blijft passief wachten: dezelfde code blijft geldig,
       // de ouderunit verbindt automatisch opnieuw.
       $('bConnDot').classList.add('off');
       $('bConn').textContent = T('connectionLost');
+      zetBabyConnSub('waitingReconnect');
       const bl = $('bLatency'); if (bl) bl.textContent = '—';
     }
   }
@@ -197,13 +603,105 @@
   let wasConnected = false;
   let shuttingDown = false;
 
+  // Wachttijd voor poging `n`: oplopend volgens de tabel, met een bovengrens
+  // (de laatste waarde) en een beetje toeval erbovenop. Dat toeval is geen
+  // franje: zonder jitter komen twee toestellen die tegelijk wegvielen ook
+  // telkens tegelijk terug, botsen ze opnieuw en ontstaat er een golf van
+  // pogingen die elkaar in stand houdt. De bovengrens zorgt dat de babyfoon
+  // 's nachts blijft proberen zonder de koppelserver te bestoken.
+  function backoffMs(poging) {
+    const i = Math.max(0, Math.min(poging, RECONNECT_DELAYS.length - 1));
+    const basis = RECONNECT_DELAYS[i] || 2000;
+    const jitter = basis * 0.25 * (Math.random() * 2 - 1);
+    return Math.max(250, Math.round(basis + jitter));
+  }
+
   function clearConnectTimers() {
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+    clearAuthWatchdog();
+  }
+
+  // ------------------------------------------- koppelserver (broker) kwijt
+  // BELANGRIJK ONDERSCHEID. De koppelserver brengt twee toestellen bij elkaar;
+  // dáárna lopen beeld, geluid én het besturingskanaal rechtstreeks tussen de
+  // toestellen. Valt de koppelserver weg (een gedeelde, gratis dienst over een
+  // mobiele verbinding — dat gebeurt regelmatig), dan is er met de lopende
+  // verbinding niets aan de hand.
+  //
+  // Toch brak de app haar hele verbinding af zodra PeerJS 'network' meldde:
+  // peer.destroy(), nieuwe peer, opnieuw koppelen — inclusief zwart beeld en
+  // een nieuwe media-onderhandeling. En de 'disconnected'-tak riep meteen
+  // peer.reconnect() aan, zonder wachttijd: bij een onbereikbare server
+  // leverde dat een aaneengesloten stroom nieuwe websockets op. Dat samen is
+  // het gemelde "blijft reconnecten".
+  //
+  // Vanaf nu: alleen ons opnieuw aanmelden, met oplopende wachttijd, en de
+  // lopende verbinding met rust laten.
+  let brokerAttempt = 0;
+  let brokerTimer = null;
+  function stopBrokerHerstel() {
+    if (brokerTimer) { clearTimeout(brokerTimer); brokerTimer = null; }
+  }
+  function planBrokerHerstel(dezePeer) {
+    if (shuttingDown || brokerTimer || reconnectTimer) return;
+    // Een gebeurtenis van een peer die we al vervangen hebben, negeren we:
+    // anders stuurt een oude, opgeruimde verbinding de nieuwe aan.
+    if (!dezePeer || dezePeer !== peer || dezePeer.destroyed) return;
+    // Alleen melden dat er niet gekoppeld kan worden als er ook echt niemand
+    // meekijkt. Loopt er een sessie, dan merkt die niets van een wegvallende
+    // koppelserver en zou "verbinding verbroken" naast live beeld staan.
+    if (role === 'baby' && !(controlConn && controlConn.open)) toonBabyKoppelbaar(false);
+    brokerTimer = setTimeout(() => {
+      brokerTimer = null;
+      if (shuttingDown || !peer || peer !== dezePeer || peer.destroyed) return;
+      if (!peer.disconnected) { brokerAttempt = 0; return; } // is alweer terug
+      try { peer.reconnect(); } catch (e) {}
+      // Lukt het niet, dan volgt er zo weer een 'disconnected' en plannen we
+      // opnieuw — met de volgende, langere wachttijd.
+    }, backoffMs(brokerAttempt++));
+  }
+  // Aanmelding gelukt (ook ná een herstel): teller terug naar nul.
+  function brokerTerug() {
+    brokerAttempt = 0;
+    stopBrokerHerstel();
+  }
+  // Koppelen bestaat uit vijf stappen. Bleef de ouderunit hangen, dan zag je
+  // alleen een draaiend rondje en was niet te achterhalen wáár het misging.
+  // De stap wordt daarom achter de statustekst gezet — puur als cijfer, dus
+  // in elke taal leesbaar zonder vertaling.
+  //   1 aanmelden bij de koppelserver
+  //   2 kanaal openen naar de babyunit
+  //   3 legitimeren (hallo verstuurd)
+  //   4 wachten op akkoord van de babyunit
+  //   5 wachten op beeld en geluid
+  const PAIR_STAPPEN = 5;
+  let pairStap = 0;
+  let pairStapTijd = 0;
+  let laatsteStatus = '';
+  function setPairStap(n) {
+    if (n <= pairStap) return;
+    pairStap = n;
+    pairStapTijd = Date.now();
+    // Alleen het stapachtervoegsel bijwerken. De statustekst zelf hoort bij de
+    // verbindingslogica: die zet er bij een herverbinding "Opnieuw verbinden…
+    // (2/5)" neer, en dat mag een stapwissel niet wegvegen. Dat gebeurde
+    // eerder wél, waardoor die mededeling na ruim 400 ms verdween — te kort
+    // om betrouwbaar te zien, en precies de reden dat de CI-controle er soms
+    // wel en soms niet op aansloeg.
+    if (laatsteStatus) toonStatus(laatsteStatus);
+  }
+  function toonStatus(txt) {
+    const el = $('connText'); if (el) el.textContent = txt;
+    const ph = $('phText');
+    if (ph) {
+      ph.textContent = (role === 'parent' && pairStap > 0 && pairStap < PAIR_STAPPEN)
+        ? txt + ' · ' + pairStap + '/' + PAIR_STAPPEN : txt;
+    }
   }
   function setParentStatus(txt) {
-    const el = $('connText'); if (el) el.textContent = txt;
-    const ph = $('phText'); if (ph) ph.textContent = txt;
+    laatsteStatus = txt;
+    toonStatus(txt);
   }
   function setPlaceholderSpinner(on) {
     const sp = document.querySelector('#placeholder .spinner');
@@ -213,15 +711,39 @@
   // Expliciete mislukt-status in plaats van eindeloos "Verbinden…".
   function connectFailed(msgKey) {
     clearConnectTimers();
+    stopMediaWatchdog();
+    // Netwerkdiagnose erbij: zonder 'relay' in de lijst is er geen
+    // doorgeefserver beschikbaar, en dan lukt koppelen alleen als beide
+    // toestellen elkaar rechtstreeks kunnen bereiken.
+    // "host:1 · 2/5" betekent niets voor een ouder en laat de app juist op het
+    // verkeerde moment onbetrouwbaar ogen. De hoofdmelding blijft daarom de
+    // vertaalde zin; de diagnose staat eronder in een uitklapbaar detail én
+    // altijd in het gebeurtenislogboek, zodat hij bij foutzoeken niet weg is.
+    const diag = netwerkDiagnose() + ' · ' + pairStap + '/' + PAIR_STAPPEN;
     const msg = T(msgKey || 'connectFailed');
     const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
     const err = $('parentError');
     if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+    const dbox = $('parentDiagBox'), dcode = $('parentDiag');
+    if (dcode) dcode.textContent = diag;
+    if (dbox) dbox.classList.remove('hidden');
+    try { if (typeof addEvent === 'function') addEvent('connect', msg, diag); } catch (e) {}
     if (parentStarted) {
+      // Het zwarte scherm ("scherm uit") ligt als vaste laag over álles heen,
+      // ook over deze foutmelding, het uitgezette bolletje en de hertik-knop.
+      // Zolang de app nog aan het herverbinden is laten we het zwart staan —
+      // dat is juist waar het voor bedoeld is. Maar zodra we het OPGEVEN mag
+      // de ouder dat niet missen: dan lijkt een zwart scherm op een werkende
+      // babyfoon terwijl er niets meer binnenkomt. Scherm dus terug.
+      setBlackout(false);
       $('connDot').classList.add('off');
       setParentStatus(msg);
       $('placeholder').classList.remove('hidden');
       setPlaceholderSpinner(false);
+      // Alleen hoorbaar alarmeren als er eerder echt een verbinding was en
+      // alle pogingen nu uitgeput zijn — niet bij een gewoon mislukte
+      // eerste koppelpoging (verkeerde code e.d.).
+      if (wasConnected) triggerConnectionLostAlert();
     } else {
       toast(msg);
     }
@@ -229,7 +751,7 @@
   function scheduleParentReconnect() {
     if (shuttingDown || reconnectTimer) return;
     if (reconnectAttempt >= RECONNECT_DELAYS.length) { connectFailed(); return; }
-    const delay = RECONNECT_DELAYS[reconnectAttempt++];
+    const delay = backoffMs(reconnectAttempt++);
     $('connDot').classList.add('off');
     setParentStatus(T('reconnecting') + ' (' + reconnectAttempt + '/' + RECONNECT_DELAYS.length + ')');
     if (parentStarted) { $('placeholder').classList.remove('hidden'); setPlaceholderSpinner(true); }
@@ -238,28 +760,244 @@
       startParentConnect(currentCode, true);
     }, delay);
   }
+  // De babyunit moet ons nog toelaten. Blijft dat antwoord uit, dan is de
+  // verbinding er feitelijk niet — ook al staat het datakanaal open. Zonder
+  // deze bewaking bleef de ouderunit hangen op "Verbonden" zonder beeld.
+  const AUTH_TIMEOUT = window.BABYFOON_AUTH_TIMEOUT || 30000;
+  const AUTH_TIMEOUT_RETRY = window.BABYFOON_AUTH_TIMEOUT_RETRY || 10000;
+  let authTimer = null;
+  function clearAuthWatchdog() {
+    if (authTimer) { clearTimeout(authTimer); authTimer = null; }
+  }
+  function startAuthWatchdog(isRetry) {
+    clearAuthWatchdog();
+    // Bij een eerste koppeling met handmatig ingetypte code loopt er iemand
+    // naar de babyunit om op "Toestaan" te drukken; daar hoort ruimte voor.
+    // Bij herverbinden hoort het antwoord meteen te komen.
+    const wacht = (isRetry || wasConnected) ? AUTH_TIMEOUT_RETRY : AUTH_TIMEOUT;
+    authTimer = setTimeout(() => {
+      authTimer = null;
+      if (shuttingDown) return;
+      scheduleParentReconnect();
+    }, wacht);
+  }
+  // ---- bewaking van de MEDIAverbinding (ouderunit) -----------------------
+  // Het datakanaal en de beeld/geluid-verbinding zijn twee losse verbindingen
+  // met elk hun eigen onderhandeling. Lukt de eerste wel en de tweede niet,
+  // dan meldt de app zich "verbonden" terwijl er nooit beeld komt: de hartslag
+  // kijkt namelijk alleen naar het datakanaal, ziet niets mis, en dus volgt er
+  // geen nieuwe poging en geen foutmelding. Precies het gemelde geval
+  // "verbinding gelegd maar geen beeld en geluid".
+  const MEDIA_WACHT = window.BABYFOON_MEDIA_WACHT || 9000;
+  const MEDIA_POGINGEN = 3;
+  let mediaTimer = null;
+  let mediaPogingen = 0;
+  let mediaBevestigd = false;
+  let vorigeMediaBytes = -1;
+
+  let mediaHerstartTimer = null;
+  function stopMediaWatchdog() {
+    if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
+    // Ook de "over 500 ms opnieuw beginnen"-afspraak opruimen. Bleef die
+    // staan, dan startte hij de bewaking alsnog op — midden in een
+    // herverbinding die er intussen voor in de plaats was gekomen.
+    if (mediaHerstartTimer) { clearTimeout(mediaHerstartTimer); mediaHerstartTimer = null; }
+  }
+  function mediaKomtBinnen() {
+    // Beeld dat écht loopt: afmetingen én oplopende bytes.
+    const v = $('video');
+    return !!(v && v.videoWidth > 0);
+  }
+  function startMediaWatchdog() {
+    if (role !== 'parent') return;
+    stopMediaWatchdog();
+    mediaBevestigd = false;
+    vorigeMediaBytes = -1;
+    const begin = Date.now();
+    mediaTimer = setInterval(async () => {
+      if (shuttingDown || role !== 'parent') { stopMediaWatchdog(); return; }
+      // Zolang er geen goedkeuring is, is wachten normaal.
+      if (!linkApproved) return;
+      let bytes = 0;
+      if (mediaPc && mediaPc.getStats) {
+        try {
+          const st = await mediaPc.getStats();
+          st.forEach((r) => {
+            if (r.type === 'inbound-rtp' && (r.kind === 'video' || r.kind === 'audio') && r.bytesReceived) bytes += r.bytesReceived;
+          });
+        } catch (e) {}
+      }
+      const loopt = mediaKomtBinnen() && bytes > vorigeMediaBytes;
+      if (loopt) {
+        mediaBevestigd = true;
+        mediaPogingen = 0;
+        // Kwam dit beeld terug ná een 'recall', dan staat de statustekst nog
+        // op "Verbinden…" — en omdat laatsteStatus die tekst vasthoudt,
+        // schreef elke setPairStap() hem daarna telkens opnieuw. De ouder zag
+        // dan voorgoed "Verbinden…" naast een groen bolletje, een LIVE-badge
+        // en lopend beeld. De verbindingsstatus is bij een babyfoon de
+        // belangrijkste mededeling op het scherm, dus die zetten we hier terug.
+        if (role === 'parent' && controlConn && controlConn.open) {
+          const dot = $('connDot'); if (dot) dot.classList.remove('off');
+          setParentStatus(T('connected'));
+        }
+        // NIET setPlaceholderSpinner(false) gebruiken: die functie hoort bij de
+        // FAALSTAND en haalt daarbij de retry-knop tevoorschijn. Bij succes
+        // moet juist alles weg. Deed ik dat wel, dan stond de retry-knop na een
+        // geslaagde verbinding als "zichtbaar" gemarkeerd — voor de gebruiker
+        // onzichtbaar omdat het hele vak verborgen is, maar de toestand klopte
+        // niet en bij een latere wegval dook hij meteen op.
+        const sp = document.querySelector('#placeholder .spinner');
+        if (sp) sp.classList.add('hidden');
+        const rb = $('phRetry'); if (rb) rb.classList.add('hidden');
+        const ph = $('placeholder'); if (ph) ph.classList.add('hidden');
+        stopMediaWatchdog();
+        return;
+      }
+      vorigeMediaBytes = bytes;
+      if (Date.now() - begin < MEDIA_WACHT) return;
+      // Te lang niets. Vraag de babyunit het beeld opnieuw te sturen; dat is
+      // veel lichter dan de hele verbinding opnieuw opbouwen.
+      if (mediaPogingen < MEDIA_POGINGEN) {
+        mediaPogingen++;
+        setParentStatus(T('connecting'));
+        sendControl({ cmd: 'recall' });
+        // klok opnieuw laten lopen voor de volgende poging
+        stopMediaWatchdog();
+        mediaHerstartTimer = setTimeout(() => {
+          mediaHerstartTimer = null;
+          if (!shuttingDown && !mediaBevestigd) startMediaWatchdog();
+        }, 500);
+        return;
+      }
+      // Drie keer om nieuw beeld gevraagd en nog steeds niets: de lichte
+      // reparatie helpt niet. Nu pas escaleren naar een volledige
+      // herverbinding — die probeert het met backoff opnieuw en komt vanzelf
+      // bij de expliciete faalstatus uit als ook dat niet lukt. Meteen
+      // opgeven was hier de verkeerde volgorde: een babyfoon hoort te blijven
+      // proberen.
+      stopMediaWatchdog();
+      onPeerDrop();
+    }, 3000);
+  }
+
   function connectSucceeded() {
+    clearAuthWatchdog();
     clearConnectTimers();
     reconnectAttempt = 0;
     wasConnected = true;
     lastControlAt = Date.now();
     const err = $('parentError'); if (err) err.classList.add('hidden');
+    const dbox0 = $('parentDiagBox'); if (dbox0) dbox0.classList.add('hidden');
+    // De status stond op "Wacht op toestemming bij de babyunit…" (of op
+    // "Opnieuw verbinden…"). Nu de babyunit ons heeft toegelaten hoort daar
+    // weer "Verbonden" te staan; zonder dit bleef de ouderunit de hele
+    // sessie melden dat hij nog op toestemming wachtte.
+    if (role === 'parent') {
+      const dot = $('connDot'); if (dot) dot.classList.remove('off');
+      setParentStatus(T('connected'));
+    }
     setPlaceholderSpinner(true);
   }
   // Het 'close'-event van het datakanaal blijft bij een onnette verbreking
   // (wifi weg, batterij leeg, browser gedood) soms uit. Daarom bewaken we
   // ook de onderliggende RTCPeerConnection-status…
+  const ICE_GRACE = window.BABYFOON_ICE_GRACE || 8000;
+  // Onthoudt welke soorten netwerkpaden gevonden zijn. Bij een mislukte
+  // koppeling is dat het verschil tussen "de app is stuk" en "dit netwerk
+  // laat geen directe verbinding toe":
+  //   host  = zelfde netwerk
+  //   srflx = eigen publieke adres bekend (via STUN)
+  //   relay = via een doorgeefserver (TURN) — nodig bij streng afgeschermde
+  //           netwerken en bij veel mobiele providers
+  const kandidaatSoorten = {};
+  function volgKandidaten(pc) {
+    if (!pc || pc.__bfKand) return;
+    pc.__bfKand = true;
+    try {
+      pc.addEventListener('icecandidate', (e) => {
+        if (!e.candidate || !e.candidate.candidate) return;
+        const m = /typ (\w+)/.exec(e.candidate.candidate);
+        if (m) kandidaatSoorten[m[1]] = (kandidaatSoorten[m[1]] || 0) + 1;
+      });
+    } catch (e) {}
+  }
+  function netwerkDiagnose() {
+    const s = Object.keys(kandidaatSoorten);
+    if (!s.length) return 'host:0';
+    return s.map((k) => k + ':' + kandidaatSoorten[k]).join(' ');
+  }
+
+  // Eén plek waar de media-verbinding van eigenaar wisselt. De vórige
+  // RTCPeerConnection MOET hier weg. Bleef die staan (bij elke 'recall' en bij
+  // elke hernieuwde goedkeuring gebeurde dat), dan hield hij niet alleen
+  // bandbreedte en eventueel een doorgeefserver bezet — zijn bewaking stond er
+  // ook nog op. Tientallen seconden later meldt zo'n verlaten verbinding
+  // alsnog 'failed', en dan brak de bewaking van de OUDE verbinding de verse,
+  // gezonde verbinding af. Dat is letterlijk "verbonden en tóch opnieuw
+  // verbinden".
+  function zetMediaPc(pc) {
+    if (mediaPc && mediaPc !== pc) {
+      const oud = mediaPc;
+      oud.__bfDood = true;
+      if (oud.__bfGrace) { clearTimeout(oud.__bfGrace); oud.__bfGrace = null; }
+      try { oud.close(); } catch (e) {}
+    }
+    mediaPc = pc || null;
+    if (mediaPc) watchMediaPc(mediaPc);
+    return mediaPc;
+  }
+  // Beeld en geluid zijn weg, maar het besturingskanaal leeft nog? Dan is een
+  // vólledige herverbinding (koppelserver, kanaal, toestemming, alles opnieuw)
+  // veel te zwaar en juist de reden dat het "onstabiel" voelt. Vraag eerst
+  // alleen de media opnieuw op: dat is één nieuwe media-onderhandeling — met
+  // verse ICE-kandidaten, dus het effect van een ICE-restart — terwijl de
+  // toestemming en het besturingskanaal overeind blijven. Pas als dát niet
+  // helpt volgt de volle herverbinding (zie startMediaWatchdog).
+  function mediaHerstel(pc) {
+    if (shuttingDown || pc !== mediaPc) return;
+    if (role === 'baby') { hercallOuder(); return; }
+    if (controlConn && controlConn.open && linkApproved) {
+      sendControl({ cmd: 'recall' });
+      mediaPogingen = 0;
+      startMediaWatchdog();
+      return;
+    }
+    onPeerDrop();
+  }
   function watchMediaPc(pc) {
+    volgKandidaten(pc);
     if (!pc || pc.__bfWatched) return;
     pc.__bfWatched = true;
     pc.addEventListener('connectionstatechange', () => {
-      if (shuttingDown) return;
-      if (pc.connectionState === 'failed') { onPeerDrop(); return; }
-      if (pc.connectionState === 'disconnected') {
-        // ICE krijgt even om zelf te herstellen; daarna als verbroken behandelen.
-        setTimeout(() => {
-          if (!shuttingDown && pc.connectionState === 'disconnected') onPeerDrop();
-        }, 4000);
+      // Verlaten verbinding: niet meer onze zorg. Zonder deze regel praatte
+      // een afgedankte verbinding namens de levende mee.
+      if (shuttingDown || pc.__bfDood || pc !== mediaPc) return;
+      const st = pc.connectionState;
+      if (st === 'connected') {
+        // Hersteld binnen de marge: de geplande ingreep vervalt.
+        if (pc.__bfGrace) { clearTimeout(pc.__bfGrace); pc.__bfGrace = null; }
+        return;
+      }
+      if (st === 'failed') {
+        if (pc.__bfGrace) { clearTimeout(pc.__bfGrace); pc.__bfGrace = null; }
+        mediaHerstel(pc);
+        return;
+      }
+      if (st === 'disconnected') {
+        // 'disconnected' is TIJDELIJK: ICE krijgt even om zelf te herstellen.
+        // Een korte wifi-hapering duurt vaak enkele seconden en gaat vanzelf
+        // over. Te snel ingrijpen betekende: opnieuw opbouwen terwijl de oude
+        // verbinding er zo weer was — precies wat als "onstabiel beeld" voelt.
+        // Eén marge tegelijk: bij heen-en-weer flakkeren stapelden er anders
+        // timers op die elkaar later alsnog aanzetten.
+        if (pc.__bfGrace) return;
+        pc.__bfGrace = setTimeout(() => {
+          pc.__bfGrace = null;
+          if (shuttingDown || pc.__bfDood || pc !== mediaPc) return;
+          const nu = pc.connectionState;
+          if (nu === 'disconnected' || nu === 'failed') mediaHerstel(pc);
+        }, ICE_GRACE);
       }
     });
   }
@@ -273,9 +1011,22 @@
     lastControlAt = Date.now();
     heartbeatId = setInterval(() => {
       if (shuttingDown || role !== 'parent' || !wasConnected || reconnectTimer) return;
-      if (controlConn && controlConn.open) {
-        try { controlConn.send({ cmd: 'ping' }); } catch (e) {}
-      }
+      // Alleen oordelen over een verbinding die ECHT in bedrijf is. Tijdens
+      // een lopende koppelpoging (kanaal nog niet open, of de babyunit heeft
+      // ons nog niet toegelaten) bewijst stilte niets: daar zijn de koppel- en
+      // toestemmingsbewaking voor.
+      //
+      // Zonder deze voorwaarde sloeg de hartslag meteen ná een wachttijd toe.
+      // `lastControlAt` wordt namelijk alleen ververst door binnenkomend
+      // verkeer, en tijdens de backoff staat de hartslag stil. Kwam de
+      // wachttijd boven HEARTBEAT_TIMEOUT (de tabel loopt tot 30 s), dan was
+      // de waarde bij de start van de verse poging al verlopen en riep de
+      // eerstvolgende tik — binnen vier seconden — onPeerDrop() aan. Elke
+      // herverbinding kreeg zo hooguit vier seconden om te slagen; op een
+      // mobiel netwerk met TURN is dat structureel te weinig, en de app gaf op
+      // met "verbinding mislukt" terwijl de verbinding onderweg was.
+      if (!linkApproved || !controlConn || !controlConn.open) return;
+      try { controlConn.send({ cmd: 'ping' }); } catch (e) {}
       if (Date.now() - lastControlAt > HEARTBEAT_TIMEOUT) {
         lastControlAt = Date.now(); // niet nogmaals vuren tijdens dezelfde herverbindingspoging
         onPeerDrop();
@@ -283,19 +1034,117 @@
     }, 4000);
   }
 
+  // Sessie beëindigen op BEIDE toestellen en terug naar de hoofdpagina.
+  // Belangrijk: de hash (#code.token) moet weg, anders koppelt de pagina bij
+  // het herladen meteen weer opnieuw.
+  function endSession(meldAanPeer) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    if (meldAanPeer) {
+      try { sendControl({ cmd: 'bye' }); } catch (e) {}
+    }
+    try { if (typeof babyStopMusic === 'function') babyStopMusic(); } catch (e) {}
+    try { lullaby.stop(); } catch (e) {}
+    try { if (localStream) localStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    try { stopExtraMicrofoons(); } catch (e) {}
+    try { stopBabyWatchers(); } catch (e) {}
+    try { stopBrokerHerstel(); } catch (e) {}
+    try { stopMediaWatchdog(); } catch (e) {}
+    // even wachten zodat het afscheidsbericht het andere toestel nog haalt
+    setTimeout(() => {
+      try { if (peer) peer.destroy(); } catch (e) {}
+      location.replace(location.pathname + location.search);
+    }, meldAanPeer ? 220 : 0);
+  }
+
+  // --------------------------------------------------- statustegels babyunit
+  //
+  // De vier tegels onderaan het babydashboard (nachtlampje, slaapliedje,
+  // huil-alarm, slaaptimer) worden allemaal door de ouderunit bediend. Hun
+  // stand stond alleen als tekst in de tegel zelf, en `I18n.apply()` schrijft
+  // bij elke taalwissel de standaardtekst uit `data-i18n` terug — een lopende
+  // slaaptimer van "14 min" werd dan weer "Uit". De werkelijke stand staat
+  // daarom hier, en de tegels worden eruit opgebouwd.
+  const babyTegels = { night: false, sleepMin: 0, cry: false };
+  function renderBabyTiles() {
+    const zet = (id, tekst, aan) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = tekst;
+      el.classList.toggle('ok', !!aan);
+    };
+    // Twee muziekbronnen: de gegenereerde slaapmuziek (lullaby.js) én de
+    // mp3-playlist. De knoppen in de UI gebruiken de playlist, dus zonder
+    // musicBabyPlaying bleef de tegel "Uit" terwijl er hoorbaar muziek speelde.
+    const spelend = lullaby.isPlaying() || musicBabyPlaying;
+    zet('tileNight', babyTegels.night ? T('on2') : T('off2'), babyTegels.night);
+    zet('tileLullaby', spelend ? T('on2') : T('off2'), spelend);
+    zet('tileCry', babyTegels.cry ? T('on2') : T('off2'), babyTegels.cry);
+    zet('tileSleep', babyTegels.sleepMin ? babyTegels.sleepMin + ' min' : T('off2'), !!babyTegels.sleepMin);
+  }
+
   // ------------------------------------------------------------------ besturingscommando's
   function handleControl(msg) {
+    // Toegang geweigerd door de babyunit: meteen stoppen met proberen.
+    if (msg && msg.cmd === 'authDenied' && role === 'parent') {
+      // Alleen een échte weigering is definitief. 'busy' (er stond nog een
+      // andere vraag open) en 'timeout' zijn tijdelijk — daarop de verbinding
+      // voorgoed opgeven betekende dat een herverbinding nooit meer lukte.
+      const reden = String((msg && msg.reason) || '');
+      if (reden === 'busy' || reden === 'timeout') {
+        clearAuthWatchdog();
+        scheduleParentReconnect();
+        return;
+      }
+      shuttingDown = true;
+      clearConnectTimers();
+      clearAuthWatchdog();
+      const pcn = $('parentConnecting'); if (pcn) pcn.classList.add('hidden');
+      const err = $('parentError');
+      if (err) { err.textContent = T('authRefused'); err.classList.remove('hidden'); }
+      toast(T('authRefused'));
+      try { if (peer) peer.destroy(); } catch (e) {}
+      return;
+    }
+    // Andere toestel heeft gestopt → hier ook afsluiten.
+    if (msg && msg.cmd === 'bye') { endSession(false); return; }
+    if (msg && msg.cmd === 'authOk') {
+      if (role === 'parent') {
+        mark('authOk');
+        setPairStap(5);
+        if (msg.token) parentToken = String(msg.token);
+        // Pas nu staat de verbinding er echt: de babyunit heeft ons toegelaten.
+        clearAuthWatchdog();
+        connectSucceeded();
+        linkApproved = true;
+        mediaPogingen = 0;
+        startMediaWatchdog();
+        // Pas hier staat het besturingskanaal aan bééde kanten open. Alles wat
+        // de ouderunit eerder stuurt (in parentConnected, meteen bij
+        // conn.open) valt bij de babyunit nog in de toegangspoort en wordt
+        // weggegooid — die luistert daar alleen naar 'hello'. De stand van het
+        // huil-alarm, die de babyunit als tegel toont, gaat daarom hier mee.
+        sendControl({ cmd: 'cryAlert', on: alarmOn });
+        // Alleen als er vóór de herverbinding werd teruggepraat gaat de
+        // microfoon weer open; anders blijft hij dicht (zie ensureMic).
+        if (talking) ensureMic().then((s) => { if (s) startTalkback(); });
+      }
+      return;
+    }
     if (role === 'baby') {
       switch (msg.cmd) {
         case 'lullaby': {
           if (msg.on) { babyStopMusic(); lullaby.play(msg.id); }
           else lullaby.stop();
-          const tl = $('tileLullaby'); if (tl) { tl.textContent = lullaby.isPlaying() ? T('on2') : T('off2'); tl.classList.toggle('ok', lullaby.isPlaying()); }
+          renderBabyTiles();
           sendControl({ cmd: 'lullabyState', id: lullaby.isPlaying() ? lullaby.currentName() : null });
           break;
         }
         case 'music':
+          if (msg.repeat != null) musicRepeat = !!msg.repeat;
           if (msg.action === 'stop') babyStopMusic();
+          else if (msg.action === 'repeat') { /* alleen de stand bijwerken */ }
           else if (msg.action === 'next') babyPlayMusic(musicIndex + 1);
           else if (msg.action === 'prev') babyPlayMusic(musicIndex - 1);
           else babyPlayMusic(msg.index || 0);
@@ -304,18 +1153,80 @@
           const on = !!msg.on;
           $('nightlight').classList.toggle('hidden', !on);
           if (on) $('nightlight').style.opacity = Math.max(0.12, (msg.level == null ? 60 : msg.level) / 100).toFixed(2);
-          const tn = $('tileNight'); if (tn) { tn.textContent = on ? T('on2') : T('off2'); tn.classList.toggle('ok', on); }
+          babyTegels.night = on;
+          renderBabyTiles();
           break;
         }
         case 'sleepTimer': {
-          const ts = $('tileSleep');
-          if (ts) { ts.textContent = msg.min ? msg.min + ' min' : T('off2'); ts.classList.toggle('ok', !!msg.min); }
+          babyTegels.sleepMin = +msg.min || 0;
+          renderBabyTiles();
           break;
         }
+        case 'cryAlert': {
+          babyTegels.cry = !!msg.on;
+          renderBabyTiles();
+          break;
+        }
+        case 'talk':
+          setBabyDuplex(!!msg.on);
+          break;
+        case 'quality': {
+          const stand = String(msg.stand || 'hoog');
+          if (stand === 'geluid') {
+            // Alleen het beeld dichtzetten. De keuze van de persoon bij het
+            // bedje (beeldDoorGebruikerUit) blijft ongemoeid, zodat een latere
+            // stand 'hoog' die keuze niet stilzwijgend kan overrulen.
+            babyZetVideo(false, false);
+          } else {
+            const gewenst = stand === 'zuinig' ? LICHT : (oudToestel() ? LICHT : ZWAAR);
+            // watchEncoder() heeft dit toestel al teruggeschroefd omdat het het
+            // coderen niet bijhield. Die meting weegt zwaarder dan de wens van
+            // de ouderunit: anders krijgt precies het toestel dat het al niet
+            // trok na elke herverbinding opnieuw 720p opgedrongen, terwijl de
+            // bewaking die dat zou corrigeren al gestopt is.
+            const nieuwProfiel = (encoderVerlaagd && gewenst === ZWAAR) ? LICHT : gewenst;
+            const anders = nieuwProfiel !== camProfiel;
+            camProfiel = nieuwProfiel;
+            // NOOIT onvoorwaardelijk het beeld weer aanzetten. Dit commando
+            // komt bij élke (her)verbinding en bij elke netwerkwissel binnen.
+            // Deed hij dat wel, dan zette één wifi→4G-wissel 's nachts het
+            // privacyscherm, "camera uit" of "alleen geluid" weer uit — terwijl
+            // de schakelaar op de babyunit "aan" bleef tonen.
+            if (!beeldDoorGebruikerUit) babyZetVideo(true, false);
+            // Alleen opnieuw openen als het profiel echt verandert; anders
+            // knippert het beeld nodeloos.
+            if (anders && !beeldDoorGebruikerUit) verlaagCamera();
+          }
+          break;
+        }
+        case 'recall':
+          // De ouderunit ziet geen beeld. Nieuwe media-oproep opzetten; de
+          // oude verbinding kan stilletjes gesneuveld zijn.
+          hercallOuder();
+          break;
         case 'flip':
-          flipCamera();
+          babyCycleCamera();
+          break;
+        case 'selectCamera':
+          selectCamera(msg.deviceId);
+          break;
+        case 'torch':
+          setTorch(!!msg.on);
+          break;
+        case 'getCaps':
+          reportCameras();
+          reportTorch();
           break;
         case 'ping':
+          // ALTIJD eerst een kaal antwoord terugsturen. De ouderunit meet
+          // hiermee of de verbinding nog leeft (zie startHeartbeat). Eerder
+          // was reportBattery() het enige antwoord — en dat stuurt niets
+          // zodra de Battery Status API ontbreekt (Safari op iPhone/iPad en
+          // macOS, Firefox, oudere Android-webviews) of een uitzondering
+          // geeft. Op die toestellen bleef de ouderunit stil, zag hij na
+          // HEARTBEAT_TIMEOUT een "wegval" en herverbond hij elke 15
+          // seconden terwijl er niets aan de hand was.
+          sendControl({ cmd: 'pong' });
           reportBattery(true);
           break;
       }
@@ -331,9 +1242,32 @@
         }
         const bl = $('btnLullaby'); if (bl) bl.classList.toggle('on', playing);
         renderChips();
+      } else if (msg.cmd === 'streamState') {
+        const kind = msg.kind === 'video' ? 'video' : 'audio';
+        const gedempt = !!msg.muted;
+        if (babyStreamGedempt[kind] !== gedempt) {
+          babyStreamGedempt[kind] = gedempt;
+          if (kind === 'audio') {
+            const sleutel = gedempt ? 'streamPaused' : 'streamResumed';
+            toonStreamMelding();
+            toast(T(sleutel));
+            addEvent('connect', T(sleutel), '');
+            // Zonder geluid van de babyunit is dit hetzelfde risico als een
+            // wegval: de ouder moet het merken, ook met het scherm zwart.
+            if (gedempt) triggerConnectionLostAlert();
+          }
+        }
       } else if (msg.cmd === 'videoState') {
         remoteVideoOff = !msg.on;
         applyPrivacyUI();
+      } else if (msg.cmd === 'cameraList') {
+        babyCameras = Array.isArray(msg.cameras) ? msg.cameras : [];
+        camActiveId = msg.activeId || '';
+        renderCameraSelect();
+      } else if (msg.cmd === 'torchState') {
+        torchSupported = !!msg.supported;
+        torchLastOn = !!msg.on;
+        renderTorchUI();
       } else if (msg.cmd === 'musicState') {
         musicPlaying = !!msg.playing;
         if (typeof msg.index === 'number') musicIndex = msg.index;
@@ -348,61 +1282,399 @@
   }
 
   // ------------------------------------------------------------------ koppelen: baby
-  let babyBrokerAttempt = 0;
-  function openBabyPeer() {
+  // Toont of de babyunit op dit moment te koppelen is. Is hij dat niet, dan
+  // wordt de QR-code doorzichtig en verschijnt de bekende "verbinding kwijt"-
+  // melding: dan hoef je niet te scannen, want er kan niets aankomen.
+  function toonBabyKoppelbaar(ok) {
+    const qr = $('babyQR');
+    if (qr) {
+      qr.style.opacity = ok ? '' : '0.25';
+      qr.style.filter = ok ? '' : 'grayscale(1)';
+    }
+    zetBabyWachttekst(ok ? 'waitingConnection' : 'connectionLost', !ok);
+    if (ok) toonBabyKoppelvakken(true);
+  }
+  // Eén plek voor de tekst in de wachtpil onder de kamercode. `waarschuwing`
+  // zet de pil in de opvallende stand (en verbergt het draaiende rondje —
+  // een "bezig"-animatie naast "verbinding verbroken" spreekt zichzelf tegen).
+  function zetBabyWachttekst(sleutel, waarschuwing) {
+    const w = $('babyWaiting');
+    if (!w) return;
+    const tekst = w.querySelector('span[data-i18n]');
+    // data-i18n meeverzetten, anders schrijft I18n.apply() bij een taalwissel
+    // de oude sleutel terug.
+    if (tekst) { tekst.setAttribute('data-i18n', sleutel); tekst.textContent = T(sleutel); }
+    w.classList.toggle('warn', !!waarschuwing);
+  }
+  // Zolang de browser nog om camera- en microfoontoegang vraagt is er geen
+  // kamercode en geen QR. Die dan tóch tonen (als "······" met de tekst
+  // "wachten op de ouderunit") stuurt de gebruiker de verkeerde kant op: hij
+  // gaat zijn tweede telefoon zoeken terwijl de app op hém wacht.
+  function toonBabyKoppelvakken(zichtbaar) {
+    const scherm = $('screenPairBaby');
+    if (scherm) scherm.classList.toggle('wacht-op-toestemming', !zichtbaar);
+  }
+
+  async function openBabyPeer() {
+    if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
+    stopBrokerHerstel();
+    brokerAttempt = 0;
     if (peer) { try { peer.destroy(); } catch (e) {} }
     const code = makeCode(6);
     currentCode = code;
     $('babyCodeText').textContent = '······';
+    if (!sessionToken) sessionToken = makeToken();
     peer = new Peer(PEER_PREFIX + code, peerOptions());
+    // Vasthouden WELKE peer bij deze handlers hoort. PeerJS levert zijn
+    // gebeurtenissen asynchroon af, dus een opgeruimde peer kan nog van zich
+    // laten horen nadat er al een nieuwe staat — en die stuurde dan de nieuwe
+    // aan.
+    const mijnPeer = peer;
     peer.on('open', () => {
-      babyBrokerAttempt = 0;
+      if (mijnPeer !== peer) return;
+      brokerTerug();
+      toonBabyKoppelbaar(true);
       $('babyCodeText').textContent = code;
       $('babyOfferCode').value = code;
-      const url = location.href.split('#')[0] + '#' + code;
+      // De QR draagt code + token; het invoerveld toont alleen de korte code.
+      const url = location.href.split('#')[0] + '#' + code + '.' + sessionToken;
       renderQR('babyQR', url);
     });
-    peer.on('connection', (conn) => {
-      attachControl(conn);
-      conn.on('open', () => {
-        try {
-          const call = peer.call(conn.peer, localStream);
-          if (call) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
-        } catch (e) {}
-        babyConnected();
-        reportBattery();
-      });
-    });
+    // Elke inkomende verbinding moet zich eerst legitimeren. Zonder deze poort
+    // kreeg iedereen die de kamercode kende meteen live beeld, geluid én
+    // bediening van de camera — ook een tweede, ongenode kijker, zonder dat de
+    // echte ouder daar iets van merkte.
+    peer.on('connection', (conn) => { mark('babyConnIn'); gateIncoming(conn); });
     peer.on('call', (call) => {
-      // terugpraten van de ouder (audio) → afspelen bij de baby
-      call.answer();
-      if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; watchMediaPc(mediaPc); }
+      // Terugpraten van de ouder (audio) → alleen van de toegelaten ouderunit.
+      if (!approvedPeer || call.peer !== approvedPeer) { try { call.close(); } catch (e) {} return; }
+      call.answer(undefined, CALL_OPTS);
+      // Terugpraten is een TWEEDE RTCPeerConnection. Die niet bewaken: als
+      // het talkback-kanaal sneuvelt of netjes sluit, is de videoverbinding
+      // nog gewoon in orde. Zie ook de ouderkant.
+      if (!mediaPc) { mediaPc = call.peerConnection || mediaPc; }
       call.on('stream', playTalkback);
+      call.on('close', () => setBabyDuplex(false));
     });
-    peer.on('disconnected', () => {
-      // Broker kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
-      // kamercode geldig blijft en de ouderunit kan herverbinden.
-      if (shuttingDown) return;
-      const d = RECONNECT_DELAYS[Math.min(babyBrokerAttempt++, RECONNECT_DELAYS.length - 1)];
-      setTimeout(() => { if (!shuttingDown) { try { peer.reconnect(); } catch (e) {} } }, d);
-    });
-    peer.on('error', (err) => onPeerError(err, 'baby'));
+    // Koppelserver kwijt: opnieuw aanmelden met oplopende wachttijd, zodat de
+    // kamercode geldig blijft en de ouderunit kan herverbinden. Zolang de
+    // babyunit niet is aangemeld is zijn QR-code onbruikbaar; planBrokerHerstel
+    // zet dat ook zichtbaar in beeld. Eén timer tegelijk — meerdere
+    // 'disconnected'-meldingen achter elkaar plantten er anders evenveel.
+    peer.on('disconnected', () => planBrokerHerstel(mijnPeer));
+    peer.on('error', (err) => onPeerError(err, 'baby', mijnPeer));
   }
+  // --------------------------------------------------------- toegangscontrole
+  // Laat een ouderunit pas toe als die het token uit de QR-code meestuurt.
+  // Wie de code handmatig intypte heeft dat token niet; dan beslist de ouder
+  // bij de babyunit zelf of het apparaat erbij mag.
+  function gateIncoming(conn) {
+    let settled = false;
+    const finish = () => { settled = true; if (pendingApproval && pendingApproval.conn === conn) hideApproval(); };
+    const deny = (reason) => {
+      if (settled) return;
+      finish();
+      try { conn.send({ cmd: 'authDenied', reason: reason }); } catch (e) {}
+      setTimeout(() => { try { conn.close(); } catch (e) {} }, 200);
+    };
+    const allow = (toestel) => {
+      if (settled) return;
+      mark('babyAllow');
+      finish();
+      // Herverbinding van hetzelfde toestel: de oude, dode verbinding opruimen
+      // zodat er nooit twee kanalen naast elkaar blijven staan.
+      if (approvedConn && approvedConn !== conn) { try { approvedConn.close(); } catch (e) {} }
+      approvedPeer = conn.peer;
+      approvedConn = conn;
+      if (toestel) approvedDevice = toestel;
+      deniedCount = 0;
+      attachControl(conn);
+      // Token meegeven: eenmaal toegestaan hoeft de ouder na een wegval niet
+      // opnieuw op "Toestaan" te wachten.
+      try { conn.send({ cmd: 'authOk', token: sessionToken }); } catch (e) {}
+      try {
+        const call = peer.call(conn.peer, localStream, CALL_OPTS);
+        if (call) {
+          // Via zetMediaPc: bij een hernieuwde goedkeuring (herverbinding van
+          // hetzelfde toestel) bleef de vorige media-oproep anders gewoon
+          // doorzenden én bewaakt, met een spookmelding "verbroken" tot
+          // gevolg zodra die alsnog sneuvelde.
+          zetMediaPc(call.peerConnection || mediaPc);
+          setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
+        }
+      } catch (e) {}
+      babyConnected();
+      reportBattery();
+    };
+    // Niets sturen binnen 20 s = geen geldige ouderunit.
+    const timer = setTimeout(() => deny('timeout'), 20000);
+    conn.on('close', () => {
+      clearTimeout(timer);
+      finish();
+      // Was dit de toegelaten ouderunit? Dan is er vanaf nu geen kijker meer.
+      // approvedDevice blijft wél staan: die toestemming geldt de hele sessie,
+      // zodat hetzelfde toestel zo terug kan komen zonder opnieuw te vragen.
+      if (approvedConn === conn) { approvedConn = null; approvedPeer = ''; }
+    });
+    conn.on('data', (d) => {
+      if (settled || !d || typeof d !== 'object' || d.cmd !== 'hello') return;
+      mark('babyHello');
+      clearTimeout(timer);
+      const toestel = d.device ? String(d.device) : '';
+      const heeftToken = sessionToken && sameToken(String(d.token || ''), sessionToken);
+      // Is er op dit moment werkelijk nog iemand aan het meekijken? Een
+      // verbinding die niet meer open staat telt niet mee.
+      const liveKijker = !!(approvedConn && approvedConn !== conn && approvedConn.open);
+      // Hetzelfde toestel dat eerder is toegelaten en het juiste token heeft:
+      // dit is een herverbinding, geen nieuwe kijker. Nooit opnieuw vragen —
+      // de ouder staat op dat moment per definitie niet bij de babyunit.
+      if (heeftToken && toestel && toestel === approvedDevice) return allow(toestel);
+      // Token klopt én er kijkt nog niemand mee → meteen door (QR-koppeling).
+      if (heeftToken && !liveKijker) return allow(toestel);
+      // Anders: expliciet toestemming vragen op het apparaat van de baby.
+      if (deniedCount >= 3) return deny('blocked');
+      askApproval(conn, () => allow(toestel), deny, liveKijker);
+    });
+  }
+
+  function hideApproval() {
+    pendingApproval = null;
+    const box = $('babyApproval');
+    if (!box) return;
+    box.classList.add('hidden');
+    if (box.__keys) { document.removeEventListener('keydown', box.__keys, true); box.__keys = null; }
+    const scherm = $('screenBaby');
+    if (scherm) { scherm.removeAttribute('aria-hidden'); try { scherm.inert = false; } catch (e) {} }
+    const vorige = box.__vorigeFocus;
+    box.__vorigeFocus = null;
+    if (vorige && typeof vorige.focus === 'function') { try { vorige.focus(); } catch (e) {} }
+  }
+
+  function askApproval(conn, allow, deny, alReedsKijker) {
+    const box = $('babyApproval');
+    if (!box) return deny('no-ui'); // zonder dialoog nooit stilzwijgend toelaten
+    // Al een verzoek open? Nieuwe aanvrager afwijzen i.p.v. de dialoog kapen.
+    if (pendingApproval) return deny('busy');
+    pendingApproval = { conn: conn, allow: allow, deny: deny };
+    // Hier koppelen (en niet bij het opstarten van de ouderunit): deze dialoog
+    // hoort bij de babyunit, dus de knoppen moeten ook daar werken.
+    const yes = $('btnApproveYes'), no = $('btnApproveNo');
+    if (yes) yes.onclick = () => answerApproval(true);
+    if (no) no.onclick = () => answerApproval(false);
+    const txt = $('babyApprovalText');
+    if (txt) txt.textContent = T(alReedsKijker ? 'approveExtra' : 'approveAsk');
+    box.classList.remove('hidden');
+    // aria-modal="true" belooft een schermlezer dat de rest van de pagina niet
+    // meer bestaat. Dan moet de focus er ook echt naartoe en er niet uit kunnen
+    // lopen, anders krijgt een schermlezergebruiker niet te horen dat er iemand
+    // toegang vraagt tot beeld en geluid van het kind.
+    box.__vorigeFocus = document.activeElement;
+    const scherm = $('screenBaby');
+    if (scherm) { scherm.setAttribute('aria-hidden', 'true'); try { scherm.inert = true; } catch (e) {} }
+    // Veilige standaard: de focus staat op "Weigeren", niet op "Toestaan".
+    if (no) { try { no.focus(); } catch (e) {} }
+    box.__keys = (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        // Escape weigert. Nooit toestaan — wegtikken mag geen toegang geven.
+        e.preventDefault();
+        answerApproval(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const f = [no, yes].filter(Boolean);
+      if (!f.length) return;
+      e.preventDefault();
+      const i = f.indexOf(document.activeElement);
+      f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+    };
+    document.addEventListener('keydown', box.__keys, true);
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+  }
+
+  function answerApproval(ok) {
+    const p = pendingApproval;
+    if (!p) return;
+    hideApproval();
+    if (ok) p.allow();
+    else { deniedCount++; p.deny('refused'); }
+  }
+
+  // Vangnet voor toestellen die hierboven niet als "oud" herkend worden maar
+  // het alsnog niet bijhouden. WebRTC meldt zelf waarom het inlevert
+  // (qualityLimitationReason 'cpu') en hoeveel frames er per seconde de deur
+  // uitgaan. Blijft dat te laag, dan halveren we de opname eenmalig. Dat is
+  // beter dan doorgaan met beeld dat steeds verder achterloopt: bij een
+  // babyfoon telt actueel beeld zwaarder dan scherp beeld.
+  let encoderVerlaagd = false;
+  // Veiligheidsnet voor de versterkingstrap. Op oude WebKit is bekend dat een
+  // MediaStreamDestination soms stilte doorgeeft. Een babyfoon die zwijgt is
+  // gevaarlijker dan een babyfoon die zacht is, dus meten we of er werkelijk
+  // audio de deur uitgaat. Zo niet, dan terug naar het ruwe spoor.
+  let micKetenGecontroleerd = false;
+  // Beide bewakers worden vanuit babyConnected() gestart, en dat draait bij
+  // ÉLKE goedkeuring — dus ook bij elke herverbinding. Zonder de timer-id op
+  // modulniveau bleef er per herverbinding een extra lus achter die elke 3 tot
+  // 5 seconden een volledige getStats() uitvoert. Een babyunit die de hele
+  // nacht aanstaat en bij elke wifi-hapering herverbindt, kreeg zo tientallen
+  // van die lussen tegelijk — juist op het toestel dat het al zwaar heeft.
+  let micKetenTimer = null;
+  let encoderTimer = null;
+  function stopBabyWatchers() {
+    if (micKetenTimer) { clearInterval(micKetenTimer); micKetenTimer = null; }
+    if (encoderTimer) { clearInterval(encoderTimer); encoderTimer = null; }
+    // Een geplande heropening van een gedempt spoor mag niet meer afgaan
+    // nadat de sessie is beëindigd.
+    ['audio', 'video'].forEach((k) => {
+      if (muteHerstelTimers[k]) { clearTimeout(muteHerstelTimers[k]); muteHerstelTimers[k] = null; }
+    });
+  }
+  function watchMicKeten() {
+    if (role !== 'baby' || micKetenGecontroleerd || !micChain) return;
+    if (micKetenTimer) { clearInterval(micKetenTimer); micKetenTimer = null; }
+    let vorigeBytes = -1;
+    let stilleMetingen = 0;
+    const timer = micKetenTimer = setInterval(async () => {
+      if (shuttingDown || role !== 'baby' || micKetenGecontroleerd) { clearInterval(timer); if (micKetenTimer === timer) micKetenTimer = null; return; }
+      if (!mediaPc || !mediaPc.getStats || !micChain) return;
+      try {
+        const stats = await mediaPc.getStats();
+        let bytes = null;
+        stats.forEach((r) => {
+          if (r.type === 'outbound-rtp' && r.kind === 'audio' && typeof r.bytesSent === 'number') bytes = r.bytesSent;
+        });
+        if (bytes === null) return;
+        if (vorigeBytes >= 0) {
+          // Stilte in Opus is niet 0 bytes maar wel héél weinig; onder 200
+          // bytes per 3 seconden gaat er feitelijk niets doorheen.
+          if (bytes - vorigeBytes < 200) stilleMetingen++; else stilleMetingen = 0;
+        }
+        vorigeBytes = bytes;
+        if (stilleMetingen >= 3) {
+          clearInterval(timer); if (micKetenTimer === timer) micKetenTimer = null;
+          micKetenGecontroleerd = true;
+          await zetMicKetenUit();
+        } else if (stilleMetingen === 0 && vorigeBytes > 0) {
+          // Er stroomt audio: keten is in orde, controle kan stoppen.
+          clearInterval(timer); if (micKetenTimer === timer) micKetenTimer = null;
+          micKetenGecontroleerd = true;
+        }
+      } catch (e) {}
+    }, 3000);
+  }
+  async function zetMicKetenUit() {
+    if (!micChain) return;
+    const ruw = micChain.ruw;
+    const versterkt = micChain.uit;
+    sloopMicKeten();
+    try {
+      if (localStream) {
+        try { localStream.removeTrack(versterkt); } catch (e) {}
+        try { versterkt.stop(); } catch (e) {}
+        localStream.addTrack(ruw);
+      }
+      const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+      if (z) { try { await z.replaceTrack(ruw); } catch (e) {} }
+    } catch (e) {}
+  }
+
+  function watchEncoder() {
+    if (role !== 'baby' || encoderVerlaagd) return;
+    if (encoderTimer) { clearInterval(encoderTimer); encoderTimer = null; }
+    let slechteMetingen = 0;
+    const timer = encoderTimer = setInterval(async () => {
+      if (shuttingDown || encoderVerlaagd || role !== 'baby') { clearInterval(timer); if (encoderTimer === timer) encoderTimer = null; return; }
+      if (!mediaPc || !mediaPc.getStats) return;
+      try {
+        const stats = await mediaPc.getStats();
+        let fps = null, reden = '';
+        stats.forEach((r) => {
+          if (r.type === 'outbound-rtp' && r.kind === 'video') {
+            if (typeof r.framesPerSecond === 'number') fps = r.framesPerSecond;
+            if (r.qualityLimitationReason) reden = r.qualityLimitationReason;
+          }
+        });
+        const teTraag = (fps !== null && fps < 8) || reden === 'cpu';
+        slechteMetingen = teTraag ? slechteMetingen + 1 : 0;
+        // Drie keer achter elkaar (dus ~15 s) voordat we ingrijpen: één
+        // uitschieter tijdens het opstarten is geen reden om beeld te
+        // verslechteren.
+        if (slechteMetingen >= 3) {
+          clearInterval(timer); if (encoderTimer === timer) encoderTimer = null;
+          encoderVerlaagd = true;
+          camProfiel = LICHT;
+          await verlaagCamera();
+        }
+      } catch (e) {}
+    }, 5000);
+  }
+  async function verlaagCamera() {
+    try {
+      const sender = await detachVideoSender();
+      const ot = localStream && localStream.getVideoTracks()[0];
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      let nt = babyCamId ? await openCam({ deviceId: { exact: babyCamId } }) : null;
+      if (!nt) nt = await openCam({ facingMode: facing });
+      if (!nt) nt = await openCam(true);
+      if (!nt) return;
+      await attachVideoTrack(nt, sender);
+    } catch (e) {}
+  }
+
+  // De browservraag om camera en microfoon kan onbeantwoord blijven (de
+  // gebruiker tikt hem weg of ziet hem niet). getUserMedia lost dan nooit op.
+  // Zonder tijdslimiet bleef de babyunit voorgoed op het koppelscherm hangen.
+  const MEDIA_TOESTEMMING_TIJD = window.BABYFOON_MEDIA_PERMISSIE_TIMEOUT || 20000;
+  function metTijdslimiet(belofte, ms) {
+    let klaar = false;
+    return new Promise((goed, af) => {
+      const t = setTimeout(() => {
+        if (klaar) return;
+        klaar = true;
+        // Komt de toestemming later alsnog binnen, dan mag die stream niet
+        // blijven hangen met een brandend camera-lampje.
+        belofte.then((s) => { try { s.getTracks().forEach((x) => x.stop()); } catch (e) {} }).catch(() => {});
+        af(new Error(T('permissionNeeded')));
+      }, ms);
+      belofte.then(
+        (v) => { if (!klaar) { klaar = true; clearTimeout(t); goed(v); } },
+        (e) => { if (!klaar) { klaar = true; clearTimeout(t); af(e); } }
+      );
+    });
+  }
+
   async function startBaby() {
     role = 'baby';
     showScreen('screenPairBaby');
+    // Eerst eerlijk zijn over waar we op wachten: op de gebruiker, niet op de
+    // ouderunit. De kamercode bestaat op dit moment nog niet.
+    toonBabyKoppelvakken(false);
+    zetBabyWachttekst('permissionNeeded', false);
     try {
-      localStream = await getMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
-      });
+      localStream = await metTijdslimiet(getMedia({
+        audio: MIC_MONITOR,
+        video: Object.assign({ facingMode: 'environment' }, camProfiel),
+      }), MEDIA_TOESTEMMING_TIJD);
+      // Zachte geluiden hoorbaar maken vóór het verzenden. Lukt de
+      // versterkingstrap niet, dan gaat het ruwe spoor gewoon mee.
+      await versterkMic(localStream);
     } catch (e) {
       toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
+      toonBabyKoppelvakken(true);
+      zetBabyWachttekst('waitingConnection', false);
       showScreen('screenSetup');
       role = null;
       return;
     }
+    // Toestemming binnen: vanaf hier wachten we wél echt op de ouderunit.
+    zetBabyWachttekst('waitingConnection', false);
     $('bPreview').srcObject = localStream;
+    // Vastleggen met welke camera we begonnen zijn: Safari geeft niet altijd
+    // een deviceId terug via getSettings(), dus dit is straks het houvast bij
+    // wisselen en bij herstel na een wegval.
+    const v0 = trackIdent(localStream.getVideoTracks()[0]);
+    babyCamId = v0.id || '';
+    if (v0.facing === 'user' || v0.facing === 'environment') facing = v0.facing;
+    localStream.getTracks().forEach((t) => watchTrackEnd(t, t.kind));
     openBabyPeer();
   }
 
@@ -410,24 +1682,52 @@
   async function startParentConnect(rawCode, isRetry) {
     let code = (rawCode != null ? rawCode : $('parentOfferInput').value || '').trim();
     if (code.indexOf('#') >= 0) code = code.slice(code.lastIndexOf('#') + 1).trim();
+    // Een gescande QR of gedeelde link bevat "CODE.token"; handmatig getypt is
+    // het alleen de code — dan volgt straks een toestemmingsvraag bij de baby.
+    const dot = code.indexOf('.');
+    if (dot > 0) { parentToken = code.slice(dot + 1).trim(); code = code.slice(0, dot); }
+    else if (!isRetry) { parentToken = ''; }
     code = code.toUpperCase();
     if (!code) return toast(T('pastePairFirst'));
+    mark('connectStart');
     currentCode = code; // toon de kamercode in het ouderdashboard
     role = 'parent';
     if (!isRetry) { reconnectAttempt = 0; }
     const err0 = $('parentError'); if (err0) err0.classList.add('hidden');
+    const dbox1 = $('parentDiagBox'); if (dbox1) dbox1.classList.add('hidden');
     const pcn = $('parentConnecting');
     if (pcn) pcn.classList.remove('hidden');
     // Bij herverbinden: oude peer volledig opruimen en opnieuw beginnen.
-    if (peer) { try { peer.destroy(); } catch (e) {} peer = null; controlConn = null; mediaPc = null; }
-    if (!micStream && !talkDisabled) {
-      try {
-        micStream = await getMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-          video: false,
-        });
-      } catch (e) { talkDisabled = true; }
+    stopBrokerHerstel();
+    brokerAttempt = 0;
+    if (peer) {
+      // VOLGORDE IS HIER ALLES. peer.destroy() sluit het oude besturingskanaal,
+      // en dat kanaal meldt zijn 'close' meteen. attachControl() ziet dan
+      // `controlConn === conn` — want controlConn wees nog naar het oude
+      // kanaal — en las die nette opruiming als een wégval: onPeerDrop(),
+      // dus meteen nóg een herverbinding bovenop de poging die we hier net
+      // beginnen. Elke poging kostte zo twee beurten uit de tabel, en bij de
+      // laatste beurt gaf de app op het moment van starten al op met
+      // "verbinding mislukt". Eerst loskoppelen, dan pas opruimen.
+      controlConn = null;
+      try { peer.destroy(); } catch (e) {}
+      peer = null;
+      zetMediaPc(null);
     }
+    talkCall = null;
+    linkApproved = false;
+    // De hartslag meet stilte sinds het laatste bericht. Zonder deze regel nam
+    // hij de stilte van vóór de wegval mee de verse poging in en vuurde hij
+    // meteen weer "verbinding verbroken".
+    lastControlAt = Date.now();
+    currentBabyId = PEER_PREFIX + code;
+    // De microfoon voor terugpraten wordt hier NIET meer opgevraagd. Hij is
+    // niet nodig om beeld te krijgen, maar het opvragen duurt op een telefoon
+    // vaak 1–3 seconden — en dat stond vóór het verbinden, dus die tijd telde
+    // een-op-een op bij "tijd tot beeld". Hij gaat nu pas open als de ouder
+    // echt op Talk back drukt, zodat hij niet met de ICE-onderhandeling om
+    // dezelfde audio-hardware concurreert én het luisteren niet in
+    // gespreksmodus zet.
     // Nooit eindeloos "Verbinden…": na 20 s expliciet mislukt of opnieuw.
     clearConnectTimers();
     connectTimer = setTimeout(() => {
@@ -435,39 +1735,90 @@
       if (wasConnected || isRetry) scheduleParentReconnect();
       else connectFailed();
     }, CONNECT_TIMEOUT);
-    const babyId = PEER_PREFIX + code;
+    const babyId = currentBabyId;
+    // Stap terug naar 1, maar de KOPTEKST niet overschrijven. Bij een
+    // herverbinding staat daar "Opnieuw verbinden… (2/5)" en die mededeling is
+    // voor de gebruiker belangrijker dan "Verbinden…". Wel opnieuw doorgeven,
+    // zodat de stapaanduiding onder het rondje meteen bijwerkt.
+    pairStap = 0;
+    if (!isRetry) setParentStatus(T('connecting'));
+    setPairStap(1);
+    if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     peer = new Peer(peerOptions());
+    // Zie openBabyPeer: gebeurtenissen van een al vervangen peer mogen de
+    // nieuwe niet aansturen.
+    const mijnPeer = peer;
     peer.on('open', () => {
+      if (mijnPeer !== peer) return;
+      mark('peerOpen');
+      brokerTerug();
+      // 'open' komt óók terug na een geslaagde HERaanmelding bij de
+      // koppelserver. Staat het besturingskanaal dan nog open, dan is er niets
+      // aan de hand en zou een tweede kanaal alleen maar een nieuwe
+      // media-onderhandeling — en dus een beeldhapering — veroorzaken. Precies
+      // dat gebeurde bij elke hapering van de koppelserver.
+      if (controlConn && controlConn.open) return;
+      setPairStap(2);
       const conn = peer.connect(babyId, { reliable: true });
       attachControl(conn);
       conn.on('open', () => {
-        connectSucceeded();
+        mark('connOpen');
+        setPairStap(3);
+        // Legitimeren: met token uit de QR gaat het meteen door, anders vraagt
+        // de babyunit eerst toestemming op het eigen scherm.
+        try { conn.send({ cmd: 'hello', token: parentToken, device: deviceId }); } catch (e) {}
+        mark('helloSent');
+        setPairStap(4);
+        // Nog niet klaar: connectSucceeded() volgt pas bij 'authOk' van de
+        // babyunit. Tot dan bewaakt de watchdog of dat antwoord echt komt.
+        startAuthWatchdog(isRetry);
         parentConnected();
-        if (micStream) {
-          try {
-            micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
-            const tcall = peer.call(babyId, micStream);
-            if (tcall && !mediaPc) { mediaPc = tcall.peerConnection || mediaPc; watchMediaPc(mediaPc); }
-          } catch (e) {}
-        }
+        if (!wasConnected) setParentStatus(T('waitingApproval'));
+        // Terugpraten volgt na 'authOk' (zie startTalkback): eerst beeld.
       });
     });
     peer.on('call', (call) => {
       // videobeeld van de baby
-      call.answer();
-      mediaPc = call.peerConnection || mediaPc;
-      watchMediaPc(mediaPc);
+      mark('callOffer');
+      // Het antwoord draagt óók het opus-profiel: dit is de kant die de
+      // babyunit vertelt met welke bitrate hij mag coderen.
+      call.answer(undefined, CALL_OPTS);
+      // Via zetMediaPc: een 'recall' levert een NIEUWE media-verbinding op. De
+      // vorige bleef hier achter — open, doorlopend én bewaakt — en trok
+      // tientallen seconden later alsnog aan de bel.
+      zetMediaPc(call.peerConnection || mediaPc);
       call.on('stream', (s) => {
+        mark('firstTrack');
         remoteStream = s;
-        $('video').srcObject = s;
-        $('video').play().catch(() => {});
+        const v = $('video');
+        if (TRACE) v.addEventListener('loadedmetadata', () => mark('firstFrame'), { once: true });
+        // Badge met de werkelijke beeldhoogte bijwerken zodra die bekend is en
+        // telkens als de camera van formaat wisselt (kwaliteitskeuze).
+        if (!v.__kwaliteitGekoppeld) {
+          v.__kwaliteitGekoppeld = true;
+          v.addEventListener('loadedmetadata', toonBeeldkwaliteit);
+          v.addEventListener('resize', toonBeeldkwaliteit);
+        }
+        v.srcObject = s;
+        v.play().catch(() => {});
+        tuneAudioReceiver(call.peerConnection || mediaPc);
         setupAnalyser(s);
+        // De microfoon blijft dicht zolang er niet teruggepraat wordt.
+        if (talking) ensureMic().then((x) => { if (x) startTalkback(); });
       });
     });
-    peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
-    peer.on('error', (err) => onPeerError(err, 'parent'));
+    // Alleen ons opnieuw aanmelden bij de koppelserver, met oplopende
+    // wachttijd. Nooit meer meteen-en-onbeperkt peer.reconnect() aanroepen:
+    // bij een onbereikbare server leverde dat een aaneengesloten stroom
+    // nieuwe websockets op.
+    peer.on('disconnected', () => planBrokerHerstel(mijnPeer));
+    peer.on('error', (err) => onPeerError(err, 'parent', mijnPeer));
   }
-  function onPeerError(err, r) {
+  function onPeerError(err, r, dezePeer) {
+    // Fout van een peer die we al vervangen hebben: negeren. Zulke late
+    // meldingen braken anders de verse poging af die er net voor in de plaats
+    // was gekomen.
+    if (dezePeer && dezePeer !== peer) return;
     const type = err && err.type;
     if (type === 'unavailable-id' && r === 'baby') {
       openBabyPeer(); // code net bezet → nieuwe code
@@ -487,8 +1838,20 @@
       return;
     }
     if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+      // Dit zijn fouten van de KOPPELSERVER, niet van de verbinding met het
+      // andere toestel. Loopt die verbinding nog (het besturingskanaal staat
+      // open), dan is er niets te herstellen aan de babyfoon zelf: beeld,
+      // geluid en bediening gaan rechtstreeks en merken hier niets van. Alleen
+      // opnieuw aanmelden dus.
+      //
+      // Voorheen brak de ouderunit hier haar hele verbinding af — peer
+      // vernietigen, nieuwe peer, opnieuw koppelen — en dat terwijl de
+      // koppelserver op dat moment juist onbereikbaar was, dus die nieuwe
+      // poging kón niet lukken. Eén hapering van een gedeelde, gratis
+      // koppelserver zette de babyfoon zo minutenlang uit.
+      if (controlConn && controlConn.open) { planBrokerHerstel(dezePeer || peer); return; }
       if (r === 'parent') { scheduleParentReconnect(); return; }
-      toast(T('connectionLost'));
+      planBrokerHerstel(dezePeer || peer);
       return;
     }
     try { console.warn('peer error', type, err); } catch (e) {}
@@ -497,8 +1860,91 @@
   // ================================================================== OUDER-PANEEL
   let micStream = null;
   let talkDisabled = false;
+  let micPromise = null;     // pas gestart zodra er echt teruggepraat wordt
+  let currentBabyId = '';    // PeerJS-id van de babyunit waarmee we praten
+  let talkCall = null;       // terugpraat-MediaConnection (pas na goedkeuring)
+  let linkApproved = false;  // babyunit heeft ons toegelaten ('authOk')
+  // De microfoon van de OUDER gaat pas open als er ook echt teruggepraat
+  // wordt, en gaat daarna weer helemaal dicht. Een openstaande microfoon —
+  // ook eentje waarvan de track alleen op enabled=false staat — zet een
+  // telefoon in gespreksmodus: de weergave schakelt naar het smalbandige
+  // spraakpad en de echo-onderdrukking gaat meeluisteren met wat er uit de
+  // speaker komt. Precies daardoor gaat het lúisteren zelf slechter klinken,
+  // terwijl de ouder al die tijd helemaal niet praat.
+  function ensureMic() {
+    if (micStream) return Promise.resolve(micStream);
+    if (talkDisabled) return Promise.resolve(null);
+    if (!micPromise) {
+      micPromise = getMedia({ audio: MIC_TALKBACK, video: false }).then((s) => {
+        micStream = s;
+        mark('micReady');
+        applyTalkAvailability();
+        return s;
+      }, () => {
+        talkDisabled = true;
+        micPromise = null; // opnieuw proberen mag; misschien is toestemming later wél gegeven
+        mark('micReady');
+        applyTalkAvailability();
+        return null;
+      });
+    }
+    return micPromise;
+  }
+  // Microfoon en terugpraatkanaal volledig afbreken.
+  function stopTalkback(meldAanBaby) {
+    talking = false;
+    if (talkCall) { try { talkCall.close(); } catch (e) {} talkCall = null; }
+    if (micStream) {
+      try { micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+      micStream = null;
+    }
+    micPromise = null;
+    if (meldAanBaby) sendControl({ cmd: 'talk', on: false });
+  }
+  function applyTalkAvailability() {
+    const b = $('btnTalk');
+    if (b) b.style.opacity = talkDisabled ? 0.5 : '';
+  }
+  // Terugpraatkanaal opzetten. Bewust ná 'authOk': de babyunit weigert een
+  // gesprek van een niet-toegelaten toestel toch, en het scheelt een tweede
+  // ICE-onderhandeling die met de videoverbinding zou concurreren.
+  function startTalkback() {
+    if (talkCall || !micStream || !peer || !currentBabyId) return;
+    // Nooit bellen vóór 'authOk'. De babyunit gooit een gesprek van een nog
+    // niet toegelaten toestel meteen dicht (zie peer.on('call') daar), en dat
+    // dode gesprek bleef daarna in talkCall staan — waardoor de bovenste
+    // controle élke volgende poging afkapte en terugpraten de rest van de
+    // sessie stil bleef, terwijl de knop wél op "aan" stond. Bij een
+    // handmatig ingetypte code staat het ouderdashboard al open terwijl er nog
+    // op "Toestaan" gewacht wordt, dus die knop is daar echt in te drukken.
+    // Zodra 'authOk' binnen is, wordt startTalkback() alsnog aangeroepen.
+    if (!linkApproved) return;
+    try {
+      micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
+      talkCall = peer.call(currentBabyId, micStream, CALL_OPTS);
+      // Terugpraten is een APARTE RTCPeerConnection naast die van het
+      // babybeeld. Nooit bewaken met watchMediaPc: die verbinding mag
+      // legitiem sluiten zonder dat de gezonde videoverbinding als wegval
+      // geldt. Alleen de PC van het babybeeld telt.
+      if (talkCall && !mediaPc) { mediaPc = talkCall.peerConnection || mediaPc; }
+      // Sluit het terugpraatkanaal (van welke kant dan ook), dan moet talkCall
+      // weer leeg — anders blijft er een dood gesprek staan dat een nieuwe
+      // poging blokkeert. Alleen het HUIDIGE gesprek opruimen, net als bij
+      // attachControl: een oude 'close' mag een net gestart gesprek niet wissen.
+      if (talkCall) {
+        const tc = talkCall;
+        tc.on('close', () => { if (talkCall === tc) talkCall = null; });
+      }
+      if (talkCall) setTimeout(() => tuneAudioSender(talkCall && talkCall.peerConnection), 1000);
+      // De babyunit zet zolang echo-onderdrukking aan op zijn microfoon,
+      // anders zingt het rond: ouder → babyspeaker → babymicrofoon → ouder.
+      sendControl({ cmd: 'talk', on: true });
+    } catch (e) {}
+  }
   let audioCtx = null;
   let analyser = null;
+  let analyserSrc = null;
+  let analyserStream = null;
   let talking = false;
   let nightMode = false;
   let alarmOn = true;
@@ -510,8 +1956,14 @@
   let nightlightLevel = 60; // 0..100 — sterkte terwijl het aan is
   let sensitivity = 55;
   let alarmCooldown = 0;
+  // camerakeuze + LED-lampje van de babyunit (gemeld via het besturingskanaal)
+  let babyCameras = [];
+  let camActiveId = '';
+  let torchSupported = false;
+  let torchLastOn = false;
   const tracks = LullabyPlayer.list();
   let trackIndex = 0;
+  let musicRepeat = true;   // playlist herhalen (standaard aan)
   let playing = false;
   let vuBars = [];
 
@@ -523,33 +1975,141 @@
   let musicBabyPlaying = false;
   let musicErr = 0;
 
+  // Geluidsmeter en huilalarm meten mee op een KLOON van de audiotrack.
+  // Dezelfde track tegelijk door een <video>-element laten afspelen én door
+  // een MediaStreamAudioSourceNode laten uitlezen geeft in sommige browsers
+  // onderbrekingen in de weergave; met een kloon heeft de meting een eigen
+  // afnemer en blijft het afspelen ongemoeid. Er is bewust één AudioContext
+  // voor de hele pagina: bij elke herverbinding komt hier een nieuwe stream
+  // binnen, en een context per herverbinding stapelt zich op.
   function setupAnalyser(stream) {
     try {
+      const track = stream && stream.getAudioTracks && stream.getAudioTracks()[0];
+      if (!track) { analyser = null; return; }
+      // Oude meetketen opruimen, anders blijven bronknopen en gekloonde
+      // tracks op dezelfde context achter.
+      if (analyserSrc) { try { analyserSrc.disconnect(); } catch (e) {} analyserSrc = null; }
+      if (analyserStream) {
+        try { analyserStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+        analyserStream = null;
+      }
+      analyser = null;
       if (!audioCtx) {
         const AC = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AC();
       }
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const src = audioCtx.createMediaStreamSource(stream);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.6;
-      src.connect(analyser);
+      analyserStream = new MediaStream([track.clone()]);
+      analyserSrc = audioCtx.createMediaStreamSource(analyserStream);
+      const an = audioCtx.createAnalyser();
+      an.fftSize = 512;
+      an.smoothingTimeConstant = 0.6;
+      analyserSrc.connect(an);
+      analyser = an;
     } catch (e) {
       analyser = null;
     }
   }
+  // ---- kwaliteitskeuze (ouderunit stuurt, babyunit voert uit) -------------
+  // De gebruiker kiest zelf wat past. "Automatisch" kijkt naar het netwerk van
+  // de OUDERUNIT, want daar zit de kijker en daar wordt de data verbruikt.
+  //   hoog    beeld + geluid, scherp
+  //   zuinig  beeld + geluid, kleiner beeld en minder beelden per seconde
+  //   geluid  alleen geluid, camera uit
+  // Let op: navigator.connection bestaat niet op iPhone en iPad. Daar kan
+  // "automatisch" het netwerk niet zien en kiest hij bewust beeld + geluid;
+  // wie op mobiel internet data wil sparen zet het daar zelf op zuinig of
+  // alleen geluid. Dat staat ook zo in de uitleg.
+  let kwaliteitKeuze = 'auto';
+  function netwerkSoort() {
+    try {
+      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (!c) return null;
+      return { effectief: c.effectiveType || null, spaarstand: !!c.saveData };
+    } catch (e) { return null; }
+  }
+  function bepaalKwaliteit() {
+    if (kwaliteitKeuze !== 'auto') return kwaliteitKeuze;
+    const n = netwerkSoort();
+    if (!n || !n.effectief) return 'hoog';       // onbekend (o.a. iOS): beeld aan
+    if (n.spaarstand) return 'geluid';
+    if (n.effectief === 'slow-2g' || n.effectief === '2g' || n.effectief === '3g') return 'geluid';
+    return 'hoog';
+  }
+  function toonKwaliteit(stand) {
+    const el = $('qualityNow');
+    if (!el) return;
+    const naam = stand === 'geluid' ? T('qualityAudio') : (stand === 'zuinig' ? T('qualitySaver') : T('qualityHigh'));
+    const n = netwerkSoort();
+    // De ruwe effectiveType van navigator.connection ("4g", "slow-2g") is
+    // browserjargon; op het scherm hoort een woord dat een ouder leest.
+    const traag = n && (n.effectief === 'slow-2g' || n.effectief === '2g' || n.effectief === '3g');
+    const netnaam = n && n.effectief ? T(traag ? 'netSlow' : 'netFast') : '';
+    el.textContent = naam + (kwaliteitKeuze === 'auto' && netnaam ? ' · ' + netnaam : '');
+  }
+  function stuurKwaliteit() {
+    if (role !== 'parent') return;
+    const stand = bepaalKwaliteit();
+    toonKwaliteit(stand);
+    sendControl({ cmd: 'quality', stand: stand });
+  }
+
+  // ---- niveaumeting zonder AudioContext ----------------------------------
+  // De balkjesmeter las het niveau uit een AudioContext. Die mag pas starten
+  // ná een tik van de gebruiker — en wie via de QR-code binnenkomt, tikt
+  // nergens op. Dan blijft die context slapen en staat de meter dood stil.
+  // WebRTC levert het geluidsniveau echter ook rechtstreeks, zonder context.
+  // Dat is nu de terugval; lukt de context later alsnog, dan wint die weer
+  // want die meet fijner.
+  function niveauViaWebRTC() {
+    if (!mediaPc || !mediaPc.getReceivers) return null;
+    try {
+      const r = mediaPc.getReceivers().find((x) => x.track && x.track.kind === 'audio');
+      if (!r || !r.getSynchronizationSources) return null;
+      const bronnen = r.getSynchronizationSources();
+      if (!bronnen || !bronnen.length) return null;
+      let hoogste = 0;
+      for (const b of bronnen) if (typeof b.audioLevel === 'number' && b.audioLevel > hoogste) hoogste = b.audioLevel;
+      // audioLevel loopt van 0 tot 1 maar zit in de praktijk laag; zelfde
+      // schaling als de contextmeting zodat de balkjes gelijk uitslaan.
+      return Math.min(100, Math.round(hoogste * 300));
+    } catch (e) { return null; }
+  }
+
+  // Zodra de gebruiker ergens tikt mag de AudioContext alsnog starten. Eén
+  // keer koppelen is genoeg; daarna gaat de fijnere meting vanzelf werken.
+  (function wekAudioBijTik() {
+    const wek = () => {
+      try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+      // Loopt de context na deze tik, dan hoeft de "alarm scherpstellen"-banner
+      // er niet meer te staan.
+      setTimeout(() => { try { toonAlarmBanner(); } catch (e) {} }, 200);
+    };
+    ['pointerdown', 'touchstart', 'keydown'].forEach((ev) => {
+      document.addEventListener(ev, wek, { passive: true });
+    });
+  })();
+
   const meterBuf = new Uint8Array(256);
   let amBars = [];
   let soundEventCooldown = 0;
   function meterLoop() {
     let level = 0;
-    if (analyser) {
+    let gemeten = false;
+    // Eerst de fijne meting, maar alleen als de context echt loopt: een
+    // slapende context geeft stilte terug en dat is niet te onderscheiden
+    // van een stille kamer.
+    if (analyser && audioCtx && audioCtx.state === 'running') {
       const n = analyser.fftSize / 2;
       analyser.getByteTimeDomainData(meterBuf.subarray(0, n));
       let sum = 0;
       for (let i = 0; i < n; i++) { const v = (meterBuf[i] - 128) / 128; sum += v * v; }
       level = Math.min(100, Math.round(Math.sqrt(sum / n) * 300));
+      gemeten = true;
+    }
+    if (!gemeten && role === 'parent') {
+      const viaRtc = niveauViaWebRTC();
+      if (viaRtc !== null) level = viaRtc;
     }
     for (let i = 0; i < vuBars.length; i++) {
       const h = Math.max(0.12, Math.min(1, (level / 100) * (0.7 + Math.random() * 0.6)));
@@ -570,16 +2130,113 @@
     const now = Date.now();
     const cry = $('cryAlert');
     if (alarmOn && level > threshold) {
-      if (cry) cry.classList.remove('hidden');
+      if (cry) { cry.classList.remove('hidden'); toonMeldingenStrook(); }
       if (now > alarmCooldown) { alarmCooldown = now + 6000; triggerAlarm(); }
       if (now > soundEventCooldown) { soundEventCooldown = now + 8000; if (typeof addEvent === 'function') addEvent('sound', T('evSound'), T('evSoundSub')); }
     } else if (now > alarmCooldown - 5000) {
-      if (cry) cry.classList.add('hidden');
+      if (cry && !cry.classList.contains('hidden')) { cry.classList.add('hidden'); toonMeldingenStrook(); }
     }
     requestAnimationFrame(meterLoop);
   }
+  // --------------------------------------------------- alarm hoorbaar houden
+  //
+  // triggerAlarm() maakt zijn toon met de Web Audio API en trilt met
+  // navigator.vibrate. Mobiele browsers staan allebei pas toe ná een tik van de
+  // gebruiker. In het QR-scenario — camera-app scant de code, de browser opent
+  // de deeplink, de ouder legt de telefoon neer — is die tik er nooit. Het
+  // huilalarm zou dan zwijgen zonder dat iemand dat merkt.
+  //
+  // Daarom: (a) een zichtbare knop die het alarm scherpstelt zolang de
+  // AudioContext niet loopt, (b) een <audio>-element met een ingebouwde toon
+  // als tweede weg (dat kent een mildere autoplay-afweging dan Web Audio), en
+  // (c) een regel in het gebeurtenislogboek als het alarm stil is gebleven.
+
+  // Korte piep als data-URI (8-bit PCM WAV, 880 Hz). Bewust klein gehouden.
+  let alarmEl = null;
+  function alarmAudioElement() {
+    if (alarmEl) return alarmEl;
+    try {
+      const rate = 8000, dur = 0.5, n = Math.floor(rate * dur);
+      const bytes = new Uint8Array(44 + n);
+      const dv = new DataView(bytes.buffer);
+      const str = (o, s) => { for (let i = 0; i < s.length; i++) bytes[o + i] = s.charCodeAt(i); };
+      str(0, 'RIFF'); dv.setUint32(4, 36 + n, true); str(8, 'WAVEfmt ');
+      dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+      dv.setUint32(24, rate, true); dv.setUint32(28, rate, true);
+      dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
+      str(36, 'data'); dv.setUint32(40, n, true);
+      for (let i = 0; i < n; i++) {
+        // twee korte stoten, zodat hij op dezelfde piep-piep lijkt als de
+        // Web Audio-versie
+        const t = i / rate;
+        const aan = (t < 0.16) || (t > 0.22 && t < 0.38);
+        const v = aan ? Math.sin(2 * Math.PI * 880 * t) * 0.6 : 0;
+        bytes[44 + i] = Math.max(0, Math.min(255, Math.round(128 + v * 110)));
+      }
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      alarmEl = document.createElement('audio');
+      alarmEl.preload = 'auto';
+      alarmEl.src = 'data:audio/wav;base64,' + btoa(bin);
+      document.body.appendChild(alarmEl);
+    } catch (e) { alarmEl = null; }
+    return alarmEl;
+  }
+  function alarmScherp() {
+    try { return !!(audioCtx && audioCtx.state === 'running'); } catch (e) { return false; }
+  }
+  // Banner tonen zolang het alarm niet gegarandeerd geluid kan maken.
+  function toonAlarmBanner() {
+    const b = $('alarmArm');
+    if (!b) return;
+    b.classList.toggle('hidden', !(role === 'parent' && alarmOn && !alarmScherp()));
+    toonMeldingenStrook();
+  }
+  // De babyunit meldt dat zijn camera of microfoon is stilgezet door het
+  // toestel (scherm op slot, andere app ervoor, inkomend gesprek). Dat is
+  // precies het geval waarin een babyfoon er nog wél verbonden uitziet maar
+  // niets meer doorgeeft. Daarom een eigen, duidelijk zichtbare melding —
+  // niet dezelfde als "verbinding verbroken", want de verbinding staat nog.
+  let babyStreamGedempt = { audio: false, video: false };
+  function toonStreamMelding() {
+    const b = $('streamAlert');
+    if (!b) return;
+    b.classList.toggle('hidden', !(role === 'parent' && babyStreamGedempt.audio));
+    toonMeldingenStrook();
+  }
+  // De strook boven het beeld heeft een eigen rij in het raster van het
+  // ouderdashboard. Staat er niets in, dan hoort die rij er ook niet te zijn.
+  function toonMeldingenStrook() {
+    const box = $('monitorAlerts');
+    if (!box) return;
+    const iets = [...box.children].some((c) => !c.classList.contains('hidden'));
+    box.classList.toggle('hidden', !iets);
+  }
+  // Eén tik ontgrendelt zowel de AudioContext als navigator.vibrate, en
+  // bevestigt meteen hoorbaar aan de ouder dat het alarm werkt.
+  function testAlarm() {
+    try {
+      if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+    const el = alarmAudioElement();
+    if (el) { try { el.currentTime = 0; el.play().catch(() => {}); } catch (e) {} }
+    triggerAlarm();
+    setTimeout(toonAlarmBanner, 300);
+  }
   function triggerAlarm() {
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    const scherp = alarmScherp();
+    if (navigator.vibrate) { try { navigator.vibrate([200, 100, 200]); } catch (e) {} }
+    // Tweede weg naar geluid: een <audio>-element mag in sommige browsers wél
+    // spelen waar de Web Audio API nog slaapt.
+    const el = alarmAudioElement();
+    if (el) { try { el.currentTime = 0; el.play().catch(() => {}); } catch (e) {} }
+    if (!scherp) {
+      // Achteraf moet zichtbaar zijn dát er gehuil is gedetecteerd, ook als er
+      // niets te horen was.
+      try { if (typeof addEvent === 'function') addEvent('sound', T('alarmSilent'), ''); } catch (e) {}
+      toonAlarmBanner();
+    }
     try {
       if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -594,6 +2251,29 @@
         osc.connect(g).connect(audioCtx.destination);
         osc.start(t + i * 0.18);
         osc.stop(t + i * 0.18 + 0.16);
+      });
+    } catch (e) {}
+  }
+  // Verbinding-verloren-melding: hoorbaar + trilling, zodat een ouder met
+  // scherm-uit telefoon meteen merkt dat de verbinding wegviel — losstaand
+  // van de huil-alarm (dalende tonen i.p.v. twee gelijke hoge tonen, zodat
+  // ze niet met elkaar te verwarren zijn).
+  function triggerConnectionLostAlert() {
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+    try {
+      if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      [660, 550, 440].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t + i * 0.22);
+        g.gain.exponentialRampToValueAtTime(0.35, t + i * 0.22 + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.22 + 0.2);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(t + i * 0.22);
+        osc.stop(t + i * 0.22 + 0.21);
       });
     } catch (e) {}
   }
@@ -612,6 +2292,10 @@
         setSignal(4); // lokaal netwerk: geen RTT beschikbaar, toon vol
       }
     }
+    // De AudioContext kan onderweg alsnog gaan lopen (na de eerste tik, of
+    // zodra de geluidsmeter er een opzet). De "alarm scherpstellen"-banner
+    // hoort dan vanzelf te verdwijnen, dus die stand hier hertoetsen.
+    toonAlarmBanner();
     setTimeout(statsLoop, 2000);
   }
 
@@ -630,6 +2314,8 @@
     $('video').muted = muted || volume === 0;
     const h = $('volHub'); if (h) h.textContent = muted ? '⌀' : volume;
     const n = $('volNeedle'); if (n) n.style.transform = 'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
+    // De bediening op het vergrendelscherm moet dezelfde stand tonen.
+    updateMediaSession(!(muted || volume === 0));
   }
   function setSliderKnob(elm, pct) {
     elm.querySelector('.knob').style.bottom = (pct * 100).toFixed(1) + '%';
@@ -721,7 +2407,11 @@
       musicAudio = new Audio();
       musicAudio.id = 'musicAudio';
       document.body.appendChild(musicAudio);
-      musicAudio.addEventListener('ended', () => babyPlayMusic(musicIndex + 1));
+      musicAudio.addEventListener('ended', () => {
+        const laatste = musicList && musicIndex >= musicList.length - 1;
+        if (laatste && !musicRepeat) { babyStopMusic(); return; }
+        babyPlayMusic(musicIndex + 1);
+      });
       musicAudio.addEventListener('playing', () => { musicErr = 0; });
       musicAudio.addEventListener('error', () => {
         // sla een ontbrekend/defect bestand over; stop als niets speelt
@@ -740,35 +2430,42 @@
     sendBabyMusicState();
   }
   function sendBabyMusicState() {
+    // Beide muziekbronnen komen hier langs, dus dit is de plek om de tegel op
+    // het babydashboard bij te werken.
+    renderBabyTiles();
     sendControl({ cmd: 'musicState', playing: musicBabyPlaying, index: musicIndex,
       list: (musicList || []).map((s) => s.title) });
   }
 
   // --- ouderunit: bediening + weergave van de playlist ---
+  // De lijst staat op twee plekken: in de zijbalkweergave Slaapliedjes én
+  // direct onder de bedieningsknoppen op het monitorscherm, zodat je een
+  // nummer kunt kiezen zonder van weergave te wisselen.
   async function renderPlaylist() {
-    const box = $('playlist');
-    if (!box) return;
+    const boxes = ['playlist', 'monitorPlaylist'].map($).filter(Boolean);
+    if (!boxes.length) return;
     const list = await loadPlaylist();
-    box.replaceChildren();
-    if (!list.length) {
-      const d = document.createElement('div');
-      d.className = 'playlist-empty';
-      d.textContent = T('musicEmpty');
-      box.appendChild(d);
-      updateMusicUI();
-      return;
-    }
-    list.forEach((s, i) => {
-      const row = document.createElement('div');
-      row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
-      const mk = (cls, txt) => { const el = document.createElement('span'); el.className = cls; if (txt != null) el.textContent = txt; return el; };
-      row.appendChild(mk('n', String(i + 1)));
-      row.appendChild(mk('tt', s.title));
-      const eq = mk('eq');
-      for (let k = 0; k < 3; k++) eq.appendChild(document.createElement('i'));
-      row.appendChild(eq);
-      row.onclick = () => parentPlayMusic(i);
-      box.appendChild(row);
+    boxes.forEach((box) => {
+      box.replaceChildren();
+      if (!list.length) {
+        const d = document.createElement('div');
+        d.className = 'playlist-empty';
+        d.textContent = T('musicEmpty');
+        box.appendChild(d);
+        return;
+      }
+      list.forEach((s, i) => {
+        const row = document.createElement('div');
+        row.className = 'track' + (musicPlaying && i === musicIndex ? ' on' : '');
+        const mk = (cls, txt) => { const el = document.createElement('span'); el.className = cls; if (txt != null) el.textContent = txt; return el; };
+        row.appendChild(mk('n', String(i + 1)));
+        row.appendChild(mk('tt', s.title));
+        const eq = mk('eq');
+        for (let k = 0; k < 3; k++) eq.appendChild(document.createElement('i'));
+        row.appendChild(eq);
+        row.onclick = () => parentPlayMusic(i);
+        box.appendChild(row);
+      });
     });
     updateMusicUI();
   }
@@ -779,13 +2476,19 @@
     $('musicBtnText').textContent = musicPlaying ? T('musicStop') : T('musicPlay');
     btn.querySelector('.ic-play').classList.toggle('hidden', musicPlaying);
     btn.querySelector('.ic-stop').classList.toggle('hidden', !musicPlaying);
-    $('playlist').querySelectorAll('.track').forEach((r, i) =>
-      r.classList.toggle('on', musicPlaying && i === musicIndex));
+    ['playlist', 'monitorPlaylist'].forEach((id) => {
+      const b = $(id);
+      if (b) b.querySelectorAll('.track').forEach((r, i) =>
+        r.classList.toggle('on', musicPlaying && i === musicIndex));
+    });
+    const bl = $('btnLullaby'); if (bl) bl.classList.toggle('on', musicPlaying);
+    const rb = $('btnRepeat');
+    if (rb) { rb.classList.toggle('on', musicRepeat); rb.setAttribute('aria-pressed', String(musicRepeat)); }
   }
   function parentPlayMusic(i) {
     if (musicPlaying && i === musicIndex) { parentStopMusic(); return; }
     musicIndex = i; musicPlaying = true;
-    sendControl({ cmd: 'music', action: 'play', index: i });
+    sendControl({ cmd: 'music', action: 'play', index: i, repeat: musicRepeat });
     updateMusicUI();
   }
   function parentStopMusic() {
@@ -820,6 +2523,7 @@
     toast(T('saved'));
   }
   function toggleRecord(stream, btn, prefix) {
+    const label = btn && btn.querySelector('span:not(.cb-ic)');
     if (!stream) return toast(T('noStream'));
     if (recorder) { recorder.stop(); return; }
     if (!window.MediaRecorder) return toast(T('recNotSupported'));
@@ -831,11 +2535,13 @@
     recorder.onstop = async () => {
       const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
       btn.classList.remove('active');
+      if (label) label.textContent = T('recordVideo');
       recorder = null;
       await saveBlob(blob, prefix, (blob.type || '').includes('mp4') ? 'mp4' : 'webm');
     };
     recorder.start(1000);
     btn.classList.add('active');
+    if (label) label.textContent = T('stop');
     toast(T('recStarted'));
   }
 
@@ -891,6 +2597,21 @@
     const scr = $('screen'); if (scr) scr.classList.toggle('privacy', videoHidden || remoteVideoOff);
     const pv = $('privVal');
     if (pv) pv.textContent = videoHidden ? T('videoHidden') : (remoteVideoOff ? T('audioOnly') : T('cameraVisible'));
+    toonBeeldkwaliteit();
+  }
+  // De badge rechtsonder in de videokaart stond vast op "HD" — óók in de stand
+  // "beeld + geluid (zuinig)" (640×480) en zelfs in "alleen geluid", waar er
+  // helemaal geen beeld is. Hij sprak daarmee het instellingenscherm tegen,
+  // terwijl hij juist de terugkoppeling op de kwaliteitskeuze hoort te zijn.
+  function toonBeeldkwaliteit() {
+    const hd = $('vcardHd');
+    if (!hd) return;
+    const v = $('video');
+    const h = (v && v.videoHeight) || 0;
+    // data-i18n weghalen: anders schrijft I18n.apply() bij een taalwissel weer
+    // de letterlijke tekst "HD" terug over de gemeten waarde heen.
+    hd.removeAttribute('data-i18n');
+    hd.textContent = remoteVideoOff ? T('audioOnly') : (h >= 700 ? 'HD' : (h ? h + 'p' : '—'));
   }
   function buildAudioMeter() {
     const m = $('audioMeter');
@@ -898,12 +2619,36 @@
     for (let i = 0; i < 40; i++) m.appendChild(document.createElement('i'));
     amBars = Array.from(m.children);
   }
+  // Camerakeuze tonen zodra de babyunit ≥2 camera's meldt.
+  function renderCameraSelect() {
+    const row = $('rowCamera'), sel = $('camSelect');
+    if (!row || !sel) return;
+    if (!babyCameras || babyCameras.length < 2) { row.classList.add('hidden'); return; }
+    sel.textContent = '';
+    babyCameras.forEach((c, i) => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = (c.label && c.label.trim()) ? c.label : (T('cameraLabel') + ' ' + (i + 1));
+      if (c.id === camActiveId) o.selected = true;
+      sel.appendChild(o);
+    });
+    row.classList.remove('hidden');
+  }
+  // LED-rij alleen tonen als de babyunit torch-ondersteuning meldt.
+  function renderTorchUI() {
+    const row = $('rowLed'), btn = $('ledToggle');
+    if (!row || !btn) return;
+    if (!torchSupported) { row.classList.add('hidden'); return; }
+    row.classList.remove('hidden');
+    btn.classList.toggle('on', torchLastOn);
+    btn.textContent = torchLastOn ? T('on2') : T('off2');
+  }
   function startParentDevice() {
     if (parentStarted) return;
     parentStarted = true;
     vuBars = $('vu') ? Array.from($('vu').querySelectorAll('i')) : [];
     buildAudioMeter();
-    if (talkDisabled) { $('btnTalk').style.opacity = 0.5; }
+    applyTalkAvailability();
     const rl = $('roomLabel'); if (rl) rl.textContent = currentCode || 'P2P';
     applyVolume(); applyVideoFilter();
     renderChips(); renderPlaylist();
@@ -919,18 +2664,36 @@
       if (tb) { tb.classList.toggle('on', talking); $('talkBigText').textContent = talking ? T('talkActive') : T('tapToTalk'); }
     };
     const toggleTalk = () => {
-      if (!micStream) return toast(T('noMic'));
-      talking = !talking;
-      micStream.getAudioTracks().forEach((t) => (t.enabled = talking));
+      // Terugpraten uit: microfoon én terugpraatkanaal helemaal sluiten, zodat
+      // het toestel weer in gewone weergavemodus staat.
+      if (talking) { stopTalkback(true); setTalkUI(); return; }
+      // De microfoon wordt pas hier opgevraagd. Is hij er nog niet, dan
+      // wachten we even — niet meteen "geen microfoon".
+      if (!micStream) {
+        if (talkDisabled) return toast(T('noMic'));
+        ensureMic().then((s) => { if (s) toggleTalk(); else toast(T('noMic')); });
+        return;
+      }
+      talking = true;
+      micStream.getAudioTracks().forEach((t) => (t.enabled = true));
+      startTalkback();
       setTalkUI();
-      if (talking) addEvent('talk', T('evTalk'), T('evTalkSub'));
+      addEvent('talk', T('evTalk'), T('evTalkSub'));
     };
     $('btnTalk').onclick = toggleTalk;
     if ($('talkBig')) $('talkBig').onclick = toggleTalk;
     // Lullaby (eerste slaapliedje aan/uit)
+    // Slaapliedje: start meteen bij nummer 1 van de playlist (of stopt).
     $('btnLullaby').onclick = () => {
-      if (playing) { sendStop(); $('btnLullaby').classList.remove('on'); }
-      else { trackIndex = 0; sendPlay(); $('btnLullaby').classList.add('on'); addEvent('lullaby', T('evLullaby'), tracks[0] ? trackLabel(tracks[0]) : ''); }
+      if (musicPlaying) { parentStopMusic(); return; }
+      parentPlayMusic(0);
+      addEvent('lullaby', T('evLullaby'), (musicList && musicList[0]) ? musicList[0].title : '');
+    };
+    // Playlist herhalen aan/uit
+    if ($('btnRepeat')) $('btnRepeat').onclick = () => {
+      musicRepeat = !musicRepeat;
+      if (musicPlaying) sendControl({ cmd: 'music', action: 'repeat', repeat: musicRepeat });
+      updateMusicUI();
     };
     // Night light (dimt eigen beeld + zet nachtlampje bij de baby)
     const setNightUI = () => {
@@ -956,18 +2719,28 @@
       $('btnAlarm').classList.toggle('on', alarmOn);
       const at = $('alToggle');
       if (at) { at.classList.toggle('on', alarmOn); at.textContent = alarmOn ? T('on2') : T('off2'); }
+      // De babyunit toont het huil-alarm als tegel naast nachtlampje,
+      // slaapliedje en slaaptimer. Die drie werden al doorgegeven, deze niet:
+      // de tegel stond hard op "Aan" en bleef daar staan, ook nadat de ouder
+      // het alarm had uitgezet. Nu volgt hij de werkelijke stand.
+      sendControl({ cmd: 'cryAlert', on: alarmOn });
+      toonAlarmBanner();
     };
     $('btnAlarm').onclick = () => {
       alarmOn = !alarmOn;
       setAlarmUI();
       if (!alarmOn) { const c = $('cryAlert'); if (c) c.classList.add('hidden'); }
+      toonMeldingenStrook();
     };
     if ($('alToggle')) $('alToggle').onclick = () => $('btnAlarm').click();
+    ['btnAlarmTest', 'btnAlarmTest2'].forEach((id) => { const b = $(id); if (b) b.onclick = testAlarm; });
     if ($('alSens')) $('alSens').oninput = () => {
       sensitivity = +$('alSens').value;
       const v = $('alSensVal'); if (v) v.textContent = sensitivity + '%';
     };
     setAlarmUI();
+    // Video+audio van de babyunit lokaal opnemen (MediaRecorder, opslaan op eigen apparaat)
+    if ($('btnRecord')) $('btnRecord').onclick = () => toggleRecord(remoteStream, $('btnRecord'), 'babyunit');
     // Instellingen-weergave: volume/helderheid/zoom
     if ($('setVolume')) $('setVolume').oninput = () => {
       volume = +$('setVolume').value; muted = volume === 0;
@@ -984,15 +2757,34 @@
       applyZoom();
       const v = $('setZoomVal'); if (v) v.textContent = zoom.toFixed(1) + '×';
     };
+    // Snelknop "Wissel camera" op de monitor: stuurt een flip-commando naar
+    // de babyunit (voor/achter of volgende lens). De camerakeuze-lijst in de
+    // Instellingen blijft beschikbaar voor het kiezen van een specifieke lens.
+    if ($('btnFlipCam')) $('btnFlipCam').onclick = () => { sendControl({ cmd: 'flip' }); toast(T('switchCamera')); };
+    // Camerakeuze: laat de babyunit naar de gekozen camera wisselen.
+    const camSel = $('camSelect');
+    if (camSel) camSel.onchange = () => { camActiveId = camSel.value; sendControl({ cmd: 'selectCamera', deviceId: camSel.value }); };
+    // LED-lampje (zaklamp) van de babyunit aan/uit (optimistisch; de baby bevestigt via torchState).
+    const ledBtn = $('ledToggle');
+    if (ledBtn) ledBtn.onclick = () => { torchLastOn = !ledBtn.classList.contains('on'); renderTorchUI(); sendControl({ cmd: 'torch', on: torchLastOn }); };
+    renderCameraSelect();
+    renderTorchUI();
     const rl2 = $('roomLabel2'); if (rl2) rl2.textContent = currentCode || 'P2P';
     // Stop
-    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) { shuttingDown = true; location.reload(); } };
+    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) endSession(true); };
     // Fullscreen
     $('btnFullscreen').onclick = () => {
       const v = $('video');
       if (v.webkitEnterFullscreen && !document.fullscreenElement) { try { v.webkitEnterFullscreen(); return; } catch (e) {} }
-      if (!document.fullscreenElement) ($('screen').requestFullscreen || $('screen').webkitRequestFullscreen)?.call($('screen'));
-      else (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+      // Geen optional chaining (?.): Safari 12 op iOS 12 kent dat niet en dan
+      // faalt dit hele bestand al bij het inlezen — geen enkele knop werkt meer.
+      if (!document.fullscreenElement) {
+        const fs = $('screen').requestFullscreen || $('screen').webkitRequestFullscreen;
+        if (fs) fs.call($('screen'));
+      } else {
+        const ex = document.exitFullscreen || document.webkitExitFullscreen;
+        if (ex) ex.call(document);
+      }
     };
     document.addEventListener('fullscreenchange', () => { $('screen').classList.toggle('fs', !!document.fullscreenElement); });
     // Sleep timer-kaart (Off → 15 → 30 → 60) met zichtbaar aftellen
@@ -1027,30 +2819,85 @@
       applyPrivacyUI();
     };
 
+    // Scherm uit: zwart scherm, geluid blijft doorspelen. Zie setBlackout().
+    if ($('btnScreenOff')) $('btnScreenOff').onclick = () => setBlackout(true);
+
+    toonAlarmBanner();
+    toonStreamMelding();
     meterLoop(); statsLoop();
     enableWakeLock();
+    updateMediaSession(!(muted || volume === 0));
   }
 
   // ================================================================== BABYUNIT
   let babyStarted = false;
   let facing = 'environment';
   let micOn = true;
+  // Heeft de persoon bij het bedje het beeld zélf dichtgezet? Dat is een
+  // bewuste privacykeuze en die mag nooit van afstand ongedaan worden gemaakt.
+  // Staat los van de kwaliteitsstand: "alleen geluid" van de ouderunit zet het
+  // beeld ook uit, maar dat is géén gebruikerskeuze op de babyunit.
+  let beeldDoorGebruikerUit = false;
+  // Camera aan of uit op de babyunit. Staat bewust op modulniveau: behalve de
+  // knoppen op het toestel zelf gebruikt ook het kwaliteitscommando van de
+  // ouderunit dit (stand "alleen geluid" zet de camera uit).
+  //
+  // `doorGebruiker` geeft aan of dit uit een tik op de babyunit zelf komt.
+  // Alleen dán verschuift de vastgehouden gebruikerskeuze.
+  function babyZetVideo(on, doorGebruiker) {
+    if (doorGebruiker) beeldDoorGebruikerUit = !on;
+    if (localStream) localStream.getVideoTracks().forEach((t) => (t.enabled = on));
+    const swCam = $('swCam'); if (swCam) swCam.classList.toggle('on', on);
+    const sc = $('bScreen'); if (sc) sc.classList.toggle('privacy', !on);
+    // Het pilletje op het beeld stond vast op "aan" (en las met de Engelse
+    // tekst zelfs als "Camera on On") terwijl het beeld dicht kon staan.
+    const cst = $('bCamState');
+    if (cst) { cst.setAttribute('data-i18n', on ? 'on2' : 'off2'); cst.textContent = T(on ? 'on2' : 'off2'); }
+    const swAO = $('swAudioOnly'); if (swAO) swAO.classList.toggle('on', !on);
+    // Ook het privacyscherm meenemen. Zonder dit konden de drie schuiven uit de
+    // pas lopen: "Privacy shade" bleef aan terwijl de camera weer uitzond.
+    const swPriv = $('swPrivacy'); if (swPriv) swPriv.classList.toggle('on', !on);
+    syncSwitchRows();
+    sendControl({ cmd: 'videoState', on: on }); // ouderunit toont poster + "Alleen geluid"
+  }
+
+  /**
+   * De schakelrijen op de babyunit tonen hun stand net zo als de
+   * bedieningsknoppen van de ouderunit: de hele knop kleurt op als hij aan
+   * staat. Het schuifje blijft staan als aanwijzing dát het een schakelaar is,
+   * maar de klasse `on` op de rij draagt de status — dat is precies wat
+   * `.ctrlbtn.on` op de ouderunit doet.
+   *
+   * Wordt ook aangeroepen bij een stand die van buitenaf verandert (de
+   * ouderunit kan met "alleen geluid" de camera uitzetten), zodat de knop nooit
+   * iets anders toont dan de werkelijke toestand.
+   */
+  function syncSwitchRows() {
+    document.querySelectorAll('[role="switch"]').forEach((row) => {
+      const sw = row.querySelector('.switch');
+      if (!sw) return;
+      const aan = sw.classList.contains('on');
+      row.classList.toggle('on', aan);
+      row.setAttribute('aria-checked', aan ? 'true' : 'false');
+    });
+  }
+
   function startBabyDevice() {
     if (babyStarted) return;
     babyStarted = true;
     // kamercode + QR ook op het babydashboard tonen
     const code = currentCode || '';
     ['babyDashCode', 'bRoom', 'bRoomInline'].forEach((id) => { const el = $(id); if (el) el.textContent = code; });
-    if (code) renderQR('babyDashQR', location.href.split('#')[0] + '#' + code, 3);
+    if (code) renderQR('babyDashQR', location.href.split('#')[0] + '#' + code + '.' + sessionToken, 3);
     const cp = $('copyBabyDash'); if (cp) cp.onclick = () => copyText(code);
 
     const swCam = $('swCam'), swMic = $('swMic'), swAO = $('swAudioOnly'), swPriv = $('swPrivacy');
-    const setVideoEnabled = (on) => {
-      if (localStream) localStream.getVideoTracks().forEach((t) => (t.enabled = on));
-      if (swCam) swCam.classList.toggle('on', on);
-      $('bScreen') && $('bScreen').classList.toggle('privacy', !on);
-      sendControl({ cmd: 'videoState', on: on }); // ouderunit toont poster + "Audio only"
-    };
+    // Zelfde functie als hierboven op modulniveau; alias zodat de bestaande
+    // knop-koppelingen hieronder ongewijzigd blijven werken.
+    // Alle drie de schuiven hieronder zijn een keuze van de persoon bij het
+    // bedje; die wordt vastgehouden (tweede argument true) zodat een later
+    // kwaliteitscommando van de ouderunit hem niet stilzwijgend terugdraait.
+    const setVideoEnabled = (on) => babyZetVideo(on, true);
     // Camera-toggle
     $('tgCam').onclick = () => { const on = !swCam.classList.contains('on'); setVideoEnabled(on); if (swAO) swAO.classList.toggle('on', !on); if (swPriv) swPriv.classList.toggle('on', !on); };
     // Microfoon-toggle
@@ -1066,26 +2913,570 @@
     $('tgPrivacy').onclick = toggleShade;
     const shadeBtn = $('tgPrivacyBtn'); if (shadeBtn) shadeBtn.onclick = toggleShade;
 
-    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) { shuttingDown = true; location.reload(); } };
+    // Zichtbare "Wissel camera"-knop op de babyunit (voor/achter of volgende lens)
+    const flipCam = $('tgFlipCam');
+    if (flipCam) flipCam.onclick = () => babyCycleCamera();
+    // Scherm uit op de babyunit: het beeld gaat zwart, maar de pagina blijft
+    // draaien — dus camera en microfoon blijven doorzenden. Zie setBlackout().
+    const scherm = $('tgScreenOff');
+    if (scherm) scherm.onclick = () => setBlackout(true);
+
+    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) endSession(true); };
+    // beginstand van de schakelknoppen en statustegels meteen goed tonen
+    syncSwitchRows();
+    renderBabyTiles();
     enableWakeLock();
     reportBattery();
+    reportCameras();
+    reportTorch();
   }
-  async function flipCamera() {
-    facing = facing === 'environment' ? 'user' : 'environment';
+  // Terwijl de ouder terugpraat ontstaat er wél een echopad (babyspeaker →
+  // babymicrofoon). Alleen dán zetten we de echo-onderdrukking aan; daarna
+  // gaat de microfoon weer onbewerkt, zodat zacht ademen hoorbaar blijft.
+  let duplexOn = false;
+  let duplexBusy = false;
+  async function setBabyDuplex(on) {
+    on = !!on;
+    if (role !== 'baby' || !localStream || duplexBusy || on === duplexOn) return;
+    duplexBusy = true;
     try {
-      const ns = await getMedia({ audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } } });
-      const nt = ns.getVideoTracks()[0];
-      const ot = localStream.getVideoTracks()[0];
-      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video');
-      if (sender) await sender.replaceTrack(nt);
-      if (ot) { localStream.removeTrack(ot); ot.stop(); }
+      const cur = localStream.getAudioTracks()[0];
+      // Eerst de goedkope weg: sommige browsers kunnen de spraakbewerking op
+      // een lopend spoor omzetten.
+      if (cur && cur.applyConstraints) {
+        try {
+          await cur.applyConstraints(on ? MIC_DUPLEX : MIC_MONITOR);
+          if (!!cur.getSettings().echoCancellation === on) { duplexOn = on; return; }
+        } catch (e) { /* onder af te handelen */ }
+      }
+      // Chrome legt de audiobewerking vast bij het ópenen van het spoor.
+      // Omschakelen kan dan alleen door de microfoon opnieuw te openen en het
+      // spoor te vervangen — dezelfde aanpak als flipCamera()/recoverBabyTrack().
+      const ns = await getMedia({ audio: on ? MIC_DUPLEX : MIC_MONITOR, video: false });
+      const nt = ns.getAudioTracks()[0];
+      if (!nt) return;
+      if (cur) nt.enabled = cur.enabled; // microfoon-uit van de gebruiker respecteren
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === 'audio');
+      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
+      if (cur) { try { localStream.removeTrack(cur); cur.stop(); } catch (e) {} }
       localStream.addTrack(nt);
-      $('bPreview').srcObject = localStream;
-      toast(T('cameraSwitched'));
+      watchTrackEnd(nt, 'audio');
+      // Nieuw ruw spoor: versterkingstrap er opnieuw omheen en het versterkte
+      // spoor naar de ouder sturen.
+      sloopMicKeten();
+      const keten = bouwMicKeten(nt);
+      if (keten) {
+        micChain = keten;
+        try { localStream.removeTrack(nt); localStream.addTrack(keten.uit); } catch (e) {}
+        const zender = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+        if (zender) { try { await zender.replaceTrack(keten.uit); } catch (e) {} }
+        startMicGainRegeling();
+        bewaakRuweMic();
+      }
+      duplexOn = on;
     } catch (e) {
-      facing = facing === 'environment' ? 'user' : 'environment';
-      toast(T('cannotSwitch'));
+      // Lukt het niet, dan blijft de bestaande microfoon gewoon staan.
+    } finally {
+      duplexBusy = false;
     }
+  }
+
+  // ---- camerawissel op de babyunit ----------------------------------------
+  // Waarom dit zo omslachtig is: `facingMode` is in de spec een *voorkeur*, geen
+  // eis. iPadOS/Safari mag dus doodleuk dezelfde camera teruggeven. Je ziet dan
+  // wel iets gebeuren (het spoor wordt vervangen, het beeld hapert) maar je
+  // krijgt hetzelfde apparaat terug. Daar bovenop houdt iOS een al geopende
+  // camera vast: vraag je een nieuwe aan terwijl het oude spoor nog leeft, dan
+  // krijg je gegarandeerd het bezette apparaat. Vandaar: altijd op deviceId met
+  // { exact: ... }, altijd het oude spoor éérst stoppen, en achteraf verifiëren
+  // dat er echt een ánder apparaat actief is.
+
+  // Onthoudt welke camera we zelf geopend hebben. Safari geeft lang niet altijd
+  // een deviceId terug via track.getSettings(), dus we vertrouwen niet blind op
+  // de browser om te weten waar we staan.
+  let babyCamId = '';
+  let switchingCam = false;
+
+  function trackIdent(track) {
+    let id = '', fm = '';
+    if (track && track.getSettings) {
+      try { const s = track.getSettings() || {}; id = s.deviceId || ''; fm = s.facingMode || ''; } catch (e) {}
+    }
+    return { id: id, facing: fm, label: (track && track.label) || '' };
+  }
+  // Is dit echt een ánder apparaat? deviceId is het harde bewijs; ontbreekt dat
+  // (Safari), dan zeggen label en facingMode genoeg. Is er niets te vergelijken,
+  // dan vertrouwen we op de 'exact'-constraint: die had moeten falen als de
+  // gevraagde camera niet gegeven kon worden.
+  function sameCamera(a, b) {
+    if (a.id && b.id) return a.id === b.id;
+    if (a.label && b.label) return a.label === b.label;
+    if (a.facing && b.facing) return a.facing === b.facing;
+    return false;
+  }
+  // Voor- of achtercamera afleiden uit het apparaatlabel. Labels zijn
+  // OS-taalafhankelijk, dus dit is een hulpmiddel bij het kiezen van een
+  // kandidaat — nooit het bewijs dat de wissel geslaagd is.
+  function camSideFromLabel(label) {
+    const s = (label || '').toLowerCase();
+    if (/front|facetime|user|selfie|voor|frontal|avant|vorder|anterior|dianteira/.test(s)) return 'user';
+    if (/back|rear|environment|world|achter|arri|hinter|trasera|traseira|posteriore|wide|ultra/.test(s)) return 'environment';
+    return '';
+  }
+  // Eén camera openen. Geeft het videospoor terug, of null als het niet lukt.
+  async function openCam(videoConstraint) {
+    const base = Object.assign({}, camProfiel);
+    const v = videoConstraint === true ? true : Object.assign({}, base, videoConstraint);
+    try {
+      const ns = await getMedia({ audio: false, video: v });
+      const t = ns.getVideoTracks()[0];
+      if (!t) { ns.getTracks().forEach((x) => { try { x.stop(); } catch (e) {} }); return null; }
+      return t;
+    } catch (e) { return null; }
+  }
+  // Het uitgaande videospoor éérst loskoppelen van de WebRTC-zender, dán pas
+  // stoppen. Omdat we het oude spoor nu moeten stoppen vóórdat de nieuwe camera
+  // wordt aangevraagd (anders geeft iOS de al bezette camera terug), zou de
+  // zender anders seconden lang op een beëindigd spoor blijven staan — precies
+  // de duur van de getUserMedia-aanvraag. replaceTrack(null) is de nette manier
+  // om een zender vast te houden zonder bron. Gemeten in Chromium hervat het
+  // coderen in beide volgordes even goed; dit is dus een voorzorg, geen
+  // noodgreep. Geeft de zender terug, want na replaceTrack(null) is die niet
+  // meer aan zijn spoor terug te vinden.
+  async function detachVideoSender() {
+    const sender = (mediaPc && mediaPc.getSenders)
+      ? mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video')
+      : null;
+    if (sender) { try { await sender.replaceTrack(null); } catch (e) {} }
+    return sender || null;
+  }
+  // Nieuw videospoor in de uitgaande stream hangen (WebRTC-zender, preview,
+  // torch-status) en de bijgehouden camerastatus meebijwerken. `sender` komt uit
+  // detachVideoSender(); na een replaceTrack(null) is de zender namelijk niet
+  // meer op zijn spoor terug te vinden.
+  async function attachVideoTrack(nt, sender) {
+    const ot = localStream.getVideoTracks()[0];
+    const snd = sender || ((mediaPc && mediaPc.getSenders)
+      ? mediaPc.getSenders().find((s) => s.track && s.track.kind === 'video')
+      : null);
+    if (snd) { try { await snd.replaceTrack(nt); } catch (e) {} }
+    if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+    // Het beeld moet de camerastand van vóór de wissel volgen: stond de camera
+    // uit (privacy shade / audio-only), dan blijft die uit.
+    const swCam = $('swCam');
+    if (swCam && !swCam.classList.contains('on')) nt.enabled = false;
+    localStream.addTrack(nt);
+    watchTrackEnd(nt, 'video');
+    torchOn = false; // nieuw spoor → LED weer uit
+    const info = trackIdent(nt);
+    babyCamId = info.id || '';
+    if (info.facing === 'user' || info.facing === 'environment') facing = info.facing;
+    else { const side = camSideFromLabel(info.label); if (side) facing = side; }
+    const pv = $('bPreview'); if (pv) pv.srcObject = localStream;
+    reportCameras();
+    reportTorch();
+  }
+  // Zichtbare, blijvende melding onder de "Wissel camera"-knop. Een toast is na
+  // drie seconden weg; juist bij een mislukte wissel moet de gebruiker het nog
+  // kunnen lezen. Via data-i18n loopt de tekst mee met de taalkeuze.
+  const FLIP_NOTE_DEFAULT = 'switchCameraSub';
+  let flipNoteTimer = 0;
+  function setFlipNote(key, sticky) {
+    const el = $('flipCamNote');
+    clearTimeout(flipNoteTimer);
+    if (!el) return;
+    el.setAttribute('data-i18n', key);
+    el.textContent = T(key);
+    if (!sticky && key !== FLIP_NOTE_DEFAULT) {
+      flipNoteTimer = setTimeout(() => setFlipNote(FLIP_NOTE_DEFAULT, true), 6000);
+    }
+  }
+  // Camera's van dit toestel opsommen (alleen die met een bruikbaar deviceId —
+  // zonder id kunnen we niet gericht wisselen).
+  async function listCameras() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      return devs.filter((d) => d.kind === 'videoinput' && d.deviceId);
+    } catch (e) { return []; }
+  }
+  // Terugvaloptie als het wisselen helemaal niet lukt: haal de oorspronkelijke
+  // camera terug, zodat het beeld nooit zwart blijft staan.
+  async function restoreCamera(prev, sender) {
+    let t = null;
+    if (prev.id) t = await openCam({ deviceId: { exact: prev.id } });
+    if (!t && prev.side) t = await openCam({ facingMode: prev.side });
+    if (!t) t = await openCam(true);
+    if (t) await attachVideoTrack(t, sender);
+    return !!t;
+  }
+
+  // Wissel van camera op de babyunit. Wordt aangeroepen door de zichtbare
+  // "Wissel camera"-knop op de babyunit én door het 'flip'-commando dat de
+  // ouderunit op afstand stuurt.
+  //
+  // We mikken op de andere kant (voor ↔ achter) in plaats van blind door de
+  // lijst te rouleren: een iPad Pro meldt meerdere achterlenzen, en van de ene
+  // achtercamera naar de andere springen ziet er voor de gebruiker uit alsof er
+  // niets gebeurt.
+  async function babyCycleCamera() {
+    if (role !== 'baby' || !localStream || switchingCam) return;
+    const oldTrack = localStream.getVideoTracks()[0];
+    if (!oldTrack) return;
+    switchingCam = true;
+    try {
+      const cur = trackIdent(oldTrack);
+      const curId = cur.id || babyCamId || '';
+      const curSide = cur.facing || camSideFromLabel(cur.label) || facing;
+      const wantSide = curSide === 'user' ? 'environment' : 'user';
+      const cams = await listCameras();
+
+      // Is de huidige camera de enige? Dan is er niets te wisselen — dat is een
+      // ander verhaal dan "het wisselen is mislukt" en verdient een eigen tekst.
+      if (cams.length === 1) {
+        setFlipNote('onlyOneCamera', true);
+        toast(T('onlyOneCamera'));
+        return;
+      }
+
+      // Kandidaten op volgorde: eerst de gewenste kant, dan camera's waarvan we
+      // de kant niet uit het label kunnen lezen, dan de rest. De camera waar we
+      // nu op staan valt af.
+      const isCurrent = (d) => (curId ? d.deviceId === curId : (!!cur.label && d.label === cur.label));
+      const others = cams.filter((d) => !isCurrent(d));
+      const wanted = [], unknown = [], rest = [];
+      others.forEach((d) => {
+        const side = camSideFromLabel(d.label);
+        if (side === wantSide) wanted.push(d);
+        else if (!side) unknown.push(d);
+        else rest.push(d);
+      });
+      const queue = wanted.concat(unknown, rest);
+
+      // Zonder bruikbare apparatenlijst valt er niets gericht te kiezen; dan
+      // proberen we alsnog een strikte voor/achter-flip.
+      if (!queue.length) {
+        const ok = await flipCamera();
+        if (!ok) {
+          // Alleen "één camera" melden als we dat écht weten. Bij een lege lijst
+          // (enumerateDevices geweigerd of niet beschikbaar) weten we het niet,
+          // en dan is "wisselen mislukt" het eerlijke antwoord.
+          const only = cams.length === 1;
+          setFlipNote(only ? 'onlyOneCamera' : 'cameraSwitchFailed', true);
+          toast(T(only ? 'onlyOneCamera' : 'cameraSwitchFailed'));
+        }
+        return;
+      }
+
+      // Oude spoor éérst loskoppelen én vrijgeven — anders geeft iOS/iPadOS
+      // gewoon de al bezette camera terug in plaats van de gevraagde.
+      const prev = { id: curId, side: curSide };
+      const sender = await detachVideoSender();
+      try { localStream.removeTrack(oldTrack); } catch (e) {}
+      try { oldTrack.stop(); } catch (e) {}
+
+      let done = false;
+      for (let i = 0; i < queue.length && !done; i++) {
+        const nt = await openCam({ deviceId: { exact: queue[i].deviceId } });
+        if (!nt) continue;
+        // Verifiëren: kregen we écht een ander apparaat? Zo niet, dan dit spoor
+        // netjes opruimen en de volgende kandidaat proberen.
+        if (sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} continue; }
+        await attachVideoTrack(nt, sender);
+        done = true;
+      }
+      if (done) {
+        setFlipNote('cameraSwitched');
+        toast(T('cameraSwitched'));
+      } else {
+        // Niets gelukt: oorspronkelijke camera terughalen, beeld mag niet zwart
+        // blijven — en eerlijk melden dat er niet gewisseld is.
+        await restoreCamera(prev, sender);
+        setFlipNote('cameraSwitchFailed', true);
+        toast(T('cameraSwitchFailed'));
+      }
+    } finally {
+      switchingCam = false;
+    }
+  }
+  // Strikte voor/achter-flip. `facingMode: { exact }` is een eis in plaats van
+  // een voorkeur: een toestel zonder die kant geeft nu een fout in plaats van
+  // stilletjes dezelfde camera. Geeft true terug als er echt gewisseld is.
+  async function flipCamera() {
+    if (!localStream) return false;
+    const oldTrack = localStream.getVideoTracks()[0];
+    const cur = trackIdent(oldTrack);
+    const curSide = cur.facing || camSideFromLabel(cur.label) || facing;
+    const wantSide = curSide === 'user' ? 'environment' : 'user';
+    const prev = { id: cur.id || babyCamId || '', side: curSide };
+    const sender = await detachVideoSender();
+    if (oldTrack) {
+      try { localStream.removeTrack(oldTrack); } catch (e) {}
+      try { oldTrack.stop(); } catch (e) {}
+    }
+    let nt = await openCam({ facingMode: { exact: wantSide } });
+    if (nt && oldTrack && sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} nt = null; }
+    if (!nt) { await restoreCamera(prev, sender); return false; }
+    await attachVideoTrack(nt, sender);
+    return true;
+  }
+  // Nieuwe media-oproep naar de al toegelaten ouderunit. Wordt aangeroepen als
+  // die meldt dat er geen beeld binnenkomt. De oude oproep wordt eerst netjes
+  // gesloten, anders blijven er twee verbindingen naast elkaar staan.
+  let hercallBezig = false;
+  async function hercallOuder() {
+    if (role !== 'baby' || hercallBezig || shuttingDown) return;
+    if (!approvedPeer || !localStream || !peer) return;
+    hercallBezig = true;
+    try {
+      zetMediaPc(null); // oude oproep netjes sluiten én zijn bewaking losmaken
+      const call = peer.call(approvedPeer, localStream, CALL_OPTS);
+      if (call) {
+        zetMediaPc(call.peerConnection || mediaPc);
+        setTimeout(() => tuneAudioSender(call.peerConnection), 1000);
+      }
+    } catch (e) {
+    } finally {
+      setTimeout(() => { hercallBezig = false; }, 2000);
+    }
+  }
+
+  // Herstel van camera/microfoon als het besturingssysteem het spoor hard
+  // beëindigt (bv. na lang op de achtergrond of scherm-uit op sommige
+  // toestellen) — dezelfde aanpak als flipCamera(), maar automatisch
+  // getriggerd in plaats van door een tik van de gebruiker.
+  let recoveringVideo = false, recoveringAudio = false;
+  // Hoe lang een gedempt spoor mag blijven hangen voordat we de camera of
+  // microfoon écht opnieuw openen. Kort genoeg om een nacht niet in stilte
+  // te laten verstrijken, lang genoeg om een hapering van een seconde niet
+  // met een volledige heropening te beantwoorden.
+  const MUTE_HERSTEL_MS = window.BABYFOON_MUTE_HERSTEL || 4000;
+  let spoorGedempt = { audio: false, video: false };
+  let muteHerstelTimers = { audio: null, video: null };
+  function watchTrackEnd(track, kind) {
+    track.onended = () => { if (!shuttingDown && role === 'baby') recoverBabyTrack(kind); };
+    // Scherm-uit, een inkomend telefoongesprek of een app-wissel beëindigt
+    // een spoor meestal NIET — het wordt "muted": het leeft nog, maar er
+    // komen geen samples meer door. Zonder deze afhandeling hoorde de
+    // ouderunit stilte zonder dat iemand het merkte, en dat is voor een
+    // babyfoon het gevaarlijkste geval dat er is.
+    track.onmute = () => { if (!shuttingDown && role === 'baby') meldSpoorGedempt(kind, true); };
+    track.onunmute = () => { if (!shuttingDown && role === 'baby') meldSpoorGedempt(kind, false); };
+    // Was het spoor al gedempt op het moment dat we het gingen bewaken, dan
+    // komt er geen event meer; dan meteen zelf melden.
+    if (track.muted) meldSpoorGedempt(kind, true);
+  }
+  // Meldt een onderbreking aan de babyunit zelf én aan de ouderunit, en
+  // plant een echte heropening als het spoor gedempt blijft. iOS laat een
+  // spoor soms voorgoed gedempt staan; alleen een nieuwe getUserMedia haalt
+  // het geluid dan terug.
+  function meldSpoorGedempt(kind, gedempt) {
+    if (role !== 'baby') return;
+    gedempt = !!gedempt;
+    if (spoorGedempt[kind] === gedempt) return;
+    spoorGedempt[kind] = gedempt;
+    sendControl({ cmd: 'streamState', kind: kind, muted: gedempt });
+    if (kind === 'audio') zetBabyConnSub(gedempt ? 'micInterrupted' : 'excellentConn');
+    if (muteHerstelTimers[kind]) { clearTimeout(muteHerstelTimers[kind]); muteHerstelTimers[kind] = null; }
+    if (!gedempt) return;
+    planMuteHerstel(kind);
+  }
+  // Plant het écht heropenen van camera of microfoon, met wachttijd. Apart
+  // van meldSpoorGedempt() omdat het ook ná terugkeer uit de achtergrond
+  // nodig is: raakt een spoor gedempt terwijl de pagina verborgen is, dan
+  // verloopt deze timer zonder iets te doen (heropenen heeft op de
+  // achtergrond geen zin) en blijft `spoorGedempt` op waar staan. Een
+  // volgende melding komt er dan niet meer — de toestand is immers niet
+  // veranderd — en zonder deze herplanning bleef het spoor voorgoed stil.
+  function planMuteHerstel(kind) {
+    if (muteHerstelTimers[kind]) return; // er staat er al een
+    muteHerstelTimers[kind] = setTimeout(() => {
+      muteHerstelTimers[kind] = null;
+      if (shuttingDown || role !== 'baby') return;
+      if (!spoorGedempt[kind]) return;
+      // Alleen heropenen zodra de pagina weer zichtbaar is: op de achtergrond
+      // geeft getUserMedia toch een spoor terug dat meteen weer gedempt is.
+      if (document.visibilityState !== 'visible') return;
+      recoverBabyTrack(kind);
+    }, MUTE_HERSTEL_MS);
+  }
+  // Het spoor dat in localStream zit is aan audiozijde de UITGANG van de
+  // versterkingstrap (een MediaStreamDestination). Die raakt nooit gedempt,
+  // ook niet als de echte microfoon stilvalt. De bewaking moet daarom op het
+  // RUWE microfoonspoor zitten dat de keten voedt.
+  function bewaakRuweMic() {
+    if (!micChain || !micChain.ruw) return;
+    watchTrackEnd(micChain.ruw, 'audio');
+  }
+  async function recoverBabyTrack(kind) {
+    if (shuttingDown || role !== 'baby' || !localStream) return;
+    if (kind === 'video' ? recoveringVideo : recoveringAudio) return;
+    // Niet doorheen een lopende camerawissel fietsen: die stopt zelf even het
+    // oude spoor, wat hier anders als "camera weggevallen" gelezen wordt.
+    if (kind === 'video' && switchingCam) return;
+    if (kind === 'video') recoveringVideo = true; else recoveringAudio = true;
+    try {
+      if (kind === 'video') {
+        // Het weggevallen spoor eerst van de zender halen en opruimen: het is al
+        // 'ended' en de camera moet vrij zijn vóór we opnieuw aanvragen (zie
+        // detachVideoSender).
+        const sender = await detachVideoSender();
+        const ot = localStream.getVideoTracks()[0];
+        if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+        // Eerst dezelfde camera terug die we hadden (deviceId is exact), dan
+        // pas de zwakkere voorkeuren — zo komt de gebruiker niet na een
+        // hapering ineens op een andere lens uit.
+        let nt = babyCamId ? await openCam({ deviceId: { exact: babyCamId } }) : null;
+        if (!nt) nt = await openCam({ facingMode: facing });
+        if (!nt) nt = await openCam(true);
+        if (!nt) throw new Error('no camera');
+        await attachVideoTrack(nt, sender);
+        // Vers spoor: was er een onderbreking gemeld, dan is die nu voorbij —
+        // ook als er nooit een 'unmute' langskwam (iOS levert die lang niet
+        // altijd). Was er niets gemeld, dan hoort er ook nu niets gemeld te
+        // worden.
+        if (spoorGedempt.video) meldSpoorGedempt('video', false);
+        toast(T('cameraRecovered'));
+        return;
+      }
+      // ---- microfoon ----
+      // Eerst álles dicht wat nog op de microfoon zit. Dat is niet netjesheid
+      // maar noodzaak: iOS geeft een tweede opname pas vrij als de eerste
+      // écht gestopt is, en tot dat moment krijg je een spoor terug dat
+      // meteen weer gedempt is. Zowel de UITGANG van de versterkingstrap (die
+      // in localStream zit) als het RUWE spoor dat de trap voedt moeten weg,
+      // plus de eventuele extra microfoons.
+      const oudRuw = micChain ? micChain.ruw : null;
+      const ot = localStream.getTracks().find((t) => t.kind === kind);
+      // De microfoon-uit-keuze van de persoon bij het bedje mag een herstel
+      // niet stilzwijgend terugdraaien.
+      const wasAan = ot ? ot.enabled : micOn;
+      sloopMicKeten();
+      stopExtraMicrofoons();
+      if (ot) { try { localStream.removeTrack(ot); ot.stop(); } catch (e) {} }
+      if (oudRuw && oudRuw !== ot) { try { oudRuw.stop(); } catch (e) {} }
+      // Onbewerkte microfoon, net als bij het openen: geen AGC/ruisonderdrukking,
+      // anders klinkt de babyunit na een herstel ineens anders dan daarvoor.
+      const ns = await getMedia({ audio: MIC_MONITOR, video: false });
+      const nt = ns.getAudioTracks()[0];
+      if (!nt) throw new Error('no mic');
+      nt.enabled = wasAan;
+      const sender = mediaPc && mediaPc.getSenders().find((s) => s.track && s.track.kind === kind);
+      if (sender) { try { await sender.replaceTrack(nt); } catch (e) {} }
+      localStream.addTrack(nt);
+      watchTrackEnd(nt, kind);
+      duplexOn = false; // verse microfoon = weer onbewerkt
+      // Ook na een herstel weer versterken, anders is de babyunit ineens
+      // veel zachter dan daarvoor. En net als bij het openen doen álle
+      // microfoons van het toestel weer mee: hierboven zijn ze allemaal
+      // gesloten (dat moest voor iOS), dus zonder deze regel luistert de
+      // babyunit na één onderbreking de rest van de nacht met één microfoon
+      // en valt het geluid uit de rest van de kamer weg.
+      const extra = await openExtraMicrofoons(nt);
+      const k = bouwMicKeten(nt, extra);
+      if (k) {
+        micChain = k;
+        try { localStream.removeTrack(nt); localStream.addTrack(k.uit); } catch (e) {}
+        try { k.uit.enabled = wasAan; } catch (e) {}
+        const z = mediaPc && mediaPc.getSenders().find((x) => x.track && x.track.kind === 'audio');
+        if (z) { try { await z.replaceTrack(k.uit); } catch (e) {} }
+        startMicGainRegeling();
+        bewaakRuweMic();
+      }
+      // Het verse spoor is per definitie niet meer gedempt; de ouderunit mag
+      // de waarschuwing weer weghalen.
+      if (spoorGedempt[kind]) meldSpoorGedempt(kind, false);
+      toast(T('cameraRecovered'));
+    } catch (e) {
+      // Het oude spoor is hierboven al gesloten — dat moest, anders geeft
+      // iOS geen nieuwe vrij. Blijft het daardoor bij niets, dan komt er ook
+      // geen 'ended' of 'mute' meer die ons wakker schudt: dus zelf opnieuw
+      // proberen. Een babyfoon hoort te blijven proberen zolang de sessie
+      // loopt; het toestel kan een minuut later wél meewerken.
+      if (!shuttingDown && role === 'baby' && localStream &&
+          !localStream.getTracks().some((t) => t.kind === kind && t.readyState === 'live')) {
+        setTimeout(() => { recoverBabyTrack(kind); }, 2000);
+      }
+    } finally {
+      if (kind === 'video') recoveringVideo = false; else recoveringAudio = false;
+    }
+  }
+  // ---- camerakeuze & LED-lampje (bestuurd vanaf de ouderunit) ----
+  // De babyunit somt zijn eigen camera's op en meldt ze aan de ouder; de
+  // ouder kiest er een. Het LED-lampje (zaklamp) op ondersteunde toestellen
+  // gaat via de torch-capability van het videospoor. Sterkte is geen web-
+  // capability: torch is enkel aan/uit.
+  let torchOn = false;
+  async function reportCameras() {
+    if (role !== 'baby' || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const cams = devs.filter((d) => d.kind === 'videoinput').map((d) => ({ id: d.deviceId, label: d.label || '' }));
+      // Valt terug op de camera die we zelf geopend hebben: Safari laat
+      // deviceId in track.getSettings() nogal eens weg, en dan zou de ouderunit
+      // de verkeerde regel in de keuzelijst aanwijzen.
+      const vt = localStream && localStream.getVideoTracks()[0];
+      const activeId = trackIdent(vt).id || babyCamId || '';
+      sendControl({ cmd: 'cameraList', cameras: cams, activeId: activeId });
+    } catch (e) {}
+  }
+  function reportTorch() {
+    if (role !== 'baby') return;
+    let supported = false;
+    const vt = localStream && localStream.getVideoTracks()[0];
+    if (vt && vt.getCapabilities) { try { supported = !!vt.getCapabilities().torch; } catch (e) {} }
+    if (!supported) torchOn = false;
+    sendControl({ cmd: 'torchState', supported: supported, on: torchOn });
+  }
+  // De ouderunit kiest gericht één camera uit de gemelde lijst. Zelfde regels
+  // als babyCycleCamera: oude spoor éérst vrijgeven, dan pas de nieuwe camera
+  // aanvragen met { exact: deviceId }, en achteraf verifiëren dat er echt een
+  // ánder apparaat actief werd. opts.silentFail onderdrukt de foutmelding.
+  // Geeft true terug als de camera echt gewisseld is.
+  async function selectCamera(deviceId, opts) {
+    opts = opts || {};
+    if (role !== 'baby' || !localStream || !deviceId || switchingCam) return false;
+    const oldTrack = localStream.getVideoTracks()[0];
+    const cur = trackIdent(oldTrack);
+    // Al op de gevraagde camera → niets te doen (en zeker niet het spoor
+    // onderbreken voor een wissel naar hetzelfde apparaat).
+    if (cur.id && cur.id === deviceId) { reportCameras(); reportTorch(); return true; }
+    switchingCam = true;
+    try {
+      const prev = { id: cur.id || babyCamId || '', side: cur.facing || camSideFromLabel(cur.label) || facing };
+      const sender = await detachVideoSender();
+      if (oldTrack) {
+        try { localStream.removeTrack(oldTrack); } catch (e) {}
+        try { oldTrack.stop(); } catch (e) {}
+      }
+      let nt = await openCam({ deviceId: { exact: deviceId } });
+      if (nt && oldTrack && sameCamera(trackIdent(nt), cur)) { try { nt.stop(); } catch (e) {} nt = null; }
+      if (!nt) {
+        await restoreCamera(prev, sender);
+        if (!opts.silentFail) { setFlipNote('cameraSwitchFailed', true); toast(T('cameraSwitchFailed')); }
+        reportCameras();
+        reportTorch();
+        return false;
+      }
+      await attachVideoTrack(nt, sender);
+      setFlipNote('cameraSwitched');
+      toast(T('cameraSwitched'));
+      return true;
+    } finally {
+      switchingCam = false;
+    }
+  }
+  async function setTorch(on) {
+    if (role !== 'baby' || !localStream) return;
+    const vt = localStream.getVideoTracks()[0];
+    try {
+      await vt.applyConstraints({ advanced: [{ torch: !!on }] });
+      torchOn = !!on;
+      toast(torchOn ? T('ledOn') : T('ledOff'));
+    } catch (e) {
+      torchOn = false;
+    }
+    reportTorch();
   }
   async function reportBattery(once) {
     const setB = (txt, sub) => { const b1 = $('bBatt'); if (b1) b1.textContent = txt; const s = $('bBattSub'); if (s && sub != null) s.textContent = sub; };
@@ -1102,18 +3493,175 @@
     } catch (e) { setB('N/A', ''); }
   }
   // ------------------------------------------------------------------ wake lock
+  // Houdt het scherm wakker zodat de camera/microfoon niet door het
+  // besturingssysteem wordt uitgeschakeld zodra het scherm op slot gaat.
+  // Native Wake Lock API waar beschikbaar; anders de klassieke "stil
+  // filmpje afspelen"-truc als terugval — dat werkt ook op oudere
+  // Android-webviews, desktop Firefox en Safari vóór 16.4, die de Wake
+  // Lock API niet kennen. (Kan het hele browser-tabblad op de achtergrond
+  // gaan — bv. wisselen naar een andere app — dan is er geen webAPI die
+  // dat kan voorkomen; zie de uitgebreide babyTip-tekst hieronder.)
   let wl = null;
-  async function enableWakeLock() {
+  let noSleepVideo = null;
+  let wakeLockWatchStarted = false;
+  let noSleepTekenTimer = null;
+  function startNoSleepFallback() {
+    if (noSleepVideo) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2; canvas.height = 2;
+      const ctx = canvas.getContext('2d');
+      if (!ctx || !canvas.captureStream) return;
+      ctx.fillRect(0, 0, 2, 2);
+      const stream = canvas.captureStream(2);
+      const v = document.createElement('video');
+      // muted MOET ook als attribuut staan: WebKit beoordeelt de
+      // autoplay-toestemming op het attribuut, niet op de eigenschap. Zonder
+      // dat weigert play() en houdt dit filmpje dus helemaal niets wakker.
+      v.muted = true;
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+      v.setAttribute('autoplay', '');
+      v.loop = true;
+      v.style.cssText = 'position:fixed;left:-1px;top:-1px;width:1px;height:1px;opacity:0.01;pointer-events:none;';
+      v.srcObject = stream;
+      document.body.appendChild(v);
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+      noSleepVideo = v;
+      // Een canvas dat nooit verandert levert na het eerste beeldje geen
+      // frames meer; de browser ziet dan geen "spelende video" en laat het
+      // scherm alsnog uitvallen. Daarom blijven we tekenen zolang de truc
+      // nodig is — twee gevulde pixels per halve seconde, verwaarloosbaar.
+      if (noSleepTekenTimer) clearInterval(noSleepTekenTimer);
+      let aan = false;
+      noSleepTekenTimer = setInterval(() => {
+        if (!noSleepVideo) return;
+        aan = !aan;
+        try { ctx.fillStyle = aan ? '#010101' : '#000000'; ctx.fillRect(0, 0, 2, 2); } catch (e) {}
+        // Een tabwissel pauzeert het filmpje; bij terugkeer weer starten.
+        if (noSleepVideo.paused) { try { const q = noSleepVideo.play(); if (q && q.catch) q.catch(() => {}); } catch (e) {} }
+      }, 500);
+    } catch (e) {}
+  }
+  function stopNoSleepFallback() {
+    if (noSleepTekenTimer) { clearInterval(noSleepTekenTimer); noSleepTekenTimer = null; }
+    if (!noSleepVideo) return;
+    try { noSleepVideo.pause(); noSleepVideo.remove(); } catch (e) {}
+    noSleepVideo = null;
+  }
+  async function requestWakeLock() {
     try {
       if ('wakeLock' in navigator) {
         wl = await navigator.wakeLock.request('screen');
-        document.addEventListener('visibilitychange', async () => {
-          if (document.visibilityState === 'visible' && !wl) {
-            try { wl = await navigator.wakeLock.request('screen'); } catch (e) {}
-          }
+        wl.addEventListener('release', () => { wl = null; });
+        stopNoSleepFallback();
+        return;
+      }
+    } catch (e) { /* bv. tabblad (nog) niet zichtbaar — val terug op de video-truc */ }
+    startNoSleepFallback();
+  }
+  async function enableWakeLock() {
+    await requestWakeLock();
+    if (wakeLockWatchStarted) return;
+    wakeLockWatchStarted = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+    // pageshow/focus als vangnet: oudere iOS Safari vuurt visibilitychange
+    // niet altijd, en zonder heraanvraag valt het scherm daarna alsnog uit.
+    window.addEventListener('pageshow', () => { if (!wl) requestWakeLock(); });
+    window.addEventListener('focus', () => { if (!wl) requestWakeLock(); });
+    // Periodieke gezondheidscheck: sommige browsers/energiestanden laten de
+    // lock los zonder dat er een zichtbaarheidswijziging plaatsvond.
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && !wl) requestWakeLock();
+    }, 20000);
+  }
+
+  // ------------------------------------------------------------- scherm uit
+  // Wat de gebruiker wil ("scherm uit, geluid blijft") kan een website op
+  // iOS niet echt: zodra het toestel vergrendelt of je naar een andere app
+  // wisselt, zet WebKit de pagina stil — geen enkele web-API kan dat
+  // tegenhouden. Wat wél kan is het scherm zwart máken terwijl de pagina op
+  // de voorgrond blijft draaien. Beeld weg, geen licht in de kamer, en
+  // camera/microfoon/geluid lopen gewoon door. De wake lock blijft daarbij
+  // juist aan: valt het scherm alsnog écht uit, dan stopt het geluid.
+  let blackoutOn = false;
+  function setBlackout(aan) {
+    const el = $('blackout');
+    if (!el) return;
+    blackoutOn = !!aan;
+    el.classList.toggle('hidden', !blackoutOn);
+    if (blackoutOn) {
+      // De hint opnieuw laten uitdoven bij elke keer aanzetten.
+      const h = $('blackoutHint');
+      if (h) { h.style.animation = 'none'; void h.offsetWidth; h.style.animation = ''; }
+      requestWakeLock();
+      try { el.focus(); } catch (e) {}
+    }
+    // Nooit stilte als bijwerking: geluid en meter expliciet doorstarten.
+    hervatWeergave();
+  }
+  // Eén plek voor "speel alsjeblieft weer af". Wordt aangeroepen na elke
+  // terugkeer naar de voorgrond en bij het aan/uit zetten van scherm-uit.
+  // iOS weigert de eerste play() na een onderbreking regelmatig, dus een
+  // paar korte herkansingen.
+  function hervatWeergave() {
+    try {
+      if (audioCtx && audioCtx.state === 'suspended') {
+        const r = audioCtx.resume();
+        if (r && r.catch) r.catch(() => {});
+      }
+    } catch (e) {}
+    if (role !== 'parent') return;
+    const v = $('video');
+    if (!v) return;
+    let pogingen = 0;
+    const speel = () => {
+      if (shuttingDown) return;
+      try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+      if (++pogingen < 4 && v.paused) setTimeout(speel, 400);
+    };
+    speel();
+  }
+
+  // ------------------------------------------------------------ MediaSession
+  // Op een vergrendelscherm of in het bedieningspaneel verschijnt hiermee
+  // "BabyPhone.online" met een pauzeknop in plaats van niets. Belangrijk:
+  // pauze/stop DEMPEN alleen — de verbinding met de babyunit blijft staan.
+  // Een babyfoon die van de verbinding valt omdat er per ongeluk op een
+  // koptelefoonknop werd gedrukt is precies wat je niet wilt.
+  function updateMediaSession(spelend) {
+    if (role !== 'parent') return;
+    if (!('mediaSession' in navigator)) return;
+    const ms = navigator.mediaSession;
+    try {
+      if (window.MediaMetadata) {
+        ms.metadata = new MediaMetadata({
+          title: 'BabyPhone.online',
+          artist: currentCode ? T('room') + ' ' + currentCode : T('parentUnit'),
+          album: T('liveAudio'),
         });
       }
     } catch (e) {}
+    try { ms.playbackState = spelend ? 'playing' : 'paused'; } catch (e) {}
+    if (updateMediaSession.gekoppeld) return;
+    updateMediaSession.gekoppeld = true;
+    const zet = (naam, fn) => { try { ms.setActionHandler(naam, fn); } catch (e) {} };
+    zet('play', () => {
+      muted = false;
+      if (!volume) volume = 60;
+      const sv = $('setVolume'); if (sv) sv.value = String(volume);
+      applyVolume();
+      hervatWeergave();
+    });
+    const demp = () => { muted = true; applyVolume(); };
+    zet('pause', demp);
+    zet('stop', demp);
+    // Spoelen slaat nergens op bij een live stream; expliciet leegmaken zodat
+    // het besturingssysteem er geen knoppen voor toont.
+    ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'].forEach((n) => zet(n, null));
   }
 
   // ------------------------------------------------------------------ i18n
@@ -1133,73 +3681,68 @@
         renderChips();
         renderPlaylist();
         renderEventLog();
+        renderCameraSelect();
+        renderTorchUI();
       } else if (role === 'baby' && babyStarted) {
         if (controlConn && controlConn.open) set('bConn', T('connected'));
+        // I18n.apply() heeft de tegels net op hun standaardtekst gezet; hier
+        // komt de werkelijke stand terug (in de nieuwe taal).
+        renderBabyTiles();
       }
+      zetDonatieknop();
     });
   }
 
+  // ------------------------------------------------------------ donaties
+  // De donatieknop in de bovenbalk wijst naar een Stripe-betaalpagina. De
+  // URL staat op één plek in index.html (BABYFOON_DONATE_URL). Is die niet
+  // ingevuld, dan blijft de knop verborgen: een donatieknop die naar een
+  // dode pagina leidt kost meer vertrouwen dan hij oplevert.
+  //
+  // Stripe kent zijn eigen lijst met talen. Staat de gekozen sitetaal daar
+  // niet in, dan sturen we géén locale mee en kiest Stripe zelf op basis van
+  // de browser — een onbekende waarde meesturen zou de betaalpagina laten
+  // struikelen, en dat is het laatste wat je wilt op het moment dat iemand
+  // wíl doneren.
+  const STRIPE_TALEN = [
+    'bg', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fil', 'fr', 'hr',
+    'hu', 'id', 'it', 'ja', 'ko', 'lt', 'lv', 'ms', 'mt', 'nb', 'nl', 'pl',
+    'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'vi', 'zh',
+  ];
+  function zetDonatieknop() {
+    const knop = $('donateBtn');
+    if (!knop) return;
+    let url = '';
+    try { url = String(window.BABYFOON_DONATE_URL || '').trim(); } catch (e) {}
+    if (!url) { knop.classList.add('hidden'); return; }
+    let taal = '';
+    try { taal = I18n.current; } catch (e) {}
+    if (taal && STRIPE_TALEN.indexOf(taal) >= 0) {
+      url += (url.indexOf('?') >= 0 ? '&' : '?') + 'locale=' + encodeURIComponent(taal);
+    }
+    knop.setAttribute('href', url);
+    knop.classList.remove('hidden');
+  }
+  // Bewust hier en niet hierboven bij de i18n-opzet: STRIPE_TALEN is een
+  // `const` en zou daar nog in zijn dode zone staan.
+  zetDonatieknop();
+
+  // ------------------------------------------------------ browser-ondersteuning
+  // Zonder WebRTC (RTCPeerConnection + getUserMedia) kan de app helemaal
+  // niets — toon dat direct en duidelijk, in plaats van pas te falen zodra
+  // iemand een rol kiest. Geen polyfill lost dit op: browsers die deze
+  // API's nooit hebben geïmplementeerd (bv. Internet Explorer) kunnen deze
+  // app niet draaien. Elke browser met WebRTC-steun (alle gangbare
+  // browsers vanaf ~2017: Chrome, Firefox, Safari, Edge, Samsung Internet,
+  // Opera, ook oudere versies) werkt gewoon.
+  const webrtcSupported = !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  if (!webrtcSupported) {
+    const bb = $('browserBlock');
+    if (bb) bb.classList.remove('hidden');
+    return; // de rest van de app (koppelen, dashboards) heeft WebRTC nodig
+  }
+
   // ------------------------------------------------------------------ wiring
-  // ------------------------------------------------------------- Plus (P2.2)
-  (function initPlusUI() {
-    if (!window.Plus) return;
-    const st = $('plusState'), up = $('plusUpgrade'), mg = $('plusManage'), rs = $('plusRestore');
-    const cfg = Plus.config;
-    const paint = () => {
-      if (!st) return;
-      if (Plus.isActive()) {
-        st.textContent = T('plusActive'); st.classList.add('ok'); st.classList.remove('hidden');
-        if (up) up.classList.add('hidden');
-        if (mg && cfg && cfg.portalUrl) mg.classList.remove('hidden');
-        if (rs) rs.classList.add('hidden');
-      } else if (Plus.configured()) {
-        st.classList.add('hidden');
-        if (up) up.classList.remove('hidden');
-        if (rs && cfg.verifyUrl) rs.classList.remove('hidden');
-      } // niet geconfigureerd: rustige "binnenkort"-status, niets kapot
-    };
-    if (up) up.onclick = async () => {
-      const email = prompt(T('plusEmailQ'));
-      if (!email) return;
-      try {
-        const r = await fetch(cfg.checkoutUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) });
-        const d = await r.json();
-        if (d && d.url) location.href = d.url; else toast(T('plusError'));
-      } catch (e) { toast(T('plusError')); }
-    };
-    if (mg) mg.onclick = async () => {
-      const rec = Plus.read();
-      const email = (rec && rec.email) || prompt(T('plusEmailQ'));
-      if (!email) return;
-      try {
-        const r = await fetch(cfg.portalUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) });
-        const d = await r.json();
-        if (d && d.url) location.href = d.url; else toast(T('plusError'));
-      } catch (e) { toast(T('plusError')); }
-    };
-    if (rs) rs.onclick = async () => {
-      const email = prompt(T('plusEmailQ'));
-      if (!email) return;
-      const ok = await Plus.restore(email).catch(() => false);
-      toast(ok ? T('plusActive') : T('plusNotFound'));
-      paint();
-    };
-    // Terug uit Stripe Checkout (?plus_session=…): token ophalen met de sessie.
-    try {
-      const q = new URLSearchParams(location.search);
-      const sess = q.get('plus_session');
-      if (sess && cfg && cfg.verifyUrl) {
-        fetch(cfg.verifyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sess }) })
-          .then((r) => r.json())
-          .then((d) => { if (d && d.token) { Plus.store(d.token); toast(T('plusActive')); paint(); } })
-          .catch(() => {});
-        q.delete('plus_session');
-        const rest = q.toString();
-        history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
-      }
-    } catch (e) {}
-    paint();
-  })();
 
   // Zijbalknavigatie: elke knop toont zijn eigen deelweergave.
   const VIEW_IDS = { monitor: 'dviewMonitor', talk: 'dviewTalk', lullabies: 'dviewLullabies', night: 'dviewNight', alerts: 'dviewAlerts', log: 'dviewLog', settings: 'dviewSettings' };
@@ -1234,6 +3777,10 @@
     $('parentOfferInput').focus();
     if ($('parentScanBtn')) $('parentScanBtn').click();
   };
+  // Decoratieve QR op het startscherm (er is nog geen actieve kamercode vóór
+  // het koppelen); encodeert de eigen site-URL zodat scannen nooit stukloopt.
+  // De knop op de landingspagina opent de scanner; daar hoort een scan-icoon,
+  // geen QR-code van de homepage (die was klein, korrelig en nergens voor nodig).
   $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
@@ -1248,6 +3795,12 @@
   $('parentOfferInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') startParentConnect(); });
   // QR groot maken door erop te tikken (veel makkelijker te scannen)
   $('babyQR').onclick = () => openQrZoom($('babyQR').dataset.code);
+  // Dezelfde vergroting op het babydashboard. Dáár blijft de babyunit de rest
+  // van de nacht op staan en is de QR juist kleiner getekend, dus daar is
+  // vergroten het nuttigst. De keydown-afhandelaar onderaan dit bestand pakt
+  // Enter en spatie al op voor [role="button"]:not(button).
+  const dashQr = $('babyDashQR');
+  if (dashQr) dashQr.onclick = () => openQrZoom(dashQr.dataset.code);
   $('qrZoomClose').onclick = closeQrZoom;
   $('qrZoom').onclick = (e) => { if (e.target === $('qrZoom') || e.target === $('qrZoomClose')) closeQrZoom(); };
   $('parentScanBtn').onclick = () => {
@@ -1259,15 +3812,49 @@
     });
   };
 
-  // Gescande QR met #code opent de app als ouder en verbindt automatisch.
+  // Gescande QR opent de app als ouder en verbindt automatisch.
+  // De QR bevat "#CODE.token": de korte kamercode plus het toegangstoken.
+  // Een oudere QR (alleen "#CODE") blijft ook werken; dan vraagt de babyunit
+  // om toestemming, precies zoals bij handmatig intypen.
+  laadEigenIce();
+
   (function autoJoinFromHash() {
     const h = (location.hash || '').replace(/^#/, '').trim();
-    if (h && /^[A-Za-z0-9]{4,12}$/.test(h)) {
-      role = 'parent';
-      showScreen('screenPairParent');
-      $('parentOfferInput').value = h.toUpperCase();
-      startParentConnect(h);
-    }
+    if (!h) return;
+    if (!/^[A-Za-z0-9]{4,12}(\.[A-Za-z0-9]{8,64})?$/.test(h)) return;
+    role = 'parent';
+    showScreen('screenPairParent');
+    // In het invoerveld hoort alleen de leesbare code, niet het token.
+    $('parentOfferInput').value = h.split('.')[0].toUpperCase();
+    startParentConnect(h);
+  })();
+
+  /**
+   * Vulling van de schuifregelaars.
+   *
+   * De browser tekende het spoor in zijn eigen kleur — op dit lichte thema een
+   * bijna zwarte balk dwars door de instellingen. Met een eigen spoor is die
+   * weg, maar dan verdwijnt ook het gekleurde deel dat laat zien hoe ver de
+   * regelaar staat. Die stand komt hier terug als CSS-variabele.
+   *
+   * Puur presentatie: raakt geen enkele waarde of functie aan.
+   */
+  (function volgSchuifvulling() {
+    const bij = (el) => {
+      if (!el) return;
+      const min = +el.min || 0;
+      const max = el.max === '' ? 100 : +el.max;
+      const pct = max > min ? ((+el.value - min) / (max - min)) * 100 : 0;
+      el.style.setProperty('--vulling', pct.toFixed(1) + '%');
+    };
+    const alle = () => document.querySelectorAll('.set-row input[type="range"]').forEach(bij);
+    document.addEventListener('input', (e) => {
+      if (e.target && e.target.matches && e.target.matches('.set-row input[type="range"]')) bij(e.target);
+    });
+    alle();
+    // De instellingen staan in een verborgen deelweergave; bij het openen van
+    // een weergave nog eens langs, zodat de vulling ook daar meteen klopt.
+    document.querySelectorAll('.dnav').forEach((b) => b.addEventListener('click', () => setTimeout(alle, 0)));
   })();
 
   // ---------------------------------------------------------- toegankelijkheid
@@ -1282,12 +3869,12 @@
     }
   });
   // aria-checked meebewegen met de visuele switch-status.
+  //
+  // Bewust ÁLLE schakelrijen bijwerken en niet alleen de aangetikte: één tik op
+  // "Camera" zet ook "Alleen geluid" en "Privacyscherm" om, en die twee rijen
+  // bleven anders op hun oude aria-checked staan.
   document.addEventListener('click', (e) => {
-    const row = e.target && e.target.closest && e.target.closest('[role="switch"]');
-    if (row) {
-      const sw = row.querySelector('.switch');
-      if (sw) row.setAttribute('aria-checked', sw.classList.contains('on') ? 'true' : 'false');
-    }
+    if (e.target && e.target.closest && e.target.closest('[role="switch"]')) syncSwitchRows();
   });
 
   document.addEventListener('pointerdown', () => {
@@ -1295,8 +3882,106 @@
     const v = $('video'); if (v) v.play().catch(() => {});
   }, { once: true });
 
+  // Tik (of Enter/spatie via de toetsenbord-afhandelaar hierboven) op het
+  // zwarte scherm haalt het beeld terug. Ook Escape, want dat is wat je
+  // op een computer probeert.
+  if ($('blackout')) $('blackout').onclick = () => setBlackout(false);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && blackoutOn) { e.preventDefault(); setBlackout(false); }
+  });
+
+  // ------------------------------------------------ voorgrond-wacht (herstel na scherm-uit/achtergrond)
+  // Mobiele browsers bevriezen timers en kunnen camera/mic onderbreken
+  // zodra het tabblad verborgen is (scherm op slot, even een andere app
+  // ervoor). Een lopende herverbindingspoging kan daardoor "vastzitten" in
+  // een oude staat. Bij terugkeer naar de voorgrond controleren we de
+  // echte status en grijpen we meteen in — in plaats van te wachten op een
+  // wachttijd die intussen zinloos is geworden. Dit is de directe fix voor
+  // "herverbinden blijft laden, geen beeld meer" na scherm-uit.
+  // Eén wake-moment levert in de praktijk meerdere gebeurtenissen op:
+  // visibilitychange, pageshow én focus komen vlak na elkaar binnen (op iOS
+  // soms nog vaker). Elk daarvan begon hier een compleet nieuwe koppelpoging
+  // — inclusief peer.destroy() van de poging die drie regels eerder gestart
+  // was. Zo maakte het aanzetten van het scherm van één herverbinding er vijf
+  // die elkaar allemaal ophieven: de app "bleef reconnecten" en kwam nergens.
+  // Eén controle per wake-moment is genoeg.
+  const HERVAT_SAMENVOEGTIJD = 1500;
+  let laatsteHervatCheck = 0;
+  function checkParentHealthOnResume() {
+    if (shuttingDown || role !== 'parent' || !parentStarted) return;
+    const nu = Date.now();
+    if (nu - laatsteHervatCheck < HERVAT_SAMENVOEGTIJD) return;
+    laatsteHervatCheck = nu;
+    // Nog nooit verbonden geweest en geen poging onderweg: laat de normale
+    // flow (of de expliciete mislukt-status met hertik-knop) met rust.
+    if (!wasConnected && !reconnectTimer && !connectTimer) return;
+    const pcOk = mediaPc && mediaPc.connectionState === 'connected';
+    // Ook een verbinding zónder beeld is gezond: bij "alleen geluid", een
+    // privacyscherm of camera-uit op de babyunit zijn er geen levende
+    // videosporen. Werd daar alleen op gekeken, dan gooide élke terugkeer uit
+    // de achtergrond zo'n verbinding weg en herverbond de app nodeloos —
+    // precies op het moment dat de ouder weer wilde luisteren.
+    const leeft = (l) => !!l && l.some((t) => t.readyState === 'live');
+    const trackOk = !!remoteStream &&
+      (leeft(remoteStream.getVideoTracks()) || leeft(remoteStream.getAudioTracks()));
+    const heartbeatOk = (nu - lastControlAt) < HEARTBEAT_TIMEOUT * 2;
+    if (pcOk && trackOk && heartbeatOk && !reconnectTimer) return; // gezond, niets doen
+    // Er loopt al een poging (connectTimer draait, er staat geen wachttijd
+    // meer voor): die zijn gang laten gaan. Hem afbreken en van voren af aan
+    // beginnen maakt herverbinden alleen maar trager — en op een toestel dat
+    // vaak van scherm wisselt kwam het daardoor nooit meer tot een verbinding.
+    if (connectTimer && !reconnectTimer) return;
+    clearConnectTimers();
+    reconnectAttempt = 0;
+    startParentConnect(currentCode, true);
+  }
+  function checkBabyHealthOnResume() {
+    if (shuttingDown || role !== 'baby' || !localStream) return;
+    // Naast de sporen ín localStream ook het ruwe microfoonspoor: dat zit in
+    // de versterkingstrap en is juist het spoor dat het toestel stilzet.
+    const sporen = localStream.getTracks().slice();
+    if (micChain && micChain.ruw && sporen.indexOf(micChain.ruw) < 0) sporen.push(micChain.ruw);
+    sporen.forEach((t) => {
+      // 'ended' = het toestel heeft camera/microfoon vrijgegeven. Dat komt
+      // niet vanzelf goed, dus meteen opnieuw openen.
+      if (t.readyState === 'ended') { recoverBabyTrack(t.kind); return; }
+      // 'muted' = het spoor leeft nog maar levert even niets (scherm-uit,
+      // andere app ervoor, inkomend gesprek). Vlak ná terugkeer uit de
+      // achtergrond staat een spoor vaak nog kort gedempt en komt het binnen
+      // een seconde vanzelf terug. Hier meteen alles afbreken en getUserMedia
+      // opnieuw aanroepen leverde dan een volledige heropening op die nergens
+      // voor nodig was — en bij mislukken een keten van herkansingen. Daarom
+      // langs dezelfde wachttijd als elke andere demping: blijft het spoor
+      // stil, dan wordt het alsnog heropend; komt het vanzelf terug, dan
+      // haalt de 'unmute'-afhandeling de geplande heropening weg.
+      //
+      // Eerst melden: is het 'mute'-event gemist (het toestel dempte terwijl
+      // de pagina bevroren was), dan staat de gedempt-status nog op onwaar en
+      // zou de geplande heropening zichzelf meteen afbreken. Stond die status
+      // al goed, dan doet dit niets en plant de regel erna de heropening.
+      if (t.muted) { meldSpoorGedempt(t.kind, true); planMuteHerstel(t.kind); }
+    });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      // Een AudioContext die opgeschort blijft na terugkeer uit de
+      // achtergrond bevriest de geluidsmeter en daarmee het huilalarm.
+      hervatWeergave();
+      checkParentHealthOnResume();
+      checkBabyHealthOnResume();
+    }
+  });
+  // Sommige (vooral oudere iOS Safari-)versies vuren visibilitychange niet
+  // altijd betrouwbaar; pageshow/focus als extra vangnet.
+  window.addEventListener('pageshow', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+  window.addEventListener('focus', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+
   window.addEventListener('pagehide', () => {
     shuttingDown = true;
+    try { stopBabyWatchers(); } catch (e) {}
+    try { stopBrokerHerstel(); } catch (e) {}
+    try { stopMediaWatchdog(); } catch (e) {}
+    try { clearConnectTimers(); } catch (e) {}
     if (recorder) try { recorder.stop(); } catch (e) {}
     if (peer) try { peer.destroy(); } catch (e) {}
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
