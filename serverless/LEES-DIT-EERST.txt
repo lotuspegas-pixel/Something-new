@@ -1,0 +1,199 @@
+BabyPhone.online — uploaden naar Hostinger
+==========================================
+
+INHOUD VAN DE DOWNLOAD
+----------------------
+De download bestaat uit 4 zip-bestanden, omdat het geheel te groot is voor
+een enkele bijlage. Ze horen bij elkaar:
+
+  1. BabyPhoneOnline-WEBSITE.zip   de complete website
+  2. BabyPhoneOnline-MUZIEK-1.zip  slaapliedjes (deel 1)
+  3. BabyPhoneOnline-MUZIEK-2.zip  slaapliedjes (deel 2)
+  4. BabyPhoneOnline-MUZIEK-3.zip  slaapliedjes (deel 3) + playlist.json
+
+Pak ze ALLEMAAL uit in DEZELFDE map. De drie muziekbestanden vullen samen
+de map "music" die naast index.html hoort te staan. Deel 3 bevat
+playlist.json; zonder dat bestand blijft de lijst met slaapliedjes leeg.
+
+Na het uitpakken ziet de map er zo uit:
+
+  index.html          <- de complete app (alles zit hierin)
+  .htaccess           <- serverinstellingen, zie hieronder
+  contact-send.php    <- verstuurt het contactformulier
+  privacy.html, terms.html, contact.html,
+  accessibility.html, how-it-works.html, blog.html
+  robots.txt, sitemap.xml, llms.txt, manifest.webmanifest
+  favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png,
+  og-image.jpg
+  assets/             <- afbeeldingen, merkbestanden, stylesheet
+  fonts/              <- lettertypes
+  music/              <- 9 slaapliedjes + playlist.json
+
+
+UPLOADEN
+--------
+1. Log in op Hostinger en open hPanel.
+2. Ga naar "Bestandsbeheer" (File Manager).
+3. Open de map  public_html
+4. Verwijder eventuele bestaande bestanden daarin (bijv. een standaard
+   index.html of default.php van Hostinger).
+5. Upload de HELE INHOUD van de uitgepakte map naar public_html.
+   Let op: de inhoud zelf, niet de map eromheen. index.html moet
+   rechtstreeks in public_html staan, dus:
+       public_html/index.html          GOED
+       public_html/website/index.html  FOUT
+
+
+BELANGRIJK: HTTPS IS VERPLICHT
+------------------------------
+Browsers geven ALLEEN toegang tot camera en microfoon via https://.
+Zonder HTTPS start de babyunit niet — dan blijft het scherm leeg.
+
+In hPanel: Beveiliging -> SSL -> installeer het gratis SSL-certificaat
+voor je domein. Dat is bij Hostinger gratis en duurt een paar minuten.
+
+Het meegeleverde .htaccess-bestand stuurt bezoekers daarna automatisch
+door van http:// naar https://.
+
+Ziet je bestandsbeheer het .htaccess-bestand niet? Zet in File Manager
+"verborgen bestanden tonen" aan (bestanden die met een punt beginnen zijn
+standaard verborgen).
+
+
+CONTROLEREN OF ALLES WERKT
+--------------------------
+1. Open https://jouwdomein.nl — je ziet de homepage.
+2. Klik "Start baby unit" op telefoon 1, geef toestemming voor camera
+   en microfoon. Je krijgt een kamercode en een QR-code.
+3. Open https://jouwdomein.nl op telefoon 2, klik "Connect as parent"
+   en scan de QR of typ de code.
+4. Je ziet en hoort nu live beeld en geluid.
+
+Test met twee APARTE apparaten. Twee tabbladen op hetzelfde toestel
+delen dezelfde camera en geven een misleidend resultaat.
+
+
+GOED OM TE WETEN
+----------------
+- Er is geen database of Node.js nodig; gewone webhosting volstaat. PHP is
+  alleen nodig voor het contactformulier (zie onderaan).
+- Beeld en geluid gaan rechtstreeks tussen de twee apparaten (WebRTC).
+  Ze passeren jouw server niet en worden nergens opgeslagen.
+- Beide apparaten moeten de site tegelijk geopend hebben. Een browser
+  kan geen verbinding onderhouden als de site helemaal gesloten is.
+- Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
+  index.html is bewust één zelfstandig bestand.
+
+KWALITEIT KIEZEN (DATAVERBRUIK)
+-------------------------------
+Op de ouderunit staat bij Instellingen een keuze "Kwaliteit":
+
+  Automatisch                    kijkt naar het netwerk van de ouderunit
+  Beeld + geluid (scherp)        volle kwaliteit
+  Beeld + geluid (databesparend) kleiner beeld, minder beelden per seconde
+  Alleen geluid                  camera uit, veruit het zuinigst
+
+Automatisch schakelt op 2G en 3G over naar alleen geluid en laat op 4G, 5G
+en wifi het beeld aan. Staat de spaarstand van de telefoon aan, dan kiest
+hij ook alleen geluid.
+
+LET OP: iPhone en iPad geven websites geen informatie over het netwerk.
+Daar kan "Automatisch" dus niet zien of je op wifi of op mobiel zit en
+kiest hij beeld + geluid. Wil je op zo'n toestel data sparen, zet de keuze
+dan zelf op databesparend of alleen geluid.
+
+Onder de keuze staat "In gebruik": daar zie je welke stand er op dit moment
+werkelijk actief is.
+
+
+VERBINDING GARANDEREN OP ELK NETWERK (turn.json)
+------------------------------------------------
+Beeld en geluid gaan rechtstreeks tussen de twee toestellen. Dat lukt bijna
+altijd als beide op hetzelfde wifi-netwerk zitten. Zit het ene toestel op
+mobiel internet en het andere op wifi, of schermt het netwerk toestellen van
+elkaar af (gastennetwerk, hotel, kantoor), dan is er een doorgeefserver
+nodig. Zo'n server heet een TURN-server.
+
+De app heeft een gratis openbare TURN-server ingebouwd, maar die is niet
+betrouwbaar: hij is vaak overbelast of tijdelijk uit de lucht. Merk je dat
+koppelen soms niet lukt terwijl beide toestellen goed internet hebben, dan
+is dit meestal de oorzaak.
+
+Je kunt je eigen server instellen ZONDER de app aan te passen. Zet naast
+index.html een bestand met de naam turn.json:
+
+  {
+    "iceServers": [
+      { "urls": "stun:stun.l.google.com:19302" },
+      { "urls": "turn:jouwserver.nl:3478",
+        "username": "gebruiker",
+        "credential": "wachtwoord" }
+    ]
+  }
+
+Staat dat bestand er niet, dan blijft de standaardinstelling gelden.
+
+Waar haal je zo'n server?
+- Metered.ca en Twilio bieden TURN als dienst; er is meestal een gratis
+  startpakket dat voor thuisgebruik ruim voldoende is.
+- Cloudflare biedt TURN aan binnen zijn Realtime-dienst.
+- Zelf draaien kan met coturn op een kleine VPS.
+
+Zonder eigen TURN-server werkt de babyfoon prima zolang beide toestellen op
+hetzelfde wifi-netwerk zitten. Voor kijken via mobiel internet is een eigen
+server het verschil tussen "meestal" en "altijd".
+
+
+CONTACTFORMULIER
+----------------
+Op contact.html staat een formulier dat rechtstreeks mailt naar
+info@babyphone.online. Dat werkt via contact-send.php, dus PHP moet
+aanstaan (dat is bij Hostinger standaard zo).
+
+Controleer na het uploaden even:
+1. Open https://jouwdomein.nl/contact.html
+2. Vul het formulier in en verstuur het.
+3. Je hoort binnen een minuut een mail te krijgen op info@babyphone.online.
+
+Komt er niets binnen, kijk dan in hPanel bij E-mail of het adres
+info@babyphone.online echt bestaat op dit domein. Belangrijk voor de
+aflevering: mail die door een website wordt verstuurd komt sneller in de
+inbox (in plaats van in spam) als de SPF- en DKIM-records van je domein
+goed staan. Hostinger zet die normaal automatisch klaar bij hun e-mail;
+controleer ze in hPanel onder DNS als berichten in de spammap belanden.
+
+Het formulier slaat niets op. Naam, e-mailadres, telefoonnummer en bericht
+gaan alleen de mail in.
+
+
+DONATIEKNOP (STRIPE)
+--------------------
+Bovenin de startpagina staat een donatieknop. Die is standaard VERBORGEN
+totdat je je eigen Stripe-betaallink invult. Dat is met opzet: een
+donatieknop die naar een dode pagina leidt kost meer vertrouwen dan hij
+oplevert.
+
+Zo zet je hem aan:
+1. Ga in je Stripe-dashboard naar Producten -> Betaallinks (Payment Links)
+   en maak een link aan voor een donatie.
+   - Kies "Klant bepaalt het bedrag" als je vrije bedragen wilt, of zet
+     een paar vaste bedragen klaar.
+   - Zet bij de betaalmethoden aan wat je wilt aanbieden. Kaart werkt
+     wereldwijd; iDEAL, Bancontact, Apple Pay en Google Pay kun je per
+     land aanzetten in Stripe.
+2. Kopieer de volledige URL (die begint met https://donate.stripe.com/ of
+   https://buy.stripe.com/).
+3. Open index.html, zoek op BABYFOON_DONATE_URL en zet de link ertussen:
+
+       window.BABYFOON_DONATE_URL = 'https://donate.stripe.com/jouwlink';
+
+4. Upload index.html opnieuw. De knop verschijnt vanzelf.
+
+De knoptekst staat in alle 30 talen. De betaalpagina van Stripe opent in
+de taal die de bezoeker op de site heeft gekozen, voor zover Stripe die
+taal ondersteunt; anders kiest Stripe zelf op basis van de browser.
+
+Er wordt niets op deze website opgeslagen. De bezoeker gaat naar de
+beveiligde betaalpagina van Stripe; betaalgegevens komen nooit langs deze
+site. Denk er wel aan om in je privacyverklaring te vermelden dat je
+Stripe gebruikt voor donaties.

@@ -1,0 +1,76 @@
+# BabyPhone.online — Apache/LiteSpeed config (Hostinger)
+# Plaats dit bestand naast index.html in public_html.
+
+# ---------------------------------------------------------------------------
+# 1. HTTPS afdwingen — VERPLICHT.
+# Browsers geven alleen toegang tot camera en microfoon op een beveiligde
+# verbinding. Zonder HTTPS start de babyunit niet.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 1b. Eén adres voor de site: www.babyphone.online → babyphone.online.
+  # Zoekmachines zien www en non-www anders als twee sites met dezelfde
+  # inhoud; de canonical-tags wijzen al naar de versie zonder www, dit maakt
+  # het hard. De regel doet niets als er geen www-hostnaam bestaat.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 2. MIME-types die op standaardhosting soms ontbreken
+# ---------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/manifest+json  .webmanifest
+  AddType video/mp4                  .mp4
+  AddType font/woff2                 .woff2
+  AddType audio/mpeg                 .mp3
+  AddType image/svg+xml              .svg
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 3. Compressie voor tekstbestanden (index.html is ~1,3 MB onverpakt)
+# ---------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/manifest+json image/svg+xml
+  AddOutputFilterByType DEFLATE application/xml
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 4. Cache: media en fonts lang, HTML kort zodat updates direct zichtbaar zijn
+# ---------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/png        "access plus 1 year"
+  ExpiresByType image/jpeg       "access plus 1 year"
+  ExpiresByType image/svg+xml    "access plus 1 year"
+  ExpiresByType video/mp4        "access plus 1 year"
+  ExpiresByType audio/mpeg       "access plus 1 year"
+  ExpiresByType font/woff2       "access plus 1 year"
+  ExpiresByType text/css         "access plus 1 month"
+  ExpiresByType text/html        "access plus 10 minutes"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 5. Beveiligingsheaders
+# ---------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  # HTTPS is al verplicht (301 hierboven) — vertel de browser dat ook, zodat
+  # camera/microfoon nooit per ongeluk over onbeveiligd http lopen.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # Camera en microfoon expliciet toestaan voor deze site zelf
+  Header always set Permissions-Policy "camera=(self), microphone=(self), display-capture=(self)"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 6. Nette 404 naar de homepage
+# ---------------------------------------------------------------------------
+ErrorDocument 404 /index.html

@@ -1,0 +1,65 @@
+    <article class="post">
+      <span class="kicker" data-b="kicker">SECURITY &amp; PRIVACY</span>
+      <h1 data-b="h1">How BabyPhone.online works — and how your connection stays private</h1>
+      <p class="lede" data-b="lede">BabyPhone.online turns two devices you already own into a baby monitor. One stays with your baby, the other comes with you. Here is how the connection is made, and how modern browser security protects your live video and sound — in plain language, without jargon.</p>
+      <div class="post-meta"><span data-b="readTime">5 min read</span><span class="dot"></span><span data-b="updated">Updated August 2026</span></div>
+
+      <div class="sec-card">
+        <div class="sec-shield" aria-hidden="true">🛡️</div>
+        <h2 data-b="cardH">Privacy starts with the design</h2>
+        <p data-b="cardP">The goal is simple: only the two devices you paired yourself take part in the live session.</p>
+        <ul class="sec-list" id="cardList"><li><span class="ok">✓</span><span>Your browser asks for camera and microphone permission itself.</span></li><li><span class="ok">✓</span><span>WebRTC encrypts live video and sound while it travels.</span></li><li><span class="ok">✓</span><span>Pairing by QR code means no long codes to type over.</span></li></ul>
+      </div>
+
+      <p data-b="introP">A traditional baby monitor is a pair of short-range radios you have to buy, charge and pack. BabyPhone.online takes another route: your own devices become the camera and the monitor, straight in the browser. That raises a fair question — if it runs over the internet, who else can see along?</p>
+
+      <h2 data-b="stepsH">From two devices to a baby monitor in four steps</h2>
+      <p data-b="stepsP">No special baby-monitor hardware is needed. A phone, tablet or laptop with a modern browser is enough.</p>
+      <ol class="steps" id="steps"><li>Open the website on the device you want to place near your baby.</li><li>Your browser asks permission for the camera and microphone. Without your permission the website cannot reach them.</li><li>Use the QR code to connect your second device to the same session.</li><li>The two browsers build a direct, real-time link for video and sound.</li></ol>
+
+      <h2 data-b="flowH">Your live picture is not sent as ordinary, unprotected video</h2>
+      <p data-b="flowP">BabyPhone.online uses WebRTC: the browser technology built for real-time audio and video — the same kind your browser uses for video calls.</p>
+
+      <div class="flow" aria-hidden="false">
+        <div class="flow-row">
+          <div class="flow-node"><div class="flow-ico">👶</div><div><strong data-b="flowBaby">Baby device</strong><small data-b="flowBabySub">camera + microphone</small></div></div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><div class="flow-ico">🔐</div><div><strong data-b="flowLink">WebRTC</strong><small data-b="flowLinkSub">encrypted media link</small></div></div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><div class="flow-ico">📱</div><div><strong data-b="flowParent">Parent device</strong><small data-b="flowParentSub">live monitor</small></div></div>
+        </div>
+        <p class="flow-note" data-b="flowNote">Depending on the network, WebRTC connects the two devices directly, or passes the encrypted traffic through a relay (TURN) server when a direct path is blocked.</p>
+      </div>
+
+      <h2 data-b="layersH">Four layers of protection, explained simply</h2>
+      <ul class="features" id="layers"><li><b>1. HTTPS protects the website connection</b><span>Your browser reaches BabyPhone.online over HTTPS. That helps prevent others on the network from reading along or altering the page on its way to you.</span></li><li><b>2. WebRTC protects live video and sound</b><span>WebRTC uses secure transport for real-time media, so the stream does not travel across the internet as readable, unprotected data.</span></li><li><b>3. You grant camera and microphone access</b><span>The website cannot quietly switch on your camera. Your browser shows its own permission prompt, and you can withdraw that permission later.</span></li><li><b>4. The QR code links the right session</b><span>Scanning removes typing mistakes, and the scanning device carries a one-time token. Anyone who typed the code by hand still has to be approved on the baby device's own screen.</span></li></ul>
+
+      <h2 data-b="honestH">What does “encrypted” actually mean?</h2>
+      <p data-b="honestP">Encryption matters, but real safety is more than a padlock icon. So here is what the technology does — and what it does not do.</p>
+
+      <div class="truth">
+        <div class="truth-col">
+          <h3 data-b="doesH">What WebRTC does</h3>
+          <ul class="truth-list" id="does"><li><span class="ok">✓</span><span>Encrypts live video and sound while it travels.</span></li><li><span class="ok">✓</span><span>Connects your devices directly whenever the network allows it.</span></li><li><span class="ok">✓</span><span>Passes encrypted media through a relay when a direct connection is not possible.</span></li></ul>
+        </div>
+        <div class="truth-col">
+          <h3 data-b="youH">What you should do as well</h3>
+          <ul class="truth-list" id="you"><li><span class="no">!</span><span>Do not share your QR code. Anyone who sees an active pairing code may try to join that session.</span></li><li><span class="no">!</span><span>Lock your devices. An unlocked phone is a bigger risk than the internet connection itself.</span></li><li><span class="no">!</span><span>Keep your browser current. Security updates for iOS, Android and your browser stay important.</span></li></ul>
+        </div>
+      </div>
+
+      <p class="notice" id="notice"><strong>Worth knowing:</strong> “encrypted” does not automatically mean every app uses the same security model. WhatsApp has its own end-to-end protocol with identity keys. BabyPhone.online uses the security built into WebRTC for live browser media. The goal — never sending unprotected audio or video across the internet — is comparable, but the architecture is different, and we would rather say that plainly than borrow someone else's claim.</p>
+
+      <h2 data-b="designH">A baby monitor should need to know as little as possible about your family</h2>
+      <p data-b="designP">That is the principle behind BabyPhone.online: as few steps as possible, no unnecessary access to your device, no account, no ads, no tracking, and a temporary live link between the two devices you paired yourself. Nothing is recorded and no server watches along.</p>
+
+      <h2 data-b="faqH">Security in short</h2>
+      <ul class="features" id="faq"><li><b>Can someone simply switch on my camera?</b><span>Not without camera permission from your browser. On top of that, joining a live session requires the right pairing, and a second viewer has to be approved on the baby device's own screen. So never share an active QR code or room code publicly.</span></li><li><b>Can BabyPhone.online watch my video on the way?</b><span>WebRTC encrypts live media while it travels. When a relay server is needed because your network blocks a direct path, it only passes the protected media through — it cannot see or hear the stream.</span></li><li><b>Is this the same as WhatsApp?</b><span>Not literally. WhatsApp uses its own end-to-end protocol with identity keys; BabyPhone.online uses WebRTC for secure real-time browser media. The purpose is comparable, the technical architecture is not the same.</span></li><li><b>What can I do myself for maximum safety?</b><span>Use an up-to-date device and browser, keep your room code and QR private, switch on a screen lock, close the session when you are done, and open BabyPhone.online only through its official HTTPS address.</span></li></ul>
+
+      <div class="cta">
+        <h2 data-b="ctaH">Ready to try it?</h2>
+        <p data-b="ctaP">Two devices, no installation, no account. Open the site on both and pair them.</p>
+        <a class="btn" href="./" id="ctaLink" data-b="ctaBtn">Open BabyPhone.online</a>
+        <p class="cta-alt"><a href="blog.html" id="blogLink" data-b="toBlog">Read the full guide: everything BabyPhone.online can do →</a></p>
+      </div>
+    </article>

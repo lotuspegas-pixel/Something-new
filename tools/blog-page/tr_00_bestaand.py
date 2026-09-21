@@ -1,0 +1,991 @@
+# -*- coding: utf-8 -*-
+# De zeven talen die al in blog.html stonden, ongewijzigd overgenomen.
+T = {
+  "en": {
+    "title": "Turn Two Phones Into a Free Baby Monitor — Guide",
+    "desc": "How to make a free baby monitor from a spare phone or old tablet: how a wifi baby monitor works, how it compares to a dedicated one, and every feature explained.",
+    "kicker": "GUIDE",
+    "h1": "Two phones, one free baby monitor: everything BabyPhone.online can do",
+    "lede": "No box to buy, no app to install, no account. Open the site on two devices you already own and you have a private baby monitor with live video and sound — at home or on holiday.",
+    "introP": "A traditional baby monitor is one more gadget to buy, charge and pack. BabyPhone.online takes a different route: it turns devices you already have into the camera and the monitor, right in the browser. Here is why that is so handy — and what every button does.",
+    "reuseH": "Give an old phone or tablet a second life",
+    "reuseP": "That drawer phone from two upgrades ago, or a tablet the kids barely use — either one becomes the baby camera. Prop it up by the crib, open babyphone.online, tap “Baby unit”, and it streams live video and sound to your own phone. No SIM card needed: home wifi is enough. A real baby camera, without buying — or throwing away — anything.",
+    "travelH": "Made for holidays and nights away",
+    "travelP": "This is where it shines. On holiday you do not want to pack a bulky monitor with its own short-range signal. With BabyPhone.online you simply use the two phones you already carry: leave one in the hotel room or tent with the baby, take the other to the terrace or the room next door. Because the connection runs over the internet (wifi or 4G/5G), the range is not limited to a single building and you are not tied to a base-station signal. Two phones, and you are set — anywhere.",
+    "setupH": "Connected in under a minute",
+    "setupP": "Pairing is deliberately simple, so you can do it half-asleep at 3 a.m.",
+    "steps": [
+      "On the baby’s device, tap “Baby unit”. It shows a 6-character code and a QR code.",
+      "On your own phone, tap “Parent unit”.",
+      "Type the code or scan the QR — you instantly see and hear your baby."
+    ],
+    "featH": "Every feature, and what it is for",
+    "featLede": "Everything works from the parent phone while the baby device just streams. Here is the full list.",
+    "features": [
+      {
+        "n": "Live video & sound",
+        "d": "See and hear your baby in real time, with low delay — also over 4G/5G, not just home wifi."
+      },
+      {
+        "n": "Talk back",
+        "d": "Tap and talk: your voice plays on the baby device, so you can soothe without walking in."
+      },
+      {
+        "n": "Lullabies & music",
+        "d": "Play calming soundscapes or your own MP3s on the baby device, straight from your phone."
+      },
+      {
+        "n": "Night light",
+        "d": "Switch on a soft, warm glow on the baby device’s screen from your side of the connection."
+      },
+      {
+        "n": "Cry alert",
+        "d": "Get alerted when your baby cries, with a sensitivity you set yourself, plus an event log."
+      },
+      {
+        "n": "Sleep timer",
+        "d": "Let a lullaby play, then stop on its own after the time you choose."
+      },
+      {
+        "n": "Audio-only & privacy shade",
+        "d": "Keep the sound but hide the picture whenever you want video off but ears on."
+      },
+      {
+        "n": "Battery status",
+        "d": "See the baby device’s battery level on your screen, so it never dies unnoticed."
+      },
+      {
+        "n": "Record a clip",
+        "d": "Save a moment of video and sound straight to your own device. Nothing is uploaded."
+      },
+      {
+        "n": "Always reconnects",
+        "d": "Survives wifi/mobile switches and screen-off, and alerts you the moment a link drops."
+      },
+      {
+        "n": "30 languages",
+        "d": "The whole interface in your language — pick it once and it is remembered."
+      },
+      {
+        "n": "Free, no account",
+        "d": "The core monitor is free and needs no sign-up. Open the site and go."
+      }
+    ],
+    "privacyH": "Private by design",
+    "privacyP": "Video and sound travel directly between your two devices, peer-to-peer and encrypted in transit. Nothing is recorded, and no server can watch along. No account, no ads, no tracking — just your own devices talking to each other.",
+    "worksH": "Works on the devices you already own",
+    "worksP": "Any phone, tablet or laptop with a recent browser (Chrome, Safari, Firefox, Edge) works — including older models, as long as the browser is reasonably up to date. One device needs a camera and microphone for the baby side; keep it on its charger and you are set for the whole night.",
+    "ctaH": "Try it tonight",
+    "ctaP": "Grab two devices, open the site on both, and see how quick it is.",
+    "ctaBtn": "Open BabyPhone.online",
+    "shotHome": "Open the site on any device — no install, no account.",
+    "shotParent": "The parent unit: live view with talk-back, lullabies, night light, cry alert and recording — all from your phone.",
+    "shotBaby": "The baby unit: live camera, room code and QR to pair, with camera, mic, audio-only and privacy-shade controls.",
+    "backToApp": "← Back to the app",
+    "readTime": "4 min read",
+    "updated": "Updated July 2026",
+    "wifiH": "How a baby monitor over wifi actually works",
+    "wifiP": "A classic baby monitor is a pair of short-range radios: the camera unit transmits, the parent unit receives, and a thick wall ends the conversation. A wifi baby monitor sends video and sound as data over the internet instead. BabyPhone.online uses WebRTC — the same technology your browser uses for video calls — so the two devices open a direct, encrypted link to each other. The room code only helps them find each other at the start, and an encrypted relay steps in solely when your network blocks a direct path; neither can see or hear the stream. The practical difference: range stops being measured in metres, but both devices do need to be online.",
+    "vsH": "Baby monitor app or a dedicated baby monitor?",
+    "vsLede": "Neither wins outright — they fail in different ways. An honest comparison.",
+    "vs": [
+      {
+        "n": "Range",
+        "d": "A dedicated monitor works anywhere within its radio range and needs no internet at all. An app has effectively unlimited range, but both devices have to be online."
+      },
+      {
+        "n": "Cost",
+        "d": "A video monitor costs real money and becomes e-waste when your child outgrows it. This costs nothing and reuses hardware you already own."
+      },
+      {
+        "n": "Travel",
+        "d": "A base station, a camera and two chargers fill half a bag. Two phones you were carrying anyway fill none."
+      },
+      {
+        "n": "Reliability",
+        "d": "A dedicated unit does one job, with no OS update or incoming call in the way. A phone needs care: keep it on the charger, screen awake, other apps closed."
+      },
+      {
+        "n": "Privacy",
+        "d": "Cloud cameras keep footage on a vendor's servers; cheap analogue monitors can be picked up by a receiver nearby. A peer-to-peer link avoids both — but you decide who gets the room code."
+      },
+      {
+        "n": "Night vision",
+        "d": "Dedicated units have infrared LEDs; a phone camera cannot do that. In a pitch-dark room you will hear everything and see little — the built-in night light helps."
+      }
+    ],
+    "faqH": "Frequently asked questions",
+    "faq": [
+      {
+        "n": "Is a baby monitor app safe?",
+        "d": "It depends on where the video goes and who can join. Here the stream runs straight between your two devices, encrypted in transit, so there is no cloud account to break into and no footage on someone else's server. The baby unit does not auto-answer either: a device that scanned the QR carries a one-time token, and anyone who typed the code by hand has to be approved on the baby device's own screen."
+      },
+      {
+        "n": "Does a baby monitor work without wifi?",
+        "d": "This one needs internet on both devices — but not wifi specifically, and not the same network: the baby device can be on wifi while you are on 4G or 5G. With no internet at all on either side the two devices cannot find each other, and a classic radio monitor is the better tool."
+      },
+      {
+        "n": "What does it cost?",
+        "d": "Nothing. Every feature is free, there is no paid tier and no account, and the site carries no ads and no trackers."
+      },
+      {
+        "n": "Can I use an old phone?",
+        "d": "Yes, and that is the idea. Any spare phone or tablet with a camera, a microphone and an up-to-date browser will do, with or without a SIM card. Keep it plugged in — streaming video all night empties a battery."
+      },
+      {
+        "n": "Do I need to install anything?",
+        "d": "No. Both devices just open the website. There is nothing to download, nothing to sign up for and nothing to configure."
+      },
+      {
+        "n": "How many people can watch at once?",
+        "d": "A second viewer can join with the same room code, but the baby unit asks for approval on its own screen first — so nobody watches without someone in the room agreeing."
+      }
+    ]
+  },
+  "nl": {
+    "title": "Twee telefoons als gratis babyfoon — complete gids",
+    "desc": "Zo maak je een gratis babyfoon van een reservetelefoon of oude tablet: hoe een babyfoon via wifi werkt, hoe hij zich verhoudt tot een losse babyfoon, en alle functies.",
+    "kicker": "GIDS",
+    "h1": "Twee telefoons, één gratis babyfoon: alles wat BabyPhone.online kan",
+    "lede": "Geen apparaat kopen, geen app installeren, geen account. Open de site op twee toestellen die je al hebt en je hebt een privé-babyfoon met live beeld en geluid — thuis of op vakantie.",
+    "introP": "Een klassieke babyfoon is nóg een apparaat om te kopen, op te laden en mee te sjouwen. BabyPhone.online doet het anders: het maakt van toestellen die je al hebt de camera én de monitor, gewoon in de browser. Hier lees je waarom dat zo handig is — en wat elke knop doet.",
+    "reuseH": "Geef een oude telefoon of tablet een tweede leven",
+    "reuseP": "Die telefoon van twee toestellen geleden in de la, of een tablet die de kinderen amper gebruiken — allebei worden ze de babycamera. Zet hem bij het bedje, open babyphone.online, tik op “Baby unit”, en hij stuurt live beeld en geluid naar je eigen telefoon. Geen simkaart nodig: je wifi thuis is genoeg. Een echte babycamera, zonder iets te kopen — of weg te gooien.",
+    "travelH": "Gemaakt voor vakanties en nachtjes weg",
+    "travelP": "Hier blinkt het uit. Op vakantie wil je geen logge babyfoon met eigen kortbereik-signaal meesjouwen. Met BabyPhone.online gebruik je gewoon de twee telefoons die je al bij je hebt: laat er één bij de baby in de hotelkamer of tent, neem de andere mee naar het terras of de kamer ernaast. Omdat de verbinding via internet loopt (wifi of 4G/5G), zit je niet vast aan één gebouw of aan het signaal van een basisstation. Twee telefoons, en je bent klaar — waar dan ook.",
+    "setupH": "Binnen een minuut verbonden",
+    "setupP": "Koppelen is bewust simpel, zodat het ook half slapend om 3 uur ’s nachts lukt.",
+    "steps": [
+      "Tik op het toestel van de baby op “Baby unit”. Er verschijnt een code van 6 tekens en een QR-code.",
+      "Tik op je eigen telefoon op “Parent unit”.",
+      "Typ de code of scan de QR — je ziet en hoort je baby meteen."
+    ],
+    "featH": "Alle functies, en waar ze voor dienen",
+    "featLede": "Alles bedien je vanaf de oudertelefoon, terwijl het babytoestel gewoon uitzendt. Hier is de volledige lijst.",
+    "features": [
+      {
+        "n": "Live beeld & geluid",
+        "d": "Zie en hoor je baby in realtime, met weinig vertraging — ook via 4G/5G, niet alleen thuis-wifi."
+      },
+      {
+        "n": "Terugpraten",
+        "d": "Tik en praat: je stem klinkt bij de baby, zodat je kunt sussen zonder de kamer in te lopen."
+      },
+      {
+        "n": "Slaapliedjes & muziek",
+        "d": "Speel rustgevende geluiden of je eigen mp3’s af op het babytoestel, direct vanaf je telefoon."
+      },
+      {
+        "n": "Nachtlampje",
+        "d": "Zet vanaf jouw kant een zachte, warme gloed aan op het scherm van het babytoestel."
+      },
+      {
+        "n": "Huil-alarm",
+        "d": "Krijg een melding als je baby huilt, met een gevoeligheid die je zelf instelt, plus een logboek."
+      },
+      {
+        "n": "Slaaptimer",
+        "d": "Laat een slaapliedje spelen en vanzelf stoppen na de tijd die jij kiest."
+      },
+      {
+        "n": "Alleen geluid & privacyscherm",
+        "d": "Houd het geluid maar verberg het beeld wanneer je beeld uit wilt maar oren aan."
+      },
+      {
+        "n": "Batterijstatus",
+        "d": "Zie het accupercentage van het babytoestel op je scherm, zodat het nooit ongemerkt leegloopt."
+      },
+      {
+        "n": "Fragment opnemen",
+        "d": "Bewaar een stukje beeld en geluid direct op je eigen toestel. Er wordt niets geüpload."
+      },
+      {
+        "n": "Altijd herverbinden",
+        "d": "Overleeft wisselen tussen wifi/mobiel en scherm-uit, en waarschuwt je zodra de verbinding wegvalt."
+      },
+      {
+        "n": "30 talen",
+        "d": "De hele interface in jouw taal — één keer kiezen en het wordt onthouden."
+      },
+      {
+        "n": "Gratis, geen account",
+        "d": "De kern-babyfoon is gratis en zonder aanmelden. Open de site en ga."
+      }
+    ],
+    "privacyH": "Privé van ontwerp",
+    "privacyP": "Beeld en geluid gaan rechtstreeks tussen je twee toestellen, peer-to-peer en versleuteld onderweg. Er wordt niets opgenomen en geen enkele server kan meekijken. Geen account, geen advertenties, geen tracking — gewoon je eigen toestellen die met elkaar praten.",
+    "worksH": "Werkt op de toestellen die je al hebt",
+    "worksP": "Elke telefoon, tablet of laptop met een recente browser (Chrome, Safari, Firefox, Edge) werkt — ook oudere modellen, zolang de browser redelijk up-to-date is. Eén toestel heeft een camera en microfoon nodig voor de babykant; houd het aan de lader en je komt de hele nacht door.",
+    "ctaH": "Probeer het vanavond",
+    "ctaP": "Pak twee toestellen, open de site op allebei, en zie hoe snel het gaat.",
+    "ctaBtn": "Open BabyPhone.online",
+    "shotHome": "Open de site op elk toestel — geen installatie, geen account.",
+    "shotParent": "De ouderunit: live beeld met terugpraten, slaapliedjes, nachtlampje, huil-alarm en opnemen — allemaal vanaf je telefoon.",
+    "shotBaby": "De babyunit: live camera, kamercode en QR om te koppelen, met camera-, microfoon-, alleen-geluid- en privacyscherm-knoppen.",
+    "backToApp": "← Terug naar de app",
+    "readTime": "4 min lezen",
+    "updated": "Bijgewerkt juli 2026",
+    "wifiH": "Hoe een babyfoon via wifi echt werkt",
+    "wifiP": "Een klassieke babyfoon is een paar zendertjes met kort bereik: de camera-unit zendt, de ouder-unit ontvangt, en een dikke muur maakt er een eind aan. Een babyfoon via wifi stuurt beeld en geluid in plaats daarvan als data over internet. BabyPhone.online gebruikt WebRTC — dezelfde techniek waarmee je browser videobelt — zodat de twee toestellen een directe, versleutelde verbinding met elkaar opzetten. De kamercode helpt ze alleen aan het begin elkaar te vinden, en een versleutelde tussenschakel springt uitsluitend bij als je netwerk een directe route blokkeert; geen van beide kan het beeld of geluid zien of horen. Het praktische verschil: bereik wordt niet meer in meters gemeten, maar beide toestellen moeten wél online zijn.",
+    "vsH": "Babyfoon-app of een losse babyfoon?",
+    "vsLede": "Geen van beide wint over de hele linie — ze falen op andere punten. Een eerlijke vergelijking.",
+    "vs": [
+      {
+        "n": "Bereik",
+        "d": "Een losse babyfoon werkt overal binnen zijn radiobereik en heeft helemaal geen internet nodig. Een app heeft in de praktijk onbeperkt bereik, maar beide toestellen moeten online zijn."
+      },
+      {
+        "n": "Kosten",
+        "d": "Een babyfoon met beeld kost echt geld en wordt elektronisch afval zodra je kind eraan ontgroeid is. Dit kost niets en hergebruikt apparaten die je al hebt."
+      },
+      {
+        "n": "Op reis",
+        "d": "Een basisstation, een camera en twee laders vullen een halve tas. Twee telefoons die je toch al bij je had, vullen niets."
+      },
+      {
+        "n": "Betrouwbaarheid",
+        "d": "Een losse unit doet één ding, zonder systeemupdate of binnenkomend telefoontje ertussen. Een telefoon vraagt aandacht: hou hem aan de lader, scherm wakker, andere apps dicht."
+      },
+      {
+        "n": "Privacy",
+        "d": "Cloudcamera's bewaren beelden op de servers van een fabrikant; goedkope analoge babyfoons zijn in de buurt op te vangen. Een directe verbinding vermijdt allebei — maar jij bepaalt wie de kamercode krijgt."
+      },
+      {
+        "n": "Nachtzicht",
+        "d": "Losse units hebben infraroodlampjes; een telefooncamera kan dat niet. In een pikdonkere kamer hoor je alles en zie je weinig — het nachtlampje helpt."
+      }
+    ],
+    "faqH": "Veelgestelde vragen",
+    "faq": [
+      {
+        "n": "Is een babyfoon-app veilig?",
+        "d": "Dat hangt af van waar het beeld heen gaat en wie erbij kan. Hier loopt de stroom rechtstreeks tussen je twee toestellen, versleuteld onderweg, dus er is geen cloudaccount om in te breken en er staan geen beelden op de server van iemand anders. De babyunit neemt ook niet vanzelf op: een toestel dat de QR heeft gescand draagt een eenmalig token, en wie de code met de hand intypt moet op het scherm van de babyunit zelf worden goedgekeurd."
+      },
+      {
+        "n": "Werkt een babyfoon zonder wifi?",
+        "d": "Deze heeft internet nodig op beide toestellen — maar niet per se wifi, en niet hetzelfde netwerk: het babytoestel kan op wifi zitten terwijl jij op 4G of 5G zit. Zonder enig internet aan beide kanten kunnen de toestellen elkaar niet vinden; dan is een klassieke radiobabyfoon het betere gereedschap."
+      },
+      {
+        "n": "Wat kost het?",
+        "d": "Niets. Alle functies zijn gratis, er is geen betaalde versie en geen account, en de site heeft geen advertenties en geen trackers."
+      },
+      {
+        "n": "Kan ik een oude telefoon gebruiken?",
+        "d": "Ja, en dat is juist de bedoeling. Elke reservetelefoon of tablet met camera, microfoon en een bijgewerkte browser volstaat, met of zonder simkaart. Hou hem aan de lader — een hele nacht beeld versturen trekt een accu leeg."
+      },
+      {
+        "n": "Moet ik iets installeren?",
+        "d": "Nee. Beide toestellen openen gewoon de website. Er valt niets te downloaden, niets aan te melden en niets in te stellen."
+      },
+      {
+        "n": "Met hoeveel mensen kun je tegelijk meekijken?",
+        "d": "Een tweede kijker kan met dezelfde kamercode meedoen, maar de babyunit vraagt eerst om goedkeuring op zijn eigen scherm — dus niemand kijkt mee zonder dat iemand in de kamer akkoord gaat."
+      }
+    ]
+  },
+  "de": {
+    "title": "Zwei Handys als kostenloses Babyphone — Ratgeber",
+    "desc": "So machst du aus einem alten Handy oder Tablet ein kostenloses Babyphone: wie ein Babyphone über WLAN funktioniert, der Vergleich mit einem Geräte-Babyphone und alle Funktionen.",
+    "kicker": "RATGEBER",
+    "h1": "Zwei Handys, ein kostenloses Babyphone: alles, was BabyPhone.online kann",
+    "lede": "Kein Gerät kaufen, keine App installieren, kein Konto. Öffne die Seite auf zwei Geräten, die du schon hast, und du hast ein privates Babyphone mit Live-Bild und -Ton — zu Hause oder im Urlaub.",
+    "introP": "Ein klassisches Babyphone ist ein weiteres Gerät zum Kaufen, Laden und Einpacken. BabyPhone.online geht einen anderen Weg: Es macht Geräte, die du bereits hast, zur Kamera und zum Monitor — direkt im Browser. Hier steht, warum das so praktisch ist und was jede Taste tut.",
+    "reuseH": "Gib einem alten Handy oder Tablet ein zweites Leben",
+    "reuseP": "Das Schubladen-Handy von vor zwei Modellen oder ein Tablet, das die Kinder kaum nutzen — beides wird zur Babykamera. Stell es ans Bettchen, öffne babyphone.online, tippe auf „Baby unit“, und es überträgt Live-Bild und -Ton auf dein eigenes Handy. Keine SIM-Karte nötig: WLAN zu Hause genügt. Eine echte Babykamera, ohne etwas zu kaufen — oder wegzuwerfen.",
+    "travelH": "Gemacht für Urlaub und Nächte auswärts",
+    "travelP": "Hier spielt es seine Stärke aus. Im Urlaub willst du kein sperriges Babyphone mit eigener kurzer Reichweite einpacken. Mit BabyPhone.online nutzt du einfach die zwei Handys, die du ohnehin dabeihast: Lass eines beim Baby im Hotelzimmer oder Zelt, nimm das andere mit auf die Terrasse oder ins Nebenzimmer. Weil die Verbindung übers Internet läuft (WLAN oder 4G/5G), ist die Reichweite nicht auf ein Gebäude beschränkt und du hängst nicht am Signal einer Basisstation. Zwei Handys, und du bist startklar — überall.",
+    "setupH": "In unter einer Minute verbunden",
+    "setupP": "Das Koppeln ist bewusst einfach, damit es auch halb verschlafen um 3 Uhr nachts klappt.",
+    "steps": [
+      "Tippe auf dem Gerät des Babys auf „Baby unit“. Es zeigt einen 6-stelligen Code und einen QR-Code.",
+      "Tippe auf deinem eigenen Handy auf „Parent unit“.",
+      "Gib den Code ein oder scanne den QR-Code — du siehst und hörst dein Baby sofort."
+    ],
+    "featH": "Jede Funktion und wofür sie da ist",
+    "featLede": "Alles steuerst du vom Eltern-Handy, während das Baby-Gerät einfach überträgt. Hier ist die vollständige Liste.",
+    "features": [
+      {
+        "n": "Live-Bild & -Ton",
+        "d": "Sieh und höre dein Baby in Echtzeit mit geringer Verzögerung — auch über 4G/5G, nicht nur WLAN."
+      },
+      {
+        "n": "Zurücksprechen",
+        "d": "Tippen und sprechen: Deine Stimme kommt beim Baby an, du kannst beruhigen, ohne hineinzugehen."
+      },
+      {
+        "n": "Schlaflieder & Musik",
+        "d": "Spiele beruhigende Klänge oder eigene MP3s auf dem Baby-Gerät ab, direkt vom Handy."
+      },
+      {
+        "n": "Nachtlicht",
+        "d": "Schalte von deiner Seite ein sanftes, warmes Leuchten auf dem Bildschirm des Baby-Geräts ein."
+      },
+      {
+        "n": "Schrei-Alarm",
+        "d": "Werde benachrichtigt, wenn dein Baby weint — mit selbst eingestellter Empfindlichkeit und Protokoll."
+      },
+      {
+        "n": "Einschlaf-Timer",
+        "d": "Lass ein Schlaflied spielen und nach der gewählten Zeit von selbst enden."
+      },
+      {
+        "n": "Nur Ton & Sichtschutz",
+        "d": "Behalte den Ton, aber blende das Bild aus, wenn du Video aus, Ohren an willst."
+      },
+      {
+        "n": "Akkustand",
+        "d": "Sieh den Akkustand des Baby-Geräts auf deinem Bildschirm, damit er nie unbemerkt leer wird."
+      },
+      {
+        "n": "Clip aufnehmen",
+        "d": "Speichere einen Moment aus Bild und Ton direkt auf deinem Gerät. Nichts wird hochgeladen."
+      },
+      {
+        "n": "Verbindet immer neu",
+        "d": "Übersteht WLAN-/Mobilfunk-Wechsel und Bildschirm aus und warnt dich, sobald die Verbindung abbricht."
+      },
+      {
+        "n": "30 Sprachen",
+        "d": "Die ganze Oberfläche in deiner Sprache — einmal wählen, es wird gemerkt."
+      },
+      {
+        "n": "Kostenlos, kein Konto",
+        "d": "Das Kern-Babyphone ist kostenlos und ohne Anmeldung. Seite öffnen und los."
+      }
+    ],
+    "privacyH": "Privat by Design",
+    "privacyP": "Bild und Ton laufen direkt zwischen deinen zwei Geräten, Peer-to-Peer und unterwegs verschlüsselt. Nichts wird aufgezeichnet, und kein Server kann mitschauen. Kein Konto, keine Werbung, kein Tracking — nur deine eigenen Geräte im Gespräch.",
+    "worksH": "Läuft auf den Geräten, die du schon hast",
+    "worksP": "Jedes Handy, Tablet oder jeder Laptop mit einem aktuellen Browser (Chrome, Safari, Firefox, Edge) funktioniert — auch ältere Modelle, solange der Browser einigermaßen aktuell ist. Ein Gerät braucht Kamera und Mikrofon für die Baby-Seite; lass es am Ladegerät und du kommst durch die ganze Nacht.",
+    "ctaH": "Probiere es heute Abend",
+    "ctaP": "Nimm zwei Geräte, öffne die Seite auf beiden und sieh, wie schnell es geht.",
+    "ctaBtn": "BabyPhone.online öffnen",
+    "shotHome": "Öffne die Seite auf jedem Gerät — keine Installation, kein Konto.",
+    "shotParent": "Die Elterneinheit: Live-Ansicht mit Zurücksprechen, Schlafliedern, Nachtlicht, Schrei-Alarm und Aufnahme — alles vom Handy.",
+    "shotBaby": "Die Babyeinheit: Live-Kamera, Raumcode und QR zum Koppeln, mit Kamera-, Mikrofon-, Nur-Ton- und Sichtschutz-Reglern.",
+    "backToApp": "← Zurück zur App",
+    "readTime": "4 Min. Lesezeit",
+    "updated": "Aktualisiert Juli 2026",
+    "wifiH": "Wie ein Babyphone über WLAN wirklich funktioniert",
+    "wifiP": "Ein klassisches Babyphone ist ein Funkpaar mit kurzer Reichweite: Die Kameraeinheit sendet, die Elterneinheit empfängt, und eine dicke Wand beendet das Gespräch. Ein Babyphone über WLAN schickt Bild und Ton stattdessen als Daten übers Internet. BabyPhone.online nutzt WebRTC — dieselbe Technik, mit der dein Browser Videoanrufe macht — sodass die beiden Geräte eine direkte, verschlüsselte Verbindung zueinander aufbauen. Der Raumcode hilft ihnen nur am Anfang, sich zu finden, und ein verschlüsseltes Relais springt allein dann ein, wenn dein Netzwerk den direkten Weg blockiert; sehen oder hören kann keines von beiden etwas. Der praktische Unterschied: Reichweite wird nicht mehr in Metern gemessen, dafür müssen beide Geräte online sein.",
+    "vsH": "Babyphone-App oder ein eigenes Babyphone-Gerät?",
+    "vsLede": "Keines gewinnt auf ganzer Linie — sie versagen an unterschiedlichen Stellen. Ein ehrlicher Vergleich.",
+    "vs": [
+      {
+        "n": "Reichweite",
+        "d": "Ein Gerät funktioniert überall in Funkreichweite und braucht gar kein Internet. Eine App hat praktisch unbegrenzte Reichweite, aber beide Geräte müssen online sein."
+      },
+      {
+        "n": "Kosten",
+        "d": "Ein Video-Babyphone kostet echtes Geld und wird zu Elektroschrott, sobald das Kind herauswächst. Das hier kostet nichts und nutzt Geräte, die du schon hast."
+      },
+      {
+        "n": "Unterwegs",
+        "d": "Basisstation, Kamera und zwei Ladegeräte füllen eine halbe Tasche. Zwei Handys, die du ohnehin dabeihast, füllen gar nichts."
+      },
+      {
+        "n": "Zuverlässigkeit",
+        "d": "Ein eigenes Gerät macht genau eine Sache, ohne Systemupdate oder Anruf dazwischen. Ein Handy braucht Sorgfalt: am Ladegerät lassen, Bildschirm wach halten, andere Apps schließen."
+      },
+      {
+        "n": "Privatsphäre",
+        "d": "Cloud-Kameras speichern Aufnahmen auf Herstellerservern; billige analoge Babyphones lassen sich in der Nachbarschaft mithören. Eine Direktverbindung vermeidet beides — du entscheidest, wer den Raumcode bekommt."
+      },
+      {
+        "n": "Nachtsicht",
+        "d": "Geräte haben Infrarot-LEDs; eine Handykamera kann das nicht. In einem stockdunklen Zimmer hörst du alles und siehst wenig — das Nachtlicht hilft."
+      }
+    ],
+    "faqH": "Häufige Fragen",
+    "faq": [
+      {
+        "n": "Ist eine Babyphone-App sicher?",
+        "d": "Das hängt davon ab, wohin das Video geht und wer mitmachen kann. Hier läuft der Stream direkt zwischen deinen zwei Geräten, unterwegs verschlüsselt — es gibt also kein Cloud-Konto, in das jemand einbrechen könnte, und keine Aufnahmen auf fremden Servern. Die Babyeinheit nimmt auch nicht von selbst an: Ein Gerät, das den QR-Code gescannt hat, trägt ein einmaliges Token, und wer den Code von Hand eintippt, muss auf dem Bildschirm der Babyeinheit bestätigt werden."
+      },
+      {
+        "n": "Funktioniert ein Babyphone ohne WLAN?",
+        "d": "Dieses braucht Internet auf beiden Geräten — aber nicht zwingend WLAN und nicht dasselbe Netz: Das Baby-Gerät kann im WLAN sein, während du 4G oder 5G nutzt. Ganz ohne Internet auf beiden Seiten finden sich die Geräte nicht; dann ist ein klassisches Funk-Babyphone die bessere Wahl."
+      },
+      {
+        "n": "Was kostet es?",
+        "d": "Nichts. Alle Funktionen sind kostenlos, es gibt keine Bezahlversion und kein Konto, und die Seite enthält weder Werbung noch Tracker."
+      },
+      {
+        "n": "Kann ich ein altes Handy nehmen?",
+        "d": "Ja, genau darum geht es. Jedes übrige Handy oder Tablet mit Kamera, Mikrofon und aktuellem Browser genügt, mit oder ohne SIM-Karte. Lass es am Ladegerät — eine ganze Nacht Video leert jeden Akku."
+      },
+      {
+        "n": "Muss ich etwas installieren?",
+        "d": "Nein. Beide Geräte öffnen einfach die Website. Es gibt nichts herunterzuladen, nichts anzumelden und nichts einzurichten."
+      },
+      {
+        "n": "Wie viele Personen können gleichzeitig zusehen?",
+        "d": "Ein zweiter Zuschauer kann mit demselben Raumcode dazukommen, aber die Babyeinheit fragt zuerst auf ihrem eigenen Bildschirm nach — niemand schaut also mit, ohne dass jemand im Zimmer zustimmt."
+      }
+    ]
+  },
+  "fr": {
+    "title": "Deux téléphones en babyphone gratuit — le guide",
+    "desc": "Comment faire un babyphone gratuit avec un vieux téléphone ou une tablette : comment fonctionne un babyphone en wifi, la comparaison avec un appareil dédié, et toutes les fonctions.",
+    "kicker": "GUIDE",
+    "h1": "Deux téléphones, un babyphone gratuit : tout ce que BabyPhone.online sait faire",
+    "lede": "Aucun appareil à acheter, aucune appli à installer, aucun compte. Ouvrez le site sur deux appareils que vous avez déjà et vous obtenez un babyphone privé avec image et son en direct — à la maison ou en vacances.",
+    "introP": "Un babyphone classique, c’est un appareil de plus à acheter, recharger et emporter. BabyPhone.online prend un autre chemin : il transforme des appareils que vous avez déjà en caméra et en moniteur, directement dans le navigateur. Voici pourquoi c’est si pratique — et à quoi sert chaque bouton.",
+    "reuseH": "Offrez une seconde vie à un vieux téléphone ou une tablette",
+    "reuseP": "Ce téléphone rangé dans un tiroir, ou une tablette que les enfants n’utilisent presque plus — l’un ou l’autre devient la caméra bébé. Posez-le près du lit, ouvrez babyphone.online, appuyez sur « Baby unit », et il diffuse image et son en direct vers votre propre téléphone. Pas besoin de carte SIM : le wifi de la maison suffit. Une vraie caméra bébé, sans rien acheter — ni jeter.",
+    "travelH": "Pensé pour les vacances et les nuits ailleurs",
+    "travelP": "C’est là qu’il brille. En vacances, vous ne voulez pas emporter un babyphone encombrant à courte portée. Avec BabyPhone.online, vous utilisez simplement les deux téléphones que vous avez déjà : laissez-en un près du bébé dans la chambre d’hôtel ou la tente, prenez l’autre sur la terrasse ou dans la pièce d’à côté. Comme la connexion passe par internet (wifi ou 4G/5G), la portée ne se limite pas à un bâtiment et vous ne dépendez pas du signal d’une base. Deux téléphones, et c’est prêt — partout.",
+    "setupH": "Connecté en moins d’une minute",
+    "setupP": "L’appairage est volontairement simple, pour le faire à moitié endormi à 3 h du matin.",
+    "steps": [
+      "Sur l’appareil du bébé, appuyez sur « Baby unit ». Il affiche un code de 6 caractères et un QR code.",
+      "Sur votre propre téléphone, appuyez sur « Parent unit ».",
+      "Tapez le code ou scannez le QR — vous voyez et entendez votre bébé aussitôt."
+    ],
+    "featH": "Chaque fonction, et à quoi elle sert",
+    "featLede": "Tout se pilote depuis le téléphone parent, pendant que l’appareil bébé se contente de diffuser. Voici la liste complète.",
+    "features": [
+      {
+        "n": "Image & son en direct",
+        "d": "Voyez et entendez votre bébé en temps réel, avec peu de délai — aussi en 4G/5G, pas seulement en wifi."
+      },
+      {
+        "n": "Parler en retour",
+        "d": "Appuyez et parlez : votre voix sort sur l’appareil bébé, pour rassurer sans entrer dans la pièce."
+      },
+      {
+        "n": "Berceuses & musique",
+        "d": "Diffusez des sons apaisants ou vos propres MP3 sur l’appareil bébé, directement depuis votre téléphone."
+      },
+      {
+        "n": "Veilleuse",
+        "d": "Allumez depuis votre côté une lueur douce et chaude sur l’écran de l’appareil bébé."
+      },
+      {
+        "n": "Alerte pleurs",
+        "d": "Soyez alerté quand votre bébé pleure, avec une sensibilité que vous réglez, plus un journal d’événements."
+      },
+      {
+        "n": "Minuteur de sommeil",
+        "d": "Laissez une berceuse jouer, puis s’arrêter d’elle-même après le temps choisi."
+      },
+      {
+        "n": "Son seul & voile de confidentialité",
+        "d": "Gardez le son mais masquez l’image quand vous voulez la vidéo coupée, les oreilles ouvertes."
+      },
+      {
+        "n": "Niveau de batterie",
+        "d": "Voyez la batterie de l’appareil bébé sur votre écran, pour qu’il ne s’éteigne jamais sans prévenir."
+      },
+      {
+        "n": "Enregistrer un clip",
+        "d": "Sauvegardez un moment d’image et de son directement sur votre appareil. Rien n’est envoyé en ligne."
+      },
+      {
+        "n": "Se reconnecte toujours",
+        "d": "Résiste aux passages wifi/mobile et à l’écran éteint, et vous alerte dès qu’une liaison tombe."
+      },
+      {
+        "n": "30 langues",
+        "d": "Toute l’interface dans votre langue — choisie une fois, elle est mémorisée."
+      },
+      {
+        "n": "Gratuit, sans compte",
+        "d": "Le babyphone de base est gratuit et sans inscription. Ouvrez le site et c’est parti."
+      }
+    ],
+    "privacyH": "Privé par conception",
+    "privacyP": "L’image et le son circulent directement entre vos deux appareils, en pair-à-pair et chiffrés pendant le transport. Rien n’est enregistré et aucun serveur ne peut regarder. Pas de compte, pas de pub, pas de pistage — juste vos appareils qui se parlent.",
+    "worksH": "Fonctionne sur les appareils que vous avez déjà",
+    "worksP": "Tout téléphone, tablette ou ordinateur avec un navigateur récent (Chrome, Safari, Firefox, Edge) convient — y compris des modèles plus anciens, tant que le navigateur est assez à jour. Un appareil a besoin d’une caméra et d’un micro côté bébé ; gardez-le sur son chargeur et vous tenez toute la nuit.",
+    "ctaH": "Essayez ce soir",
+    "ctaP": "Prenez deux appareils, ouvrez le site sur les deux, et voyez comme c’est rapide.",
+    "ctaBtn": "Ouvrir BabyPhone.online",
+    "shotHome": "Ouvrez le site sur n’importe quel appareil — sans installation, sans compte.",
+    "shotParent": "L’unité parent : vue en direct avec parler-en-retour, berceuses, veilleuse, alerte pleurs et enregistrement — le tout depuis votre téléphone.",
+    "shotBaby": "L’unité bébé : caméra en direct, code de chambre et QR pour l’appairage, avec réglages caméra, micro, son seul et voile de confidentialité.",
+    "backToApp": "← Retour à l’appli",
+    "readTime": "4 min de lecture",
+    "updated": "Mis à jour juillet 2026",
+    "wifiH": "Comment fonctionne vraiment un babyphone en wifi",
+    "wifiP": "Un babyphone classique, c'est une paire d'émetteurs à courte portée : l'unité caméra émet, l'unité parent reçoit, et un mur épais met fin à la conversation. Un babyphone en wifi envoie plutôt l'image et le son sous forme de données, par internet. BabyPhone.online utilise WebRTC — la technologie avec laquelle votre navigateur passe des appels vidéo — pour que les deux appareils ouvrent une liaison directe et chiffrée entre eux. Le code de chambre ne sert qu'à les aider à se trouver au départ, et un relais chiffré n'intervient que si votre réseau bloque le chemin direct ; ni l'un ni l'autre ne peut voir ou entendre le flux. La différence pratique : la portée ne se compte plus en mètres, mais les deux appareils doivent être connectés.",
+    "vsH": "Application babyphone ou appareil dédié ?",
+    "vsLede": "Aucun ne gagne sur toute la ligne — ils échouent à des endroits différents. Une comparaison honnête.",
+    "vs": [
+      {
+        "n": "Portée",
+        "d": "Un appareil dédié fonctionne partout dans sa portée radio et n'a besoin d'aucune connexion. Une application a une portée quasi illimitée, mais les deux appareils doivent être en ligne."
+      },
+      {
+        "n": "Coût",
+        "d": "Un babyphone vidéo coûte de l'argent et finit en déchet électronique quand l'enfant grandit. Ceci ne coûte rien et réutilise du matériel que vous avez déjà."
+      },
+      {
+        "n": "En voyage",
+        "d": "Une base, une caméra et deux chargeurs remplissent la moitié d'un sac. Deux téléphones que vous aviez déjà n'en remplissent aucun."
+      },
+      {
+        "n": "Fiabilité",
+        "d": "Un appareil dédié ne fait qu'une chose, sans mise à jour du système ni appel entrant au milieu. Un téléphone demande de l'attention : sur le chargeur, écran allumé, autres applis fermées."
+      },
+      {
+        "n": "Confidentialité",
+        "d": "Les caméras cloud gardent les images sur les serveurs d'un fabricant ; les babyphones analogiques bon marché se captent dans le voisinage. Une liaison directe évite les deux — mais c'est vous qui donnez le code."
+      },
+      {
+        "n": "Vision nocturne",
+        "d": "Les appareils dédiés ont des LED infrarouges ; une caméra de téléphone non. Dans une pièce noire, vous entendez tout et voyez peu — la veilleuse aide."
+      }
+    ],
+    "faqH": "Questions fréquentes",
+    "faq": [
+      {
+        "n": "Une application babyphone est-elle sûre ?",
+        "d": "Cela dépend de l'endroit où va la vidéo et de qui peut se connecter. Ici le flux passe directement entre vos deux appareils, chiffré en transit : pas de compte cloud à pirater, pas d'images sur le serveur d'un tiers. L'unité bébé ne répond pas non plus toute seule : un appareil qui a scanné le QR porte un jeton à usage unique, et celui qui tape le code à la main doit être approuvé sur l'écran de l'unité bébé."
+      },
+      {
+        "n": "Un babyphone fonctionne-t-il sans wifi ?",
+        "d": "Celui-ci a besoin d'internet sur les deux appareils — mais pas forcément du wifi, ni du même réseau : l'appareil bébé peut être en wifi pendant que vous êtes en 4G ou 5G. Sans aucune connexion des deux côtés, les appareils ne se trouvent pas ; un babyphone radio classique est alors préférable."
+      },
+      {
+        "n": "Combien ça coûte ?",
+        "d": "Rien. Toutes les fonctions sont gratuites, il n'y a ni version payante ni compte, et le site ne contient ni publicité ni traceur."
+      },
+      {
+        "n": "Puis-je utiliser un vieux téléphone ?",
+        "d": "Oui, c'est même l'idée. N'importe quel téléphone ou tablette avec caméra, micro et navigateur à jour convient, avec ou sans carte SIM. Laissez-le branché — diffuser toute la nuit vide une batterie."
+      },
+      {
+        "n": "Dois-je installer quelque chose ?",
+        "d": "Non. Les deux appareils ouvrent simplement le site. Rien à télécharger, rien à créer, rien à configurer."
+      },
+      {
+        "n": "Combien de personnes peuvent regarder ?",
+        "d": "Un deuxième spectateur peut rejoindre avec le même code, mais l'unité bébé demande d'abord une approbation sur son propre écran — personne ne regarde sans l'accord de quelqu'un dans la pièce."
+      }
+    ]
+  },
+  "es": {
+    "title": "Dos móviles como vigilabebés gratis — la guía",
+    "desc": "Cómo hacer un vigilabebés gratis con un móvil viejo o una tablet: cómo funciona un vigilabebés por wifi, la comparación con uno dedicado y todas las funciones.",
+    "kicker": "GUÍA",
+    "h1": "Dos móviles, un vigilabebés gratis: todo lo que BabyPhone.online puede hacer",
+    "lede": "Sin aparato que comprar, sin app que instalar, sin cuenta. Abre el sitio en dos dispositivos que ya tienes y tendrás un vigilabebés privado con vídeo y sonido en directo — en casa o de vacaciones.",
+    "introP": "Un vigilabebés tradicional es un aparato más que comprar, cargar y llevar. BabyPhone.online toma otro camino: convierte dispositivos que ya tienes en la cámara y el monitor, directamente en el navegador. Aquí verás por qué es tan práctico — y qué hace cada botón.",
+    "reuseH": "Da una segunda vida a un móvil o tablet viejo",
+    "reuseP": "Ese móvil guardado en un cajón desde hace dos modelos, o una tablet que los niños apenas usan — cualquiera se convierte en la cámara del bebé. Colócalo junto a la cuna, abre babyphone.online, toca «Baby unit» y transmite vídeo y sonido en directo a tu propio móvil. Sin tarjeta SIM: basta el wifi de casa. Una cámara de bebé de verdad, sin comprar — ni tirar — nada.",
+    "travelH": "Hecho para las vacaciones y las noches fuera",
+    "travelP": "Aquí es donde brilla. De vacaciones no quieres cargar con un vigilabebés voluminoso de corto alcance. Con BabyPhone.online usas simplemente los dos móviles que ya llevas: deja uno con el bebé en la habitación del hotel o la tienda, y llévate el otro a la terraza o a la habitación de al lado. Como la conexión va por internet (wifi o 4G/5G), el alcance no se limita a un edificio y no dependes de la señal de una base. Dos móviles y listo — en cualquier sitio.",
+    "setupH": "Conectados en menos de un minuto",
+    "setupP": "El emparejamiento es a propósito sencillo, para hacerlo medio dormido a las 3 de la madrugada.",
+    "steps": [
+      "En el dispositivo del bebé, toca «Baby unit». Muestra un código de 6 caracteres y un código QR.",
+      "En tu propio móvil, toca «Parent unit».",
+      "Escribe el código o escanea el QR — ves y oyes a tu bebé al instante."
+    ],
+    "featH": "Cada función, y para qué sirve",
+    "featLede": "Todo se maneja desde el móvil de los padres, mientras el dispositivo del bebé solo transmite. Aquí tienes la lista completa.",
+    "features": [
+      {
+        "n": "Vídeo y sonido en directo",
+        "d": "Ve y escucha a tu bebé en tiempo real, con poco retardo — también en 4G/5G, no solo en wifi."
+      },
+      {
+        "n": "Hablar de vuelta",
+        "d": "Toca y habla: tu voz suena en el dispositivo del bebé, para calmarlo sin entrar en la habitación."
+      },
+      {
+        "n": "Nanas y música",
+        "d": "Reproduce sonidos relajantes o tus propios MP3 en el dispositivo del bebé, directo desde tu móvil."
+      },
+      {
+        "n": "Luz nocturna",
+        "d": "Enciende desde tu lado un brillo suave y cálido en la pantalla del dispositivo del bebé."
+      },
+      {
+        "n": "Alerta de llanto",
+        "d": "Recibe un aviso cuando tu bebé llore, con una sensibilidad que fijas tú, más un registro de eventos."
+      },
+      {
+        "n": "Temporizador de sueño",
+        "d": "Deja sonar una nana y que se detenga sola tras el tiempo que elijas."
+      },
+      {
+        "n": "Solo audio y cortina de privacidad",
+        "d": "Mantén el sonido pero oculta la imagen cuando quieras vídeo apagado y oídos atentos."
+      },
+      {
+        "n": "Estado de batería",
+        "d": "Ve la batería del dispositivo del bebé en tu pantalla, para que nunca se apague sin avisar."
+      },
+      {
+        "n": "Grabar un clip",
+        "d": "Guarda un momento de vídeo y sonido directamente en tu dispositivo. No se sube nada."
+      },
+      {
+        "n": "Siempre reconecta",
+        "d": "Sobrevive a los cambios wifi/móvil y a la pantalla apagada, y te avisa en cuanto se cae el enlace."
+      },
+      {
+        "n": "30 idiomas",
+        "d": "Toda la interfaz en tu idioma — elígelo una vez y se recuerda."
+      },
+      {
+        "n": "Gratis, sin cuenta",
+        "d": "El vigilabebés básico es gratis y sin registro. Abre el sitio y ya está."
+      }
+    ],
+    "privacyH": "Privado por diseño",
+    "privacyP": "El vídeo y el sonido viajan directamente entre tus dos dispositivos, de igual a igual y cifrados en tránsito. No se graba nada y ningún servidor puede mirar. Sin cuenta, sin anuncios, sin rastreo — solo tus dispositivos hablando entre ellos.",
+    "worksH": "Funciona en los dispositivos que ya tienes",
+    "worksP": "Cualquier móvil, tablet u ordenador con un navegador reciente (Chrome, Safari, Firefox, Edge) sirve — incluidos modelos más antiguos, mientras el navegador esté razonablemente al día. Un dispositivo necesita cámara y micrófono para el lado del bebé; déjalo en el cargador y aguantas toda la noche.",
+    "ctaH": "Pruébalo esta noche",
+    "ctaP": "Coge dos dispositivos, abre el sitio en ambos y comprueba lo rápido que es.",
+    "ctaBtn": "Abrir BabyPhone.online",
+    "shotHome": "Abre el sitio en cualquier dispositivo — sin instalación, sin cuenta.",
+    "shotParent": "La unidad de los padres: vista en directo con hablar de vuelta, nanas, luz nocturna, alerta de llanto y grabación — todo desde tu móvil.",
+    "shotBaby": "La unidad del bebé: cámara en directo, código de sala y QR para emparejar, con controles de cámara, micro, solo audio y cortina de privacidad.",
+    "backToApp": "← Volver a la app",
+    "readTime": "4 min de lectura",
+    "updated": "Actualizado julio de 2026",
+    "wifiH": "Cómo funciona de verdad un vigilabebés por wifi",
+    "wifiP": "Un vigilabebés clásico son dos radios de corto alcance: la unidad con cámara emite, la unidad de los padres recibe, y una pared gruesa acaba con la conversación. Un vigilabebés por wifi envía imagen y sonido como datos por internet. BabyPhone.online usa WebRTC — la misma tecnología con la que tu navegador hace videollamadas — así que los dos dispositivos abren un enlace directo y cifrado entre ellos. El código de sala solo les ayuda a encontrarse al principio, y un relé cifrado interviene únicamente si tu red bloquea el camino directo; ninguno puede ver ni oír la transmisión. La diferencia práctica: el alcance deja de medirse en metros, pero ambos dispositivos sí tienen que estar conectados.",
+    "vsH": "¿App de vigilabebés o un aparato dedicado?",
+    "vsLede": "Ninguno gana del todo — fallan en cosas distintas. Una comparación honesta.",
+    "vs": [
+      {
+        "n": "Alcance",
+        "d": "Un aparato dedicado funciona en todo su alcance de radio y no necesita internet. Una app tiene alcance prácticamente ilimitado, pero ambos dispositivos deben estar en línea."
+      },
+      {
+        "n": "Coste",
+        "d": "Un vigilabebés con vídeo cuesta dinero y acaba como residuo electrónico cuando el niño crece. Esto no cuesta nada y reutiliza aparatos que ya tienes."
+      },
+      {
+        "n": "De viaje",
+        "d": "Una base, una cámara y dos cargadores llenan media maleta. Dos móviles que ya llevabas no ocupan nada."
+      },
+      {
+        "n": "Fiabilidad",
+        "d": "Un aparato dedicado hace una sola cosa, sin actualizaciones del sistema ni llamadas de por medio. Un móvil pide cuidado: al cargador, pantalla encendida, otras apps cerradas."
+      },
+      {
+        "n": "Privacidad",
+        "d": "Las cámaras en la nube guardan las imágenes en los servidores del fabricante; los vigilabebés analógicos baratos se captan desde cerca. Un enlace directo evita ambas cosas — pero tú decides quién recibe el código."
+      },
+      {
+        "n": "Visión nocturna",
+        "d": "Los aparatos dedicados llevan LED infrarrojos; la cámara de un móvil no puede. En una habitación a oscuras lo oirás todo y verás poco — la luz nocturna ayuda."
+      }
+    ],
+    "faqH": "Preguntas frecuentes",
+    "faq": [
+      {
+        "n": "¿Es segura una app de vigilabebés?",
+        "d": "Depende de adónde va el vídeo y de quién puede conectarse. Aquí la transmisión va directa entre tus dos dispositivos, cifrada en tránsito: no hay cuenta en la nube que asaltar ni imágenes en el servidor de otro. La unidad del bebé tampoco responde sola: un dispositivo que escaneó el QR lleva un testigo de un solo uso, y quien escribe el código a mano debe aprobarse en la pantalla de la propia unidad del bebé."
+      },
+      {
+        "n": "¿Funciona un vigilabebés sin wifi?",
+        "d": "Este necesita internet en ambos dispositivos — pero no wifi en concreto, ni la misma red: el dispositivo del bebé puede estar en wifi mientras tú vas con 4G o 5G. Sin internet en ninguno de los dos lados no pueden encontrarse; entonces un vigilabebés de radio clásico es mejor herramienta."
+      },
+      {
+        "n": "¿Cuánto cuesta?",
+        "d": "Nada. Todas las funciones son gratis, no hay versión de pago ni cuenta, y el sitio no lleva anuncios ni rastreadores."
+      },
+      {
+        "n": "¿Puedo usar un móvil viejo?",
+        "d": "Sí, esa es la idea. Cualquier móvil o tablet de repuesto con cámara, micrófono y navegador actualizado sirve, con o sin tarjeta SIM. Déjalo enchufado — transmitir toda la noche vacía la batería."
+      },
+      {
+        "n": "¿Tengo que instalar algo?",
+        "d": "No. Los dos dispositivos simplemente abren la web. No hay nada que descargar, nada que registrar y nada que configurar."
+      },
+      {
+        "n": "¿Cuántas personas pueden mirar a la vez?",
+        "d": "Un segundo espectador puede unirse con el mismo código de sala, pero la unidad del bebé pide aprobación primero en su propia pantalla — nadie mira sin que alguien en la habitación lo permita."
+      }
+    ]
+  },
+  "pt": {
+    "title": "Dois celulares como babá eletrônica grátis — guia",
+    "desc": "Como montar uma babá eletrônica grátis com um celular antigo ou tablet: como funciona uma babá por wifi, a comparação com um aparelho dedicado e todas as funções.",
+    "kicker": "GUIA",
+    "h1": "Dois celulares, uma babá eletrônica grátis: tudo o que o BabyPhone.online faz",
+    "lede": "Sem aparelho para comprar, sem app para instalar, sem conta. Abra o site em dois dispositivos que já tem e fica com uma babá eletrónica privada com vídeo e som ao vivo — em casa ou nas férias.",
+    "introP": "Uma babá eletrónica tradicional é mais um aparelho para comprar, carregar e transportar. O BabyPhone.online segue outro caminho: transforma dispositivos que já tem na câmara e no monitor, diretamente no navegador. Eis porque é tão prático — e o que faz cada botão.",
+    "reuseH": "Dê uma segunda vida a um telemóvel ou tablet antigo",
+    "reuseP": "Aquele telemóvel na gaveta de há dois modelos, ou um tablet que as crianças quase não usam — qualquer um vira a câmara do bebé. Coloque-o junto ao berço, abra babyphone.online, toque em «Baby unit» e ele transmite vídeo e som ao vivo para o seu próprio telemóvel. Sem cartão SIM: o wifi de casa chega. Uma verdadeira câmara de bebé, sem comprar — nem deitar fora — nada.",
+    "travelH": "Feito para férias e noites fora",
+    "travelP": "É aqui que brilha. Nas férias não quer levar uma babá volumosa de curto alcance. Com o BabyPhone.online usa simplesmente os dois telemóveis que já traz consigo: deixe um com o bebé no quarto de hotel ou na tenda, leve o outro para o terraço ou o quarto ao lado. Como a ligação é pela internet (wifi ou 4G/5G), o alcance não se limita a um edifício e não depende do sinal de uma base. Dois telemóveis e está pronto — em qualquer lugar.",
+    "setupH": "Ligados em menos de um minuto",
+    "setupP": "O emparelhamento é propositadamente simples, para o fazer meio a dormir às 3 da manhã.",
+    "steps": [
+      "No dispositivo do bebé, toque em «Baby unit». Mostra um código de 6 caracteres e um código QR.",
+      "No seu próprio telemóvel, toque em «Parent unit».",
+      "Escreva o código ou leia o QR — vê e ouve o seu bebé de imediato."
+    ],
+    "featH": "Cada função, e para que serve",
+    "featLede": "Tudo se controla a partir do telemóvel dos pais, enquanto o dispositivo do bebé apenas transmite. Aqui está a lista completa.",
+    "features": [
+      {
+        "n": "Vídeo e som ao vivo",
+        "d": "Veja e ouça o seu bebé em tempo real, com pouco atraso — também em 4G/5G, não só no wifi."
+      },
+      {
+        "n": "Falar de volta",
+        "d": "Toque e fale: a sua voz sai no dispositivo do bebé, para acalmar sem entrar no quarto."
+      },
+      {
+        "n": "Canções de embalar e música",
+        "d": "Reproduza sons calmos ou os seus MP3 no dispositivo do bebé, direto do seu telemóvel."
+      },
+      {
+        "n": "Luz de presença",
+        "d": "Ligue do seu lado um brilho suave e quente no ecrã do dispositivo do bebé."
+      },
+      {
+        "n": "Alerta de choro",
+        "d": "Seja avisado quando o bebé chora, com uma sensibilidade que define, mais um registo de eventos."
+      },
+      {
+        "n": "Temporizador de sono",
+        "d": "Deixe uma canção tocar e parar sozinha após o tempo que escolher."
+      },
+      {
+        "n": "Só áudio e cortina de privacidade",
+        "d": "Mantenha o som mas esconda a imagem quando quiser vídeo desligado e ouvidos atentos."
+      },
+      {
+        "n": "Estado da bateria",
+        "d": "Veja a bateria do dispositivo do bebé no seu ecrã, para nunca desligar sem avisar."
+      },
+      {
+        "n": "Gravar um clipe",
+        "d": "Guarde um momento de vídeo e som diretamente no seu dispositivo. Nada é enviado para a nuvem."
+      },
+      {
+        "n": "Reconecta sempre",
+        "d": "Aguenta trocas de wifi/móvel e ecrã desligado, e avisa assim que a ligação cai."
+      },
+      {
+        "n": "30 idiomas",
+        "d": "Toda a interface no seu idioma — escolha uma vez e fica memorizado."
+      },
+      {
+        "n": "Grátis, sem conta",
+        "d": "A babá principal é grátis e sem registo. Abra o site e comece."
+      }
+    ],
+    "privacyH": "Privado desde a conceção",
+    "privacyP": "Vídeo e som viajam diretamente entre os seus dois dispositivos, ponto a ponto e cifrados em trânsito. Nada é gravado e nenhum servidor pode espreitar. Sem conta, sem anúncios, sem rastreio — apenas os seus dispositivos a falar entre si.",
+    "worksH": "Funciona nos dispositivos que já tem",
+    "worksP": "Qualquer telemóvel, tablet ou portátil com um navegador recente (Chrome, Safari, Firefox, Edge) serve — incluindo modelos mais antigos, desde que o navegador esteja razoavelmente atualizado. Um dispositivo precisa de câmara e microfone do lado do bebé; deixe-o no carregador e passa a noite toda.",
+    "ctaH": "Experimente hoje à noite",
+    "ctaP": "Pegue em dois dispositivos, abra o site em ambos e veja como é rápido.",
+    "ctaBtn": "Abrir BabyPhone.online",
+    "shotHome": "Abra o site em qualquer dispositivo — sem instalação, sem conta.",
+    "shotParent": "A unidade dos pais: vista ao vivo com falar de volta, canções, luz de presença, alerta de choro e gravação — tudo a partir do telemóvel.",
+    "shotBaby": "A unidade do bebé: câmara ao vivo, código da sala e QR para emparelhar, com controlos de câmara, microfone, só áudio e cortina de privacidade.",
+    "backToApp": "← Voltar à app",
+    "readTime": "4 min de leitura",
+    "updated": "Atualizado julho de 2026",
+    "wifiH": "Como funciona mesmo uma babá eletrônica por wifi",
+    "wifiP": "Uma babá eletrônica clássica são dois rádios de curto alcance: a unidade com câmera transmite, a unidade dos pais recebe, e uma parede grossa encerra a conversa. Uma babá por wifi manda imagem e som como dados pela internet. O BabyPhone.online usa WebRTC — a mesma tecnologia com que o seu navegador faz chamadas de vídeo — para que os dois aparelhos abram uma ligação direta e cifrada entre si. O código da sala só ajuda os dois a se encontrarem no início, e um relé cifrado entra em cena apenas se a sua rede bloquear o caminho direto; nenhum deles consegue ver ou ouvir a transmissão. A diferença prática: o alcance deixa de ser medido em metros, mas os dois aparelhos precisam estar online.",
+    "vsH": "App de babá eletrônica ou aparelho dedicado?",
+    "vsLede": "Nenhum vence em tudo — falham em pontos diferentes. Uma comparação honesta.",
+    "vs": [
+      {
+        "n": "Alcance",
+        "d": "Um aparelho dedicado funciona em todo o seu alcance de rádio e dispensa internet. Um app tem alcance praticamente ilimitado, mas os dois aparelhos precisam estar online."
+      },
+      {
+        "n": "Custo",
+        "d": "Uma babá com vídeo custa dinheiro e vira lixo eletrônico quando a criança cresce. Isto não custa nada e reaproveita aparelhos que você já tem."
+      },
+      {
+        "n": "Em viagem",
+        "d": "Uma base, uma câmera e dois carregadores enchem meia mala. Dois celulares que você já levava não ocupam nada."
+      },
+      {
+        "n": "Confiabilidade",
+        "d": "Um aparelho dedicado faz uma coisa só, sem atualização de sistema nem chamada no meio. Um celular pede cuidado: no carregador, tela acesa, outros apps fechados."
+      },
+      {
+        "n": "Privacidade",
+        "d": "Câmeras na nuvem guardam imagens nos servidores do fabricante; babás analógicas baratas podem ser captadas por perto. Uma ligação direta evita os dois — mas você decide quem recebe o código."
+      },
+      {
+        "n": "Visão noturna",
+        "d": "Aparelhos dedicados têm LEDs infravermelhos; a câmera de um celular não. Num quarto totalmente escuro você ouve tudo e vê pouco — a luz de presença ajuda."
+      }
+    ],
+    "faqH": "Perguntas frequentes",
+    "faq": [
+      {
+        "n": "Um app de babá eletrônica é seguro?",
+        "d": "Depende de para onde vai o vídeo e de quem pode entrar. Aqui a transmissão vai direto entre os seus dois aparelhos, cifrada em trânsito: não há conta na nuvem para invadir nem imagens no servidor de outra pessoa. A unidade do bebê também não atende sozinha: um aparelho que leu o QR carrega um token de uso único, e quem digita o código à mão precisa ser aprovado na tela da própria unidade do bebê."
+      },
+      {
+        "n": "Uma babá eletrônica funciona sem wifi?",
+        "d": "Esta precisa de internet nos dois aparelhos — mas não necessariamente wifi, nem a mesma rede: o aparelho do bebê pode estar no wifi enquanto você usa 4G ou 5G. Sem internet nenhuma dos dois lados eles não se encontram; aí uma babá de rádio clássica é a melhor ferramenta."
+      },
+      {
+        "n": "Quanto custa?",
+        "d": "Nada. Todas as funções são grátis, não há versão paga nem conta, e o site não tem anúncios nem rastreadores."
+      },
+      {
+        "n": "Posso usar um celular antigo?",
+        "d": "Sim, é essa a ideia. Qualquer celular ou tablet sobrando com câmera, microfone e navegador atualizado serve, com ou sem chip. Deixe na tomada — transmitir a noite toda esvazia a bateria."
+      },
+      {
+        "n": "Preciso instalar alguma coisa?",
+        "d": "Não. Os dois aparelhos apenas abrem o site. Não há nada para baixar, nada para cadastrar e nada para configurar."
+      },
+      {
+        "n": "Quantas pessoas podem assistir ao mesmo tempo?",
+        "d": "Um segundo espectador pode entrar com o mesmo código da sala, mas a unidade do bebê pede aprovação primeiro na própria tela — ninguém assiste sem que alguém no quarto concorde."
+      }
+    ]
+  },
+  "it": {
+    "title": "Due telefoni come baby monitor gratis — la guida",
+    "desc": "Come creare un baby monitor gratis con un vecchio telefono o un tablet: come funziona un baby monitor via wifi, il confronto con uno dedicato e tutte le funzioni.",
+    "kicker": "GUIDA",
+    "h1": "Due telefoni, un baby monitor gratis: tutto ciò che BabyPhone.online sa fare",
+    "lede": "Niente dispositivo da comprare, niente app da installare, nessun account. Apri il sito su due dispositivi che hai già e ottieni un baby monitor privato con video e audio dal vivo — a casa o in vacanza.",
+    "introP": "Un baby monitor tradizionale è un altro apparecchio da comprare, caricare e portarsi dietro. BabyPhone.online sceglie un’altra strada: trasforma dispositivi che hai già nella telecamera e nel monitor, direttamente nel browser. Ecco perché è così comodo — e cosa fa ogni pulsante.",
+    "reuseH": "Dai una seconda vita a un vecchio telefono o tablet",
+    "reuseP": "Quel telefono nel cassetto di due modelli fa, o un tablet che i bambini usano a malapena — entrambi diventano la telecamera del bimbo. Appoggialo vicino alla culla, apri babyphone.online, tocca «Baby unit» e trasmette video e audio dal vivo al tuo telefono. Nessuna SIM: basta il wifi di casa. Una vera telecamera per bambini, senza comprare — né buttare — nulla.",
+    "travelH": "Pensato per le vacanze e le notti fuori",
+    "travelP": "È qui che dà il meglio. In vacanza non vuoi portarti un baby monitor ingombrante a corto raggio. Con BabyPhone.online usi semplicemente i due telefoni che hai già con te: lasciane uno con il bimbo nella stanza d’albergo o in tenda, prendi l’altro sul terrazzo o nella stanza accanto. Poiché la connessione passa da internet (wifi o 4G/5G), la portata non si limita a un edificio e non dipendi dal segnale di una base. Due telefoni e sei a posto — ovunque.",
+    "setupH": "Collegati in meno di un minuto",
+    "setupP": "L’abbinamento è volutamente semplice, così lo fai mezzo addormentato alle 3 di notte.",
+    "steps": [
+      "Sul dispositivo del bimbo, tocca «Baby unit». Mostra un codice di 6 caratteri e un codice QR.",
+      "Sul tuo telefono, tocca «Parent unit».",
+      "Digita il codice o scansiona il QR — vedi e senti il tuo bimbo all’istante."
+    ],
+    "featH": "Ogni funzione, e a cosa serve",
+    "featLede": "Tutto si comanda dal telefono del genitore, mentre il dispositivo del bimbo si limita a trasmettere. Ecco l’elenco completo.",
+    "features": [
+      {
+        "n": "Video e audio dal vivo",
+        "d": "Vedi e ascolti il bimbo in tempo reale, con poco ritardo — anche in 4G/5G, non solo in wifi."
+      },
+      {
+        "n": "Rispondere a voce",
+        "d": "Tocca e parla: la tua voce esce sul dispositivo del bimbo, per calmarlo senza entrare in stanza."
+      },
+      {
+        "n": "Ninne nanne e musica",
+        "d": "Riproduci suoni rilassanti o i tuoi MP3 sul dispositivo del bimbo, direttamente dal telefono."
+      },
+      {
+        "n": "Luce notturna",
+        "d": "Accendi dal tuo lato un bagliore morbido e caldo sullo schermo del dispositivo del bimbo."
+      },
+      {
+        "n": "Allarme pianto",
+        "d": "Ricevi un avviso quando il bimbo piange, con una sensibilità che imposti tu, più un registro eventi."
+      },
+      {
+        "n": "Timer del sonno",
+        "d": "Lascia suonare una ninna nanna e fermarsi da sola dopo il tempo che scegli."
+      },
+      {
+        "n": "Solo audio e schermo privacy",
+        "d": "Tieni l’audio ma nascondi l’immagine quando vuoi il video spento e le orecchie aperte."
+      },
+      {
+        "n": "Stato batteria",
+        "d": "Vedi la batteria del dispositivo del bimbo sul tuo schermo, così non si spegne mai di nascosto."
+      },
+      {
+        "n": "Registra una clip",
+        "d": "Salva un momento di video e audio direttamente sul tuo dispositivo. Niente viene caricato online."
+      },
+      {
+        "n": "Si riconnette sempre",
+        "d": "Regge i passaggi wifi/mobile e lo schermo spento, e ti avvisa appena il collegamento cade."
+      },
+      {
+        "n": "30 lingue",
+        "d": "Tutta l’interfaccia nella tua lingua — scegli una volta e viene ricordata."
+      },
+      {
+        "n": "Gratis, senza account",
+        "d": "Il baby monitor di base è gratuito e senza registrazione. Apri il sito e via."
+      }
+    ],
+    "privacyH": "Privato per progettazione",
+    "privacyP": "Video e audio viaggiano direttamente tra i tuoi due dispositivi, peer-to-peer e cifrati in transito. Nulla viene registrato e nessun server può guardare. Nessun account, nessuna pubblicità, nessun tracciamento — solo i tuoi dispositivi che si parlano.",
+    "worksH": "Funziona sui dispositivi che hai già",
+    "worksP": "Qualsiasi telefono, tablet o portatile con un browser recente (Chrome, Safari, Firefox, Edge) va bene — anche modelli più vecchi, purché il browser sia ragionevolmente aggiornato. Un dispositivo ha bisogno di telecamera e microfono per il lato bimbo; tienilo sotto carica e arrivi a fine notte.",
+    "ctaH": "Provalo stasera",
+    "ctaP": "Prendi due dispositivi, apri il sito su entrambi e guarda quanto è veloce.",
+    "ctaBtn": "Apri BabyPhone.online",
+    "shotHome": "Apri il sito su qualsiasi dispositivo — senza installazione, senza account.",
+    "shotParent": "L’unità genitore: vista dal vivo con risposta a voce, ninne nanne, luce notturna, allarme pianto e registrazione — tutto dal telefono.",
+    "shotBaby": "L’unità bimbo: telecamera dal vivo, codice stanza e QR per l’abbinamento, con comandi telecamera, microfono, solo audio e schermo privacy.",
+    "backToApp": "← Torna all’app",
+    "readTime": "4 min di lettura",
+    "updated": "Aggiornato luglio 2026",
+    "wifiH": "Come funziona davvero un baby monitor via wifi",
+    "wifiP": "Un baby monitor classico è una coppia di radio a corto raggio: l'unità con telecamera trasmette, l'unità genitore riceve, e un muro spesso chiude la conversazione. Un baby monitor via wifi manda invece video e audio come dati su internet. BabyPhone.online usa WebRTC — la stessa tecnologia con cui il tuo browser fa le videochiamate — così i due dispositivi aprono un collegamento diretto e cifrato tra loro. Il codice stanza serve solo a farli trovare all'inizio, e un relay cifrato interviene unicamente se la tua rete blocca il percorso diretto; nessuno dei due può vedere o sentire il flusso. La differenza pratica: la portata non si misura più in metri, ma entrambi i dispositivi devono essere online.",
+    "vsH": "App baby monitor o apparecchio dedicato?",
+    "vsLede": "Nessuno dei due vince su tutto — falliscono in punti diversi. Un confronto onesto.",
+    "vs": [
+      {
+        "n": "Portata",
+        "d": "Un apparecchio dedicato funziona ovunque entro la sua portata radio e non richiede internet. Un'app ha portata praticamente illimitata, ma entrambi i dispositivi devono essere online."
+      },
+      {
+        "n": "Costo",
+        "d": "Un baby monitor con video costa denaro vero e diventa rifiuto elettronico quando il bambino cresce. Questo non costa nulla e riusa dispositivi che hai già."
+      },
+      {
+        "n": "In viaggio",
+        "d": "Base, telecamera e due caricatori riempiono mezza borsa. Due telefoni che avevi comunque con te non occupano nulla."
+      },
+      {
+        "n": "Affidabilità",
+        "d": "Un apparecchio dedicato fa una cosa sola, senza aggiornamenti di sistema o chiamate in mezzo. Un telefono richiede attenzione: sotto carica, schermo sveglio, altre app chiuse."
+      },
+      {
+        "n": "Privacy",
+        "d": "Le telecamere cloud tengono le immagini sui server del produttore; i baby monitor analogici economici si captano nelle vicinanze. Un collegamento diretto evita entrambi — ma sei tu a decidere chi riceve il codice."
+      },
+      {
+        "n": "Visione notturna",
+        "d": "Gli apparecchi dedicati hanno LED a infrarossi; la fotocamera di un telefono no. In una stanza buia sentirai tutto e vedrai poco — la luce notturna aiuta."
+      }
+    ],
+    "faqH": "Domande frequenti",
+    "faq": [
+      {
+        "n": "Un'app baby monitor è sicura?",
+        "d": "Dipende da dove va il video e da chi può collegarsi. Qui il flusso passa direttamente tra i tuoi due dispositivi, cifrato in transito: non c'è un account cloud da violare né filmati sul server di qualcun altro. L'unità bimbo non risponde da sola: un dispositivo che ha scansionato il QR porta un token monouso, e chi digita il codice a mano va approvato sullo schermo dell'unità bimbo."
+      },
+      {
+        "n": "Un baby monitor funziona senza wifi?",
+        "d": "Questo ha bisogno di internet su entrambi i dispositivi — ma non necessariamente wifi, né la stessa rete: il dispositivo del bimbo può stare in wifi mentre tu sei in 4G o 5G. Senza alcuna connessione da entrambe le parti i dispositivi non si trovano; allora un baby monitor radio classico è lo strumento migliore."
+      },
+      {
+        "n": "Quanto costa?",
+        "d": "Nulla. Tutte le funzioni sono gratuite, non c'è una versione a pagamento né un account, e il sito non ha pubblicità né tracciatori."
+      },
+      {
+        "n": "Posso usare un vecchio telefono?",
+        "d": "Sì, è proprio l'idea. Va bene qualsiasi telefono o tablet di scorta con fotocamera, microfono e browser aggiornato, con o senza SIM. Tienilo sotto carica — trasmettere tutta la notte svuota la batteria."
+      },
+      {
+        "n": "Devo installare qualcosa?",
+        "d": "No. Entrambi i dispositivi aprono semplicemente il sito. Non c'è nulla da scaricare, nulla da registrare e nulla da configurare."
+      },
+      {
+        "n": "Quante persone possono guardare insieme?",
+        "d": "Un secondo spettatore può entrare con lo stesso codice stanza, ma l'unità bimbo chiede prima l'approvazione sul proprio schermo — nessuno guarda senza che qualcuno nella stanza sia d'accordo."
+      }
+    ]
+  }
+}

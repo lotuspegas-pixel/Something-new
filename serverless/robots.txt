@@ -1,4 +1,11 @@
+# BabyPhone.online — a free baby monitor that runs in the browser.
+# Everything here may be crawled and indexed: there is no login, no paywall
+# and no user-generated area, so nothing is disallowed.
+
 User-agent: *
 Allow: /
+
+# Machine-readable summary for AI answer engines:
+# https://babyphone.online/llms.txt
 
 Sitemap: https://babyphone.online/sitemap.xml

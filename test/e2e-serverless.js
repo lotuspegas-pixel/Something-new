@@ -70,6 +70,17 @@ function findExecutable() {
     window.BABYFOON_RECONNECT_DELAYS = [400, 700];
     window.BABYFOON_CONNECT_TIMEOUT = 4000;
     window.BABYFOON_HEARTBEAT_TIMEOUT = 5000;
+    window.BABYFOON_AUTH_TIMEOUT_RETRY = 8000;
+    // Alle RTCPeerConnections onthouden, zodat een test een netwerkwegval kan
+    // nabootsen zonder de pagina te herladen: het toestel blijft dan hetzelfde,
+    // precies zoals bij een echte wifi-hapering.
+    (function () {
+      const O = window.RTCPeerConnection;
+      window.__pcs = [];
+      const W = function (...a) { const pc = new O(...a); window.__pcs.push(pc); return pc; };
+      W.prototype = O.prototype;
+      window.RTCPeerConnection = W;
+    })();
   `;
 
   const browser = await chromium.launch({
@@ -80,6 +91,19 @@ function findExecutable() {
   let fail = false;
   const check = (n, c) => { console.log((c ? '✅' : '❌') + ' ' + n); if (!c) fail = true; };
   const errs = [];
+  // De babyunit vraagt toestemming zodra iemand alleen de kamercode intypt
+  // (zonder het token uit de QR). Hier bevestigen we dat als de ouder.
+  const approve = async (p) => {
+    for (let i = 0; i < 40; i++) {
+      const zichtbaar = await p.evaluate(() => {
+        const b = document.getElementById('babyApproval');
+        return !!b && !b.classList.contains('hidden');
+      });
+      if (zichtbaar) { await p.click('#btnApproveYes'); return true; }
+      await sleep(250);
+    }
+    return false;
+  };
   const mk = async () => {
     const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
     await c.addInitScript(INIT);
@@ -108,6 +132,8 @@ function findExecutable() {
   await parent.click('#pickParent');
   await parent.fill('#parentOfferInput', code);
   await parent.click('#parentGenBtn');
+  const goedgekeurd = await approve(baby);
+  check('Babyunit vraagt toestemming bij handmatige code (en die is gegeven)', goedgekeurd);
   let info = {};
   const t0 = Date.now();
   while (Date.now() - t0 < 25000) {
@@ -126,7 +152,12 @@ function findExecutable() {
   // ---- playlist / besturingskanaal ----
   await sleep(800);
   const titles = await parent.$$eval('#playlist .track .tt', (els) => els.map((e) => e.textContent.trim())).catch(() => []);
-  check('Playlist geladen bij de ouder (' + titles.length + ' nummers)', titles.length === 5);
+  // Aantal niet vastspijkeren: lees het uit playlist.json, zodat het toevoegen
+  // van een slaapliedje deze test niet omgooit. Regen- en ruisgeluiden blijven
+  // eruit; die controle staat hieronder.
+  const verwacht = JSON.parse(fs.readFileSync(path.join(ROOT, 'music', 'playlist.json'), 'utf8')).songs.length;
+  check('Playlist geladen bij de ouder (' + titles.length + ' van ' + verwacht + ' nummers)', titles.length === verwacht);
+  check('Geen regen-/ruisgeluiden meer in de playlist', !titles.some((t) => /noise|rain|regen|ruis/i.test(t)));
   await parent.evaluate(() => document.querySelector('#playlist .track').click());
   await sleep(1200);
   check('Muziekcommando bereikt de baby via het datakanaal',
@@ -146,19 +177,20 @@ function findExecutable() {
     chips: document.querySelectorAll('#chips .chip').length,
     tracksVisible: !!document.querySelector('#playlist .track') && getComputedStyle(document.querySelector('#playlist .track')).display !== 'none',
   }));
-  check('Zijbalk opent Lullabies-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 4 && lulla.tracksVisible);
+  check('Zijbalk opent Lullabies-weergave (chips: ' + lulla.chips + ')', lulla.act && !lulla.mon && lulla.chips === 2 && lulla.tracksVisible);
   await parent.click('.dnav[data-view="settings"]');
   const setv = await parent.evaluate(() => ({
     act: document.getElementById('dviewSettings').classList.contains('active'),
     room: document.getElementById('roomLabel2').textContent.trim(),
   }));
   check('Settings-weergave toont kamercode', setv.act && setv.room === code);
-  // Plus-paneel: zonder billing-config nette "binnenkort"-status
-  const plus = await parent.evaluate(() => ({
-    soon: !document.getElementById('plusState').classList.contains('hidden'),
-    up: document.getElementById('plusUpgrade').classList.contains('hidden'),
-  }));
-  check('Plus-paneel in rustige binnenkort-status (ongeconfigureerd)', plus.soon && plus.up);
+  // De dienst is volledig gratis: er mag nergens nog een betaal-/Plus-element staan.
+  const geenBetaling = await parent.evaluate(() => {
+    const ids = ['plusPanel', 'plusState', 'plusUpgrade', 'plusManage', 'plusRestore'];
+    const woorden = /(upgrade to plus|manage subscription|restore purchase|babyphone plus)/i;
+    return ids.every((id) => !document.getElementById(id)) && !woorden.test(document.body.innerText);
+  });
+  check('Geen betaal-/Plus-elementen meer aanwezig (dienst is gratis)', geenBetaling);
   await parent.click('.dnav[data-view="monitor"]');
 
   // ---- sleep timer: zichtbaar aftellen + baby-tegel ----
@@ -177,6 +209,31 @@ function findExecutable() {
   await baby.click('#tgAudioOnly'); await sleep(900);
   const priv2 = await parent.$eval('#privVal', (e) => e.textContent.trim());
   check('Beeld terug synct ook ("' + priv2 + '")', priv2 === 'Camera visible');
+
+  // ---- camera-herstel: OS beëindigt het spoor hard → automatisch herstel ----
+  // Simuleert dat het OS de camera geforceerd stopt (bv. na lang op de
+  // achtergrond). Een 'ended'-event wordt niet door track.stop() gevuurd,
+  // dus we dispatchen het zelf op het echte MediaStreamTrack-object —
+  // functioneel identiek aan wat de browser zelf zou vuren.
+  const recovery = await baby.evaluate(async () => {
+    const before = document.getElementById('bPreview').srcObject.getVideoTracks()[0];
+    const beforeId = before && before.id;
+    before.dispatchEvent(new Event('ended'));
+    const start = Date.now();
+    while (Date.now() - start < 6000) {
+      const t = document.getElementById('bPreview').srcObject.getVideoTracks()[0];
+      if (t && t.id !== beforeId && t.readyState === 'live') return { ok: true, beforeId, afterId: t.id };
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return { ok: false, beforeId };
+  });
+  check('Camera herstelt automatisch na "ended"-event', recovery.ok);
+  await sleep(500);
+  const stillLive = await parent.evaluate(() => {
+    const v = document.getElementById('video');
+    return v && v.videoWidth > 0;
+  });
+  check('Ouder blijft beeld ontvangen na camera-herstel', stillLive);
 
   // ---- foutstatus: verkeerde code ----
   const cE = await mk();
@@ -214,6 +271,485 @@ function findExecutable() {
   await parent.click('#phRetry'); await sleep(600);
   const retrying = await parent.$eval('#connText', (e) => e.textContent.trim());
   check('Retry-knop start een nieuwe poging ("' + retrying + '")', retrying.length > 0);
+
+  // ---- voorgrond-wacht: verbinding terug in beeld forceert meteen een nieuwe poging ----
+  // Eigen paar met een lange backoff-stap, zodat er een ruime marge is
+  // tussen "meteen door de voorgrond-wacht" en "pas na de normale wachttijd".
+  const INIT_SLOW = INIT + `window.BABYFOON_RECONNECT_DELAYS = [6000];`;
+  const mkSlow = async () => {
+    const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
+    await c.addInitScript(INIT_SLOW);
+    return c;
+  };
+  const cB2 = await mkSlow();
+  const baby2 = await cB2.newPage();
+  await baby2.goto(BASE); await sleep(400);
+  await baby2.click('#pickBaby');
+  let code2 = '';
+  for (let i = 0; i < 40; i++) {
+    code2 = await baby2.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (code2 && code2 !== '······' && code2.length >= 6) break;
+    await sleep(300);
+  }
+  const cP2 = await mkSlow();
+  const parent2 = await cP2.newPage();
+  await parent2.goto(BASE); await sleep(300);
+  await parent2.click('#pickParent');
+  await parent2.fill('#parentOfferInput', code2);
+  await parent2.click('#parentGenBtn');
+  await approve(baby2);
+  let w2 = 0;
+  const t02 = Date.now();
+  while (Date.now() - t02 < 20000) {
+    w2 = await parent2.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w2 > 0) break;
+    await sleep(300);
+  }
+  check('Voorgrond-wacht-test: live video ("' + w2 + 'px")', w2 > 0);
+  await cB2.close(); // babyunit valt weg → ouder plant een lange (6s) herverbindingspoging
+  let waitingSince = 0;
+  const tW = Date.now();
+  while (Date.now() - tW < 10000) {
+    const txt = await parent2.$eval('#connText', (e) => e.textContent.trim()).catch(() => '');
+    if (/\(\d\/\d\)/.test(txt)) { waitingSince = Date.now(); break; }
+    await sleep(100);
+  }
+  check('Wegval gedetecteerd (backoff gepland)', waitingSince > 0);
+  await parent2.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  let forcedAt = 0;
+  const tF = Date.now();
+  while (Date.now() - tF < 3000) {
+    const connecting = await parent2.evaluate(() => {
+      const pcn = document.getElementById('parentConnecting');
+      return pcn && !pcn.classList.contains('hidden');
+    });
+    if (connecting) { forcedAt = Date.now(); break; }
+    await sleep(50);
+  }
+  const forcedFast = forcedAt > 0 && (forcedAt - waitingSince) < 3000;
+  check('visibilitychange forceert meteen een nieuwe poging (i.p.v. de volle 6s wachttijd)', forcedFast);
+  await cB2.close().catch(() => {});
+  await cP2.close();
+
+  // ---- camerakeuze + LED-lampje (babyunit met 2 camera's en torch-steun) ----
+  // De babyunit-context simuleert twee camera's en torch-ondersteuning, zodat
+  // de volledige keten baby → besturingskanaal → ouder-UI getest wordt.
+  const capInit = INIT + `
+    navigator.mediaDevices.enumerateDevices = async () => ([
+      { kind: 'videoinput', deviceId: 'cam-a', label: 'Back camera' },
+      { kind: 'videoinput', deviceId: 'cam-b', label: 'Front camera' },
+    ]);
+    try { MediaStreamTrack.prototype.getCapabilities = function () { return { torch: true }; }; } catch (e) {}
+    try { MediaStreamTrack.prototype.applyConstraints = function () { return Promise.resolve(); }; } catch (e) {}
+  `;
+  const mkCap = async () => { const c = await browser.newContext({ permissions: ['camera', 'microphone'] }); await c.addInitScript(capInit); return c; };
+  const cB3 = await mkCap();
+  const baby3 = await cB3.newPage();
+  baby3.on('pageerror', (e) => errs.push('BABY3: ' + e.message));
+  await baby3.goto(BASE); await sleep(400);
+  await baby3.click('#pickBaby');
+  let code3 = '';
+  for (let i = 0; i < 40; i++) {
+    code3 = await baby3.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (code3 && code3 !== '······' && code3.length >= 6) break;
+    await sleep(300);
+  }
+  const cP3 = await mkCap();
+  const parent3 = await cP3.newPage();
+  parent3.on('pageerror', (e) => errs.push('PARENT3: ' + e.message));
+  await parent3.goto(BASE); await sleep(300);
+  await parent3.click('#pickParent');
+  await parent3.fill('#parentOfferInput', code3);
+  await parent3.click('#parentGenBtn');
+  await approve(baby3);
+  // wachten tot verbonden, dan de Instellingen-weergave openen (daar staan de rijen)
+  const t03 = Date.now();
+  while (Date.now() - t03 < 20000) {
+    const w = await parent3.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w > 0) break;
+    await sleep(300);
+  }
+  await parent3.click('.dnav[data-view="settings"]');
+  const camRow = await parent3.waitForSelector('#rowCamera:not(.hidden)', { timeout: 20000 }).then(() => true).catch(() => false);
+  check('Camerakeuze verschijnt bij ≥2 camera’s', camRow);
+  const camOpts = await parent3.$$eval('#camSelect option', (els) => els.length).catch(() => 0);
+  check('Camerakeuze toont beide camera’s (' + camOpts + ')', camOpts === 2);
+  const ledRow = await parent3.waitForSelector('#rowLed:not(.hidden)', { timeout: 20000 }).then(() => true).catch(() => false);
+  check('LED-rij verschijnt bij torch-ondersteuning', ledRow);
+  await parent3.click('#ledToggle');
+  const ledOn = await parent3.waitForFunction(() => document.getElementById('ledToggle').classList.contains('on'), { timeout: 8000 }).then(() => true).catch(() => false);
+  check('LED-knop schakelt naar aan', ledOn);
+  // Zichtbare "Wissel camera"-knoppen op beide units (het gebrek hieraan was
+  // de klacht: de functie was nergens te vinden).
+  const babyFlipVisible = await baby3.evaluate(() => {
+    const b = document.getElementById('tgFlipCam');
+    if (!b) return false;
+    const r = b.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  check('Babyunit toont een zichtbare "Wissel camera"-knop', babyFlipVisible);
+  await parent3.click('.dnav[data-view="monitor"]');
+  const parentFlipVisible = await parent3.evaluate(() => {
+    const b = document.getElementById('btnFlipCam');
+    if (!b) return false;
+    const r = b.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  check('Ouderunit toont een zichtbare "Wissel camera"-knop op de monitor', parentFlipVisible);
+  await cB3.close().catch(() => {});
+  await cP3.close();
+
+  // ---- camera wisselen: er moet écht een ánder toestel actief worden ------
+  // De klacht: "je ziet op de babyunit dat er iets gebeurt, maar daarna
+  // verschijnt hetzelfde camerabeeld weer" (iPad Pro 2022). Twee gedragingen
+  // van iOS/iPadOS veroorzaken dat, en beide worden hier nagebootst:
+  //
+  //   IPAD_SIM  zolang er nog een videospoor van de camera leeft, geeft
+  //             getUserMedia dat toestel terug — wat je ook vraagt. Alleen wie
+  //             het oude spoor éérst stopt, krijgt de gevraagde camera.
+  //   LOCK_SIM  elke andere camera weigert open te gaan; dan moet de
+  //             oorspronkelijke camera terugkomen (beeld nooit zwart) én moet
+  //             de app dat eerlijk melden in plaats van "Camera switched".
+  //
+  // Deze tests draaien op een tweede Chromium met twee nepcamera's, want de
+  // standaardbrowser hierboven heeft er maar één.
+  const browser2 = await chromium.launch({
+    executablePath: findExecutable(),
+    headless: true,
+    args: [
+      '--use-fake-device-for-media-stream=device-count=2',
+      '--use-fake-ui-for-media-stream',
+      '--autoplay-policy=no-user-gesture-required',
+    ],
+  });
+  const IPAD_SIM = `
+    (function () {
+      const real = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      const live = [];
+      navigator.mediaDevices.getUserMedia = async function (c) {
+        let req = c;
+        if (c && c.video && live.length) {
+          req = Object.assign({}, c, { video: { deviceId: { exact: live[0] } } });
+        }
+        const s = await real(req);
+        s.getVideoTracks().forEach(function (t) {
+          let id = '';
+          try { id = (t.getSettings() || {}).deviceId || ''; } catch (e) {}
+          live.push(id);
+          const stop = t.stop.bind(t);
+          t.stop = function () {
+            const i = live.indexOf(id); if (i >= 0) live.splice(i, 1);
+            return stop();
+          };
+        });
+        return s;
+      };
+    })();
+  `;
+  const LOCK_SIM = `
+    (function () {
+      const real = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      let first = '';
+      navigator.mediaDevices.getUserMedia = async function (c) {
+        if (c && c.video && first) {
+          const d = c.video.deviceId;
+          const want = d && (d.exact || d);
+          if (want !== first) throw new DOMException('camera in use', 'NotReadableError');
+        }
+        const s = await real(c);
+        s.getVideoTracks().forEach(function (t) {
+          if (!first) { try { first = (t.getSettings() || {}).deviceId || ''; } catch (e) {} }
+        });
+        return s;
+      };
+    })();
+  `;
+  // Babyunit + ouderunit koppelen op een gegeven browser; extraInit draait
+  // alleen op de babyunit (daar zit de camera).
+  let camPairN = 0;
+  const pairUp = async (br, extraInit) => {
+    const tag = 'CAM' + (++camPairN);
+    const cb = await br.newContext({ permissions: ['camera', 'microphone'] });
+    await cb.addInitScript(INIT + (extraInit || ''));
+    const bp = await cb.newPage();
+    bp.on('pageerror', (e) => errs.push('BABY-' + tag + ': ' + e.message));
+    await bp.goto(BASE); await sleep(400);
+    await bp.click('#pickBaby');
+    let cd = '';
+    for (let i = 0; i < 40; i++) {
+      cd = await bp.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+      if (/^[A-Z0-9]{6}$/.test(cd)) break;
+      await sleep(300);
+    }
+    const cp = await br.newContext({ permissions: ['camera', 'microphone'] });
+    await cp.addInitScript(INIT);
+    const pp = await cp.newPage();
+    pp.on('pageerror', (e) => errs.push('PARENT-' + tag + ': ' + e.message));
+    await pp.goto(BASE); await sleep(300);
+    await pp.click('#pickParent');
+    await pp.fill('#parentOfferInput', cd);
+    await pp.click('#parentGenBtn');
+    await approve(bp);
+    const t = Date.now();
+    while (Date.now() - t < 25000) {
+      const w = await pp.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+      if (w > 0) break;
+      await sleep(300);
+    }
+    return { cb, cp, baby: bp, parent: pp };
+  };
+  // Welk cameratoestel staat er nu echt aan op de babyunit?
+  const camState = (pg) => pg.evaluate(() => {
+    const v = document.getElementById('bPreview');
+    const st = v && v.srcObject;
+    const t = st && st.getVideoTracks()[0];
+    if (!t) return { id: '', label: '', live: false };
+    let id = '';
+    try { id = (t.getSettings() || {}).deviceId || ''; } catch (e) {}
+    return { id: id, label: t.label, live: t.readyState === 'live' };
+  });
+  const flipNote = (pg) => pg.$eval('#flipCamNote', (e) => e.textContent.trim()).catch(() => '(geen melding)');
+  // De toast leegmaken en daarna op de eerstvolgende wachten. De toast bestaat
+  // in élke versie van de app, dus meldingen die híerop worden gecontroleerd
+  // meten echt gedrag en niet enkel of er nieuwe markup aanwezig is.
+  const clearToast = (pg) => pg.evaluate(() => {
+    const t = document.getElementById('toast');
+    if (t) { t.textContent = ''; t.classList.add('hidden'); }
+  });
+  const waitToast = async (pg, ms) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < (ms || 9000)) {
+      const cur = await pg.evaluate(() => {
+        const t = document.getElementById('toast');
+        return t && !t.classList.contains('hidden') ? t.textContent.trim() : '';
+      });
+      if (cur) return cur;
+      await sleep(150);
+    }
+    return '(geen melding)';
+  };
+
+  // 1) twee camera's + iPadOS-gedrag → er moet een ánder deviceId actief worden
+  const sA = await pairUp(browser2, IPAD_SIM);
+  const camBefore = await camState(sA.baby);
+  await sA.baby.click('#tgFlipCam');
+  await sleep(2500);
+  const camAfter = await camState(sA.baby);
+  check(
+    'Camera wisselen levert écht een ánder toestel op ("' + camBefore.label + '" → "' + camAfter.label + '")',
+    !!camBefore.id && !!camAfter.id && camAfter.id !== camBefore.id && camAfter.live
+  );
+  check('Melding klopt bij een geslaagde wissel ("' + (await flipNote(sA.baby)) + '")',
+    (await flipNote(sA.baby)) === 'Camera switched');
+  // Vangrail: de nieuwe camera moet écht beelden leveren — 'readyState: live'
+  // zegt op zichzelf niets. Dit meet op de babyunit zelf of het voorbeeldbeeld
+  // doorloopt op de nieuwe camera, én of het WebRTC-spoor daadwerkelijk is
+  // omgehangen naar dat nieuwe apparaat.
+  //
+  // Bewust NIET gemeten: of de ouderunit na de wissel nog frames binnenkrijgt.
+  // Chromium's tweede nepcamera levert wel beeld aan een <video>, maar voedt de
+  // WebRTC-encoder niet (media-source blijft op 0 fps). Losstaand nagemeten in
+  // een kale RTCPeerConnection-loopback, buiten deze app om: replaceTrack naar
+  // nepcamera 2 → 0 gecodeerde frames, naar een vers spoor van nepcamera 1 → ~50.
+  // Dat is een beperking van de testcamera's, niet van de app; daarop
+  // controleren zou een fout melden die er niet is.
+  const babyFrames = async () => sA.baby.evaluate(() => {
+    const v = document.getElementById('bPreview');
+    return v ? v.currentTime : 0;
+  });
+  const fr1 = await babyFrames();
+  await sleep(1500);
+  const fr2 = await babyFrames();
+  check('Nieuwe camera levert echt beeld op de babyunit (' + fr1.toFixed(2) + 's → ' + fr2.toFixed(2) + 's)',
+    fr2 - fr1 > 0.3);
+  const senderLabel = await sA.baby.evaluate(() => {
+    for (const pc of (window.__pcs || [])) {
+      const s = pc.getSenders && pc.getSenders().find((x) => x.track && x.track.kind === 'video');
+      if (s) return s.track.label;
+    }
+    return '';
+  });
+  check('WebRTC-zender staat op de nieuwe camera ("' + senderLabel + '")', senderLabel === camAfter.label);
+  await sA.cb.close().catch(() => {}); await sA.cp.close().catch(() => {});
+
+  // 2) maar één camera → eigen melding, niet "gewisseld" (browser met 1 nepcamera).
+  // De oude code meldde hier onvoorwaardelijk "Camera switched": de app loog.
+  const sB = await pairUp(browser, '');
+  await clearToast(sB.baby);
+  await sB.baby.click('#tgFlipCam');
+  const toastOne = await waitToast(sB.baby);
+  check('Eén camera krijgt een eigen melding i.p.v. "gewisseld" ("' + toastOne + '")',
+    toastOne === 'This device has only one camera');
+  check('Eén camera: blijvende melding onder de knop ("' + (await flipNote(sB.baby)) + '")',
+    (await flipNote(sB.baby)) === 'This device has only one camera');
+  await sB.cb.close().catch(() => {}); await sB.cp.close().catch(() => {});
+
+  // 3) wisselen lukt echt niet → oorspronkelijke camera terug + eerlijke melding.
+  // De eerste controle is een vangrail bij de nieuwe volgorde (oude spoor éérst
+  // stoppen): dat mag nooit een zwart beeld achterlaten als er daarna geen
+  // enkele camera meer opengaat.
+  const sC = await pairUp(browser2, LOCK_SIM);
+  const lockBefore = await camState(sC.baby);
+  await clearToast(sC.baby);
+  await sC.baby.click('#tgFlipCam');
+  const toastFail = await waitToast(sC.baby);
+  const lockAfter = await camState(sC.baby);
+  check('Mislukte wissel: beeld blijft niet zwart, oorspronkelijke camera komt terug',
+    lockAfter.live && !!lockAfter.id && lockAfter.id === lockBefore.id);
+  check('Mislukte wissel: melding zegt dat er niet gewisseld is ("' + toastFail + '")',
+    toastFail === 'Switching failed — the same camera stayed on');
+  await sC.cb.close().catch(() => {}); await sC.cp.close().catch(() => {});
+  await browser2.close();
+
+  // ---- herverbinden zonder opnieuw toestemming te vragen ----
+  // Gemelde fout: na een wegval vroeg de babyunit opnieuw om toestemming voor
+  // hetzelfde toestel. Dat is onmogelijk te geven als je niet bij de babyunit
+  // staat, dus de ouderunit kwam nooit meer terug. Oorzaak: PeerJS deelt bij
+  // elke herverbinding een nieuw peer-id uit, en daarop werd vergeleken.
+  const cB4 = await mk();
+  const baby4 = await cB4.newPage();
+  baby4.on('pageerror', (e) => errs.push('BABY4: ' + e.message));
+  await baby4.goto(BASE); await sleep(400);
+  await baby4.click('#pickBaby');
+  let code4 = '';
+  for (let i = 0; i < 40; i++) {
+    code4 = await baby4.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (/^[A-Z0-9]{6}$/.test(code4)) break;
+    await sleep(300);
+  }
+  const cP4 = await mk();
+  const parent4 = await cP4.newPage();
+  parent4.on('pageerror', (e) => errs.push('PARENT4: ' + e.message));
+  await parent4.goto(BASE); await sleep(300);
+  await parent4.click('#pickParent');
+  await parent4.fill('#parentOfferInput', code4);
+  await parent4.click('#parentGenBtn');
+  await approve(baby4);
+  let w4 = 0;
+  const t04 = Date.now();
+  while (Date.now() - t04 < 25000) {
+    w4 = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w4 > 0) break;
+    await sleep(300);
+  }
+  check('Herverbind-test: eerst gewoon live beeld ("' + w4 + 'px")', w4 > 0);
+  // Wegval nabootsen. videoWidth blijft daarna op de laatste waarde staan,
+  // dus het element ook leegmaken — anders meet "beeld terug" het oude frame.
+  await parent4.evaluate(() => {
+    window.__pcs.forEach((pc) => { try { pc.close(); } catch (e) {} });
+    const v = document.getElementById('video');
+    if (v) { v.srcObject = null; }
+  });
+  await sleep(500);
+  const wLeeg = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+  check('Herverbind-test: beeld is echt weg na de wegval ("' + wLeeg + 'px")', wLeeg === 0);
+  let opnieuwGevraagd = false, terugNa = 0;
+  const tHerstel = Date.now();
+  while (Date.now() - tHerstel < 30000) {
+    if (!opnieuwGevraagd) {
+      const zichtbaar = await baby4.evaluate(() => {
+        const b = document.getElementById('babyApproval');
+        return !!b && !b.classList.contains('hidden');
+      });
+      if (zichtbaar) opnieuwGevraagd = true;
+    }
+    if (!terugNa) {
+      const w = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+      if (w > 0) terugNa = Date.now() - tHerstel;
+    }
+    if (terugNa && Date.now() - tHerstel > 6000) break;
+    await sleep(250);
+  }
+  check('Babyunit vraagt NIET opnieuw toestemming voor hetzelfde toestel', !opnieuwGevraagd);
+  check('Beeld komt vanzelf terug na herverbinden (' + (terugNa ? terugNa + 'ms' : 'niet') + ')', terugNa > 0);
+  await cB4.close(); await cP4.close();
+
+  // ---- stabiliteit: verbinding blijft staan zonder Battery Status API ----
+  // Gemelde fout: "verbinding valt na een aantal seconden weg, opnieuw
+  // verbinden gaat wel goed". Oorzaak: de babyunit beantwoordde de hartslag
+  // ('ping') alleen door de batterijstand te sturen, en reportBattery() stuurt
+  // niets zodra navigator.getBattery ontbreekt (Safari op iPhone/iPad en
+  // macOS, Firefox, oudere Android-webviews). De ouderunit zag dan elke
+  // HEARTBEAT_TIMEOUT een wegval die er niet was.
+  const INIT_NOBATT = INIT + `
+    try { delete Navigator.prototype.getBattery; } catch (e) {}
+    try { delete navigator.getBattery; } catch (e) {}
+  `;
+  // De ouderunit legt elke statuswijziging vast, zodat we kunnen TELLEN hoe
+  // vaak er een herverbinding gepland wordt in plaats van er één moment uit
+  // te pikken (video.videoWidth blijft na een wegval op de oude waarde staan
+  // en bewijst dus niets).
+  const INIT_WATCH = INIT + `
+    window.__statuses = [];
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('connText');
+      if (!el) return;
+      new MutationObserver(() => window.__statuses.push(el.textContent))
+        .observe(el, { childList: true, characterData: true, subtree: true });
+    });
+  `;
+  const mkWith = async (init) => {
+    const c = await browser.newContext({ permissions: ['camera', 'microphone'] });
+    await c.addInitScript(init);
+    return c;
+  };
+  const cB5 = await mkWith(INIT_NOBATT);
+  const baby5 = await cB5.newPage();
+  baby5.on('pageerror', (e) => errs.push('BABY5: ' + e.message));
+  await baby5.goto(BASE); await sleep(400);
+  // Eerst bewijzen dat de nabootsing werkt — anders zou de test slagen omdat
+  // er niets nagebootst is.
+  const battWeg = await baby5.evaluate(() => !('getBattery' in navigator));
+  check('Stabiliteitstest: babyunit heeft echt geen Battery Status API', battWeg);
+  await baby5.click('#pickBaby');
+  let code5 = '';
+  for (let i = 0; i < 40; i++) {
+    code5 = await baby5.$eval('#babyCodeText', (e) => e.textContent.trim()).catch(() => '');
+    if (/^[A-Z0-9]{6}$/.test(code5)) break;
+    await sleep(300);
+  }
+  const cP5 = await mkWith(INIT_WATCH);
+  const parent5 = await cP5.newPage();
+  parent5.on('pageerror', (e) => errs.push('PARENT5: ' + e.message));
+  await parent5.goto(BASE); await sleep(300);
+  await parent5.click('#pickParent');
+  await parent5.fill('#parentOfferInput', code5);
+  await parent5.click('#parentGenBtn');
+  await approve(baby5);
+  let w5 = 0;
+  const t05 = Date.now();
+  while (Date.now() - t05 < 25000) {
+    w5 = await parent5.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+    if (w5 > 0) break;
+    await sleep(300);
+  }
+  check('Stabiliteitstest: eerst gewoon live beeld ("' + w5 + 'px")', w5 > 0);
+  // Vanaf hier tellen. HEARTBEAT_TIMEOUT staat in deze suite op 5s, dus een
+  // kapotte hartslag laat binnen ~10s de eerste herverbinding zien; 30s geeft
+  // ruim marge voor meerdere.
+  await parent5.evaluate(() => { window.__statuses.length = 0; });
+  await sleep(30000);
+  const stabiel = await parent5.evaluate(() => ({
+    wissels: window.__statuses.slice(),
+    tekst: document.getElementById('connText').textContent.trim(),
+    off: document.getElementById('connDot').classList.contains('off'),
+  }));
+  const herverbindingen = stabiel.wissels.filter((s) => /\(\d+\/\d+\)/.test(s)).length;
+  check('Ouderunit plant GEEN herverbinding tijdens 30s rust (' + herverbindingen +
+    'x, statussen: ' + (stabiel.wissels.join(' → ') || 'geen') + ')', herverbindingen === 0);
+  check('Ouderunit blijft op "verbonden" staan ("' + stabiel.tekst + '")', !stabiel.off);
+  // Bewijs dat er ECHT nog beeld binnenkomt: videoWidth houdt na een wegval
+  // zijn oude waarde, currentTime van een live MediaStream loopt alleen door
+  // zolang er frames binnenkomen.
+  const framesLopen = await parent5.evaluate(async () => {
+    const v = document.getElementById('video');
+    if (!v) return false;
+    const a = v.currentTime;
+    await new Promise((r) => setTimeout(r, 1500));
+    return v.currentTime > a;
+  });
+  check('Er komen nog steeds verse frames binnen (currentTime loopt door)', framesLopen);
+  await cB5.close(); await cP5.close();
 
   await browser.close();
   web.close();
