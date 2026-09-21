@@ -3543,6 +3543,47 @@
   // de verbinding beveiligd is. Die pagina heeft een eigen vertaaltabel;
   // dit is alleen het woord op de link.
   // ------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // "Tik om te starten" — de knop over het videovenster. iPhone en iPad
+  // spelen beeld mét geluid niet af zonder dat de gebruiker ergens getikt
+  // heeft; zonder deze tekst bleef het scherm zwart zonder uitleg.
+  // ------------------------------------------------------------------
+  const TIK_START = {
+    en: 'Tap to start video and sound',
+    zh: '点按以开始画面和声音',
+    hi: 'तस्वीर और आवाज़ शुरू करने के लिए टैप करें',
+    es: 'Toca para iniciar imagen y sonido',
+    fr: 'Touchez pour lancer l’image et le son',
+    ar: 'اضغط لبدء الصورة والصوت',
+    bn: 'ছবি ও শব্দ চালু করতে ট্যাপ করুন',
+    pt: 'Toque para iniciar imagem e som',
+    ru: 'Нажмите, чтобы включить видео и звук',
+    ur: 'تصویر اور آواز شروع کرنے کے لیے تھپتھپائیں',
+    id: 'Ketuk untuk memulai video dan suara',
+    de: 'Tippen, um Bild und Ton zu starten',
+    ja: 'タップして映像と音声を開始',
+    mr: 'चित्र आणि आवाज सुरू करण्यासाठी टॅप करा',
+    te: 'దృశ్యం, ధ్వని ప్రారంభించడానికి నొక్కండి',
+    tr: 'Görüntü ve sesi başlatmak için dokunun',
+    ta: 'காட்சியையும் ஒலியையும் தொடங்கத் தட்டுங்கள்',
+    vi: 'Chạm để bắt đầu hình và tiếng',
+    ko: '화면과 소리를 시작하려면 누르세요',
+    it: 'Tocca per avviare video e audio',
+    th: 'แตะเพื่อเริ่มภาพและเสียง',
+    gu: 'ચિત્ર અને અવાજ શરૂ કરવા ટૅપ કરો',
+    fa: 'برای شروع تصویر و صدا ضربه بزنید',
+    pl: 'Dotknij, aby uruchomić obraz i dźwięk',
+    uk: 'Торкніться, щоб увімкнути відео та звук',
+    nl: 'Tik om beeld en geluid te starten',
+    pa: 'ਤਸਵੀਰ ਤੇ ਆਵਾਜ਼ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ',
+    sw: 'Gusa ili kuanzisha picha na sauti',
+    ha: 'Taɓa don fara hoto da sauti',
+    ro: 'Atinge pentru a porni imaginea și sunetul',
+  };
+  Object.keys(TIK_START).forEach(function (code) {
+    if (S[code]) S[code].tapToPlay = TIK_START[code];
+  });
+
   const VEILIGHEID = {
     en: 'Security', zh: '安全', hi: 'सुरक्षा', es: 'Seguridad', fr: 'Sécurité',
     ar: 'الأمان', bn: 'নিরাপত্তা', pt: 'Segurança', ru: 'Безопасность', ur: 'سیکیورٹی',

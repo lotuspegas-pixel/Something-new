@@ -2982,3 +2982,56 @@ body.app-mode #dviewMonitor.dview.active,
   .lp .lang-pill .globe { display: none; }
   .lp .lang-pill { padding-inline: 10px; max-width: 104px; }
 }
+
+/* ================================================================
+   15. "Tik om te starten" over het videovenster
+   ----------------------------------------------------------------
+   iPhone en iPad spelen beeld mét geluid niet af zonder dat de
+   gebruiker ergens getikt heeft. Weigerde het afspelen, dan bleef het
+   scherm zwart terwijl de verbinding gewoon stond — niet te
+   onderscheiden van een kapotte verbinding. Deze knop ligt over het
+   beeld en maakt van dat stille falen een duidelijke vraag.
+   ================================================================ */
+.vcard-tap {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  padding: 24px;
+  border: 0;
+  border-radius: inherit;
+  background: rgba(12, 47, 99, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+  cursor: pointer;
+}
+
+.vcard-tap.hidden { display: none; }
+
+.vcard-tap .vt-icon {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff8db2 0%, #ff6f9e 100%);
+  box-shadow: 0 10px 26px rgba(255, 111, 158, 0.38);
+  font-size: 24px;
+  padding-left: 4px;
+}
+
+@media (max-width: 480px) {
+  .vcard-tap { font-size: 15px; gap: 12px; }
+  .vcard-tap .vt-icon { width: 54px; height: 54px; font-size: 21px; }
+}

@@ -34,7 +34,21 @@
           .then((j) => {
             if (j && Array.isArray(j.iceServers) && j.iceServers.length) {
               ICE.length = 0;
-              j.iceServers.forEach((x) => ICE.push(x));
+              // Ook hier één URL per ingang. Wie in turn.json
+              // { "urls": ["turn:a", "turn:b"] } zet, zou anders zijn eigen
+              // site op Safari onbruikbaar maken zonder dat te merken —
+              // Chrome blijft immers gewoon werken.
+              j.iceServers.forEach((x) => {
+                if (!x) return;
+                const urls = Array.isArray(x.urls) ? x.urls : [x.urls];
+                urls.forEach((u) => {
+                  if (!u) return;
+                  const ingang = { urls: u };
+                  if (x.username != null) ingang.username = x.username;
+                  if (x.credential != null) ingang.credential = x.credential;
+                  ICE.push(ingang);
+                });
+              });
             }
             stop();
           })
@@ -44,30 +58,46 @@
     return iceWacht;
   }
 
+  // Meerdere STUN-servers: met één server is dat een enkelvoudig faalpunt.
+  // Wordt er geen enkele bereikt, dan kent een toestel zijn eigen publieke
+  // adres niet en lukt koppelen alleen binnen hetzelfde netwerk.
+  //
+  // LET OP — één URL per ingang, geen array. Chrome accepteert
+  // { urls: [a, b, c] } probleemloos, maar WebKit is hier streng: Safari
+  // verwerkt zo'n ingang niet betrouwbaar en op oudere versies mislukt het
+  // opzetten van de RTCPeerConnection er zelfs op. Dat is precies het beeld
+  // "werkt op Chrome, niet op de iPhone". Elke URL krijgt daarom een eigen
+  // ingang; dat werkt in álle browsers hetzelfde.
   const ICE = window.BABYFOON_ICE ||
     [
-        // Meerdere STUN-servers: met één server is dat een enkelvoudig
-        // faalpunt. Wordt er geen enkele bereikt, dan kent een toestel zijn
-        // eigen publieke adres niet en lukt koppelen alleen binnen hetzelfde
-        // netwerk.
-        { urls: [
-          'stun:stun.l.google.com:19302',
-          'stun:stun1.l.google.com:19302',
-          'stun:stun.cloudflare.com:3478',
-          'stun:stun.nextcloud.com:443',
-        ] },
-        {
-          urls: [
-            'turn:openrelay.metered.ca:80',
-            'turn:openrelay.metered.ca:443',
-            'turns:openrelay.metered.ca:443?transport=tcp',
-          ],
-          username: 'openrelayproject',
-          credential: 'openrelayproject',
-        },
-      ];
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'stun:stun.nextcloud.com:443' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+    ];
   const $ = (id) => document.getElementById(id);
   const T = (k) => (window.I18n ? window.I18n.t(k) : k);
+
+  // Draait dit op WebKit (Safari, en op iPhone/iPad óók Chrome, Firefox en
+  // Edge — dat zijn daar allemaal Safari-schillen)? WebKit gaat op een paar
+  // punten anders om met camera, microfoon en afspelen dan Chrome, en juist
+  // die punten bepalen of de babyfoon het op een iPhone doet.
+  //
+  // Herkenning op de useragent is niet fraai, maar hier is het de enige weg:
+  // de verschillen zitten in gedrag dat je niet vooraf kunt uitproberen zonder
+  // precies de schade aan te richten die je wilt vermijden. "AppleWebKit"
+  // zonder "Chrome" dekt Safari op macOS en alle browsers op iOS; Chrome op
+  // Android valt er netjes buiten.
+  function isWebKit() {
+    try {
+      const ua = navigator.userAgent || '';
+      if (!/AppleWebKit/.test(ua)) return false;
+      return !/(Chrome|Chromium|Edg|OPR)\//.test(ua);
+    } catch (e) { return false; }
+  }
   // Slaapmuziek-ID → i18n-sleutel (labels worden vertaald weergegeven).
   const TRACK_I18N = { regen: 'trackRain', oceaan: 'trackOcean', hartslag: 'trackHeartbeat', witte: 'trackWhite' };
   const trackLabel = (tr) => T(TRACK_I18N[tr.id] || tr.id);
@@ -235,6 +265,14 @@
   async function openExtraMicrofoons(alGeopendSpoor) {
     stopExtraMicrofoons();
     const uit = [];
+    // Op WebKit gebeurt hier iets ergers dan mislukken. iPhone en iPad staan
+    // maar één opname tegelijk toe: een tweede getUserMedia laat de eerste
+    // niet staan, maar BEËINDIGT hem. De babyunit raakt daarmee in één klap
+    // zowel zijn microfoon als zijn camera kwijt, en de ouderunit ziet een
+    // verbinding die wel staat maar niets meer doorgeeft. Eén extra microfoon
+    // is dat risico niet waard, dus op WebKit blijft het bij de microfoon die
+    // de browser zelf koos.
+    if (isWebKit()) return uit;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return uit;
       const devs = await navigator.mediaDevices.enumerateDevices();
@@ -250,6 +288,16 @@
           if (t) { extraMicStreams.push(st); uit.push(t); }
           else { try { st.getTracks().forEach((x) => x.stop()); } catch (e) {} }
         } catch (e) { /* deze microfoon kan niet mee; geen probleem */ }
+      }
+      // Vangnet voor elk toestel dat zich net zo gedraagt als iOS zonder als
+      // WebKit herkend te worden: is het oorspronkelijke spoor onderweg
+      // gesneuveld, dan hebben de extra microfoons het opgeblazen. Alles weer
+      // dichtdoen en met lege handen terugkomen; de bewaking op het ruwe
+      // spoor opent daarna opnieuw. Beter een microfoon minder dan een
+      // babyfoon die zwijgt.
+      if (alGeopendSpoor && alGeopendSpoor.readyState === 'ended') {
+        stopExtraMicrofoons();
+        return [];
       }
     } catch (e) {}
     return uit;
@@ -1045,6 +1093,9 @@
     }
     try { if (typeof babyStopMusic === 'function') babyStopMusic(); } catch (e) {}
     try { lullaby.stop(); } catch (e) {}
+    // De vraag om een tik hoort niet te blijven staan nadat de sessie voorbij
+    // is; er valt dan niets meer af te spelen.
+    try { toonTikOmTeStarten(false); } catch (e) {}
     try { if (localStream) localStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { stopExtraMicrofoons(); } catch (e) {}
@@ -1623,7 +1674,16 @@
   // De browservraag om camera en microfoon kan onbeantwoord blijven (de
   // gebruiker tikt hem weg of ziet hem niet). getUserMedia lost dan nooit op.
   // Zonder tijdslimiet bleef de babyunit voorgoed op het koppelscherm hangen.
-  const MEDIA_TOESTEMMING_TIJD = window.BABYFOON_MEDIA_PERMISSIE_TIMEOUT || 20000;
+  //
+  // 20 seconden bleek te kort. Chrome onthoudt de toestemming per site, dus
+  // daar verschijnt het venster meestal maar één keer en is het zo weg. Safari
+  // op iPhone en iPad vraagt het standaard bij élke sessie opnieuw, en dat
+  // venster moet gelezen en aangetikt worden — soms half slapend om drie uur
+  // 's nachts. Wie er langer dan twintig tellen over deed, kreeg de babyunit
+  // niet gestart en zag dat als "de site doet het niet op mijn iPhone".
+  // Een minuut is ruim genoeg om te lezen en te tikken, en nog steeds kort
+  // genoeg om niet eeuwig op een weggetikt venster te blijven wachten.
+  const MEDIA_TOESTEMMING_TIJD = window.BABYFOON_MEDIA_PERMISSIE_TIMEOUT || 60000;
   function metTijdslimiet(belofte, ms) {
     let klaar = false;
     return new Promise((goed, af) => {
@@ -1642,6 +1702,37 @@
     });
   }
 
+  // Camera en microfoon van de babyunit openen, met terugval.
+  //
+  // Bewust één getUserMedia voor beeld én geluid samen: iPhone en iPad staan
+  // maar één opname tegelijk toe, dus twee aparte aanvragen zouden elkaar
+  // onderuithalen.
+  //
+  // Knelt een eis, dan laat WebKit de hele aanvraag mislukken in plaats van
+  // iets anders te leveren zoals Chrome doet. Een oudere iPad die 1280×720 bij
+  // 24 beelden niet aankan, kreeg zo helemaal geen camera. Daarom peldt dit af
+  // in stappen. Weigert de gebruiker toestemming, dan stoppen we meteen —
+  // opnieuw vragen zou alleen maar een tweede venster opleveren.
+  async function babyMediaOpenen() {
+    const pogingen = [
+      { audio: MIC_MONITOR, video: Object.assign({ facingMode: 'environment' }, camProfiel) },
+      { audio: MIC_MONITOR, video: { facingMode: 'environment' } },
+      { audio: MIC_MONITOR, video: true },
+      { audio: true, video: true },
+    ];
+    let laatste = null;
+    for (const c of pogingen) {
+      try {
+        return await getMedia(c);
+      } catch (e) {
+        laatste = e;
+        const n = e && e.name;
+        if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'NotFoundError') throw e;
+      }
+    }
+    throw laatste || new Error(T('mediaError'));
+  }
+
   async function startBaby() {
     role = 'baby';
     showScreen('screenPairBaby');
@@ -1650,10 +1741,7 @@
     toonBabyKoppelvakken(false);
     zetBabyWachttekst('permissionNeeded', false);
     try {
-      localStream = await metTijdslimiet(getMedia({
-        audio: MIC_MONITOR,
-        video: Object.assign({ facingMode: 'environment' }, camProfiel),
-      }), MEDIA_TOESTEMMING_TIJD);
+      localStream = await metTijdslimiet(babyMediaOpenen(), MEDIA_TOESTEMMING_TIJD);
       // Zachte geluiden hoorbaar maken vóór het verzenden. Lukt de
       // versterkingstrap niet, dan gaat het ruwe spoor gewoon mee.
       await versterkMic(localStream);
@@ -1800,7 +1888,11 @@
           v.addEventListener('resize', toonBeeldkwaliteit);
         }
         v.srcObject = s;
-        v.play().catch(() => {});
+        // Via hervatWeergave: die probeert het een paar keer en vraagt de
+        // gebruiker om een tik als de browser blijft weigeren. Een kale
+        // play().catch() liet dat falen stil verdwijnen, en op iPhone en iPad
+        // is dat precies het geval dat je wél moet zien.
+        hervatWeergave();
         tuneAudioReceiver(call.peerConnection || mediaPc);
         setupAnalyser(s);
         // De microfoon blijft dicht zolang er niet teruggepraat wordt.
@@ -2734,6 +2826,29 @@
     };
     if ($('alToggle')) $('alToggle').onclick = () => $('btnAlarm').click();
     ['btnAlarmTest', 'btnAlarmTest2'].forEach((id) => { const b = $(id); if (b) b.onclick = testAlarm; });
+    // Een tik op de knop over het videovenster is precies het gebaar waar
+    // WebKit om vraagt. Hier gebruiken we het meteen voor álles wat een
+    // gebaar nodig heeft: het beeld, het geluid én de AudioContext die de
+    // geluidsmeter en het huilalarm voedt.
+    if ($('playArm')) $('playArm').onclick = () => {
+      try {
+        if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          const r = audioCtx.resume(); if (r && r.catch) r.catch(() => {});
+        }
+      } catch (e) {}
+      const v = $('video');
+      if (v) {
+        try {
+          const p = v.play();
+          if (p && p.then) p.then(() => toonTikOmTeStarten(false), () => {});
+          else toonTikOmTeStarten(false);
+        } catch (e) {}
+      }
+      // Speelt het onverhoopt nog steeds niet, dan blijft de knop staan —
+      // maar hij mag niet blijven hangen als het wél gelukt is.
+      setTimeout(() => { const el = $('video'); if (el && !el.paused) toonTikOmTeStarten(false); }, 300);
+    };
     if ($('alSens')) $('alSens').oninput = () => {
       sensitivity = +$('alSens').value;
       const v = $('alSensVal'); if (v) v.textContent = sensitivity + '%';
@@ -3024,15 +3139,44 @@
     return '';
   }
   // Eén camera openen. Geeft het videospoor terug, of null als het niet lukt.
+  // Vraagt een camera op en levert het videospoor. Lukt dat met het volle
+  // opnameprofiel niet, dan wordt er afgepeld in plaats van opgegeven.
+  //
+  // Chrome behandelt width/height/frameRate als wensen en levert gewoon iets
+  // anders als het gevraagde niet kan. WebKit is strenger en geeft dan een
+  // OverconstrainedError, waarna dit helemaal niets teruggaf: geen camera,
+  // geen beeld. Wat de cámera aanwijst (deviceId of facingMode) blijft bij
+  // elke stap staan — anders krijg je bij het wisselen dezelfde camera terug
+  // en lijkt de knop stuk.
   async function openCam(videoConstraint) {
-    const base = Object.assign({}, camProfiel);
-    const v = videoConstraint === true ? true : Object.assign({}, base, videoConstraint);
-    try {
-      const ns = await getMedia({ audio: false, video: v });
-      const t = ns.getVideoTracks()[0];
-      if (!t) { ns.getTracks().forEach((x) => { try { x.stop(); } catch (e) {} }); return null; }
-      return t;
-    } catch (e) { return null; }
+    const kiezer = {};
+    if (videoConstraint && videoConstraint !== true) {
+      if (videoConstraint.deviceId) kiezer.deviceId = videoConstraint.deviceId;
+      if (videoConstraint.facingMode) kiezer.facingMode = videoConstraint.facingMode;
+    }
+    const pogingen = [];
+    if (videoConstraint === true) {
+      pogingen.push(true);
+    } else {
+      const vol = Object.assign({}, camProfiel, videoConstraint);
+      pogingen.push(vol);
+      // Zonder beeldsnelheid: die is op oudere toestellen de eerste die knelt.
+      const zonderFps = Object.assign({}, vol); delete zonderFps.frameRate;
+      pogingen.push(zonderFps);
+      // Alleen nog de camerakeuze, zonder eisen aan formaat of snelheid.
+      pogingen.push(Object.keys(kiezer).length ? kiezer : true);
+      // En als laatste: geef maar wat je hebt.
+      pogingen.push(true);
+    }
+    for (const v of pogingen) {
+      try {
+        const ns = await getMedia({ audio: false, video: v });
+        const t = ns.getVideoTracks()[0];
+        if (t) return t;
+        ns.getTracks().forEach((x) => { try { x.stop(); } catch (e) {} });
+      } catch (e) { /* volgende poging */ }
+    }
+    return null;
   }
   // Het uitgaande videospoor éérst loskoppelen van de WebRTC-zender, dán pas
   // stoppen. Omdat we het oude spoor nu moeten stoppen vóórdat de nieuwe camera
@@ -3607,6 +3751,12 @@
   // terugkeer naar de voorgrond en bij het aan/uit zetten van scherm-uit.
   // iOS weigert de eerste play() na een onderbreking regelmatig, dus een
   // paar korte herkansingen.
+  // Toont of verbergt de knop "tik om te starten" over het videovenster.
+  function toonTikOmTeStarten(aan) {
+    const k = $('playArm');
+    if (!k) return;
+    if (aan) k.classList.remove('hidden'); else k.classList.add('hidden');
+  }
   function hervatWeergave() {
     try {
       if (audioCtx && audioCtx.state === 'suspended') {
@@ -3621,7 +3771,13 @@
     const speel = () => {
       if (shuttingDown) return;
       try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
-      if (++pogingen < 4 && v.paused) setTimeout(speel, 400);
+      if (++pogingen < 4 && v.paused) { setTimeout(speel, 400); return; }
+      // Laatste poging gehad. Speelt het nog steeds niet, dan is dit vrijwel
+      // zeker WebKit dat beeld mét geluid weigert zonder tik van de
+      // gebruiker. Dat stil laten gebeuren betekent een zwart scherm terwijl
+      // de verbinding prima staat — niet te onderscheiden van een storing.
+      // Dus vragen we het gewoon.
+      if (!shuttingDown) toonTikOmTeStarten(v.paused);
     };
     speel();
   }
