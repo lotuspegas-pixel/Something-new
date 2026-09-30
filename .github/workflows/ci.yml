@@ -76,5 +76,8 @@ jobs:
       - name: E2E — WebKit/iOS-gedrag (Safari op iPhone en iPad)
         run: npm run test:webkit
 
+      - name: E2E — Android-gedrag (Chrome, Samsung Internet, WebView)
+        run: npm run test:android
+
       - name: Vertalingen compleet in alle 30 talen
         run: npm run test:i18n

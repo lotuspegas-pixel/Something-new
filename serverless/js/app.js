@@ -81,6 +81,23 @@
   const $ = (id) => document.getElementById(id);
   const T = (k) => (window.I18n ? window.I18n.t(k) : k);
 
+  // Trillen, met alles eromheen afgeschermd.
+  //
+  // navigator.vibrate is een Android-functie (iOS kent hem niet) en gedraagt
+  // zich per schil anders: sommige geven onwaar terug zolang de gebruiker nog
+  // nergens getikt heeft, andere gooien een NotAllowedError — en dat kan al
+  // gebeuren bij het uitlezen van de eigenschap, niet pas bij het aanroepen.
+  // Stond die uitlezing buiten de try (zoals op twee plekken het geval was),
+  // dan sleepte die uitzondering de hele melding mee: geen trilling én geen
+  // waarschuwtoon bij een wegvallende verbinding, precies waar het om gaat.
+  // Trillen is een extraatje bovenop geluid en beeld; het mag nooit iets
+  // belangrijkers onderuithalen.
+  function tril(patroon) {
+    try {
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(patroon);
+    } catch (e) { /* trillen mag niet; de rest van de melding gaat gewoon door */ }
+  }
+
   // Draait dit op WebKit (Safari, en op iPhone/iPad óók Chrome, Firefox en
   // Edge — dat zijn daar allemaal Safari-schillen)? WebKit gaat op een paar
   // punten anders om met camera, microfoon en afspelen dan Chrome, en juist
@@ -89,12 +106,28 @@
   // Herkenning op de useragent is niet fraai, maar hier is het de enige weg:
   // de verschillen zitten in gedrag dat je niet vooraf kunt uitproberen zonder
   // precies de schade aan te richten die je wilt vermijden. "AppleWebKit"
-  // zonder "Chrome" dekt Safari op macOS en alle browsers op iOS; Chrome op
-  // Android valt er netjes buiten.
+  // zonder "Chrome" dekt Safari op macOS en alle browsers op iOS.
+  //
+  // ANDROID VALT HIER ALTIJD BUITEN, en dat staat er expliciet.
+  // Chrome, Samsung Internet en de Android WebView dragen alle drie zowel
+  // "AppleWebKit" als "Chrome/" in hun useragent, dus die werden al goed
+  // uitgesloten. Maar niet élke Android-schil doet dat: de oude WebView van
+  // Android 4.x meldt "AppleWebKit/534 … Version/4.0 Safari/534" zonder
+  // "Chrome/", en een paar in-app-browsers knippen dat stukje eruit. Die
+  // toestellen kregen zo de iOS-beperkingen opgelegd — onder andere bleef
+  // openExtraMicrofoons() dicht terwijl meerdere microfoons op Android juist
+  // wél mogen. "Android" in de useragent is daarom een harde uitsluiting:
+  // een Android-toestel is nooit iOS/WebKit-met-één-opname. Vandaar dat
+  // isWebKit() met isAndroid() begint.
+  function isAndroid() {
+    try { return /Android/i.test(navigator.userAgent || ''); } catch (e) { return false; }
+  }
   function isWebKit() {
+    if (isAndroid()) return false;
     try {
       const ua = navigator.userAgent || '';
       if (!/AppleWebKit/.test(ua)) return false;
+      if (/(SamsungBrowser|CrMo|HeadlessChrome)\//.test(ua)) return false;
       return !/(Chrome|Chromium|Edg|OPR)\//.test(ua);
     } catch (e) { return false; }
   }
@@ -123,6 +156,44 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.add('hidden'), 3000);
   }
+  // Bevestigingsvraag in de pagina zelf, in plaats van window.confirm().
+  //
+  // window.confirm werkt niet overal. In de interne browser van Android (de
+  // WebView die in-app-browsers en sommige fabrikantenschillen gebruiken)
+  // verschijnt zo'n venster alleen als de omringende app het zelf afhandelt;
+  // doet ze dat niet, dan geeft confirm() direct onwaar terug. De Stop-knop
+  // van zowel de ouder- als de babyunit deed daardoor niets, zonder melding en
+  // zonder spoor — precies "niet alle functies werken in de interne browser".
+  // Sommige schillen blokkeren confirm() ook na de eerste keer ("voorkom dat
+  // deze pagina extra dialoogvensters maakt").
+  //
+  // Deze vraag is gewone HTML en gedraagt zich overal hetzelfde. Zelfde
+  // opmaak, zelfde toetsenbediening (Escape = nee) als de toestemmingsvraag.
+  let bevestigNee = null;
+  function vraagBevestiging(tekstSleutel, ja) {
+    const box = $('confirmBox');
+    const txt = $('confirmText');
+    const jaKnop = $('btnConfirmYes');
+    const neeKnop = $('btnConfirmNo');
+    // Ontbreekt de vraag in de HTML, dan mag de knop niet dood zijn: dan maar
+    // meteen doen wat er gevraagd werd.
+    if (!box || !txt || !jaKnop || !neeKnop) { ja(); return; }
+    txt.setAttribute('data-i18n', tekstSleutel);
+    txt.textContent = T(tekstSleutel);
+    const sluit = () => {
+      box.classList.add('hidden');
+      jaKnop.onclick = null;
+      neeKnop.onclick = null;
+      bevestigNee = null;
+    };
+    bevestigNee = sluit;
+    jaKnop.onclick = () => { sluit(); ja(); };
+    neeKnop.onclick = sluit;
+    box.classList.remove('hidden');
+    // Veilige standaard, net als bij het toestemmingsvenster: de focus staat
+    // op de knop die níets sloopt. Stoppen is hier de onomkeerbare keuze.
+    try { neeKnop.focus(); } catch (e) {}
+  }
   function showScreen(id) {
     // Het zwarte scherm hoort bij het ouder- en babydashboard. Belandt de app
     // op een ander scherm (sessie beëindigd, terug naar het begin), dan zou
@@ -142,7 +213,11 @@
   }
   async function getMedia(c) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error(T('mediaError'));
+      // Al een vertaalde zin; markeren zodat mediaFoutTekst() hem doorgeeft in
+      // plaats van hem als onbekende browserfout te verpakken.
+      const geen = new Error(T('mediaError'));
+      geen.name = 'BabyfoonEigenMelding';
+      throw geen;
     }
     return navigator.mediaDevices.getUserMedia(c);
   }
@@ -153,13 +228,52 @@
   }
   function openQrZoom(text) { QRKit.openZoom(text, T('copyCode')); }
   function closeQrZoom() { QRKit.closeZoom(); }
-  async function copyText(text) {
+  // Kopiëren met een terugval.
+  //
+  // navigator.clipboard bestaat niet in de Android WebView (waar je in belandt
+  // als je de app vanuit een link in WhatsApp, Gmail of Facebook opent), niet
+  // in Samsung Internet vóór versie 8, en in geen enkele browser buiten een
+  // beveiligde context. Daar deed de knop "Kamercode kopiëren" niets en
+  // verscheen meteen "kopiëren mislukt" — terwijl de oude weg
+  // (document.execCommand('copy')) het daar juist wél doet.
+  //
+  // Volgorde: eerst de moderne API, dan de oude. "Mislukt" komt pas in beeld
+  // als álle wegen gefaald hebben.
+  function kopieerViaExecCommand(text) {
+    // Een tijdelijk tekstvak buiten beeld, selecteren, kopiëren, weghalen.
+    // readOnly + de plaatsing hieronder houden het toetsenbord dicht en
+    // voorkomen dat de pagina naar het veld springt.
+    let ta = null;
     try {
-      await navigator.clipboard.writeText(text);
-      toast(T('copied'));
+      if (!document.queryCommandSupported && !document.execCommand) return false;
+      ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.setAttribute('aria-hidden', 'true');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      // iOS/oudere WebKit negeren select() op een readonly veld; dit werkt daar wel.
+      try { ta.setSelectionRange(0, text.length); } catch (e) {}
+      return !!document.execCommand('copy');
     } catch (e) {
-      toast(T('copyFail'));
+      return false;
+    } finally {
+      if (ta) { try { ta.remove(); } catch (e) {} }
     }
+  }
+  async function copyText(text) {
+    if (!text) { toast(T('copyFail')); return; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast(T('copied'));
+        return;
+      }
+    } catch (e) { /* geen melding: er is nog een tweede weg */ }
+    if (kopieerViaExecCommand(text)) { toast(T('copied')); return; }
+    toast(T('copyFail'));
   }
   function startScanner(videoEl, onResult) {
     return QRKit.startScanner(
@@ -208,6 +322,59 @@
     const opts = { config: { iceServers: ICE }, debug: 0 };
     if (window.BABYFOON_PEER) Object.assign(opts, window.BABYFOON_PEER);
     return opts;
+  }
+
+  // ------------------------------------------------- sessie in de adresbalk
+  //
+  // WAAROM DIT BESTAAT. Android Chrome, Samsung Internet en de WebView gooien
+  // een tabblad dat op de achtergrond staat bij geheugendruk weg ("tab
+  // discard") en laden bij terugkeer exact dezelfde URL opnieuw. Dat is geen
+  // storing maar normaal gedrag, en op een telefoon die 's nachts met het
+  // scherm uit ligt gebeurt het volop. Alles wat de app in gewone variabelen
+  // bewaarde was daarna weg: de ouder stond terug op "Kies een rol", zonder
+  // beeld, zonder geluid en zonder melding, terwijl de babyunit aan de andere
+  // kant nog stond te wachten. Wie via de QR-code binnenkwam had dat probleem
+  // niet, want die heeft "#CODE.TOKEN" in de adresbalk staan en herstelt
+  // daardoor vanzelf. Het verschil zat dus niet in de verbinding maar in de
+  // URL.
+  //
+  // WAAROM DE ADRESBALK EN NIET localStorage. De regel voor deze app is dat er
+  // geen gebruikersgegevens of kamercodes worden opgeslagen. localStorage
+  // schrijft de code naar schijf en laat hem daar staan ná de sessie, ook als
+  // de telefoon later door iemand anders wordt gepakt. Het adres van een
+  // tabblad verdwijnt met dat tabblad en gaat nooit naar een server (een
+  // fragment achter '#' wordt niet meegestuurd). Het is bovendien precies wat
+  // de QR-koppeling al deed, dus er komt geen nieuwe vorm van bewaren bij —
+  // alleen dezelfde vorm voor de handmatig ingetypte code.
+  //
+  // WAAROM PAS NA GOEDKEURING. Het token komt van de babyunit en krijgt de
+  // ouderunit pas in 'authOk', dus nadat de babyunit dit toestel bewust heeft
+  // toegelaten. Er gaat dus nooit een toegangsbewijs in de adresbalk staan dat
+  // niet al verdiend was. Wie de kamercode niet heeft en de QR niet scande,
+  // komt er nog steeds niet in: de toegangspoort aan de babyzijde is niet
+  // aangeraakt.
+  //
+  // history.replaceState en niet pushState: één tik op "terug" hoort de
+  // gebruiker niet in een half-verlaten sessie te zetten.
+  function zetSessieHash(hash) {
+    try {
+      if (!window.history || !history.replaceState) return;
+      const schoon = location.pathname + location.search;
+      history.replaceState(null, '', hash ? schoon + '#' + hash : schoon);
+    } catch (e) { /* een browser zonder History API redt zich verder prima */ }
+  }
+  // Ouderunit: bewaar code + token zodat een herlaadbeurt vanzelf terugkomt.
+  function bewaarOudersessie() {
+    if (role !== 'parent' || !currentCode || !parentToken) return;
+    zetSessieHash(currentCode + '.' + parentToken);
+  }
+  // Babyunit: die kan óók weggegooid worden, en dan stopte de bewaking aan de
+  // brónkant — erger nog, want dan is er niets meer om naar te kijken. Eigen
+  // voorvoegsel, zodat dit nooit te verwarren is met de QR-deellink (die is
+  // voor de óuder bedoeld en staat op het scherm van de baby).
+  function bewaarBabysessie() {
+    if (role !== 'baby' || !currentCode || !sessionToken) return;
+    zetSessieHash('baby=' + currentCode + '.' + sessionToken);
   }
 
   // ------------------------------------------------------------------ geluid
@@ -262,9 +429,15 @@
   // extra microfoon is daarom optioneel — mislukt hij, dan gaan we door met wat
   // we hebben. Er is altijd minstens de eerste.
   let extraMicStreams = [];
+  const EXTRA_MIC_MAX = 3;        // hooguit drie extra microfoons
+  const EXTRA_MIC_TIJD = 3000;    // hooguit drie seconden per microfoon
+  const EXTRA_MIC_TOTAAL = 6000;  // en hooguit zes seconden voor het geheel
   async function openExtraMicrofoons(alGeopendSpoor) {
     stopExtraMicrofoons();
     const uit = [];
+    // Stand van het ruwe spoor vóór we beginnen: alleen zo kunnen we straks
+    // zien of de extra microfoons het gedempt hebben of dat het al stil was.
+    const ruwWasGedempt = !!(alGeopendSpoor && alGeopendSpoor.muted);
     // Op WebKit gebeurt hier iets ergers dan mislukken. iPhone en iPad staan
     // maar één opname tegelijk toe: een tweede getUserMedia laat de eerste
     // niet staan, maar BEËINDIGT hem. De babyunit raakt daarmee in één klap
@@ -280,14 +453,42 @@
       if (ingangen.length < 2) return uit;
       let huidigId = '';
       try { if (alGeopendSpoor && alGeopendSpoor.getSettings) huidigId = alGeopendSpoor.getSettings().deviceId || ''; } catch (e) {}
+      const deadline = Date.now() + EXTRA_MIC_TOTAAL;
       for (const d of ingangen) {
         if (d.deviceId === huidigId) continue;
+        // Niet eindeloos doorgaan. Een Android-toestel meldt soms een handvol
+        // ingangen ("default", "communications", per fysieke microfoon één);
+        // drie extra is ruim genoeg om de kamer te vullen en houdt de
+        // opstarttijd van de babyunit kort.
+        if (uit.length >= EXTRA_MIC_MAX) break;
+        // Harde bovengrens op het geheel. Alleen een limiet PER microfoon is
+        // niet genoeg: een toestel met vijf ingangen die allemaal blijven
+        // hangen kostte anders vijf keer die wachttijd, en al die tijd staat
+        // de babyunit nog niet aan — de ouder ziet dan een app die niet
+        // opstart. Extra microfoons zijn een verbetering, geen voorwaarde.
+        if (Date.now() >= deadline) break;
         try {
-          const st = await getMedia({ audio: Object.assign({ deviceId: { exact: d.deviceId } }, MIC_MONITOR), video: false });
+          // MET TIJDSLIMIET. Dit was de stille valstrik op Android: een tweede
+          // getUserMedia op dezelfde audio-hardware kan daar blíjven hangen
+          // (het toestel geeft de opnamesessie niet vrij) en er is geen fout
+          // en geen afbreking. startBaby() wacht op versterkMic() → op deze
+          // lus, dus de babyunit bleef dan voorgoed op het koppelscherm staan
+          // met camera en microfoon al open: "de babyunit start niet op mijn
+          // Android". Drie seconden per microfoon is genoeg; daarna gaan we
+          // door met wat we hebben.
+          const st = await metTijdslimiet(
+            getMedia({ audio: Object.assign({ deviceId: { exact: d.deviceId } }, MIC_MONITOR), video: false }),
+            EXTRA_MIC_TIJD
+          );
           const t = st.getAudioTracks()[0];
           if (t) { extraMicStreams.push(st); uit.push(t); }
           else { try { st.getTracks().forEach((x) => x.stop()); } catch (e) {} }
         } catch (e) { /* deze microfoon kan niet mee; geen probleem */ }
+        // Na ELKE extra microfoon nakijken of het oorspronkelijke spoor nog
+        // leeft. Doorgaan nadat het gesneuveld is maakt de schade alleen
+        // groter, en op een toestel met vijf ingangen kostte dat ook nog vijf
+        // keer de tijdslimiet.
+        if (alGeopendSpoor && alGeopendSpoor.readyState === 'ended') break;
       }
       // Vangnet voor elk toestel dat zich net zo gedraagt als iOS zonder als
       // WebKit herkend te worden: is het oorspronkelijke spoor onderweg
@@ -295,7 +496,18 @@
       // dichtdoen en met lege handen terugkomen; de bewaking op het ruwe
       // spoor opent daarna opnieuw. Beter een microfoon minder dan een
       // babyfoon die zwijgt.
-      if (alGeopendSpoor && alGeopendSpoor.readyState === 'ended') {
+      //
+      // 'ended' is niet het enige gezicht van die schade. Op een deel van de
+      // Android-toestellen is de opnamesessie exclusief en blíjft het eerste
+      // spoor bestaan (readyState 'live') terwijl het niets meer levert:
+      // track.muted staat dan op waar. Dat is voor een babyfoon net zo erg —
+      // de verbinding staat, er komt alleen geen geluid door — dus dat geval
+      // hoort er net zo goed bij. Was het spoor al gedempt vóórdat we begonnen
+      // (scherm net aan, toestel nog aan het vrijgeven), dan rekenen we het de
+      // extra microfoons niet aan.
+      const gesneuveld = alGeopendSpoor &&
+        (alGeopendSpoor.readyState === 'ended' || (!!alGeopendSpoor.muted && !ruwWasGedempt));
+      if (gesneuveld) {
         stopExtraMicrofoons();
         return [];
       }
@@ -312,7 +524,7 @@
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC || !ruwSpoor) return null;
       if (!audioCtx) audioCtx = new AC();
-      if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+      hervatAudioCtx();
       if (!audioCtx.createMediaStreamDestination || !audioCtx.createDynamicsCompressor) return null;
       const src = audioCtx.createMediaStreamSource(new MediaStream([ruwSpoor]));
       const gain = audioCtx.createGain();
@@ -567,7 +779,22 @@
       document.body.appendChild(a);
     }
     a.srcObject = stream;
-    a.play().catch(() => {});
+    // Ook hier geen kale .catch op play(): oudere Android-WebViews geven geen
+    // belofte terug en dan gooide dit een TypeError die het terugpraten van de
+    // ouder helemaal doodsloeg. En weigert de browser het afspelen (Android
+    // Chrome doet dat voor geluid zonder gebaar), dan moet de babyunit dat
+    // laten zien in plaats van te zwijgen — de ouder praat dan tegen niemand.
+    const speelTerugpraten = (pogingen) => {
+      let p = null;
+      try { p = a.play(); } catch (e) { p = null; }
+      const misging = () => {
+        if (pogingen > 0) { setTimeout(() => speelTerugpraten(pogingen - 1), 400); return; }
+        if (a.paused) toast(T('talkPlayBlocked'));
+      };
+      if (p && p.then) p.then(() => {}, misging);
+      else if (a.paused) misging();
+    };
+    speelTerugpraten(3);
   }
   // De ondertekst van de eerste statuskaart op het babydashboard. De sleutel
   // gaat mee in data-i18n, zodat een taalwissel de juiste zin terugschrijft en
@@ -1165,6 +1392,11 @@
         mark('authOk');
         setPairStap(5);
         if (msg.token) parentToken = String(msg.token);
+        // Nu pas mag de sessie in de adresbalk: de babyunit heeft dit toestel
+        // toegelaten en heeft daar zelf het token bij gegeven. Gooit Android
+        // dit tabblad straks weg, dan komt de bewaking na het opnieuw laden
+        // vanzelf terug in plaats van op het beginscherm te blijven staan.
+        bewaarOudersessie();
         // Pas nu staat de verbinding er echt: de babyunit heeft ons toegelaten.
         clearAuthWatchdog();
         connectSucceeded();
@@ -1319,6 +1551,12 @@
         torchSupported = !!msg.supported;
         torchLastOn = !!msg.on;
         renderTorchUI();
+      } else if (msg.cmd === 'torchFailed') {
+        // De babyunit kon de zaklamp niet schakelen. De knop hier sprong
+        // "optimistisch" al aan; die zet de torchState hierna vanzelf terug,
+        // maar zonder dit bericht zou de ouder alleen een knop zien die uit
+        // zichzelf terugspringt. Nu staat er waarom.
+        toast(T('ledFailed'));
       } else if (msg.cmd === 'musicState') {
         musicPlaying = !!msg.playing;
         if (typeof msg.index === 'number') musicIndex = msg.index;
@@ -1366,12 +1604,21 @@
     if (scherm) scherm.classList.toggle('wacht-op-toestemming', !zichtbaar);
   }
 
-  async function openBabyPeer() {
+  // `hergebruik` is alleen gezet bij het herstellen na een herlaadbeurt: dan
+  // moet de babyunit met dezélfde kamercode terugkomen, anders staat de
+  // ouderunit met een code die nergens meer bestaat.
+  let babyHerstel = null;        // { code, token } zolang we aan het herstellen zijn
+  let babyHerstelPogingen = 0;
+  async function openBabyPeer(hergebruik) {
     if (!iceGeladen) { try { await laadEigenIce(); } catch (e) {} }
     stopBrokerHerstel();
     brokerAttempt = 0;
     if (peer) { try { peer.destroy(); } catch (e) {} }
-    const code = makeCode(6);
+    const herstelbaar = !!(hergebruik && hergebruik.code && /^[A-Z0-9]{4,12}$/.test(hergebruik.code));
+    babyHerstel = herstelbaar ? hergebruik : null;
+    if (!herstelbaar) babyHerstelPogingen = 0;
+    const code = herstelbaar ? hergebruik.code : makeCode(6);
+    if (herstelbaar && hergebruik.token) sessionToken = hergebruik.token;
     currentCode = code;
     $('babyCodeText').textContent = '······';
     if (!sessionToken) sessionToken = makeToken();
@@ -1390,6 +1637,13 @@
       // De QR draagt code + token; het invoerveld toont alleen de korte code.
       const url = location.href.split('#')[0] + '#' + code + '.' + sessionToken;
       renderQR('babyQR', url);
+      // Aangemeld met deze code: het herstel is geslaagd.
+      babyHerstel = null;
+      babyHerstelPogingen = 0;
+      // Zelfde reden als bij de ouderunit: wordt dit tabblad door Android
+      // weggegooid, dan moet de babyunit met dezelfde kamercode terugkomen.
+      // Een nieuwe code zou de ouderunit voorgoed buitensluiten.
+      bewaarBabysessie();
     });
     // Elke inkomende verbinding moet zich eerst legitimeren. Zonder deze poort
     // kreeg iedereen die de kamercode kende meteen live beeld, geluid én
@@ -1539,7 +1793,7 @@
       f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
     };
     document.addEventListener('keydown', box.__keys, true);
-    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+    tril([120, 80, 120]);
   }
 
   function answerApproval(ok) {
@@ -1693,7 +1947,12 @@
         // Komt de toestemming later alsnog binnen, dan mag die stream niet
         // blijven hangen met een brandend camera-lampje.
         belofte.then((s) => { try { s.getTracks().forEach((x) => x.stop()); } catch (e) {} }).catch(() => {});
-        af(new Error(T('permissionNeeded')));
+        // Eigen naam erop, zodat mediaFoutTekst() deze fout herkent als
+        // "van onszelf" en de al vertaalde zin niet nog eens in de
+        // onbekende-fout-verpakking stopt.
+        const fout = new Error(T('permissionNeeded'));
+        fout.name = 'BabyfoonEigenMelding';
+        af(fout);
       }, ms);
       belofte.then(
         (v) => { if (!klaar) { klaar = true; clearTimeout(t); goed(v); } },
@@ -1730,10 +1989,50 @@
         if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'NotFoundError') throw e;
       }
     }
-    throw laatste || new Error(T('mediaError'));
+    if (laatste) throw laatste;
+    const geen = new Error(T('mediaError'));
+    geen.name = 'BabyfoonEigenMelding';
+    throw geen;
   }
 
-  async function startBaby() {
+  // Van een getUserMedia-fout een zin maken die in de taal van de app staat
+  // én zegt wat de gebruiker eraan kan doen.
+  //
+  // Hiervoor kregen alleen NotAllowedError en SecurityError een eigen tekst en
+  // viel al het andere terug op e.message: de ruwe zin van de browser, altijd
+  // in het Engels. Juist op Android is dat de meest voorkomende fout.
+  // "Could not start video source" betekent dat een ándere app of een ander
+  // tabblad de camera nog vasthoudt — iets wat de gebruiker zó kan oplossen,
+  // als hij maar leest wat er aan de hand is.
+  //
+  // De ruwe browsertekst verdwijnt niet: bij een fout die we niet kennen komt
+  // hij er als tweede zin achteraan. Stil wegvallen is hier het slechtste wat
+  // er kan gebeuren — dan is "de app doet niets" niet te onderscheiden van
+  // een kapot toestel.
+  function mediaFoutTekst(e) {
+    const naam = (e && e.name) || '';
+    // Al een vertaalde zin van onszelf (tijdslimiet op het toestemmingsvenster,
+    // of "geen camera/microfoon beschikbaar"): die geven we onveranderd door.
+    if (naam === 'BabyfoonEigenMelding') return (e && e.message) || T('mediaError');
+    if (naam === 'NotAllowedError' || naam === 'SecurityError') return T('permissionDenied');
+    // De camera of microfoon bestaat wel, maar is bezet (andere app, ander
+    // tabblad) of het toestel geeft hem niet vrij.
+    if (naam === 'NotReadableError' || naam === 'TrackStartError' || naam === 'AbortError') return T('cameraBusy');
+    // Er is helemaal geen camera of microfoon gevonden.
+    if (naam === 'NotFoundError' || naam === 'DevicesNotFoundError') return T('noCameraFound');
+    // De gevraagde stand kan het toestel niet leveren. babyMediaOpenen() peldt
+    // al af tot { audio: true, video: true }; komen we hier, dan lukt zelfs
+    // dat niet.
+    if (naam === 'OverconstrainedError' || naam === 'ConstraintNotSatisfiedError') return T('cameraUnsupported');
+    // Onbekende fout: onze eigen uitleg, met de browsertekst erachter zodat er
+    // iets te melden valt als iemand hulp vraagt.
+    const ruw = (e && e.message) ? String(e.message) : '';
+    return ruw ? T('mediaError') + ' (' + ruw + ')' : T('mediaError');
+  }
+
+  // `herstel` is alleen gezet bij het terugkomen na een herlaadbeurt: dan moet
+  // de babyunit met dezelfde kamercode en hetzelfde token verder.
+  async function startBaby(herstel) {
     role = 'baby';
     showScreen('screenPairBaby');
     // Eerst eerlijk zijn over waar we op wachten: op de gebruiker, niet op de
@@ -1746,11 +2045,15 @@
       // versterkingstrap niet, dan gaat het ruwe spoor gewoon mee.
       await versterkMic(localStream);
     } catch (e) {
-      toast(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? T('permissionDenied') : (e.message || T('mediaError')));
+      toast(mediaFoutTekst(e));
       toonBabyKoppelvakken(true);
       zetBabyWachttekst('waitingConnection', false);
       showScreen('screenSetup');
       role = null;
+      // Herstel na een herlaadbeurt dat mislukt mag niet stil blijven: de
+      // adresbalk wordt schoongeveegd zodat er geen halve sessie achterblijft,
+      // en de toast hierboven zegt wat er misging.
+      if (herstel) zetSessieHash('');
       return;
     }
     // Toestemming binnen: vanaf hier wachten we wél echt op de ouderunit.
@@ -1763,7 +2066,7 @@
     babyCamId = v0.id || '';
     if (v0.facing === 'user' || v0.facing === 'environment') facing = v0.facing;
     localStream.getTracks().forEach((t) => watchTrackEnd(t, t.kind));
-    openBabyPeer();
+    openBabyPeer(herstel);
   }
 
   // ------------------------------------------------------------------ koppelen: ouder
@@ -1913,6 +2216,30 @@
     if (dezePeer && dezePeer !== peer) return;
     const type = err && err.type;
     if (type === 'unavailable-id' && r === 'baby') {
+      // Herstel na een herlaadbeurt is hier een geval apart. De kamercode
+      // MOET dan dezelfde blijven, anders staat de ouderunit met een code die
+      // nergens meer bestaat — en die ouder ligt op dat moment in bed, niet
+      // naast de babyunit. Maar de koppelserver houdt de oude aanmelding nog
+      // even vast nadat Android het tabblad heeft weggegooid, dus de eerste
+      // poging botst op onszelf. Een paar keer opnieuw met dezelfde code is
+      // dan het juiste antwoord.
+      if (babyHerstel && babyHerstelPogingen < 4) {
+        babyHerstelPogingen++;
+        // Vastleggen wélke sessie we herstellen: raakt babyHerstel ondertussen
+        // leeg (een geslaagde aanmelding zet hem weg), dan zou de herkansing
+        // hieronder alsnog een nieuwe kamercode trekken.
+        const herstelDeze = babyHerstel;
+        setTimeout(() => { if (role === 'baby') openBabyPeer(herstelDeze); }, 1500);
+        return;
+      }
+      // Opgegeven: dan tóch een nieuwe code, maar wél zichtbaar. De oude
+      // sessie in de adresbalk moet weg, anders blijft de app bij elke
+      // volgende herlaadbeurt naar een code grijpen die van niemand meer is.
+      if (babyHerstel) {
+        babyHerstel = null;
+        zetSessieHash('');
+        toast(T('sessionRestoreFailed'));
+      }
       openBabyPeer(); // code net bezet → nieuwe code
       return;
     }
@@ -2034,6 +2361,32 @@
     } catch (e) {}
   }
   let audioCtx = null;
+  // Eén plek voor "maak de geluidsmotor wakker".
+  //
+  // AudioContext.resume() geeft een BELOFTE terug, en Android wijst die af met
+  // NotAllowedError zolang de gebruiker nog nergens getikt heeft (bijvoorbeeld
+  // wie via een gescande QR binnenkomt). Een try/catch eromheen vangt dat
+  // níet: een afgewezen belofte is geen uitzondering die synchroon gegooid
+  // wordt. Op zeven plekken in dit bestand stond het zo, en dat leverde
+  // onafgevangen fouten in de console op — ruis waar een écht probleem tussen
+  // wegvalt.
+  //
+  // De afwijzing wordt hier opgevangen maar niet weggemoffeld: dat de
+  // geluidsmotor nog slaapt, moet de gebruiker blijven zien. Daar is de
+  // bestaande weg voor — de balk "alarm scherpstellen" (#alarmArm) en de knop
+  // "tik om te starten" (#playArm) — en die wordt hier opnieuw beoordeeld
+  // zodra we weten hoe het afliep.
+  function hervatAudioCtx() {
+    if (!audioCtx || audioCtx.state !== 'suspended') return;
+    let r = null;
+    try { r = audioCtx.resume(); } catch (e) { r = null; }
+    if (r && r.then) {
+      r.then(
+        () => { try { toonAlarmBanner(); } catch (e) {} },
+        () => { try { toonAlarmBanner(); } catch (e) {} }
+      );
+    }
+  }
   let analyser = null;
   let analyserSrc = null;
   let analyserStream = null;
@@ -2090,7 +2443,7 @@
         const AC = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AC();
       }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      hervatAudioCtx();
       analyserStream = new MediaStream([track.clone()]);
       analyserSrc = audioCtx.createMediaStreamSource(analyserStream);
       const an = audioCtx.createAnalyser();
@@ -2120,12 +2473,27 @@
       return { effectief: c.effectiveType || null, spaarstand: !!c.saveData };
     } catch (e) { return null; }
   }
+  // "Automatisch" mag het beeld nooit zómaar helemaal uitzetten.
+  //
+  // Dit was een Android-val. navigator.connection bestaat alléén op Android en
+  // desktop-Chromium, en zijn effectiveType is geen netwerktype maar een
+  // schatting uit gemeten vertraging: een druk wifi-netwerk of een telefoon die
+  // net uit de slaapstand komt meldt daar vrolijk "3g". Ook Chrome's
+  // databesparing zet saveData aan op een prima verbinding. Beide standen
+  // leverden hier 'geluid' op — camera uít — terwijl de ouder daar niet om
+  // gevraagd had. Op een iPhone gebeurde dat niet (geen navigator.connection),
+  // en dus was het beeld precies wat er op Android "niet werkte".
+  //
+  // Nu: alleen een echt kruipend netwerk (2G en trager) zet het beeld uit.
+  // 3G en databesparing gaan naar 'zuinig' — kleiner beeld, minder beelden per
+  // seconde — zodat er beeld blijft. Wie echt alleen geluid wil, kiest dat
+  // gewoon zelf; die keuze blijft ongemoeid, want die komt hier niet langs.
   function bepaalKwaliteit() {
     if (kwaliteitKeuze !== 'auto') return kwaliteitKeuze;
     const n = netwerkSoort();
     if (!n || !n.effectief) return 'hoog';       // onbekend (o.a. iOS): beeld aan
-    if (n.spaarstand) return 'geluid';
-    if (n.effectief === 'slow-2g' || n.effectief === '2g' || n.effectief === '3g') return 'geluid';
+    if (n.effectief === 'slow-2g' || n.effectief === '2g') return 'geluid';
+    if (n.spaarstand || n.effectief === '3g') return 'zuinig';
     return 'hoog';
   }
   function toonKwaliteit(stand) {
@@ -2172,7 +2540,7 @@
   // keer koppelen is genoeg; daarna gaat de fijnere meting vanzelf werken.
   (function wekAudioBijTik() {
     const wek = () => {
-      try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+      hervatAudioCtx();
       // Loopt de context na deze tik, dan hoeft de "alarm scherpstellen"-banner
       // er niet meer te staan.
       setTimeout(() => { try { toonAlarmBanner(); } catch (e) {} }, 200);
@@ -2309,7 +2677,7 @@
   function testAlarm() {
     try {
       if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      hervatAudioCtx();
     } catch (e) {}
     const el = alarmAudioElement();
     if (el) { try { el.currentTime = 0; el.play().catch(() => {}); } catch (e) {} }
@@ -2318,7 +2686,7 @@
   }
   function triggerAlarm() {
     const scherp = alarmScherp();
-    if (navigator.vibrate) { try { navigator.vibrate([200, 100, 200]); } catch (e) {} }
+    tril([200, 100, 200]);
     // Tweede weg naar geluid: een <audio>-element mag in sommige browsers wél
     // spelen waar de Web Audio API nog slaapt.
     const el = alarmAudioElement();
@@ -2331,7 +2699,7 @@
     }
     try {
       if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      hervatAudioCtx();
       const t = audioCtx.currentTime;
       [880, 1100].forEach((f, i) => {
         const osc = audioCtx.createOscillator();
@@ -2351,10 +2719,10 @@
   // van de huil-alarm (dalende tonen i.p.v. twee gelijke hoge tonen, zodat
   // ze niet met elkaar te verwarren zijn).
   function triggerConnectionLostAlert() {
-    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+    tril([300, 150, 300, 150, 300]);
     try {
       if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      hervatAudioCtx();
       const t = audioCtx.currentTime;
       [660, 550, 440].forEach((f, i) => {
         const osc = audioCtx.createOscillator();
@@ -2592,9 +2960,34 @@
   // opnemen (lokaal)
   let recorder = null;
   let recChunks = [];
+  // Welke container/codec kan deze browser opnemen?
+  //
+  // Android is hier het lastige geval. Chrome op Android kan webm/vp8 en
+  // meestal vp9; Samsung Internet en de Android WebView vallen op sommige
+  // toestellen terug op een hardware-encoder die alléén H.264 in mp4 levert,
+  // en oudere WebViews kennen isTypeSupported helemaal niet. Werd de hele
+  // lijst afgewezen, dan kwam er een lege mimeType uit — wat op zichzelf
+  // prima is (de browser kiest dan zelf) — maar de lijst was zó kort dat
+  // "video/mp4" zonder codecs op precies die toestellen ook nog afviel.
+  // Daarom nu ook de H.264-varianten, en isTypeSupported zelf afgeschermd.
   function pickMime() {
-    const opts = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
-    for (const m of opts) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+    if (!window.MediaRecorder) return '';
+    const kan = (m) => {
+      try { return typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(m); }
+      catch (e) { return false; }
+    };
+    const opts = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=h264,opus',
+      'video/webm',
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+      'video/mp4;codecs=h264,aac',
+      'video/mp4',
+    ];
+    for (const m of opts) if (kan(m)) return m;
+    // Niets herkend: leeg teruggeven. MediaRecorder kiest dan zijn eigen
+    // standaard, en dat is nog altijd beter dan weigeren op te nemen.
     return '';
   }
   async function saveBlob(blob, prefix, ext) {
@@ -2609,6 +3002,19 @@
     }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    // Niet elke Android-schil kent het download-attribuut (oude WebViews, en
+    // in-app-browsers zonder downloadbeheer). Daar deed de klik hieronder
+    // helemaal niets terwijl de app "Opgeslagen" meldde: een onwaarheid die
+    // niet te onderscheiden is van een mislukte opname. Kan het niet als
+    // download, dan openen we het bestand in een nieuw tabblad — daar kan de
+    // gebruiker het alsnog zelf bewaren — en melden we dat eerlijk.
+    if (!('download' in a)) {
+      let venster = null;
+      try { venster = window.open(url, '_blank'); } catch (e) { venster = null; }
+      toast(T(venster ? 'saved' : 'saveFailed'));
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return;
+    }
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
@@ -2623,15 +3029,43 @@
     try { recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
     catch (e) { return toast(T('recNotSupported')); }
     recChunks = [];
-    recorder.ondataavailable = (e) => e.data && e.data.size && recChunks.push(e.data);
-    recorder.onstop = async () => {
-      const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
+    const knopTerug = () => {
       btn.classList.remove('active');
       if (label) label.textContent = T('recordVideo');
       recorder = null;
-      await saveBlob(blob, prefix, (blob.type || '').includes('mp4') ? 'mp4' : 'webm');
     };
-    recorder.start(1000);
+    recorder.ondataavailable = (e) => e.data && e.data.size && recChunks.push(e.data);
+    // De encoder kan er onderweg mee ophouden. Dat gebeurt op Android in de
+    // praktijk: de hardware-encoder wordt door een andere app opgeëist, of het
+    // spoor wisselt (camerawissel op de babyunit) terwijl de opname loopt.
+    // Zonder deze afhandeling kwam er geen 'stop', bleef `recorder` staan en
+    // was de knop voorgoed vast in de stand "Stop" — één tik op Opnemen en
+    // daarna deed die knop nooit meer iets. Nu: netjes afsluiten, de knop
+    // terugzetten en de gebruiker vertellen dát het misging.
+    let alGemeld = false;
+    recorder.onerror = () => {
+      const r = recorder;
+      knopTerug();
+      recChunks = [];
+      if (!alGemeld) { alGemeld = true; toast(T('recFailed')); }
+      // stop() na een fout mag 'stop' nog afvuren; die vindt dan een lege
+      // lijst en meldt niets meer (alGemeld staat aan).
+      if (r) { try { r.stop(); } catch (e) {} }
+    };
+    recorder.onstop = async () => {
+      const type = (recorder && recorder.mimeType) || 'video/webm';
+      const leeg = !recChunks.length || !recChunks.some((c) => c.size > 0);
+      knopTerug();
+      if (alGemeld) return;
+      // Geen enkel brokje data. Dat is op Android het gezicht van een encoder
+      // die de stream niet aankon. Een bestand van nul bytes wegschrijven en
+      // "Opgeslagen" melden is dan misleidend.
+      if (leeg) { alGemeld = true; toast(T('recFailed')); return; }
+      const blob = new Blob(recChunks, { type: type });
+      await saveBlob(blob, prefix, (blob.type || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm');
+    };
+    try { recorder.start(1000); }
+    catch (e) { knopTerug(); return toast(T('recFailed')); }
     btn.classList.add('active');
     if (label) label.textContent = T('stop');
     toast(T('recStarted'));
@@ -2833,9 +3267,7 @@
     if ($('playArm')) $('playArm').onclick = () => {
       try {
         if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          const r = audioCtx.resume(); if (r && r.catch) r.catch(() => {});
-        }
+        hervatAudioCtx();
       } catch (e) {}
       const v = $('video');
       if (v) {
@@ -2886,22 +3318,47 @@
     renderTorchUI();
     const rl2 = $('roomLabel2'); if (rl2) rl2.textContent = currentCode || 'P2P';
     // Stop
-    $('btnStop').onclick = () => { if (confirm(T('stopParentQ'))) endSession(true); };
+    $('btnStop').onclick = () => vraagBevestiging('stopParentQ', () => endSession(true));
     // Fullscreen
     $('btnFullscreen').onclick = () => {
       const v = $('video');
       if (v.webkitEnterFullscreen && !document.fullscreenElement) { try { v.webkitEnterFullscreen(); return; } catch (e) {} }
       // Geen optional chaining (?.): Safari 12 op iOS 12 kent dat niet en dan
       // faalt dit hele bestand al bij het inlezen — geen enkele knop werkt meer.
-      if (!document.fullscreenElement) {
+      const inVol = document.fullscreenElement || document.webkitFullscreenElement;
+      if (!inVol) {
         const fs = $('screen').requestFullscreen || $('screen').webkitRequestFullscreen;
-        if (fs) fs.call($('screen'));
+        // Geen volledig-scherm-API: dat is in de interne browser van Android
+        // (WebView) heel gewoon, want daar moet de omringende app het zelf
+        // inbouwen. Eerlijk melden in plaats van een knop die niets doet.
+        if (!fs) { toast(T('fsFailed')); return; }
+        try {
+          const p = fs.call($('screen'));
+          // De belofte kan ook wórden afgewezen (geen gebruikersgebaar meer
+          // geldig, of de schil staat het niet toe). Zonder deze afhandeling
+          // was dat een onbehandelde afwijzing in de console en bleef de
+          // gebruiker naar een onveranderd scherm kijken.
+          if (p && p.catch) p.catch(() => toast(T('fsFailed')));
+        } catch (e) { toast(T('fsFailed')); }
       } else {
         const ex = document.exitFullscreen || document.webkitExitFullscreen;
-        if (ex) ex.call(document);
+        if (ex) {
+          try {
+            const p = ex.call(document);
+            if (p && p.catch) p.catch(() => {});
+          } catch (e) {}
+        }
       }
     };
-    document.addEventListener('fullscreenchange', () => { $('screen').classList.toggle('fs', !!document.fullscreenElement); });
+    const volgVolScherm = () => {
+      $('screen').classList.toggle('fs', !!(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', volgVolScherm);
+    // Samsung Internet en oudere Android-WebViews melden dit nog met voorvoegsel.
+    // Zonder deze regel ging het beeld daar wél naar volledig scherm, maar bleef
+    // de bijbehorende opmaak (.fs) uit — het beeld stond dan klein in een zwart
+    // vlak en de knop leek het half te doen.
+    document.addEventListener('webkitfullscreenchange', volgVolScherm);
     // Sleep timer-kaart (Off → 15 → 30 → 60) met zichtbaar aftellen
     const sleepLabel = () => {
       if (!sleepEndAt) { $('sleepVal').textContent = T('off2'); return; }
@@ -3036,7 +3493,7 @@
     const scherm = $('tgScreenOff');
     if (scherm) scherm.onclick = () => setBlackout(true);
 
-    $('bStop').onclick = () => { if (confirm(T('stopBabyQ'))) endSession(true); };
+    $('bStop').onclick = () => vraagBevestiging('stopBabyQ', () => endSession(true));
     // beginstand van de schakelknoppen en statustegels meteen goed tonen
     syncSwitchRows();
     renderBabyTiles();
@@ -3555,7 +4012,16 @@
     if (role !== 'baby' || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
     try {
       const devs = await navigator.mediaDevices.enumerateDevices();
-      const cams = devs.filter((d) => d.kind === 'videoinput').map((d) => ({ id: d.deviceId, label: d.label || '' }));
+      // Alleen camera's met een bruikbaar deviceId. Zónder id kan de ouderunit
+      // er niet gericht naartoe wisselen: selectCamera('') valt er meteen uit
+      // en de keuzelijst kreeg dan een regel die niets deed. (Android geeft
+      // lege deviceId's én lege labels zolang er geen toestemming is; op de
+      // babyunit is die er altijd, maar een tweede, niet-toegestane camera kan
+      // er nog steeds zo bij staan.) De lege labels zelf zijn geen probleem:
+      // renderCameraSelect zet daar "Camera 1", "Camera 2" voor in de plaats.
+      const cams = devs
+        .filter((d) => d.kind === 'videoinput' && d.deviceId)
+        .map((d) => ({ id: d.deviceId, label: d.label || '' }));
       // Valt terug op de camera die we zelf geopend hebben: Safari laat
       // deviceId in track.getSettings() nogal eens weg, en dan zou de ouderunit
       // de verkeerde regel in de keuzelijst aanwijzen.
@@ -3564,13 +4030,48 @@
       sendControl({ cmd: 'cameraList', cameras: cams, activeId: activeId });
     } catch (e) {}
   }
-  function reportTorch() {
+  // Kan dit videospoor zijn zaklamp aan? Torch is in de praktijk een
+  // Android-functie (iOS/WebKit kent hem niet via het web), en juist daar zijn
+  // de kanten scherp:
+  //   • getCapabilities() ontbreekt in de Android WebView en in oudere
+  //     Samsung Internet. Daar is torch niet aantoonbaar en dus niet te
+  //     bieden — beter geen knop dan een dode knop.
+  //   • getCapabilities() bestaat wél maar meldt torch pas als het spoor
+  //     echt lóópt. Op een vers geopend spoor komt er de eerste paar honderd
+  //     milliseconden {} of een lijst zonder torch terug. Precies dát is wat
+  //     er gebeurt bij het starten van de babyunit en na elke camerawissel,
+  //     en daarom bleef de LED-rij op de ouderunit verborgen op toestellen
+  //     die het wél kunnen.
+  // Vandaar: niet één keer kijken, maar een paar keer met een korte pauze, en
+  // stoppen zodra het antwoord ja is of het spoor is vervangen.
+  function torchCapable(vt) {
+    if (!vt || !vt.getCapabilities || !vt.applyConstraints) return false;
+    try {
+      const caps = vt.getCapabilities() || {};
+      return !!caps.torch;
+    } catch (e) { return false; }
+  }
+  let torchHerkansingTimer = null;
+  function reportTorch(hermeting) {
     if (role !== 'baby') return;
-    let supported = false;
+    if (!hermeting && torchHerkansingTimer) { clearTimeout(torchHerkansingTimer); torchHerkansingTimer = null; }
     const vt = localStream && localStream.getVideoTracks()[0];
-    if (vt && vt.getCapabilities) { try { supported = !!vt.getCapabilities().torch; } catch (e) {} }
+    const supported = torchCapable(vt);
     if (!supported) torchOn = false;
     sendControl({ cmd: 'torchState', supported: supported, on: torchOn });
+    // Nog niet gevonden én het spoor leeft: het kan nog komen. Twee
+    // herkansingen (na 0,7 s en na 2 s) dekken wat er in de praktijk nodig is;
+    // daarna is het echt niet ondersteund en blijft de LED-rij verborgen.
+    if (supported || !vt || vt.readyState !== 'live') return;
+    const ronde = (hermeting || 0) + 1;
+    if (ronde > 2) return;
+    torchHerkansingTimer = setTimeout(() => {
+      torchHerkansingTimer = null;
+      // Ander spoor in de tussentijd? Dan heeft attachVideoTrack al opnieuw
+      // gemeld en hoeft deze meting niet meer.
+      if (!localStream || localStream.getVideoTracks()[0] !== vt) return;
+      reportTorch(ronde);
+    }, ronde === 1 ? 700 : 1300);
   }
   // De ouderunit kiest gericht één camera uit de gemelde lijst. Zelfde regels
   // als babyCycleCamera: oude spoor éérst vrijgeven, dan pas de nieuwe camera
@@ -3613,27 +4114,64 @@
   async function setTorch(on) {
     if (role !== 'baby' || !localStream) return;
     const vt = localStream.getVideoTracks()[0];
+    // Zonder camera-spoor of zonder applyConstraints valt er niets te schakelen.
+    // Dat was hiervoor een TypeError die in de catch verdween: de knop op de
+    // ouderunit sprong dan terug zonder één woord uitleg.
+    if (!vt || !vt.applyConstraints) {
+      torchOn = false;
+      meldTorchMislukt();
+      reportTorch();
+      return;
+    }
     try {
       await vt.applyConstraints({ advanced: [{ torch: !!on }] });
       torchOn = !!on;
       toast(torchOn ? T('ledOn') : T('ledOff'));
     } catch (e) {
+      // Niet stil wegmoffelen. Een mislukte zaklamp is op Android een reëel
+      // geval (de camera is al door een andere app in gebruik, het toestel
+      // weigert torch op de voorcamera, of de fabrikant kent de capability
+      // maar voert hem niet uit) en een knop die zonder uitleg terugspringt
+      // is niet te onderscheiden van een kapotte verbinding.
       torchOn = false;
+      meldTorchMislukt();
     }
     reportTorch();
   }
+  // Zichtbare melding op béide units: op de babyunit een toast, op de ouderunit
+  // via het besturingskanaal zodat de ouder — die de knop indrukte — het ook
+  // leest. Hergebruikt de bestaande tekst "LED uit" niet: dat zou suggereren
+  // dat het gelukt is.
+  function meldTorchMislukt() {
+    toast(T('ledFailed'));
+    sendControl({ cmd: 'torchFailed' });
+  }
+  let batterijGevolgd = false;
   async function reportBattery(once) {
     const setB = (txt, sub) => { const b1 = $('bBatt'); if (b1) b1.textContent = txt; const s = $('bBattSub'); if (s && sub != null) s.textContent = sub; };
-    if (!('getBattery' in navigator)) { setB('N/A', ''); return; }
+    // navigator.getBattery bestaat op Android Chrome, maar niet in Firefox,
+    // niet op iOS en niet in een deel van de Android-WebViews. Dan blijft het
+    // bij "N/A" — de rest van de functie mag er niet op stuklopen.
+    if (typeof navigator.getBattery !== 'function') { setB('N/A', ''); return; }
     try {
       const b = await navigator.getBattery();
+      if (!b || typeof b.level !== 'number') { setB('N/A', ''); return; }
       const upd = () => {
         const pct = Math.round(b.level * 100);
         setB(pct + '%', b.charging ? T('charging') : T('onBattery'));
         sendControl({ cmd: 'battery', level: pct, charging: b.charging });
       };
       upd();
-      if (!once) { b.addEventListener('levelchange', upd); b.addEventListener('chargingchange', upd); }
+      // Eén keer meeluisteren is genoeg. reportBattery() zonder `once` loopt bij
+      // élke toegelaten ouderunit langs, dus bij elke herverbinding — en dat
+      // hing er telkens een nieuw paar luisteraars op hetzelfde accu-object.
+      // Na een nacht herverbinden stuurde de babyunit bij één procentje
+      // verandering tientallen identieke berichten over het besturingskanaal.
+      if (!once && !batterijGevolgd && b.addEventListener) {
+        batterijGevolgd = true;
+        b.addEventListener('levelchange', upd);
+        b.addEventListener('chargingchange', upd);
+      }
     } catch (e) { setB('N/A', ''); }
   }
   // ------------------------------------------------------------------ wake lock
@@ -3759,10 +4297,7 @@
   }
   function hervatWeergave() {
     try {
-      if (audioCtx && audioCtx.state === 'suspended') {
-        const r = audioCtx.resume();
-        if (r && r.catch) r.catch(() => {});
-      }
+      hervatAudioCtx();
     } catch (e) {}
     if (role !== 'parent') return;
     const v = $('video');
@@ -3937,8 +4472,16 @@
   // het koppelen); encodeert de eigen site-URL zodat scannen nooit stukloopt.
   // De knop op de landingspagina opent de scanner; daar hoort een scan-icoon,
   // geen QR-code van de homepage (die was klein, korrelig en nergens voor nodig).
-  $('babyBack').onclick = (e) => { e.preventDefault(); location.reload(); };
-  $('parentBack').onclick = (e) => { e.preventDefault(); location.reload(); };
+  // "Terug" betekent: opnieuw beginnen. De sessie in de adresbalk moet er dan
+  // éérst af, anders pakt autoJoinFromHash() bij het herladen precies de
+  // sessie weer op die de gebruiker net wilde verlaten.
+  const terugNaarBegin = (e) => {
+    e.preventDefault();
+    zetSessieHash('');
+    location.reload();
+  };
+  $('babyBack').onclick = terugNaarBegin;
+  $('parentBack').onclick = terugNaarBegin;
   $('copyBabyOffer').onclick = () => copyText($('babyOfferCode').value);
   $('babyNewCode').onclick = () => openBabyPeer();
   $('parentGenBtn').onclick = () => startParentConnect();
@@ -3974,14 +4517,54 @@
   // om toestemming, precies zoals bij handmatig intypen.
   laadEigenIce();
 
+  // Kwam deze paginalading uit een herlaadbeurt? Gooit Android een tabblad
+  // weg en komt de gebruiker terug, dan laadt de browser dezelfde URL opnieuw
+  // en meldt hij dat als "reload". Iemand die het adres intypt of uit zijn
+  // bladwijzers haalt, krijgt "navigate". Dat verschil is hier belangrijk: een
+  // babyunit die vanzelf camera en microfoon aanzet hoort alleen terug te
+  // komen na zo'n herlaadbeurt, en niet omdat er ergens nog een oude link
+  // rondslingert. Kent de browser deze meting niet, dan doen we het níet —
+  // een babyfoon die uit zichzelf begint te kijken en luisteren is erger dan
+  // eentje die om een tik vraagt.
+  function isHerlaadbeurt() {
+    try {
+      const n = performance.getEntriesByType && performance.getEntriesByType('navigation');
+      if (n && n.length && n[0].type) return n[0].type === 'reload' || n[0].type === 'back_forward';
+    } catch (e) {}
+    return false;
+  }
+
   (function autoJoinFromHash() {
     const h = (location.hash || '').replace(/^#/, '').trim();
     if (!h) return;
+
+    // --- babyunit die terugkomt na een herlaadbeurt -----------------------
+    // Eigen voorvoegsel, zodat dit nooit verward kan worden met de
+    // QR-deellink (die is voor de óuder). Zie zetSessieHash() voor waarom dit
+    // in de adresbalk staat en niet in localStorage.
+    const b = /^baby=([A-Za-z0-9]{4,12})\.([A-Za-z0-9]{8,64})$/.exec(h);
+    if (b) {
+      if (!isHerlaadbeurt()) {
+        // Geen herlaadbeurt: dit is een oude link. Adresbalk schoonvegen en
+        // gewoon het beginscherm tonen — niet stiekem beginnen met bewaken.
+        zetSessieHash('');
+        return;
+      }
+      toast(T('sessionRestoring'));
+      startBaby({ code: b[1].toUpperCase(), token: b[2] });
+      return;
+    }
+
+    // --- ouderunit: QR-deeplink én herstel na een herlaadbeurt ------------
     if (!/^[A-Za-z0-9]{4,12}(\.[A-Za-z0-9]{8,64})?$/.test(h)) return;
     role = 'parent';
     showScreen('screenPairParent');
     // In het invoerveld hoort alleen de leesbare code, niet het token.
     $('parentOfferInput').value = h.split('.')[0].toUpperCase();
+    // Kwam dit uit een weggegooid tabblad, dan hoort de ouder te lezen dat de
+    // bewaking onderbroken is geweest. Een babyfoon die zwijgend een gat in de
+    // nacht laat vallen is precies wat hier niet mag.
+    if (isHerlaadbeurt()) toast(T('sessionRestoring'));
     startParentConnect(h);
   })();
 
@@ -4034,7 +4617,7 @@
   });
 
   document.addEventListener('pointerdown', () => {
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    hervatAudioCtx();
     const v = $('video'); if (v) v.play().catch(() => {});
   }, { once: true });
 
@@ -4043,7 +4626,12 @@
   // op een computer probeert.
   if ($('blackout')) $('blackout').onclick = () => setBlackout(false);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && blackoutOn) { e.preventDefault(); setBlackout(false); }
+    if (e.key !== 'Escape') return;
+    // Staat de bevestigingsvraag open, dan hoort Escape die weg te halen en
+    // niet het zwarte scherm; anders zou Escape "nee" zeggen én het beeld
+    // terugbrengen.
+    if (bevestigNee) { e.preventDefault(); bevestigNee(); return; }
+    if (blackoutOn) { e.preventDefault(); setBlackout(false); }
   });
 
   // ------------------------------------------------ voorgrond-wacht (herstel na scherm-uit/achtergrond)
@@ -4129,18 +4717,57 @@
   });
   // Sommige (vooral oudere iOS Safari-)versies vuren visibilitychange niet
   // altijd betrouwbaar; pageshow/focus als extra vangnet.
-  window.addEventListener('pageshow', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
+  window.addEventListener('pageshow', (e) => {
+    // Terug uit de paginacache (bfcache). Dan is de pagina niet opnieuw
+    // geladen: al ons JavaScript staat er nog, mét de vlag die pagehide
+    // achterliet. Die vlag moet hier wéér uit, anders is de app dood terwijl
+    // ze er verbonden uitziet — zie de uitleg bij pagehide hieronder. Daarna
+    // doen de gezondheidscontroles hieronder het werk dat ze al deden na
+    // scherm-uit: nakijken wat er nog leeft en alleen herstellen wat kapot is.
+    if (e && e.persisted) shuttingDown = false;
+    hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume();
+  });
   window.addEventListener('focus', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
 
-  window.addEventListener('pagehide', () => {
+  // Pagina wordt opgeborgen: camera, microfoon en verbinding netjes vrijgeven.
+  //
+  // LET OP HET ONDERSCHEID. `shuttingDown` zet élk herstelpad in dit bestand
+  // stil — hervatWeergave(), recoverBabyTrack(), hercallOuder(), de
+  // hartslagbewaking, de herverbindingstabel — en de opruiming eronder stopt
+  // camera, microfoon en koppelserver. Bij het sluiten van het tabblad is dat
+  // precies goed. Maar pagehide betekent niet altijd "sluiten": gaat de pagina
+  // naar de paginacache (pagehide met persisted=true, wat Chrome op Android
+  // bij het weg- en terugnavigeren volop doet), dan komt dezelfde pagina met
+  // dezelfde variabelen weer terug via pageshow.
+  //
+  // Zo stond die vlag voorgoed aan. Eén keer een link openen en teruggaan
+  // (bv. de voetnootlinks "Privacy" of "Zo werkt het") was genoeg, en daarna
+  // deed de babyfoon niets meer terwijl het dashboard "Verbonden" bleef tonen:
+  // geen beeld, geen geluid, geen huilalarm, geen herverbinding. Alleen de
+  // pagina verversen bracht hem terug. Precies het beeld van "niet alle
+  // functies werken".
+  //
+  // Daarom nu: gaat de pagina naar de cache, dan laten we alles staan en
+  // draaien (de browser bevriest de pagina zelf; wordt ze later alsnog
+  // weggegooid, dan geeft de browser camera en microfoon vrij) en ruimen we
+  // alleen de lopende opname op, want die zou een onbruikbaar bestand worden.
+  // Pas bij een écht vertrek zetten we de vlag en geven we alles vrij.
+  window.addEventListener('pagehide', (e) => {
+    if (recorder) try { recorder.stop(); } catch (e2) {}
+    if (e && e.persisted) return;
     shuttingDown = true;
-    try { stopBabyWatchers(); } catch (e) {}
-    try { stopBrokerHerstel(); } catch (e) {}
-    try { stopMediaWatchdog(); } catch (e) {}
-    try { clearConnectTimers(); } catch (e) {}
-    if (recorder) try { recorder.stop(); } catch (e) {}
-    if (peer) try { peer.destroy(); } catch (e) {}
+    try { stopBabyWatchers(); } catch (e2) {}
+    try { stopBrokerHerstel(); } catch (e2) {}
+    try { stopMediaWatchdog(); } catch (e2) {}
+    try { clearConnectTimers(); } catch (e2) {}
+    if (peer) try { peer.destroy(); } catch (e2) {}
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
     if (micStream) micStream.getTracks().forEach((t) => t.stop());
+    // Het ruwe microfoonspoor zit NIET in localStream: versterkMic() haalt het
+    // daar weg en laat het de versterkingstrap voeden. Zonder deze twee regels
+    // bleef de microfoon van de babyunit na het verlaten van de pagina open —
+    // op Android met een blijvend opname-icoon in de statusbalk.
+    try { if (micChain && micChain.ruw) micChain.ruw.stop(); } catch (e2) {}
+    try { stopExtraMicrofoons(); } catch (e2) {}
   });
 })();

@@ -444,6 +444,22 @@
       </div>
     </div>
 
+    <!-- Bevestigingsvraag ("Ouderunit stoppen?"). Bewust GEEN window.confirm:
+         de interne browser van Android (WebView) toont die alleen als de
+         omringende app dat zelf inbouwt. Doet ze dat niet, dan geeft confirm()
+         meteen "nee" terug en deed de Stop-knop daar helemaal niets — zonder
+         enige melding. Deze vraag staat in de pagina zelf en werkt dus overal
+         hetzelfde. Zelfde opmaak als de toestemmingsvraag hierboven. -->
+    <div class="approve-wrap hidden" id="confirmBox" role="alertdialog" aria-modal="true" aria-labelledby="confirmText">
+      <div class="approve-box">
+        <h2 id="confirmText">&nbsp;</h2>
+        <div class="approve-actions">
+          <button class="btn secondary" id="btnConfirmNo" type="button" data-i18n="back">Back</button>
+          <button class="btn" id="btnConfirmYes" type="button" data-i18n="stop">Stop</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ======================= PARENT UNIT (dark dashboard) ======================= -->
     <section id="screenParent" class="hidden">
       <div class="dash-topbar">
