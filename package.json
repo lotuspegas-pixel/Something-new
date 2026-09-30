@@ -22,7 +22,8 @@
     "test:donate": "node test/e2e-donate.js",
     "test:securitypage": "node test/e2e-security-page.js",
     "test:blogpage": "node test/e2e-blog-page.js",
-    "test:webkit": "node test/e2e-webkit.js"
+    "test:webkit": "node test/e2e-webkit.js",
+    "test:android": "node test/e2e-android.js"
   },
   "engines": {
     "node": ">=18"
