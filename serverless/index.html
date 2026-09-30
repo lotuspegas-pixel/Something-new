@@ -399,6 +399,10 @@
         <div class="qr-hint" data-i18n="qrScanHint">Let the parent scan this QR — or type the code above</div>
         <input type="hidden" id="babyOfferCode" />
         <div class="waiting-pill" id="babyWaiting"><span class="spinner"></span><span data-i18n="waitingConnection">Waiting for the parent unit…</span></div>
+        <!-- Juist hier is de waarschuwing het hardst nodig: op dit scherm staat
+             de babyunit vaak minutenlang te wachten tot de ouder verbindt, en
+             wordt de telefoon neergelegd. -->
+        <div class="alarm-arm warn hidden" id="wakeWarnPair" role="status"><b data-i18n="wakeWarnTitle">This phone will not keep the screen awake</b><span data-i18n="wakeWarnBody">If the screen locks, the sound stops. Turn off auto-lock in your phone settings, and use the “Screen off” button here instead of the power button.</span></div>
         <div class="pair-actions">
           <button class="btn secondary" id="copyBabyOffer" type="button"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8"/></svg> <span data-i18n="copyCode">Copy code</span></button>
           <button class="btn secondary" id="babyNewCode" type="button"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M4 12a8 8 0 0 1 14-5m2-2v5h-5M20 12a8 8 0 0 1-14 5m-2 2v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> <span data-i18n="newCode">New code</span></button>
@@ -502,6 +506,12 @@
           <div class="vcard" id="screen">
             <div class="vcard-poster" aria-hidden="true"><img class="poster-cam" src="assets/mark.png" alt="" width="589" height="700" /><div class="poster-label"><span class="pl-camoff" data-i18n="posterCameraOff">Camera off</span><span class="pl-offline" data-i18n="posterOffline">Offline</span></div></div>
             <video id="video" autoplay playsinline aria-label="Live video of your baby"></video>
+            <!-- Let op: het element #parentAudio staat hier bewust NIET in de
+                 HTML. Het wordt pas op de ouderunit aangemaakt op het moment
+                 dat het nodig is (zie zorgVoorParentAudio() in js/app.js). Een
+                 leeg <audio> dat altijd in de pagina staat is namelijk óók op
+                 de babyunit aanwezig, en dan is het het eerste <audio> van de
+                 pagina — waar het slaapliedje er een verwacht. -->
             <div class="night-veil hidden" id="nightVeil"></div>
             <div class="vcard-badge live"><span class="rec-dot breathe"></span><span id="liveText" data-i18n="connecting">CONNECTING…</span></div>
             <div class="vcard-ph" id="placeholder"><div class="spinner"></div><div id="phText" data-i18n="connecting">Connecting…</div><button class="btn hidden" id="phRetry" type="button" data-i18n="retry">Try again</button></div>
@@ -519,6 +529,13 @@
           <div class="monitor-alerts hidden" id="monitorAlerts">
             <div class="alert-pill hidden" id="cryAlert" role="status" data-i18n="cryingDetected">Crying detected</div>
             <div class="alert-pill hidden" id="streamAlert" role="status" data-i18n="streamPaused">Baby unit interrupted — no sound coming in</div>
+            <!-- Het toestel heeft deze pagina stilgezet gehad: er is dan een gat
+                 in de bewaking geweest. Tik = wegklikken. -->
+            <div class="alarm-arm warn hidden" id="stilgezetParent" role="status"><span data-i18n="pausedByPhone">Your phone paused this page for {t} — nothing could be heard during that time. Sound is running again.</span><button class="pillbtn" id="stilgezetParentOk" type="button" data-i18n="dismiss">Dismiss</button></div>
+            <!-- Het scherm kan niet wakker gehouden worden. Zonder deze melding
+                 ontdekt de gebruiker dat pas doordat de babyfoon 's nachts stil
+                 is geworden. -->
+            <div class="alarm-arm warn hidden" id="wakeWarnParent" role="status"><b data-i18n="wakeWarnTitle">This phone will not keep the screen awake</b><span data-i18n="wakeWarnBody">If the screen locks, the sound stops. Turn off auto-lock in your phone settings, and use the “Screen off” button here instead of the power button.</span></div>
             <div class="alarm-arm hidden" id="alarmArm" role="status">
               <span data-i18n="alarmTestHint">Tap once so the cry alarm can make a sound on this device.</span>
               <button class="pillbtn" id="btnAlarmTest" type="button" data-i18n="alarmTest">Test alarm sound</button>
@@ -730,6 +747,8 @@
           <div class="btile"><span class="bt-ic"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l2.5 2M9 3h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b data-i18n="sleepTimer">Sleep timer</b><small id="tileSleep" data-i18n="off2">Off</small></div>
         </div>
 
+        <div class="alarm-arm warn hidden" id="stilgezetBaby" role="status"><span data-i18n="pausedByPhone">Your phone paused this page for {t} — nothing could be heard during that time. Sound is running again.</span><button class="pillbtn" id="stilgezetBabyOk" type="button" data-i18n="dismiss">Dismiss</button></div>
+        <div class="alarm-arm warn hidden" id="wakeWarnBaby" role="status"><b data-i18n="wakeWarnTitle">This phone will not keep the screen awake</b><span data-i18n="wakeWarnBody">If the screen locks, the sound stops. Turn off auto-lock in your phone settings, and use the “Screen off” button here instead of the power button.</span></div>
         <div class="btip"><span data-i18n="babyTip">Tip: keep this browser open and the phone on its charger to stay connected.</span></div>
         <div class="btip" id="babyLockTip"><span data-i18n="lockScreenWarn">Screen off keeps this page open: camera, microphone and sound keep working.</span></div>
       </div>

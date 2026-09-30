@@ -1323,6 +1323,14 @@
     // De vraag om een tik hoort niet te blijven staan nadat de sessie voorbij
     // is; er valt dan niets meer af te spelen.
     try { toonTikOmTeStarten(false); } catch (e) {}
+    // De tweede geluidsweg hoort ook stil te vallen: anders klinkt de babyunit
+    // nog even door terwijl de sessie al beëindigd is.
+    try {
+      const pa = $('parentAudio');
+      if (pa) { pa.pause(); pa.srcObject = null; }
+    } catch (e) {
+      logboek('sound', T('alarmSilent'), 'opruimen geluidselement: ' + ((e && e.message) || e));
+    }
     try { if (localStream) localStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch (e) {}
     try { stopExtraMicrofoons(); } catch (e) {}
@@ -2035,6 +2043,17 @@
   async function startBaby(herstel) {
     role = 'baby';
     showScreen('screenPairBaby');
+    // METEEN het scherm wakker houden, niet pas op het dashboard.
+    //
+    // Hier zat een gat dat precies het gemelde gedrag verklaart. De wake lock
+    // werd pas aangevraagd in startBabyDevice(), en dat draait pas als de
+    // ouderunit verbonden ís. Tot die tijd staat de babyunit op dit
+    // koppelscherm te wachten — met camera en microfoon al open — zonder dat
+    // iets het scherm wakker houdt. Gemeten op de oude code: nul aanvragen op
+    // dit scherm, terwijl er twee levende sporen open stonden. Wie de telefoon
+    // dan neerlegt bij het bedje, kijkt even later naar een vergrendeld
+    // toestel, en op een iPhone is de babyunit daarmee doodstil.
+    enableWakeLock();
     // Eerst eerlijk zijn over waar we op wachten: op de gebruiker, niet op de
     // ouderunit. De kamercode bestaat op dit moment nog niet.
     toonBabyKoppelvakken(false);
@@ -2083,6 +2102,10 @@
     mark('connectStart');
     currentCode = code; // toon de kamercode in het ouderdashboard
     role = 'parent';
+    // Zelfde gat als bij de babyunit: verbinden kan op een mobiel netwerk met
+    // TURN tientallen seconden duren, en de oude code vroeg de wake lock pas
+    // aan op het dashboard. Gemeten: nul aanvragen op het koppelscherm.
+    enableWakeLock();
     if (!isRetry) { reconnectAttempt = 0; }
     const err0 = $('parentError'); if (err0) err0.classList.add('hidden');
     const dbox1 = $('parentDiagBox'); if (dbox1) dbox1.classList.add('hidden');
@@ -2376,8 +2399,19 @@
   // bestaande weg voor — de balk "alarm scherpstellen" (#alarmArm) en de knop
   // "tik om te starten" (#playArm) — en die wordt hier opnieuw beoordeeld
   // zodra we weten hoe het afliep.
+  //
+  // WebKit kent naast 'suspended' nóg een stand: 'interrupted'. Dát is wat een
+  // iPhone of iPad ervan maakt zodra het toestel vergrendelt, er een telefoon
+  // binnenkomt of een andere app het geluid overneemt. Hier stond alleen een
+  // controle op 'suspended', en dus werd resume() na een vergrendeling
+  // helemaal niet meer geprobeerd: gemeten nul resume()-aanroepen, ook na
+  // visibilitychange, pageshow én focus samen. Gevolg op een iPhone: één keer
+  // het scherm op slot en de geluidsmeter stond de rest van de nacht stil en
+  // het huilalarm zweeg — precies het geval waarvoor dit alles bedoeld is.
   function hervatAudioCtx() {
-    if (!audioCtx || audioCtx.state !== 'suspended') return;
+    if (!audioCtx) return;
+    const stand = audioCtx.state;
+    if (stand !== 'suspended' && stand !== 'interrupted') return;
     let r = null;
     try { r = audioCtx.resume(); } catch (e) { r = null; }
     if (r && r.then) {
@@ -2553,7 +2587,12 @@
   const meterBuf = new Uint8Array(256);
   let amBars = [];
   let soundEventCooldown = 0;
-  function meterLoop() {
+  // Wanneer draaide de meting voor het laatst? De bewakingstik van één seconde
+  // hieronder gebruikt dit om in te springen zodra de browser geen
+  // animatieframes meer levert.
+  let laatsteMeterTik = 0;
+  function meterTick() {
+    laatsteMeterTik = Date.now();
     let level = 0;
     let gemeten = false;
     // Eerst de fijne meting, maar alleen als de context echt loopt: een
@@ -2596,6 +2635,20 @@
     } else if (now > alarmCooldown - 5000) {
       if (cry && !cry.classList.contains('hidden')) { cry.classList.add('hidden'); toonMeldingenStrook(); }
     }
+  }
+  // De geluidsmeter én het huilalarm hingen volledig aan requestAnimationFrame.
+  // Een browser levert géén animatieframes meer zodra de pagina niet zichtbaar
+  // is — en dat is precies wat er gebeurt als het scherm van de ouder uitgaat.
+  // Gemeten op de oude code: zet je de animatieframes stil, dan blijft de
+  // dB-tekst drie seconden later nog exact hetzelfde en gaat het huilalarm
+  // nooit meer af. Op Android kan het geluid van de babyunit dan gewoon
+  // doorlopen terwijl het alarm dood is; dat is een babyfoon die doet alsof.
+  //
+  // Daarom nu twee aandrijvingen: animatieframes zolang ze komen (vloeiend, en
+  // ze kosten niets als er niets te tekenen valt) en een tik van één seconde
+  // die inspringt zodra ze wegblijven. Die tik zit in bewaakVoorgrond().
+  function meterLoop() {
+    meterTick();
     requestAnimationFrame(meterLoop);
   }
   // --------------------------------------------------- alarm hoorbaar houden
@@ -2611,12 +2664,13 @@
   // als tweede weg (dat kent een mildere autoplay-afweging dan Web Audio), en
   // (c) een regel in het gebeurtenislogboek als het alarm stil is gebleven.
 
-  // Korte piep als data-URI (8-bit PCM WAV, 880 Hz). Bewust klein gehouden.
-  let alarmEl = null;
-  function alarmAudioElement() {
-    if (alarmEl) return alarmEl;
+  // Korte piep als data-URI (8-bit PCM WAV). Bewust klein gehouden.
+  //
+  // `stoten` is een lijstje [frequentie, beginseconde, eindseconde]; zo maken
+  // twee aanroepen twee duidelijk verschillende signalen uit één generator.
+  function maakPiepElement(duur, stoten) {
     try {
-      const rate = 8000, dur = 0.5, n = Math.floor(rate * dur);
+      const rate = 8000, n = Math.floor(rate * duur);
       const bytes = new Uint8Array(44 + n);
       const dv = new DataView(bytes.buffer);
       const str = (o, s) => { for (let i = 0; i < s.length; i++) bytes[o + i] = s.charCodeAt(i); };
@@ -2626,21 +2680,45 @@
       dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
       str(36, 'data'); dv.setUint32(40, n, true);
       for (let i = 0; i < n; i++) {
-        // twee korte stoten, zodat hij op dezelfde piep-piep lijkt als de
-        // Web Audio-versie
         const t = i / rate;
-        const aan = (t < 0.16) || (t > 0.22 && t < 0.38);
-        const v = aan ? Math.sin(2 * Math.PI * 880 * t) * 0.6 : 0;
+        let v = 0;
+        for (let k = 0; k < stoten.length; k++) {
+          const s = stoten[k];
+          if (t >= s[1] && t < s[2]) { v = Math.sin(2 * Math.PI * s[0] * t) * 0.6; break; }
+        }
         bytes[44 + i] = Math.max(0, Math.min(255, Math.round(128 + v * 110)));
       }
       let bin = '';
       for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-      alarmEl = document.createElement('audio');
-      alarmEl.preload = 'auto';
-      alarmEl.src = 'data:audio/wav;base64,' + btoa(bin);
-      document.body.appendChild(alarmEl);
-    } catch (e) { alarmEl = null; }
+      const el = document.createElement('audio');
+      el.preload = 'auto';
+      el.src = 'data:audio/wav;base64,' + btoa(bin);
+      document.body.appendChild(el);
+      return el;
+    } catch (e) {
+      // Geen stille mislukking: zonder dit element is het alarm alléén nog
+      // afhankelijk van de Web Audio API, en dat is precies de weg die op een
+      // telefoon zonder tik dichtblijft. Dat hoort in het logboek te staan.
+      logboek('sound', T('alarmSilent'), '');
+      return null;
+    }
+  }
+  let alarmEl = null;
+  function alarmAudioElement() {
+    // twee korte stoten, zodat hij op dezelfde piep-piep lijkt als de
+    // Web Audio-versie
+    if (!alarmEl) alarmEl = maakPiepElement(0.5, [[880, 0, 0.16], [880, 0.22, 0.38]]);
     return alarmEl;
+  }
+  // Tweede weg naar geluid voor de wegval-melding. Die had er nog géén: hij
+  // hing volledig aan de Web Audio API, en juist die ligt stil zolang er niet
+  // getikt is óf nadat een iPhone hem heeft onderbroken. Dan viel de
+  // verbinding weg zónder dat er iets te horen was. Dalende tonen, zodat het
+  // signaal niet met het huilalarm te verwarren is.
+  let verliesEl = null;
+  function verliesAudioElement() {
+    if (!verliesEl) verliesEl = maakPiepElement(0.72, [[660, 0, 0.2], [550, 0.22, 0.42], [440, 0.44, 0.66]]);
+    return verliesEl;
   }
   function alarmScherp() {
     try { return !!(audioCtx && audioCtx.state === 'running'); } catch (e) { return false; }
@@ -2720,6 +2798,17 @@
   // ze niet met elkaar te verwarren zijn).
   function triggerConnectionLostAlert() {
     tril([300, 150, 300, 150, 300]);
+    // Eerst de weg die het minst snel dichtzit: een <audio>-element mag in
+    // veel browsers spelen waar de Web Audio API nog slaapt of (op iOS) is
+    // onderbroken. Zonder dit was deze melding op precies die toestellen stil.
+    const el = verliesAudioElement();
+    if (el) {
+      try {
+        el.currentTime = 0;
+        const p = el.play();
+        if (p && p.catch) p.catch(() => { /* geblokkeerd; de toon hieronder en de trilling blijven over */ });
+      } catch (e) { /* idem: geen reden om de rest van de melding te laten vallen */ }
+    }
     try {
       if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); }
       hervatAudioCtx();
@@ -2772,6 +2861,11 @@
   function applyVolume() {
     $('video').volume = muted ? 0 : volume / 100;
     $('video').muted = muted || volume === 0;
+    // Dezelfde stand op de reddingsboei, anders staat het geluid ineens weer
+    // hard zodra die het overneemt (of blijft het stil terwijl de gebruiker
+    // het volume juist opendraaide).
+    const pa = $('parentAudio');
+    if (pa) { pa.volume = muted ? 0 : volume / 100; pa.muted = muted || volume === 0; }
     const h = $('volHub'); if (h) h.textContent = muted ? '⌀' : volume;
     const n = $('volNeedle'); if (n) n.style.transform = 'translateX(-50%) rotate(' + (-120 + (volume / 100) * 240) + 'deg)';
     // De bediening op het vergrendelscherm moet dezelfde stand tonen.
@@ -3079,6 +3173,27 @@
     lullaby: '<path d="M9 18V6l11-2v12" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.7" fill="none"/>',
     connect: '<path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   };
+  /**
+   * Eén plek om een regel in het gebeurtenislogboek te zetten die NIET mag
+   * omvallen als het logboek zelf nog niet bestaat of weigert.
+   *
+   * Waarom dit bestaat: rond het scherm-wakker-houden staan meldingen die
+   * juist moeten vastleggen dát er iets mis is. Die stonden allemaal in een
+   * eigen `try { ... } catch (e) {}`, en zo'n lege catch is precies wat een
+   * mislukking onzichtbaar maakt. Hier gaat hij naar de console, zodat er
+   * altijd nog iets terug te vinden is.
+   */
+  function logboek(kind, titel, sub) {
+    try {
+      if (typeof addEvent === 'function') { addEvent(kind, titel, sub); return; }
+      throw new Error('geen logboek beschikbaar');
+    } catch (e) {
+      try { console.warn('logboekregel mislukt (' + titel + '): ' + ((e && e.message) || e)); } catch (e2) {
+        // Zelfs de console ontbreekt. Er is dan niets meer om het in te zetten;
+        // de zichtbare melding op het scherm blijft wél staan.
+      }
+    }
+  }
   function addEvent(kind, title, sub) {
     const t = new Date();
     const hhmm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0') + ':' + String(t.getSeconds()).padStart(2, '0');
@@ -3273,13 +3388,24 @@
       if (v) {
         try {
           const p = v.play();
-          if (p && p.then) p.then(() => toonTikOmTeStarten(false), () => {});
-          else toonTikOmTeStarten(false);
-        } catch (e) {}
+          if (p && p.then) {
+            p.then(
+              () => { geluidViaAudioElement(false); toonTikOmTeStarten(false); },
+              // Deze ene tik is het gebaar waar de browser om vroeg; hem
+              // alleen aan het videovenster besteden zou hem verspillen als
+              // juist dát venster door het toestel wordt tegengehouden.
+              () => { geluidViaAudioElement(true); }
+            );
+          } else { toonTikOmTeStarten(false); }
+        } catch (e) { geluidViaAudioElement(true); }
       }
       // Speelt het onverhoopt nog steeds niet, dan blijft de knop staan —
       // maar hij mag niet blijven hangen als het wél gelukt is.
-      setTimeout(() => { const el = $('video'); if (el && !el.paused) toonTikOmTeStarten(false); }, 300);
+      setTimeout(() => {
+        const el = $('video');
+        const a = $('parentAudio');
+        if ((el && !el.paused) || (a && !a.paused)) toonTikOmTeStarten(false);
+      }, 300);
     };
     if ($('alSens')) $('alSens').oninput = () => {
       sensitivity = +$('alSens').value;
@@ -4187,13 +4313,48 @@
   let noSleepVideo = null;
   let wakeLockWatchStarted = false;
   let noSleepTekenTimer = null;
+  let wakeBezig = false;
+  // Wát houdt het scherm op dit moment wakker? Dit is geen boekhouding voor de
+  // sier: bij 'geen' en bij een gewéigerde Wake Lock gaat het toestel straks
+  // gewoon op slot, en dan moet de gebruiker dat zien in plaats van het te
+  // ontdekken doordat de babyfoon 's nachts stil is geworden.
+  //   'onbekend' — nog niet geprobeerd
+  //   'lock'     — de echte Wake Lock API houdt het scherm aan
+  //   'terugval' — alleen het stille filmpje
+  //   'geen'     — niets
+  let wakeStand = 'onbekend';
+  // Heeft dit toestel de Wake Lock API wél, maar weigert hij hem? Dat is het
+  // signaal van Android-accubesparing en van de iOS-energiebesparingsstand.
+  // Het stille filmpje redt dat op zulke toestellen niet.
+  let wakeGeweigerd = false;
+  // De laatste reden dat het misging, zodat hij in het logboek belandt en niet
+  // in een lege catch verdwijnt.
+  let wakeReden = '';
+  function zetWakeStand(stand, reden) {
+    if (reden) wakeReden = reden;
+    if (stand === wakeStand) { toonWakeWaarschuwing(); return; }
+    wakeStand = stand;
+    toonWakeWaarschuwing();
+  }
+  // Geeft true terug als de truc daadwerkelijk draait. Op de oude code gaf
+  // deze functie niets terug en verdween elke mislukking in een lege catch:
+  // een browser zonder canvas.captureStream kreeg géén wake lock, géén
+  // terugval en géén melding. Gemeten: nul terugval-filmpjes, nul zichtbare
+  // waarschuwingen.
   function startNoSleepFallback() {
-    if (noSleepVideo) return;
+    if (noSleepVideo) return true;
+    let canvas = null, ctx = null;
     try {
-      const canvas = document.createElement('canvas');
+      canvas = document.createElement('canvas');
       canvas.width = 2; canvas.height = 2;
-      const ctx = canvas.getContext('2d');
-      if (!ctx || !canvas.captureStream) return;
+      ctx = canvas.getContext('2d');
+    } catch (e) {
+      wakeReden = 'canvas: ' + ((e && e.message) ? e.message : String(e));
+      return false;
+    }
+    if (!ctx) { wakeReden = 'canvas: geen 2d-context'; return false; }
+    if (!canvas.captureStream) { wakeReden = 'canvas: geen captureStream'; return false; }
+    try {
       ctx.fillRect(0, 0, 2, 2);
       const stream = canvas.captureStream(2);
       const v = document.createElement('video');
@@ -4224,7 +4385,11 @@
         // Een tabwissel pauzeert het filmpje; bij terugkeer weer starten.
         if (noSleepVideo.paused) { try { const q = noSleepVideo.play(); if (q && q.catch) q.catch(() => {}); } catch (e) {} }
       }, 500);
-    } catch (e) {}
+    } catch (e) {
+      wakeReden = 'terugval: ' + ((e && e.message) ? e.message : String(e));
+      return false;
+    }
+    return true;
   }
   function stopNoSleepFallback() {
     if (noSleepTekenTimer) { clearInterval(noSleepTekenTimer); noSleepTekenTimer = null; }
@@ -4232,19 +4397,85 @@
     try { noSleepVideo.pause(); noSleepVideo.remove(); } catch (e) {}
     noSleepVideo = null;
   }
-  async function requestWakeLock() {
-    try {
-      if ('wakeLock' in navigator) {
-        wl = await navigator.wakeLock.request('screen');
-        wl.addEventListener('release', () => { wl = null; });
-        stopNoSleepFallback();
-        return;
-      }
-    } catch (e) { /* bv. tabblad (nog) niet zichtbaar — val terug op de video-truc */ }
-    startNoSleepFallback();
+  // Hier lag de tweede fout: de oude code gaf de lock op met `wl = null` en
+  // deed verder niets. De enige weg terug was dan de controle van elke twintig
+  // seconden. Gemeten: na het loslaten duurde het ruim achttien seconden voor
+  // er opnieuw gevraagd werd, en in die tijd hield NIETS het scherm wakker —
+  // geen lock én geen terugvalfilmpje. Een telefoon die na dertig seconden
+  // zelf vergrendelt heeft daar genoeg aan. Android's accubesparing laat de
+  // lock precies zo los terwijl de pagina zichtbaar blijft.
+  function onWakeRelease() {
+    wl = null;
+    if (shuttingDown) return;
+    // Eerst het gat dichten, dan pas opnieuw vragen.
+    zetWakeStand(startNoSleepFallback() ? 'terugval' : 'geen', 'lock losgelaten door het systeem');
+    requestWakeLock();
   }
-  async function enableWakeLock() {
-    await requestWakeLock();
+  function requestWakeLock() {
+    if (shuttingDown || wl || wakeBezig) return;
+    // Een aanvraag mag alleen vanuit een zichtbare pagina. Onzichtbaar dus
+    // niet proberen (dat levert alleen een afwijzing op die niets zegt), maar
+    // wél de terugval klaarzetten zodat er geen onbewaakt gat valt.
+    if (document.visibilityState === 'hidden') {
+      if (!noSleepVideo && !startNoSleepFallback()) zetWakeStand('geen');
+      return;
+    }
+    if (!('wakeLock' in navigator) || !navigator.wakeLock) {
+      // Geen API: desktop Firefox, oudere Android-webviews, Safari vóór 16.4.
+      // Op een computer en op Android is het stille filmpje daar de normale en
+      // werkende oplossing, dus daar hoeft niemand mee lastig gevallen te
+      // worden.
+      //
+      // Op een iPhone of iPad is dat NIET zo. iOS kijkt voor zijn
+      // zelfvergrendeling niet naar een filmpje dat in de pagina speelt; die
+      // truc houdt daar helemaal niets tegen. De terugval "werkt" dan alleen
+      // op papier. Dat stil laten is precies het soort geruststelling waar
+      // een babyfoon niet mee weg komt, dus op WebKit zonder Wake Lock API
+      // waarschuwen we, ook al start het filmpje netjes.
+      const truc = startNoSleepFallback();
+      wakeGeweigerd = isWebKit();
+      zetWakeStand(truc ? 'terugval' : 'geen',
+        wakeGeweigerd ? 'geen Wake Lock API (iOS: stil filmpje houdt het scherm niet aan)' : 'geen Wake Lock API');
+      return;
+    }
+    let p = null;
+    wakeBezig = true;
+    try { p = navigator.wakeLock.request('screen'); } catch (e) { p = null; }
+    if (!p || !p.then) {
+      wakeBezig = false;
+      wakeGeweigerd = true;
+      zetWakeStand(startNoSleepFallback() ? 'terugval' : 'geen', 'wakeLock.request gaf geen belofte');
+      return;
+    }
+    p.then(function (lock) {
+      wakeBezig = false;
+      wl = lock;
+      wakeGeweigerd = false;
+      wakeReden = '';
+      stopNoSleepFallback();
+      zetWakeStand('lock');
+      try { lock.addEventListener('release', onWakeRelease); } catch (e) {
+        // Zonder release-melding weten we niet wanneer de lock wegvalt; de
+        // controle van elke vijf seconden hieronder vangt dat op. Niet stil
+        // laten passeren: het staat in de reden en dus in het logboek.
+        wakeReden = 'lock zonder release-melding';
+      }
+    }, function (err) {
+      // DIT is het geval waarin de telefoon straks gewoon op slot gaat:
+      // Android-accubesparing en de iOS-energiebesparingsstand weigeren de
+      // aanvraag. De oude code ving dat op in een lege catch en zei er niets
+      // over — de gebruiker merkte het pas doordat de babyfoon 's nachts stil
+      // was geworden. Nu wordt het een zichtbare waarschuwing.
+      wakeBezig = false;
+      wl = null;
+      wakeGeweigerd = true;
+      zetWakeStand(startNoSleepFallback() ? 'terugval' : 'geen',
+        ((err && err.name) ? err.name : 'fout') + ': ' + ((err && err.message) ? err.message : ''));
+    });
+  }
+  function enableWakeLock() {
+    requestWakeLock();
+    startVoorgrondBewaking();
     if (wakeLockWatchStarted) return;
     wakeLockWatchStarted = true;
     document.addEventListener('visibilitychange', () => {
@@ -4255,10 +4486,230 @@
     window.addEventListener('pageshow', () => { if (!wl) requestWakeLock(); });
     window.addEventListener('focus', () => { if (!wl) requestWakeLock(); });
     // Periodieke gezondheidscheck: sommige browsers/energiestanden laten de
-    // lock los zonder dat er een zichtbaarheidswijziging plaatsvond.
+    // lock los zonder dat er een zichtbaarheidswijziging plaatsvond. Van
+    // twintig naar vijf seconden: twintig seconden zonder iets dat het scherm
+    // wakker houdt is op een telefoon met een korte zelfvergrendeling genoeg
+    // om alsnog op slot te gaan.
     setInterval(() => {
+      if (shuttingDown) return;
       if (document.visibilityState === 'visible' && !wl) requestWakeLock();
-    }, 20000);
+      toonWakeWaarschuwing();
+    }, 5000);
+  }
+  // Zichtbaar maken dat het scherm NIET wakker gehouden kan worden, met wat de
+  // gebruiker eraan kan doen. Alleen als het echt zo is: een browser zonder
+  // Wake Lock API die netjes op het stille filmpje draait (desktop Firefox,
+  // oudere Safari) hoort hier niets van te merken.
+  function toonWakeWaarschuwing() {
+    const toon = !!role && !shuttingDown &&
+      (wakeStand === 'geen' || (wakeStand === 'terugval' && wakeGeweigerd));
+    ['wakeWarnParent', 'wakeWarnBaby', 'wakeWarnPair'].forEach((id) => {
+      const el = $(id);
+      if (el) el.classList.toggle('hidden', !toon);
+    });
+    // Eén keer in het logboek, met de reden erbij, zodat achteraf te zien is
+    // waaróm het scherm uitviel.
+    if (toon && !toonWakeWaarschuwing.gemeld) {
+      toonWakeWaarschuwing.gemeld = true;
+      logboek('connect', T('wakeWarnTitle'), wakeReden);
+    }
+    if (!toon) toonWakeWaarschuwing.gemeld = false;
+    toonMeldingenStrook();
+  }
+
+  // ------------------------------------------- is deze pagina stilgezet geweest?
+  //
+  // Een telefoon die vergrendelt kan de hele pagina bevriezen. Van binnenuit is
+  // dat alleen te zien aan de wandklok: onze tik van één seconde komt dan pas
+  // veel later terug. Dat is het enige moment waarop de app zéker weet dat er
+  // een tijd lang niets te horen is geweest, en dat hoort de gebruiker te
+  // zien. Gemeten op de oude code: na een gat van anderhalve minuut stond er
+  // geen enkele melding op het scherm.
+  //
+  // Dezelfde tik doet nog twee dingen die niet aan animatieframes mogen hangen:
+  // de geluidsmeter aandrijven als die stilvalt, en de weergave bij de ouder
+  // weer aanzetten als het toestel die heeft stilgezet.
+  const TIK_MS = 1000;
+  const STILGEZET_DREMPEL = window.BABYFOON_STILGEZET_DREMPEL || 8000;
+  let tikTimer = null;
+  let laatsteTik = 0;
+  let stilgezetVerbergTimer = null;
+  function startVoorgrondBewaking() {
+    if (tikTimer) return;
+    laatsteTik = Date.now();
+    tikTimer = setInterval(bewaakVoorgrond, TIK_MS);
+  }
+  function bewaakVoorgrond() {
+    const nu = Date.now();
+    const gat = laatsteTik ? (nu - laatsteTik - TIK_MS) : 0;
+    laatsteTik = nu;
+    if (shuttingDown) return;
+    if (gat > STILGEZET_DREMPEL) meldStilgezet(gat);
+    bewaakWeergave();
+    // Geen animatieframes meer? Dan meet de geluidsmeter hier verder, zodat
+    // het huilalarm blijft werken zolang er geluid binnenkomt.
+    if (laatsteMeterTik && (nu - laatsteMeterTik) > 900) meterTick();
+  }
+  // Chrome op Android zet een <video> stil zodra het scherm uitgaat, en er
+  // komt géén 'visibilitychange' achteraan die hem weer aanzet. Gemeten op de
+  // oude code: een stilgezette weergave kwam binnen tien seconden niet terug —
+  // en in de praktijk pas als de ouder ontgrendelde. Dat is letterlijk "de
+  // babyunit is niet meer te horen".
+  function bewaakWeergave() {
+    if (role !== 'parent' || !remoteStream) return;
+    const v = $('video');
+    if (!v) return;
+    if (!v.paused) { geluidViaAudioElement(false); return; }
+    const leeft = (l) => !!l && l.some((t) => t.readyState === 'live');
+    if (!leeft(remoteStream.getAudioTracks()) && !leeft(remoteStream.getVideoTracks())) return;
+    let p = null;
+    try { p = v.play(); } catch (e) { p = null; }
+    if (p && p.then) {
+      p.then(
+        () => { geluidViaAudioElement(false); toonTikOmTeStarten(false); },
+        // Weigert de browser het videovenster te hervatten, dan is het
+        // GELUID nog niet verloren: dat is precies waar het aparte
+        // <audio>-element voor is. Pas als ook dát dichtblijft, komt de knop
+        // "tik om te starten" over het beeld.
+        () => { if (!shuttingDown) geluidViaAudioElement(true); }
+      );
+    } else if (!v.paused) {
+      geluidViaAudioElement(false);
+      toonTikOmTeStarten(false);
+    }
+  }
+  // --------------------------------------- geluid los van het videovenster
+  // Waarom dit bestaat: bij de ouder liep ál het geluid van de babyunit door
+  // het <video>-element. Eén element, dus één punt waarop alles stilvalt. Zet
+  // het toestel dat venster stil — Chrome op Android doet dat zodra het scherm
+  // uitgaat, en weigert het te hervatten zolang het scherm uit blijft — dan is
+  // de babyunit niet meer te horen terwijl de verbinding gewoon staat.
+  //
+  // Dit element draagt ALLEEN het geluidsspoor en speelt ALLEEN als het
+  // videovenster stilstaat; anders zou je alles dubbel horen. Het videovenster
+  // blijft dus gewoon de normale weg, en dit is de reddingsboei.
+  let audioOvergenomen = false;
+  // Wordt pas aangemaakt als het echt nodig is, en alleen op de ouderunit.
+  // Zou het altijd in de HTML staan, dan stond er ook op de babyunit een leeg
+  // <audio> — en dat is daar het eerste van de pagina, waar het slaapliedje er
+  // een verwacht.
+  function zorgVoorParentAudio() {
+    let a = $('parentAudio');
+    if (a) return a;
+    if (role !== 'parent') return null;
+    try {
+      a = document.createElement('audio');
+      a.id = 'parentAudio';
+      a.setAttribute('playsinline', '');
+      a.setAttribute('aria-hidden', 'true');
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      return a;
+    } catch (e) {
+      logboek('sound', T('alarmSilent'), 'geluidselement maken: ' + ((e && e.message) || e));
+      return null;
+    }
+  }
+  function koppelParentAudio() {
+    const a = zorgVoorParentAudio();
+    if (!a || !remoteStream) return null;
+    const sporen = remoteStream.getAudioTracks().filter((t) => t.readyState === 'live');
+    if (!sporen.length) return null;
+    // Alleen opnieuw koppelen als er werkelijk een ander spoor ligt; een
+    // nieuwe srcObject onderbreekt het afspelen.
+    const huidig = a.srcObject && a.srcObject.getAudioTracks ? a.srcObject.getAudioTracks()[0] : null;
+    if (huidig !== sporen[0]) {
+      try { a.srcObject = new MediaStream([sporen[0]]); } catch (e) {
+        // Geen stille mislukking: zonder dit element valt de reddingsboei weg
+        // en dat hoort de gebruiker te kunnen terugvinden.
+        logboek('sound', T('alarmSilent'), String((e && e.message) || e));
+        return null;
+      }
+    }
+    a.volume = muted ? 0 : volume / 100;
+    a.muted = muted || volume === 0;
+    return a;
+  }
+  function geluidViaAudioElement(aan) {
+    // Bij uitzetten NIET aanmaken: wat er niet is, hoeft ook niet te stoppen.
+    const a = aan ? zorgVoorParentAudio() : $('parentAudio');
+    if (!a) { if (aan && !shuttingDown) toonTikOmTeStarten(true); return; }
+    if (!aan) {
+      if (audioOvergenomen || !a.paused) {
+        audioOvergenomen = false;
+        try { a.pause(); } catch (e) {
+          // Niet kunnen pauzeren betekent mogelijk dubbel geluid; melden.
+          logboek('sound', T('alarmSilent'), 'pauze geweigerd');
+        }
+      }
+      return;
+    }
+    if (!koppelParentAudio()) { if (!shuttingDown) toonTikOmTeStarten(true); return; }
+    if (!a.paused) { audioOvergenomen = true; return; }
+    let q = null;
+    try { q = a.play(); } catch (e) { q = null; }
+    if (q && q.then) {
+      q.then(
+        () => { audioOvergenomen = true; toonTikOmTeStarten(false); },
+        // Ook deze weg dicht: dan is er écht een tik nodig. Dat moet de
+        // gebruiker zien — een babyfoon die stil blijft zonder het te zeggen
+        // is het ergste wat deze app kan doen.
+        () => { if (!shuttingDown) toonTikOmTeStarten(true); }
+      );
+    } else {
+      audioOvergenomen = !a.paused;
+      if (a.paused && !shuttingDown) toonTikOmTeStarten(true);
+    }
+  }
+  function duurTekst(ms) {
+    const sec = Math.max(1, Math.round(ms / 1000));
+    if (sec < 60) return sec + 's';
+    const m = Math.floor(sec / 60);
+    const r = sec % 60;
+    return m + ':' + (r < 10 ? '0' + r : String(r));
+  }
+  function meldStilgezet(gat) {
+    // Eerst alles terughalen, dan pas melden.
+    hervatAudioCtx();
+    hervatWeergave();
+    requestWakeLock();
+    updateMediaSession(!(muted || volume === 0));
+    // Gaat een van deze controles zelf stuk, dan is de bewaking NIET
+    // aantoonbaar hersteld. Dat mag niet in een lege catch verdwijnen: het
+    // gaat mee in de logboekregel hieronder, zodat achteraf te zien is dat het
+    // herstel maar half gelukt is.
+    let herstelFout = '';
+    try { checkParentHealthOnResume(); } catch (e) {
+      herstelFout += 'ouder-controle: ' + ((e && e.message) || e) + ' ';
+    }
+    try { checkBabyHealthOnResume(); } catch (e) {
+      herstelFout += 'baby-controle: ' + ((e && e.message) || e) + ' ';
+    }
+    if (!role) return;
+    const duur = duurTekst(gat);
+    const tekst = T('pausedByPhone').replace('{t}', duur);
+    ['stilgezetParent', 'stilgezetBaby'].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      const sp = el.querySelector('span');
+      if (sp) sp.textContent = tekst; else el.textContent = tekst;
+      el.classList.remove('hidden');
+    });
+    toonMeldingenStrook();
+    // Trillen zodra de ouder de telefoon oppakt: dit is een gat in de bewaking
+    // en dat mag niet alleen in beeld staan.
+    if (role === 'parent') tril([200, 120, 200]);
+    logboek('connect', T('pausedByPhoneEvent'), herstelFout ? (duur + ' — ' + herstelFout.trim()) : duur);
+    if (stilgezetVerbergTimer) clearTimeout(stilgezetVerbergTimer);
+    stilgezetVerbergTimer = setTimeout(verbergStilgezet, 90000);
+  }
+  function verbergStilgezet() {
+    if (stilgezetVerbergTimer) { clearTimeout(stilgezetVerbergTimer); stilgezetVerbergTimer = null; }
+    ['stilgezetParent', 'stilgezetBaby'].forEach((id) => {
+      const el = $(id);
+      if (el) el.classList.add('hidden');
+    });
+    toonMeldingenStrook();
   }
 
   // ------------------------------------------------------------- scherm uit
@@ -4307,12 +4758,15 @@
       if (shuttingDown) return;
       try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
       if (++pogingen < 4 && v.paused) { setTimeout(speel, 400); return; }
-      // Laatste poging gehad. Speelt het nog steeds niet, dan is dit vrijwel
-      // zeker WebKit dat beeld mét geluid weigert zonder tik van de
-      // gebruiker. Dat stil laten gebeuren betekent een zwart scherm terwijl
-      // de verbinding prima staat — niet te onderscheiden van een storing.
-      // Dus vragen we het gewoon.
-      if (!shuttingDown) toonTikOmTeStarten(v.paused);
+      if (shuttingDown) return;
+      if (!v.paused) { geluidViaAudioElement(false); toonTikOmTeStarten(false); return; }
+      // Laatste poging gehad en het videovenster blijft stilstaan. Dat is
+      // ofwel WebKit dat beeld mét geluid weigert zonder tik, ofwel een
+      // toestel dat het beeldvenster tegenhoudt terwijl geluid wél mag.
+      // Eerst dus het GELUID proberen los van het beeld: liever de babyunit
+      // horen zonder beeld dan een stille babyfoon. Lukt ook dat niet, dan
+      // zet geluidViaAudioElement() zelf de vraag om een tik neer.
+      geluidViaAudioElement(true);
     };
     speel();
   }
@@ -4620,6 +5074,13 @@
     hervatAudioCtx();
     const v = $('video'); if (v) v.play().catch(() => {});
   }, { once: true });
+
+  // De melding "de telefoon heeft deze pagina stilgezet" mag weggetikt worden;
+  // hij komt vanzelf terug als het nóg een keer gebeurt.
+  ['stilgezetParentOk', 'stilgezetBabyOk'].forEach((id) => {
+    const el = $(id);
+    if (el) el.onclick = () => verbergStilgezet();
+  });
 
   // Tik (of Enter/spatie via de toetsenbord-afhandelaar hierboven) op het
   // zwarte scherm haalt het beeld terug. Ook Escape, want dat is wat je

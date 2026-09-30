@@ -2835,6 +2835,38 @@ body.app-mode .pair-box {
   display: none;
 }
 
+/* Variant voor "het scherm kan niet wakker gehouden worden" en "de telefoon
+   heeft deze pagina stilgezet". Warm coral in plaats van alarmrood: het is een
+   waarschuwing die om een handeling vraagt, geen alarm. De kop staat op een
+   eigen regel zodat de zin eronder rustig doorloopt. */
+.alarm-arm.warn {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  background: rgba(232, 130, 94, 0.12);
+  border-color: rgba(232, 130, 94, 0.4);
+}
+.alarm-arm.warn > b {
+  font: 800 12.5px "Quicksand", "Nunito", sans-serif;
+  letter-spacing: 0.1px;
+}
+.alarm-arm.warn > span {
+  flex: 1 1 auto;
+  line-height: 1.5;
+}
+.alarm-arm.warn > .pillbtn {
+  align-self: flex-end;
+}
+/* Op het babydashboard en het koppelscherm hoort de waarschuwing wat dichter
+   op de rest te staan. De TEKSTKLEUR blijft hier bewust de navy uit
+   `.alarm-arm`: die schermen staan op een lichte ondergrond, en een warme
+   witte tekst — zoals hier eerder stond — was er praktisch onleesbaar.
+   Gecontroleerd op een schermafdruk van 390x844. */
+#screenBaby .alarm-arm.warn,
+#screenPairBaby .alarm-arm.warn {
+  margin: 0 0 10px;
+}
+
 /* De "Crying detected"-pil stond in een verborgen compat-blok en was daardoor
    nooit te zien. Nu staat hij op het monitorscherm en heeft hij ruimte nodig. */
 #dviewMonitor > .alert-pill {
