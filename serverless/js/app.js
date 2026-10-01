@@ -4965,9 +4965,13 @@
       // terugval leunen — viel het scherm daardoor alsnog uit, en daarmee
       // het geluid.
       //
-      // De afmeting blijft 1×1 px: test/e2e-background.js herkent dit
-      // element aan `style.width === '1px'`, en die suite is het
-      // meetinstrument. Groter maken vraagt dus om een aanpassing daar.
+      // Het eigen kenmerk hieronder is er zodat een test dit element kan
+      // herkennen zonder zich vast te leggen op de afmeting. Dat was wél zo,
+      // en toen blokkeerde de test de vraag of 1×1 px groot genoeg is om op
+      // Firefox en oudere Safari als "spelende video" te tellen. Die vraag is
+      // hier niet te beantwoorden — daar is een echte Firefox of Safari voor
+      // nodig — maar hij hoort niet door een test dichtgetimmerd te zitten.
+      v.setAttribute('data-rol', 'wakkerhoud');
       v.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;opacity:0.02;pointer-events:none;z-index:0;';
       v.srcObject = stream;
       document.body.appendChild(v);

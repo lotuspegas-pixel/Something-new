@@ -361,7 +361,7 @@ const INIT_ZONDER_WAKELOCK = (peerPort) => INIT(peerPort) + `
   check('Opzet D: ouderunit heeft beeld zonder Wake Lock API (' + D.beeld + 'px)', D.beeld > 0);
   const truc = await D.parent.evaluate(() => {
     const alle = Array.prototype.slice.call(document.querySelectorAll('video'));
-    const v = alle.filter((x) => x.style && x.style.width === '1px')[0];
+    const v = alle.filter((x) => x.getAttribute('data-rol') === 'wakkerhoud')[0];
     if (!v) return { bestaat: false };
     return {
       bestaat: true,
@@ -373,7 +373,7 @@ const INIT_ZONDER_WAKELOCK = (peerPort) => INIT(peerPort) + `
   check('Dat filmpje heeft het muted-ATTRIBUUT (WebKit weigert afspelen zonder)', !!truc.muteAttribuut && !!truc.inline);
   const herstart = await D.parent.evaluate(async () => {
     const alle = Array.prototype.slice.call(document.querySelectorAll('video'));
-    const v = alle.filter((x) => x.style && x.style.width === '1px')[0];
+    const v = alle.filter((x) => x.getAttribute('data-rol') === 'wakkerhoud')[0];
     if (!v) return false;
     v.pause();
     if (!v.paused) return false;          // pauzeren lukte niet: geen bewijs
