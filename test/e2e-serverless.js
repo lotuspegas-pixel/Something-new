@@ -641,8 +641,27 @@ function findExecutable() {
     if (v) { v.srcObject = null; }
   });
   await sleep(500);
-  const wLeeg = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
-  check('Herverbind-test: beeld is echt weg na de wegval ("' + wLeeg + 'px")', wLeeg === 0);
+  let wLeeg = await parent4.$eval('#video', (v) => v.videoWidth || 0).catch(() => 0);
+  // Staat er tóch weer beeld, dan is dat niet het oude frame: het element is
+  // hierboven leeggemaakt en videoWidth valt daarbij synchroon terug naar 0
+  // (nagemeten: 0 ms). De enige plek die #video opnieuw vult is de ontvangst
+  // van een níeuwe mediaoproep. De app heeft zich dan dus al hersteld binnen
+  // een halve seconde — sneller dan deze opzetstap aanneemt. Dat mag geen
+  // rode controle opleveren, maar het moet wél aantoonbaar líjn beeld zijn en
+  // geen stilstaand plaatje, anders verbergen we juist het ergste geval: een
+  // bevroren beeld dat "verbonden" blijft heten.
+  let vroegHerstel = false;
+  if (wLeeg !== 0) {
+    const t1 = await parent4.$eval('#video', (v) => v.currentTime).catch(() => 0);
+    await sleep(700);
+    const t2 = await parent4.$eval('#video', (v) => v.currentTime).catch(() => 0);
+    vroegHerstel = t2 > t1;
+    if (vroegHerstel) wLeeg = 0;
+    check('Herverbind-test: vroeg herstel levert lopend beeld op, geen bevroren frame (' +
+      t1.toFixed(2) + 's → ' + t2.toFixed(2) + 's)', vroegHerstel);
+  }
+  check('Herverbind-test: beeld is echt weg na de wegval' +
+    (vroegHerstel ? ' (of de app herstelde al binnen 500 ms)' : ' ("' + wLeeg + 'px")'), wLeeg === 0);
   let opnieuwGevraagd = false, terugNa = 0;
   const tHerstel = Date.now();
   while (Date.now() - tHerstel < 30000) {
