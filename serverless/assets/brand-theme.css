@@ -47,7 +47,15 @@
   background: rgba(255, 111, 158, 0.26);
 }
 
-:where(a, button, input, select, [role="button"], [role="switch"]):focus-visible {
+/* Uitgeschreven in plaats van :where(): Safari ≤13 kent :where() niet en liet
+   daardoor deze hele regel vallen. De nul-specificiteit die :where() geeft is
+   hier niet nodig — er staat toch al !important op. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[role="switch"]:focus-visible {
   outline: 3px solid rgba(47, 143, 240, 0.42) !important;
   outline-offset: 3px;
 }
@@ -977,6 +985,8 @@ body.content-page {
 
 @media (max-width: 520px) {
   .lp {
+    padding-left: 14px;
+    padding-right: 14px;
     padding-inline: 14px;
   }
 
@@ -1019,6 +1029,8 @@ body.content-page {
   }
 
   .content-page .wrap {
+    padding-left: 14px;
+    padding-right: 14px;
     padding-inline: 14px;
   }
 
@@ -1044,6 +1056,8 @@ body.content-page {
   }
 
   .content-page footer a {
+    margin-left: 4px;
+    margin-right: 4px;
     margin-inline: 4px;
   }
 
@@ -1934,6 +1948,8 @@ body.app-mode .pair-box {
 .bdash {
   width: min(1320px, calc(100% - 34px));
   max-width: none;
+  margin-left: auto;
+  margin-right: auto;
   margin-inline: auto;
 }
 
@@ -1951,6 +1967,8 @@ body.app-mode .pair-box {
   .lp-hero {
     grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
     min-height: 620px;
+    padding-left: 4px;
+    padding-right: 4px;
     padding-inline: 4px;
   }
 
@@ -2155,6 +2173,8 @@ body.app-mode .pair-box {
 
   .lp-h2 {
     margin-bottom: 16px;
+    padding-left: 5px;
+    padding-right: 5px;
     padding-inline: 5px;
     font-size: 25px;
   }
@@ -2201,6 +2221,8 @@ body.app-mode .pair-box {
 
   .lp-row-connect .lp-btn.sm {
     min-width: 94px;
+    padding-left: 12px;
+    padding-right: 12px;
     padding-inline: 12px;
   }
 
@@ -3012,7 +3034,7 @@ body.app-mode #dviewMonitor.dview.active,
 
 @media (max-width: 470px) {
   .lp .lang-pill .globe { display: none; }
-  .lp .lang-pill { padding-inline: 10px; max-width: 104px; }
+  .lp .lang-pill { padding-left: 10px; padding-right: 10px; padding-inline: 10px; max-width: 104px; }
 }
 
 /* ================================================================

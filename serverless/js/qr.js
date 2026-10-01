@@ -48,12 +48,23 @@
   // 640 px breed is ruim genoeg om een QR-code te lezen.
   const SCAN_BREEDTE = 640;
 
+  // Na hoeveel stilte de scanner zelf iets zegt. Er zijn omstandigheden
+  // waarin scannen gewoon niet kán — een weerspiegeling op het scherm, op
+  // armlengte en met een bewogen hand tegelijk — en dan moet de app dat
+  // zeggen in plaats van een camerabeeld te laten staan waar nooit iets
+  // gebeurt. De scanner blijft ondertussen gewoon doorlopen: het gaat om de
+  // terugkoppeling, niet om afbreken.
+  const HINT_1_MS = 6000;
+  const HINT_2_MS = 15000;
+
   /**
    * Camerascanner: leest frames van videoEl via het meegegeven canvas en
    * roept onResult(tekst) bij een herkende QR. getStream levert de
    * camerastream (of gooit); onError wordt bij mislukken aangeroepen.
+   * onHint(niveau) wordt aangeroepen met 1 en later 2 zolang er niets
+   * gelezen is, en met 0 zodra de scanner stopt.
    */
-  async function startScanner(videoEl, canvas, getStream, onResult, onError) {
+  async function startScanner(videoEl, canvas, getStream, onResult, onError, onHint) {
     stopScanner();
     // Zonder de decoder valt er niets te scannen. Dat stil laten mislukken gaf
     // een scherm met cameralicht waar nooit iets gebeurde: de fout viel binnen
@@ -83,8 +94,28 @@
       return;
     }
     let stopped = false;
+    // Twee klokken die een hint geven als er niets gelezen wordt. Ze breken
+    // niets af; ze zorgen alleen dat de gebruiker niet eindeloos naar een
+    // camerabeeld staat te turen zonder te weten dat hij de code ook gewoon
+    // kan intypen.
+    const hint = (n) => {
+      if (!onHint) return;
+      try { onHint(n); } catch (e) {
+        // Een kapotte hint mag de scanner niet meeslepen; die blijft lezen.
+        // Wel zichtbaar maken dat er iets misging, anders is "er komt geen
+        // hint" niet te onderscheiden van "de hint is uitgezet".
+        if (onError) onError(e);
+      }
+    };
+    const hintTimers = [
+      setTimeout(() => { if (!stopped) hint(1); }, HINT_1_MS),
+      setTimeout(() => { if (!stopped) hint(2); }, HINT_2_MS),
+    ];
+    const stopHints = () => { hintTimers.forEach((t) => clearTimeout(t)); };
     scannerStop = () => {
       stopped = true;
+      stopHints();
+      hint(0);
       try { stream.getTracks().forEach((t) => t.stop()); } catch (e) {}
       // Ook het videovenster losmaken: blijft srcObject op een gestopte stream
       // staan, dan houdt Android het camera-icoon in de statusbalk aan.

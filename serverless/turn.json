@@ -1,5 +1,7 @@
 {
   "_lees_dit": "Eigen TURN/STUN-relay opgeven? Vul iceServers hieronder. Een lege lijst betekent: gebruik de ingebouwde standaardlijst uit js/app.js. Dit bestand wordt bij elke paginalading opgehaald; zonder bestand gaf dat een 404 in de console.",
+  "_wat_er_gebeurt": "Wat je hier invult wordt TOEGEVOEGD aan de ingebouwde lijst. De ingebouwde STUN-servers blijven dus staan, zodat twee toestellen die elkaar rechtstreeks kunnen bereiken dat ook blijven doen — anders zou al het verkeer over jouw relay lopen, ook het verkeer dat rechtstreeks had gekund. Alleen de ingebouwde openrelay.metered.ca-ingangen worden vervangen, want daarvoor komt jouw TURN in de plaats.",
+  "_alles_zelf_bepalen": "Wil je echt dat ALLEEN jouw lijst gebruikt wordt, inclusief het weggooien van de STUN-servers, zet dan \"vervangAlles\": true erbij. Doe dat alleen als je zelf ook STUN aanbiedt.",
   "_voorbeeld": [
     { "urls": "stun:stun.example.org:3478" },
     { "urls": "turn:turn.example.org:3478", "username": "gebruiker", "credential": "geheim" }

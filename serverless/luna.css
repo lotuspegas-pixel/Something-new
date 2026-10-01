@@ -837,6 +837,17 @@ button {
   max-width: 90vw;
   text-align: center;
 }
+/* De blijvende variant (zie toastBlijvend in js/app.js). Die blijft staan tot
+   de gebruiker hem wegtikt, dus hij draagt een hele zin in plaats van twee
+   woorden: wat ruimer, met regelafstand, en breed genoeg om te lezen. */
+.toast.toast-sticky {
+  width: 420px;
+  max-width: 90vw;
+  padding: 14px 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+}
 
 /* -------------------------------------------------------------- scherm uit
    "Scherm uit" is géén echte schermvergrendeling: de pagina blijft gewoon op
@@ -1185,6 +1196,16 @@ button {
   color: #8C95A8;
   margin: 0;
 }
+/* Het blok kan twee verschillende verhalen tonen (oude browser of
+   onbeveiligd adres, zie index.html). De onbeveiligd-variant heeft meer dan
+   één alinea plus een knop; die hebben tussenruimte nodig. */
+.browser-block p + p { margin-top: 14px; }
+.browser-block .insecure-where code {
+  font: 600 13px/1.5 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  color: #EDEFF4;
+  word-break: break-all;
+}
+.browser-block .btn { display: inline-flex; margin-top: 4px; text-decoration: none; }
 textarea.code {
   width: 100%;
   min-height: 70px;
@@ -1642,6 +1663,29 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 /* choose role + connect */
 .lp-choose { margin-top: 34px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--lp-line); border-radius: 26px; padding: 26px 22px; }
 .lp-h2 { text-align: center; font: 700 24px 'Quicksand', sans-serif; color: #fff; margin: 0 0 22px; }
+/* Waarschuwing bij een ingebouwd browservenster (zie #inAppWarn). Rustig en
+   wegklikbaar: het is een aanwijzing, geen storing. */
+.inapp-warn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-width: 640px;
+  margin: 0 auto 22px;
+  padding: 14px 18px;
+  border: 1px solid rgba(232, 130, 94, 0.35);
+  border-radius: 18px;
+  background: rgba(232, 130, 94, 0.12);
+  color: #F1A98F;
+  font: 600 14px/1.5 'Nunito', sans-serif;
+  text-align: center;
+}
+.inapp-warn .btn { flex: 0 0 auto; }
+@supports not ((gap: 1px) and (display: flex)) {
+  /* Safari ≤14.0 / iOS ≤14.4 kennen `gap` in flexbox nog niet. */
+  .inapp-warn > * + * { margin-left: 12px; }
+}
 
 /* één omlijst kader met interne verdeellijnen (geen losse kaarten met gaten) */
 .lp-framed { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px; overflow: hidden; background: rgba(255, 255, 255, 0.015); }
@@ -1757,9 +1801,28 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
 /* footer */
 .lp-footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--lp-line); text-align: center; display: flex; flex-direction: column; gap: 8px; }
 .lp-footer-brand { display: inline-flex; align-items: center; justify-content: center; gap: 9px; font: 700 16px 'Quicksand', sans-serif; color: #fff; }
-.lp-footer p { color: var(--lp-muted); font-size: 12.5px; font-weight: 600; line-height: 1.5; margin: 0; max-width: 520px; margin-inline: auto; }
+.lp-footer p { color: var(--lp-muted); font-size: 12.5px; font-weight: 600; line-height: 1.5; margin: 0; max-width: 520px; margin-left: auto; margin-right: auto; margin-inline: auto; }
 .lp-foot-dis { opacity: 0.8; }
 .pair-error { color: #E1555A; font-size: 13.5px; font-weight: 700; margin-top: 12px; text-align: center; }
+/* Dezelfde regel, maar als MEDEDELING terwijl de app nog doorgaat met
+   proberen: het is op dat moment nog geen storing, dus ook geen rood. */
+.pair-error.pair-note { color: #8C95A8; font-weight: 600; }
+/* Hint onder het camerabeeld als het scannen niet lukt. */
+.scan-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  font: 600 13.5px/1.5 'Nunito', sans-serif;
+  color: #8C95A8;
+  text-align: center;
+}
+@supports not ((gap: 1px) and (display: flex)) {
+  /* Safari ≤14.0 / iOS ≤14.4 kennen `gap` in flexbox nog niet. */
+  .scan-hint > * + * { margin-left: 10px; }
+}
 #phRetry { margin-top: 10px; }
 .lp-foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-top: 10px; }
 .lp-foot-links a { color: var(--lp-muted); text-decoration: none; font-size: 12.5px; font-weight: 700; }
@@ -1786,11 +1849,22 @@ body:not(.app-mode) .setup-wrap { width: 100%; max-width: none; margin: 0; }
   .lp-nav-right { flex: 0 0 auto; gap: 12px; }
 }
 
-/* toegankelijkheid: zichtbare toetsenbordfocus, alleen bij toetsenbordgebruik */
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
-[tabindex]:focus-visible {
+/* Toegankelijkheid: zichtbare toetsenbordfocus.
+   :focus-visible kwam pas in Safari 15.4. Daarvóór viel deze hele regel weg
+   en was er met Tab niet te zien waar je stond — op een Mac met Safari was
+   de app dan alleen met de muis te bedienen. Daarom eerst een gewone
+   :focus-bodem, en die pas uitzetten als de browser :focus-visible kent. */
+a:focus, button:focus, input:focus, select:focus, [tabindex]:focus {
   outline: 2px solid #2F8FF0;
   outline-offset: 2px;
+}
+@supports selector(:focus-visible) {
+  a:focus, button:focus, input:focus, select:focus, [tabindex]:focus { outline: none; }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid #2F8FF0;
+    outline-offset: 2px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -2058,12 +2132,24 @@ body:not(.app-mode) { color: var(--brand-navy); }
 .pair-head.baby .unit-badge { background: linear-gradient(150deg, var(--brand-pink-soft), var(--brand-pink)); }
 .pair-head.parent .unit-badge { background: linear-gradient(150deg, var(--brand-blue-soft), var(--brand-blue)); }
 .pair-error { color: var(--brand-pink-hover); }
+.pair-error.pair-note { color: var(--brand-muted); }
+.scan-hint { color: var(--brand-muted); }
+/* Op wit is coral-op-coral onleesbaar. */
+.inapp-warn {
+  border-color: var(--brand-pink-hover);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--brand-navy);
+}
 
 /* scherm voor browsers zonder WebRTC */
 .browser-block h1 { color: var(--brand-navy); }
 .browser-block p { color: var(--brand-muted); }
+.browser-block .insecure-where code { color: var(--brand-navy); }
 
-/* toetsenbordfocus in merkblauw i.p.v. koraal */
+/* toetsenbordfocus in merkblauw i.p.v. koraal — ook op browsers zonder
+   :focus-visible (Safari ≤15.3), zie de bodemregel hierboven */
+a:focus, button:focus, input:focus, select:focus,
+[tabindex]:focus { outline-color: var(--brand-blue); }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
 [tabindex]:focus-visible { outline-color: var(--brand-blue); }
 

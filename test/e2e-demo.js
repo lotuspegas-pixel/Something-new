@@ -487,23 +487,20 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       !onveilig.blokkade || noemtAdres,
       onveilig.blokkade
         ? 'schermvullend getoond: "' + onveilig.tekst.slice(0, 160) + '"'
-        : 'geen blokkade getoond',
-      'B1');
+        : 'geen blokkade getoond');
 
     // 0b — en de blokkade mag in ieder geval niet beweren dat de BROWSER te oud
     // is, want dat is onwaar en stuurt de demonstrator de verkeerde kant op.
     check('0b: de melding beweert niet dat de browser te oud is terwijl hij dat niet is',
       !(onveilig.blokkade && /recent|version|browser can't|kan .* niet (uitvoeren|draaien)/i.test(onveilig.tekst)),
-      onveilig.blokkade ? '"' + onveilig.tekst.slice(0, 160) + '"' : 'geen blokkade',
-      'B1');
+      onveilig.blokkade ? '"' + onveilig.tekst.slice(0, 160) + '"' : 'geen blokkade');
 
     // 0c — WebRTC zélf is er wél. Dat is het bewijs dat de app de verkeerde
     // conclusie trekt: RTCPeerConnection bestaat, alleen mediaDevices niet.
     check('0c: de app onderscheidt "geen WebRTC" van "geen toegang tot camera op dit adres"',
       !(onveilig.rtc && onveilig.blokkade && !noemtAdres),
       'RTCPeerConnection=' + onveilig.rtc + ', mediaDevices=' + onveilig.mediaDevices +
-      ', blokkade=' + onveilig.blokkade,
-      'B1');
+      ', blokkade=' + onveilig.blokkade);
   }
 
   // ==================================================================
@@ -524,10 +521,10 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     check('1: de ouderunit meldt uiteindelijk dat het mislukt is',
       f.ms >= 0, f.ms >= 0 ? 'na ' + (f.ms / 1000).toFixed(1) + ' s: "' + f.tekst + '"' : 'binnen 95 s helemaal niets');
     check('1: die melding komt binnen 15 s (een demo verdraagt niet meer)',
-      f.ms >= 0 && f.ms <= 15000, 'gemeten ' + (f.ms / 1000).toFixed(1) + ' s', 'B2');
+      f.ms >= 0 && f.ms <= 15000, 'gemeten ' + (f.ms / 1000).toFixed(1) + ' s');
     check('1: de melding wijst naar de koppelserver, niet naar de kamercode',
       !!f.tekst && !/code/i.test(f.tekst),
-      'getoond: "' + f.tekst + '"', 'B3');
+      'getoond: "' + f.tekst + '"');
     // TEGENPROEF: met een WERKENDE koppelserver mag er in dezelfde tijd geen
     // foutmelding staan, en moet er beeld zijn. Zonder dit bewijst het
     // bovenstaande niets — dan zou de test ook rood staan bij een gezonde app.
@@ -565,7 +562,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     console.log('   kamercode-veld: ' + codes.join(' → '));
     const eerlijk = !!kc.code || wachtteksten.some((t) => /!$/.test(t));
     check('2a: de babyunit toont binnen 20 s óf een kamercode óf een waarschuwing',
-      eerlijk, kc.code ? 'code ' + kc.code : 'geen code; wachtpil bleef "' + (wachtteksten.pop() || '') + '"', 'B4');
+      eerlijk, kc.code ? 'code ' + kc.code : 'geen code; wachtpil bleef "' + (wachtteksten.pop() || '') + '"');
     // TEGENPROEF: met een gezonde koppelserver is diezelfde controle groen.
     const cb2 = await mk();
     const baby2 = await nieuwePagina(cb2, '2-TEGEN-BABY');
@@ -581,9 +578,9 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     const f = await wachtOpFout(ouder, 45000);
     check('2b: de ouderunit meldt binnen 15 s dat er niets te bereiken valt',
       f.ms >= 0 && f.ms <= 15000,
-      f.ms >= 0 ? (f.ms / 1000).toFixed(1) + ' s: "' + f.tekst + '"' : 'binnen 45 s niets', 'B5');
+      f.ms >= 0 ? (f.ms / 1000).toFixed(1) + ' s: "' + f.tekst + '"' : 'binnen 45 s niets');
     check('2b: en die melding wijst niet de kamercode aan als schuldige',
-      !!f.tekst && !/code/i.test(f.tekst), 'getoond: "' + f.tekst + '"', 'B3');
+      !!f.tekst && !/code/i.test(f.tekst), 'getoond: "' + f.tekst + '"');
     await cb.close(); await cb2.close(); await cp.close();
   }
 
@@ -618,11 +615,11 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     check('3: de ouderunit blijft niet eeuwig op "Verbinden…" staan',
       f.ms >= 0, f.ms >= 0 ? 'melding na ' + (f.ms / 1000).toFixed(1) + ' s' : 'na 45 s nog steeds niets');
     check('3: die melding komt binnen 10 s (ICE weet allang dat het mislukt is)',
-      f.ms >= 0 && f.ms <= 10000, 'gemeten ' + (f.ms / 1000).toFixed(1) + ' s', 'B5');
+      f.ms >= 0 && f.ms <= 10000, 'gemeten ' + (f.ms / 1000).toFixed(1) + ' s');
     check('3: de melding legt de schuld niet bij de kamercode',
-      !!f.tekst && !/code/i.test(f.tekst), '"' + f.tekst + '"', 'B3');
+      !!f.tekst && !/code/i.test(f.tekst), '"' + f.tekst + '"');
     check('3: de diagnoseregel zegt iets waars over het netwerk (niet het vaste "host:0")',
-      !!diag && !/^host:0\b/.test(diag), '"' + diag + '"', 'B6');
+      !!diag && !/^host:0\b/.test(diag), '"' + diag + '"');
     // TEGENPROEF: zonder de relay-dwang lukt precies dezelfde koppeling wél.
     const cb2 = await mk(); const baby2 = await nieuwePagina(cb2, '3-TEGEN-BABY');
     await baby2.click('#pickBaby');
@@ -691,7 +688,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     // 4b — DE VAL: één eigen TURN erin zetten wist ALLE STUN-servers.
     check('4b: een eigen TURN in turn.json laat de STUN-servers staan',
       urls.some((u) => /^stuns?:/.test(u)),
-      'overgebleven servers: ' + JSON.stringify(urls), 'B7');
+      'overgebleven servers: ' + JSON.stringify(urls));
 
     // 4c — kapotte JSON: netjes terugvallen op de ingebouwde lijst.
     const kapot = await koppelEnLeesIce({ status: 200, body: '{ dit is geen json' });
@@ -790,7 +787,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       };
     });
     check('5b: ook 9 s na het afbreken staat er nog een leesbare uitleg op het scherm',
-      !!later.toast, 'zichtbare uitleg: "' + later.toast + '", scherm: ' + later.scherm, 'B8');
+      !!later.toast, 'zichtbare uitleg: "' + later.toast + '", scherm: ' + later.scherm);
     await cb2.close();
 
     // 5c — de ouderunit mag voor BEELD geen enkele toestemming nodig hebben.
@@ -855,7 +852,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       kosten <= 2000,
       'kamercode na ' + (gewoon.ms / 1000).toFixed(1) + ' s (één microfoon) tegen ' +
       (androidachtig.ms / 1000).toFixed(1) + ' s (vier microfoons, geen ervan gaat open) — ' +
-      (kosten / 1000).toFixed(1) + ' s verloren', 'B9');
+      (kosten / 1000).toFixed(1) + ' s verloren');
     tegenproef('5d: de babyunit start in beide gevallen wél op',
       !!gewoon.code && !!androidachtig.code, gewoon.code + ' / ' + androidachtig.code);
   }
@@ -930,7 +927,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     check('6a: de ouderunit telt géén herverbindingspogingen af terwijl hij op een menselijke tik wacht',
       rondes === 0,
       rondes + ' herverbindingsronden in ' + secs + ' (tot ' + hoogste + '/5); de app geeft na 5 ronden op met een ' +
-      'foutmelding, terwijl er alleen nog getikt moet worden', 'B10');
+      'foutmelding, terwijl er alleen nog getikt moet worden');
     // Hoeveel tijd krijgt een mens? Van "Verbinden" tot de eerste ronde waarin
     // de app de koppeling weggooit. Dat is een vaste waarde uit de code, geen
     // race — anders dan de vraag of de dialoog daarbij ook van het scherm
@@ -942,8 +939,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       gunTijd < 0
         ? 'binnen ' + secs + ' gooide de app de koppeling niet weg'
         : 'na ' + (gunTijd / 1000).toFixed(1) + ' s gooide de ouderunit de koppeling al weg, terwijl de ' +
-          'toestemmingsvraag nog onbeantwoord op de babyunit stond',
-      'B10');
+          'toestemmingsvraag nog onbeantwoord op de babyunit stond');
     // Werkt een LATE tik dan tenminste nog? (Gemeten: ja — hier zit geen defect.)
     const laatOk = await (async () => {
       const zichtbaar = await baby.evaluate(() => {
@@ -1175,7 +1171,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       return { scanner: zoek(QRKit.startScanner), referentie: zoek(referentie) };
     });
     check('8c: de scanner geeft na verloop van tijd een hint als het lezen niet lukt',
-      stil.scanner, 'geen enkele tijdslimiet in QRKit.startScanner()', 'B11');
+      stil.scanner, 'geen enkele tijdslimiet in QRKit.startScanner()');
     tegenproef('8c: de detectie werkt — een functie mét tijdslimiet wordt wél herkend',
       stil.referentie, 'referentiefunctie herkend: ' + stil.referentie);
     await c.close();
@@ -1271,8 +1267,7 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     console.log('   statusverloop na wegvallend beeld: ' + naMedia.verloop.join(' → '));
     check('9c: bij wegvallend beeld meldt de ouderunit dat binnen 20 s (geen "verbonden" bij een bevroren beeld)',
       mediaGemeld >= 0 && mediaGemeld <= 20000,
-      mediaGemeld >= 0 ? 'na ' + (mediaGemeld / 1000).toFixed(1) + ' s: "' + naMedia.status + '"' : 'na 25 s nog steeds "' + naMedia.status + '"',
-      'B12');
+      mediaGemeld >= 0 ? 'na ' + (mediaGemeld / 1000).toFixed(1) + ' s: "' + naMedia.status + '"' : 'na 25 s nog steeds "' + naMedia.status + '"');
     // TEGENPROEF: zit de statuslezer soms gewoon vast? Nee — trek nu het héle
     // toestel weg (de babyunit sluit zijn pagina) en de status verandert wél.
     // Pas daarmee staat vast dat "Connected bij bevroren beeld" een uitspraak

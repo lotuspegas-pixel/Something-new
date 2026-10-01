@@ -277,6 +277,15 @@
 
         <!-- choose role + connect -->
         <section class="lp-choose" id="lp-choose">
+          <!-- Waarschuwing vóór de rolkeuze als de pagina in een ingebouwd
+               browservenster van een andere app geopend is (WhatsApp,
+               Messenger, Instagram, Gmail…). Die vensters geven de camera
+               vaak niet door. Bewust een WEGKLIKBARE balk en geen blokkade:
+               sommige WebViews kunnen het wél. -->
+          <div class="inapp-warn hidden" id="inAppWarn" role="status">
+            <span data-i18n="permissionInApp">This page was opened inside another app's built-in browser, which often does not pass the camera through. Tap the three dots and choose "Open in browser" (Chrome or Safari).</span>
+            <button class="btn secondary" id="inAppWarnClose" type="button" data-i18n="back">Close</button>
+          </div>
           <h2 class="lp-h2" data-i18n="chooseRole">Choose your role to begin</h2>
           <div class="lp-framed">
             <div class="lp-row lp-row-roles">
@@ -399,6 +408,10 @@
         <div class="qr-hint" data-i18n="qrScanHint">Let the parent scan this QR — or type the code above</div>
         <input type="hidden" id="babyOfferCode" />
         <div class="waiting-pill" id="babyWaiting"><span class="spinner"></span><span data-i18n="waitingConnection">Waiting for the parent unit…</span></div>
+        <!-- Verschijnt alleen als de aanmelding bij de koppelserver uitblijft:
+             dan is er geen kamercode en geen QR, en zonder deze knop is er
+             niets te doen behalve de pagina herladen. -->
+        <button class="btn secondary hidden" id="babyRetryPeer" type="button" data-i18n="retry">Try again</button>
         <!-- Juist hier is de waarschuwing het hardst nodig: op dit scherm staat
              de babyunit vaak minutenlang te wachten tot de ouder verbindt, en
              wordt de telefoon neergelegd. -->
@@ -422,6 +435,13 @@
         <h4 data-i18n="roomCodeOfBaby">Room code of the baby unit</h4>
         <div id="parentScanWrap" class="hidden">
           <div class="scanner"><video id="parentScanVideo" autoplay playsinline muted></video><div class="frame"></div></div>
+          <!-- Lukt het scannen niet, dan zegt de app dat na een paar seconden
+               zelf. Er zijn omstandigheden waarin een QR eenvoudigweg niet te
+               lezen is; dan hoort er een weg vooruit te staan. -->
+          <div class="scan-hint hidden" id="parentScanHint" role="status">
+            <span id="parentScanHintText"></span>
+            <button class="btn secondary" id="parentScanType" type="button" data-i18n="scanTypeInstead">Type the code instead</button>
+          </div>
         </div>
         <input class="bigcode-input" id="parentOfferInput" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" data-i18n-ph="phCode" placeholder="CODE" />
         <div class="pair-actions">
@@ -577,7 +597,7 @@
             <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M5 9v6M9 6v12M13 9v6M17 7v10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="audioFocus">Audio focus</span></div><b class="ok" data-i18n="on2">On</b><small id="audioFocusSub" data-i18n="rawAudio">Unprocessed — soft sounds stay audible</small></div>
             <div class="statcard tap" id="cardSleep" role="button" tabindex="0"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 9v4l2.5 2M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="sleepTimer">Sleep timer</span></div><b id="sleepVal" data-i18n="off2">Off</b><small data-i18n="sleepSub">Stops lullaby after time</small></div>
             <div class="statcard tap" id="cardPrivacy" role="button" tabindex="0"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M2 12a10 6.5 0 0 0 20 0 10 6.5 0 0 0-20 0z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg><span data-i18n="videoPrivacy">Video privacy</span></div><b id="privVal" data-i18n="cameraVisible">Camera visible</b><small data-i18n="tapHideVideo">Tap to hide the video</small></div>
-            <div class="statcard"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="3" y="8" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M21 11v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b id="battVal">—</b><small id="battSub" data-i18n="battWaiting">Waiting…</small></div>
+            <div class="statcard" id="cardBattery"><div class="sc-h"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="3" y="8" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M21 11v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="battery">Battery</span></div><b id="battVal">—</b><small id="battSub" data-i18n="battWaiting">Waiting…</small></div>
           </div>
 
           <div class="evlog">
@@ -777,11 +797,28 @@
       </div>
     </div>
 
-    <!-- Getoond i.p.v. de app als de browser geen WebRTC ondersteunt -->
+    <!-- Getoond i.p.v. de app als de app niet kán draaien. TWEE VERSCHILLENDE
+         OORZAKEN, en ze mogen nooit door elkaar lopen:
+           #blockUnsupported — de browser kent WebRTC echt niet (oude browser).
+           #blockInsecure    — de browser kan het prima, maar de pagina is
+                               geopend op een onbeveiligde oorsprong (http://
+                               met een gewone hostnaam of IP). Browsers geven
+                               camera en microfoon daar niet vrij; dat ligt aan
+                               het ADRES, niet aan de browser.
+         app.js haalt het blok dat niet van toepassing is uit de DOM, zodat er
+         nooit twee tegenstrijdige verhalen tegelijk op het scherm staan. -->
     <div class="browser-block hidden" id="browserBlock" role="alertdialog" aria-live="assertive">
       <div class="browser-block-inner">
-        <h1 data-i18n="unsupportedTitle">This browser can't run BabyPhone.online</h1>
-        <p data-i18n="unsupportedBody">This page needs camera, microphone and video-call support that this browser doesn't have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.</p>
+        <div id="blockUnsupported">
+          <h1 data-i18n="unsupportedTitle">This browser can't run BabyPhone.online</h1>
+          <p data-i18n="unsupportedBody">This page needs camera, microphone and video-call support that this browser doesn't have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.</p>
+        </div>
+        <div id="blockInsecure" class="hidden">
+          <h1 data-i18n="insecureTitle">Camera and microphone need a secure address</h1>
+          <p data-i18n="insecureBody">Your browser is fine. This page was opened over plain http://, and browsers only release the camera and microphone on https:// or on localhost. Open the same page over https:// and everything works.</p>
+          <p class="insecure-where"><span data-i18n="insecureCurrentLabel">Opened at</span> <code id="insecureCurrent"></code></p>
+          <p><a class="btn" id="insecureLink" href="https://babyphone.online/" rel="noopener" data-i18n="insecureOpenHttps">Open over https://</a></p>
+        </div>
       </div>
     </div>
     <!-- Foutmelder voor oude toestellen. Bewust in ouderwets JavaScript (geen
@@ -811,7 +848,13 @@
       })();
 
       (function () {
-        function toon(tekst) {
+        // `kop` bepaalt hoe hard de melding leest. Een scriptfout bij het
+        // inlezen betekent werkelijk dat de app niet start; een afgewezen
+        // belofte (bijvoorbeeld een AudioContext die nog geen tik heeft
+        // gehad) betekent dat niet — de app loopt dan gewoon door. Met één
+        // en dezelfde harde kop las de gebruiker tijdens een demo precies
+        // het tegenovergestelde van wat er aan de hand was.
+        function toon(tekst, kop) {
           try {
             var d = document.getElementById('bootError');
             if (!d) {
@@ -822,7 +865,7 @@
                 + 'padding:12px 14px;max-height:45%;overflow:auto;-webkit-overflow-scrolling:touch');
               var t = document.createElement('div');
               t.setAttribute('style', 'font-weight:700;margin-bottom:6px');
-              t.appendChild(document.createTextNode('Deze browser kan de app niet starten'));
+              t.appendChild(document.createTextNode(kop || 'Deze browser kan de app niet starten'));
               d.appendChild(t);
               var p = document.createElement('pre');
               p.id = 'bootErrorText';
@@ -849,7 +892,8 @@
         }, true);
         window.addEventListener('unhandledrejection', function (e) {
           var r = e && e.reason;
-          toon('Niet-afgehandelde fout: ' + (r && r.message ? r.message : String(r)));
+          toon('Niet-afgehandelde fout: ' + (r && r.message ? r.message : String(r)),
+            'Er ging iets mis op de achtergrond');
         });
       })();
     </script>

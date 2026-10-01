@@ -14,19 +14,51 @@ class LullabyPlayer {
     this._noteTimer = null;
   }
 
+  // Geeft waar terug als er een bruikbare AudioContext staat.
+  //
+  // TWEE DINGEN DIE HIER EERDER STIL MISGINGEN.
+  //
+  // 1. `new AC()` stond buiten een try. Een browser zonder AudioContext, of
+  //    eentje die er geen meer wil geven (te veel contexten op iOS), gooide
+  //    hier — en die uitzondering sleepte de aanroeper mee.
+  // 2. `this.ctx.resume()` geeft een belofte terug die wordt AFGEWEZEN zolang
+  //    de gebruiker nog nergens getikt heeft: Firefox, Android Chrome en alle
+  //    WebKit doen dat. Zonder .catch werd dat een unhandledrejection, en de
+  //    vanger in index.html maakte daar een rode balk van met de kop "Deze
+  //    browser kan de app niet starten" — terwijl de app gewoon doorliep. Een
+  //    babyunit die na een herlaadbeurt vanzelf terugkomt heeft die tik per
+  //    definitie niet gehad, dus dit trof precies het geval dat het minst
+  //    opvalt en het hardst verkeerd leest.
+  //
+  // Lukt het hervatten niet, dan blijft de slaapmuziek stil; dat is zichtbaar
+  // aan de alarmbanner die de app zelf al toont zodra de AudioContext niet
+  // loopt. Er verdwijnt dus niets ongemerkt.
   _ensureCtx() {
     if (!this.ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AC();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = 0.35;
-      this.master.connect(this.ctx.destination);
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = 0.35;
+        this.master.connect(this.ctx.destination);
+      } catch (e) {
+        this.ctx = null;
+        this.master = null;
+        return false;
+      }
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') {
+      try {
+        const r = this.ctx.resume();
+        if (r && r.catch) r.catch(function () { /* geen gebaar gehad; blijft stil tot de eerste tik */ });
+      } catch (e) { /* zelfde geval, maar zonder belofte (oude WebKit) */ }
+    }
+    return true;
   }
 
   setVolume(v) {
-    this._ensureCtx();
+    if (!this._ensureCtx()) return;
     this.master.gain.value = Math.max(0, Math.min(1, v));
   }
 
@@ -48,7 +80,10 @@ class LullabyPlayer {
   }
 
   play(id) {
-    this._ensureCtx();
+    // Zonder AudioContext valt er niets af te spelen. Onwaar teruggeven is
+    // hier het eerlijke antwoord: de aanroeper laat de knop dan niet op
+    // "speelt af" staan.
+    if (!this._ensureCtx()) return false;
     this.stop();
     if (LullabyPlayer.MELODIES[id]) {
       this._playMelody(id);
