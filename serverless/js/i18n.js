@@ -45,6 +45,8 @@
   // Sleutels en Engelse basisteksten (volledig — inclusief meldingen).
   const S = {
     en: {
+      signalUnknown: "This browser does not report the connection quality", batteryUnknown: "Not available on this device", permissionInApp: "This page was opened inside another app’s built-in browser, which often does not pass the camera through. Tap the three dots and choose \"Open in browser\" (Chrome or Safari).",
+      insecureTitle: "Camera and microphone need a secure address", insecureBody: "Your browser is fine. This page was opened over plain http://, and browsers only release the camera and microphone on https:// or on localhost. Open the same page over https:// and everything works.", insecureCurrentLabel: "Opened at", insecureOpenHttps: "Open over https://", failBroker: "We cannot reach the pairing server. Check your internet connection and try again.", failNetwork: "The connection cannot be set up on this network. Guest and office networks often block it; try mobile data.", approvalTimeout: "Nobody tapped Allow on the baby unit. Start again when someone is next to it.", waitingApprovalTap: "Waiting for approval on the baby unit — tap Allow there", videoStalled: "Video has stopped coming in…", brokerSlow: "The pairing server is not responding. Check your internet connection.", stepBroker: "Signing in to the pairing server…", stepFindBaby: "Looking for the baby unit…", stepHello: "Introducing this device…", stepApproval: "Waiting for approval…", stepVideo: "Fetching video and sound…", scanHint1: "Not scanning? Make the baby unit screen brighter and hold the phone steady and closer.", scanHint2: "Still nothing. Type the room code by hand instead.", scanTypeInstead: "Type the code instead",
       language: 'Language',
       tagline: 'A private baby monitor that runs entirely in your browser. On the same Wi‑Fi network no server is needed. Choose a role to begin.',
       roleBabyTitle: 'Baby Unit',
@@ -76,12 +78,28 @@
       latency: 'Latency',
       nightmode: 'Night mode',
       switchCamera: 'Switch camera',
+      switchCameraSub: 'Front / back camera',
       talkIdle: 'Talk to baby',
       talkActive: 'Talking…',
       volume: 'Volume',
       brightness: 'Brightness',
       nightlight: 'Night‑light',
       sensitivity: 'Sensitivity',
+      repeatList: 'Repeat',
+      approveTitle: 'Allow this device?',
+      approveAsk: 'A device entered your room code and wants to watch and listen. Only allow this if it is your own device.',
+      approveExtra: 'A second device wants to watch along. Someone is already connected. Only allow this if it is your own device.',
+      approveAllow: 'Allow',
+      approveDeny: 'Deny',
+      authRefused: 'The baby unit refused this device.',
+      cameraRecovered: 'Camera restored',
+      qualityLabel: 'Quality',
+      qualityAuto: 'Automatic',
+      qualityHigh: 'Video + sound (sharp)',
+      qualitySaver: 'Video + sound (data saving)',
+      qualityAudio: 'Sound only',
+      qualityNow: 'In use',
+      waitingApproval: 'Waiting for approval on the baby unit…',
       off: 'OFF',
       record: 'Record',
       sound: 'Sound',
@@ -117,6 +135,8 @@
       phCode: 'CODE',
       newCode: 'New code',
       heroTitle: 'Your baby, always close.',
+      metaTitle: 'Free Baby Monitor App Online — BabyPhone.online',
+      metaDesc: 'Turn two phones into a free baby monitor with live video and sound. Works in any browser: no app to install, no account, nothing stored.',
       heroSub: 'BabyPhone turns two devices into a safe baby monitor. Simple, private and right in your browser.',
       ctaStartBaby: 'Start baby unit',
       ctaConnectParent: 'Connect as parent',
@@ -151,7 +171,7 @@
       videoStreaming: 'Video streaming', audioStreaming: 'Audio streaming',
       audioOnly: 'Audio only', audioOnlySub: 'Stream audio without video',
       privacyShade: 'Privacy shade', hideVideoKeepAudio: 'Hide video, keep audio',
-      babyTip: 'Tip: keep this browser open and the phone on its charger to stay connected.',
+      babyTip: 'Tip: keep this browser open and the phone on its charger to stay connected. Do not switch to another app — the camera can stop in the background.',
       evBabyConnected: 'Baby unit connected', evTalk: 'Talk back used', evTalkSub: 'You spoke to the baby',
       evLullaby: 'Lullaby started', evSound: 'Sound detected', evSoundSub: 'Above your set level',
       howTitle: 'How does it work?',
@@ -170,20 +190,7 @@
       parentUnit: 'Parent Unit', monitoring: 'Monitoring', babyUnit: 'Baby Unit',
       footPrivacy: 'Video and sound go directly between your own devices. No recordings are stored.',
       footDisclaimer: 'An aid, not a replacement for in-person supervision of your baby.',
-      plusTitle: 'BabyPhone Plus',
-      plusSub: 'For nights when it really has to work.',
-      plusFeat1: 'Dedicated relay — guaranteed connection on any network',
-      plusFeat2: 'Watch together: multiple parent devices at once',
-      plusFeat3: 'Sleep & sound history',
-      plusFeat4: 'Premium lullaby library',
-      plusUpgrade: 'Upgrade to Plus',
-      plusManage: 'Manage subscription',
-      plusRestore: 'Restore purchase',
-      plusSoon: 'Coming soon',
-      plusActive: 'Plus active',
-      plusEmailQ: 'Your email address (for your subscription):',
-      plusError: 'Something went wrong. Please try again.',
-      plusNotFound: 'No active subscription found for that email.',
+      or: 'or',
       tapToTalk: 'Tap to talk',
       talkViewSub: 'Your voice plays on the baby unit while this is on.',
       soundscapes: 'Calm soundscapes, played on the baby unit.',
@@ -197,7 +204,7 @@
       footTerms: 'Terms',
       footRefunds: 'Refunds',
       footAccessibility: 'Accessibility',
-      footContact: 'Contact',
+      footGuide: 'Guide', footContact: 'Contact',
       pairBabySub: 'Show this code (or QR) to your own phone to connect.',
       pairParentSub: 'Enter the code from the baby unit, or scan its QR.',
       waitingConnection: 'Waiting for the parent unit…',
@@ -212,12 +219,13 @@
       pasteAnswerFirst: 'Paste or scan the answer code first',
       pastePairFirst: 'Paste or scan the pairing code first',
       noImage: 'No image yet',
-      recStarted: '⏺️ Recording started',
+      unsupportedTitle: 'This browser can\'t run BabyPhone.online', unsupportedBody: 'This page needs camera, microphone and video-call support that this browser doesn\'t have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.', posterCameraOff: 'Camera off', posterOffline: 'Offline', cameraLabel: 'Camera', ledLight: 'LED light', ledOn: '💡 LED on', ledOff: 'LED off', recordVideo: 'Record', recStarted: '⏺️ Recording started',
       saved: '💾 Saved',
       recNotSupported: 'Recording not supported',
       noStream: 'No image to record yet',
       cameraSwitched: 'Camera switched',
       cannotSwitch: "Can't switch camera",
+      onlyOneCamera: 'This device has only one camera', cameraSwitchFailed: 'Switching failed — the same camera stayed on',
       soundMuted: 'Sound muted',
       soundOn: 'Sound on',
       stopParentQ: 'Stop the parent unit?',
@@ -227,6 +235,8 @@
     },
 
     zh: {
+      signalUnknown: "此浏览器不报告连接质量", batteryUnknown: "此设备不支持", permissionInApp: "此页面是在其他应用的内置浏览器中打开的，那里通常不会放行摄像头。请点右上角三个点，选择“在浏览器中打开”（Chrome 或 Safari）。",
+      insecureTitle: "摄像头和麦克风需要安全的网址", insecureBody: "你的浏览器没有问题。此页面是通过普通的 http:// 打开的，而浏览器只在 https:// 或 localhost 上放行摄像头和麦克风。请改用 https:// 打开同一页面，一切就能正常工作。", insecureCurrentLabel: "当前打开的网址", insecureOpenHttps: "用 https:// 打开", failBroker: "我们无法连接配对服务器。请检查网络连接后重试。", failNetwork: "在这个网络上无法建立连接。访客网络和公司网络经常会拦截；请试试移动数据。", approvalTimeout: "没有人在宝宝端点击允许。等有人在旁边时再重新开始。", waitingApprovalTap: "正在等待宝宝端授权 — 请在那台设备上点击允许", videoStalled: "画面已经停止传入…", brokerSlow: "配对服务器没有响应。请检查网络连接。", stepBroker: "正在登录配对服务器…", stepFindBaby: "正在寻找宝宝端…", stepHello: "正在介绍本设备…", stepApproval: "正在等待授权…", stepVideo: "正在获取画面和声音…", scanHint1: "扫不出来？请把宝宝端的屏幕调亮，手机拿稳并靠近一些。", scanHint2: "还是不行。请改为手动输入房间码。", scanTypeInstead: "改为输入代码",
       language: '语言', tagline: '完全在浏览器中运行的私人婴儿监视器。在同一 Wi‑Fi 网络下无需服务器。请选择一个角色开始。',
       roleBabyTitle: '宝宝端', roleBabyDesc: '放在宝宝旁边。发送实时画面和声音，并显示配对二维码。',
       roleParentTitle: '家长端', roleParentDesc: '监视器。扫描宝宝端的二维码即可观看和聆听。',
@@ -247,6 +257,8 @@
     },
 
     hi: {
+      signalUnknown: "यह ब्राउज़र कनेक्शन की गुणवत्ता नहीं बताता", batteryUnknown: "इस डिवाइस पर उपलब्ध नहीं", permissionInApp: "यह पेज किसी दूसरी ऐप के भीतर वाले ब्राउज़र में खुला है, जो अक्सर कैमरा आगे नहीं देता। तीन बिंदुओं पर टैप करें और \"ब्राउज़र में खोलें\" (Chrome या Safari) चुनें।",
+      insecureTitle: "कैमरा और माइक्रोफ़ोन के लिए सुरक्षित पता चाहिए", insecureBody: "आपके ब्राउज़र में कोई गड़बड़ी नहीं है। यह पेज सादे http:// से खुला है, और ब्राउज़र कैमरा तथा माइक्रोफ़ोन सिर्फ़ https:// या localhost पर ही देते हैं। यही पेज https:// से खोलें, सब काम करेगा।", insecureCurrentLabel: "खुला हुआ पता", insecureOpenHttps: "https:// से खोलें", failBroker: "हम जोड़ने वाले सर्वर तक नहीं पहुँच पा रहे। अपना इंटरनेट कनेक्शन देखें और फिर कोशिश करें।", failNetwork: "इस नेटवर्क पर कनेक्शन नहीं बनता। मेहमान और दफ़्तर के नेटवर्क अक्सर इसे रोकते हैं; मोबाइल डेटा आज़माएँ।", approvalTimeout: "बेबी यूनिट पर किसी ने अनुमति दें नहीं दबाया। जब कोई पास हो तब दोबारा शुरू करें।", waitingApprovalTap: "बेबी यूनिट पर अनुमति का इंतज़ार — वहाँ अनुमति दें दबाएँ", videoStalled: "तस्वीर आना बंद हो गई…", brokerSlow: "जोड़ने वाला सर्वर जवाब नहीं दे रहा। अपना इंटरनेट कनेक्शन देखें।", stepBroker: "जोड़ने वाले सर्वर में दाख़िल हो रहे हैं…", stepFindBaby: "बेबी यूनिट खोजी जा रही है…", stepHello: "यह डिवाइस बताया जा रहा है…", stepApproval: "अनुमति का इंतज़ार…", stepVideo: "तस्वीर और आवाज़ ली जा रही है…", scanHint1: "स्कैन नहीं हो रहा? बेबी यूनिट की स्क्रीन तेज़ करें और फ़ोन स्थिर रखकर पास लाएँ।", scanHint2: "अब भी कुछ नहीं। कमरे का कोड हाथ से टाइप करें।", scanTypeInstead: "कोड टाइप करें",
       language: 'भाषा', tagline: 'एक निजी बेबी मॉनिटर जो पूरी तरह आपके ब्राउज़र में चलता है। एक ही वाई‑फ़ाई पर सर्वर की ज़रूरत नहीं। शुरू करने के लिए एक भूमिका चुनें।',
       roleBabyTitle: 'बेबी यूनिट', roleBabyDesc: 'बच्चे के पास रखें। लाइव कैमरा और आवाज़ भेजता है। जोड़ने के लिए QR कोड दिखाता है।',
       roleParentTitle: 'पैरेंट यूनिट', roleParentDesc: 'मॉनिटर। देखने और सुनने के लिए बेबी यूनिट का QR कोड स्कैन करें।',
@@ -267,6 +279,8 @@
     },
 
     es: {
+      signalUnknown: "Este navegador no informa de la calidad de la conexión", batteryUnknown: "No disponible en este dispositivo", permissionInApp: "Esta página se abrió en el navegador integrado de otra aplicación, que a menudo no pasa la cámara. Pulsa los tres puntos y elige \"Abrir en el navegador\" (Chrome o Safari).",
+      insecureTitle: "La cámara y el micrófono necesitan una dirección segura", insecureBody: "Tu navegador está bien. Esta página se abrió por http:// simple, y los navegadores solo liberan la cámara y el micrófono en https:// o en localhost. Abre la misma página por https:// y todo funcionará.", insecureCurrentLabel: "Abierta en", insecureOpenHttps: "Abrir por https://", failBroker: "No podemos llegar al servidor de emparejamiento. Revisa tu conexión a Internet e inténtalo de nuevo.", failNetwork: "La conexión no se establece en esta red. Las redes de invitados y de empresa suelen bloquearla; prueba con datos móviles.", approvalTimeout: "Nadie pulsó Permitir en la unidad del bebé. Vuelve a empezar cuando haya alguien al lado.", waitingApprovalTap: "Esperando la autorización en la unidad del bebé: pulsa Permitir allí", videoStalled: "Ya no llega imagen…", brokerSlow: "El servidor de emparejamiento no responde. Revisa tu conexión a Internet.", stepBroker: "Registrando en el servidor de emparejamiento…", stepFindBaby: "Buscando la unidad del bebé…", stepHello: "Presentando este dispositivo…", stepApproval: "Esperando la autorización…", stepVideo: "Obteniendo imagen y sonido…", scanHint1: "¿No escanea? Sube el brillo de la pantalla de la unidad del bebé y sujeta el teléfono firme y más cerca.", scanHint2: "Sigue sin funcionar. Escribe el código de sala a mano.", scanTypeInstead: "Escribir el código",
       language: 'Idioma', tagline: 'Un vigilabebés privado que funciona completamente en tu navegador. En la misma red Wi‑Fi no hace falta servidor. Elige un rol para empezar.',
       roleBabyTitle: 'Unidad Bebé', roleBabyDesc: 'Colócala junto al bebé. Envía cámara y sonido en vivo. Muestra un código QR para vincular.',
       roleParentTitle: 'Unidad Padres', roleParentDesc: 'El monitor. Escanea el código QR de la unidad bebé para ver y escuchar.',
@@ -287,6 +301,8 @@
     },
 
     fr: {
+      signalUnknown: "Ce navigateur ne signale pas la qualité de la connexion", batteryUnknown: "Non disponible sur cet appareil", permissionInApp: "Cette page a été ouverte dans le navigateur intégré d'une autre application, qui ne transmet souvent pas la caméra. Appuyez sur les trois points et choisissez « Ouvrir dans le navigateur » (Chrome ou Safari).",
+      insecureTitle: "La caméra et le micro exigent une adresse sécurisée", insecureBody: "Votre navigateur n'est pas en cause. Cette page a été ouverte en simple http://, et les navigateurs ne libèrent la caméra et le micro qu'en https:// ou sur localhost. Ouvrez la même page en https:// et tout fonctionne.", insecureCurrentLabel: "Ouvert sur", insecureOpenHttps: "Ouvrir en https://", failBroker: "Nous ne parvenons pas à joindre le serveur de jumelage. Vérifiez votre connexion Internet et réessayez.", failNetwork: "La connexion ne s'établit pas sur ce réseau. Les réseaux invités et d'entreprise le bloquent souvent ; essayez les données mobiles.", approvalTimeout: "Personne n'a appuyé sur Autoriser sur l'unité bébé. Recommencez quand quelqu'un est à côté.", waitingApprovalTap: "En attente de l'autorisation sur l'unité bébé — appuyez sur Autoriser là-bas", videoStalled: "L'image n'arrive plus…", brokerSlow: "Le serveur de jumelage ne répond pas. Vérifiez votre connexion Internet.", stepBroker: "Connexion au serveur de jumelage…", stepFindBaby: "Recherche de l'unité bébé…", stepHello: "Présentation de cet appareil…", stepApproval: "En attente de l'autorisation…", stepVideo: "Récupération de l'image et du son…", scanHint1: "Le scan ne marche pas ? Augmentez la luminosité de l'écran de l'unité bébé et tenez le téléphone stable et plus près.", scanHint2: "Toujours rien. Saisissez plutôt le code de chambre à la main.", scanTypeInstead: "Saisir le code",
       language: 'Langue', tagline: 'Un babyphone privé qui fonctionne entièrement dans votre navigateur. Sur le même Wi‑Fi, aucun serveur n’est nécessaire. Choisissez un rôle pour commencer.',
       roleBabyTitle: 'Unité Bébé', roleBabyDesc: 'À placer près du bébé. Envoie la caméra et le son en direct. Affiche un QR code pour l’appairage.',
       roleParentTitle: 'Unité Parent', roleParentDesc: 'Le moniteur. Scannez le QR code de l’unité bébé pour voir et écouter.',
@@ -307,6 +323,8 @@
     },
 
     ar: {
+      signalUnknown: "هذا المتصفح لا يبلّغ عن جودة الاتصال", batteryUnknown: "غير متاح على هذا الجهاز", permissionInApp: "فُتحت هذه الصفحة داخل المتصفح المدمج لتطبيق آخر، وهو غالبًا لا يمرّر الكاميرا. اضغط على النقاط الثلاث واختر \"فتح في المتصفح\" (Chrome أو Safari).",
+      insecureTitle: "الكاميرا والميكروفون يحتاجان إلى عنوان آمن", insecureBody: "متصفحك سليم. فُتحت هذه الصفحة عبر http:// العادي، والمتصفحات لا تتيح الكاميرا والميكروفون إلا على https:// أو على localhost. افتح الصفحة نفسها عبر https:// وسيعمل كل شيء.", insecureCurrentLabel: "العنوان المفتوح", insecureOpenHttps: "افتح عبر https://", failBroker: "تعذّر الوصول إلى خادم الاقتران. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.", failNetwork: "لا يتم إنشاء الاتصال على هذه الشبكة. شبكات الضيوف وشبكات العمل تحجبه غالبًا؛ جرّب بيانات الهاتف.", approvalTimeout: "لم يضغط أحد على السماح في وحدة الطفل. ابدأ من جديد عندما يكون أحد بجانبها.", waitingApprovalTap: "في انتظار الموافقة على وحدة الطفل — اضغط السماح هناك", videoStalled: "توقّف وصول الصورة…", brokerSlow: "خادم الاقتران لا يستجيب. تحقق من اتصالك بالإنترنت.", stepBroker: "جارٍ تسجيل الدخول إلى خادم الاقتران…", stepFindBaby: "جارٍ البحث عن وحدة الطفل…", stepHello: "جارٍ تعريف هذا الجهاز…", stepApproval: "في انتظار الموافقة…", stepVideo: "جارٍ جلب الصورة والصوت…", scanHint1: "لا يتم المسح؟ زد سطوع شاشة وحدة الطفل وأمسك الهاتف ثابتًا وأقرب.", scanHint2: "ما زال لا شيء. اكتب رمز الغرفة يدويًا بدلًا من ذلك.", scanTypeInstead: "اكتب الرمز",
       language: 'اللغة', tagline: 'جهاز مراقبة أطفال خاص يعمل بالكامل في متصفحك. على نفس شبكة Wi‑Fi لا حاجة إلى خادم. اختر دورًا للبدء.',
       roleBabyTitle: 'وحدة الطفل', roleBabyDesc: 'ضعها بجانب الطفل. ترسل الكاميرا والصوت مباشرة وتعرض رمز QR للاقتران.',
       roleParentTitle: 'وحدة الوالد', roleParentDesc: 'الشاشة. امسح رمز QR الخاص بوحدة الطفل للمشاهدة والاستماع.',
@@ -327,6 +345,8 @@
     },
 
     bn: {
+      signalUnknown: "এই ব্রাউজার সংযোগের মান জানায় না", batteryUnknown: "এই যন্ত্রে পাওয়া যাচ্ছে না", permissionInApp: "এই পাতাটি অন্য একটি অ্যাপের ভেতরের ব্রাউজারে খোলা হয়েছে, যা প্রায়ই ক্যামেরা দেয় না। তিনটি বিন্দুতে চাপুন এবং \"ব্রাউজারে খুলুন\" (Chrome বা Safari) বেছে নিন।",
+      insecureTitle: "ক্যামেরা ও মাইক্রোফোনের জন্য নিরাপদ ঠিকানা দরকার", insecureBody: "আপনার ব্রাউজারে কোনো সমস্যা নেই। এই পাতাটি সাধারণ http:// দিয়ে খোলা হয়েছে, আর ব্রাউজার ক্যামেরা ও মাইক্রোফোন কেবল https:// বা localhost-এ ছাড়ে। একই পাতা https:// দিয়ে খুলুন, সব কাজ করবে।", insecureCurrentLabel: "যে ঠিকানায় খোলা", insecureOpenHttps: "https:// দিয়ে খুলুন", failBroker: "আমরা জোড়া লাগানোর সার্ভারে পৌঁছাতে পারছি না। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।", failNetwork: "এই নেটওয়ার্কে সংযোগ তৈরি হচ্ছে না। অতিথি ও অফিসের নেটওয়ার্ক প্রায়ই এটি আটকায়; মোবাইল ডেটা চেষ্টা করুন।", approvalTimeout: "বেবি ইউনিটে কেউ অনুমতি দিন চাপেনি। পাশে কেউ থাকলে আবার শুরু করুন।", waitingApprovalTap: "বেবি ইউনিটে অনুমতির অপেক্ষা — সেখানে অনুমতি দিন চাপুন", videoStalled: "ছবি আর আসছে না…", brokerSlow: "জোড়া লাগানোর সার্ভার সাড়া দিচ্ছে না। ইন্টারনেট সংযোগ দেখুন।", stepBroker: "জোড়া লাগানোর সার্ভারে ঢোকা হচ্ছে…", stepFindBaby: "বেবি ইউনিট খোঁজা হচ্ছে…", stepHello: "এই যন্ত্রের পরিচয় দেওয়া হচ্ছে…", stepApproval: "অনুমতির অপেক্ষা…", stepVideo: "ছবি ও শব্দ আনা হচ্ছে…", scanHint1: "স্ক্যান হচ্ছে না? বেবি ইউনিটের পর্দা উজ্জ্বল করুন এবং ফোনটি স্থির রেখে কাছে আনুন।", scanHint2: "এখনও কিছু নয়। ঘরের কোড হাতে টাইপ করুন।", scanTypeInstead: "কোড টাইপ করুন",
       language: 'ভাষা', tagline: 'একটি ব্যক্তিগত বেবি মনিটর যা সম্পূর্ণ আপনার ব্রাউজারে চলে। একই Wi‑Fi‑তে কোনো সার্ভার লাগে না। শুরু করতে একটি ভূমিকা বেছে নিন।',
       roleBabyTitle: 'বেবি ইউনিট', roleBabyDesc: 'শিশুর কাছে রাখুন। লাইভ ক্যামেরা ও শব্দ পাঠায়। যুক্ত করতে QR কোড দেখায়।',
       roleParentTitle: 'প্যারেন্ট ইউনিট', roleParentDesc: 'মনিটর। দেখতে ও শুনতে বেবি ইউনিটের QR কোড স্ক্যান করুন।',
@@ -347,6 +367,8 @@
     },
 
     pt: {
+      signalUnknown: "Este navegador não informa a qualidade da conexão", batteryUnknown: "Não disponível neste aparelho", permissionInApp: "Esta página foi aberta no navegador interno de outro aplicativo, que muitas vezes não repassa a câmera. Toque nos três pontinhos e escolha \"Abrir no navegador\" (Chrome ou Safari).",
+      insecureTitle: "A câmera e o microfone precisam de um endereço seguro", insecureBody: "Seu navegador está bem. Esta página foi aberta em http:// simples, e os navegadores só liberam a câmera e o microfone em https:// ou em localhost. Abra a mesma página em https:// e tudo funciona.", insecureCurrentLabel: "Aberta em", insecureOpenHttps: "Abrir em https://", failBroker: "Não conseguimos alcançar o servidor de pareamento. Verifique sua conexão com a internet e tente de novo.", failNetwork: "A conexão não se estabelece nesta rede. Redes de visitantes e de empresas costumam bloqueá-la; tente dados móveis.", approvalTimeout: "Ninguém tocou em Permitir na unidade do bebê. Comece de novo quando houver alguém ao lado.", waitingApprovalTap: "Aguardando a autorização na unidade do bebê — toque em Permitir lá", videoStalled: "A imagem parou de chegar…", brokerSlow: "O servidor de pareamento não responde. Verifique sua conexão com a internet.", stepBroker: "Entrando no servidor de pareamento…", stepFindBaby: "Procurando a unidade do bebê…", stepHello: "Apresentando este aparelho…", stepApproval: "Aguardando a autorização…", stepVideo: "Buscando imagem e som…", scanHint1: "Não lê? Aumente o brilho da tela da unidade do bebê e segure o telefone firme e mais perto.", scanHint2: "Ainda nada. Digite o código da sala à mão.", scanTypeInstead: "Digitar o código",
       language: 'Idioma', tagline: 'Uma babá eletrônica privada que funciona totalmente no seu navegador. Na mesma rede Wi‑Fi não é preciso servidor. Escolha uma função para começar.',
       roleBabyTitle: 'Unidade Bebê', roleBabyDesc: 'Coloque perto do bebê. Envia câmera e som ao vivo. Mostra um código QR para parear.',
       roleParentTitle: 'Unidade Pais', roleParentDesc: 'O monitor. Escaneie o código QR da unidade bebê para ver e ouvir.',
@@ -367,6 +389,8 @@
     },
 
     ru: {
+      signalUnknown: "Этот браузер не сообщает качество соединения", batteryUnknown: "Недоступно на этом устройстве", permissionInApp: "Эта страница открыта во встроенном окне другого приложения, которое часто не передаёт камеру. Нажмите три точки и выберите «Открыть в браузере» (Chrome или Safari).",
+      insecureTitle: "Камере и микрофону нужен защищённый адрес", insecureBody: "С вашим браузером всё в порядке. Эта страница открыта по обычному http://, а браузеры дают доступ к камере и микрофону только по https:// или на localhost. Откройте ту же страницу по https:// — и всё заработает.", insecureCurrentLabel: "Открыто по адресу", insecureOpenHttps: "Открыть по https://", failBroker: "Не удаётся связаться с сервером сопряжения. Проверьте интернет и попробуйте снова.", failNetwork: "В этой сети соединение не устанавливается. Гостевые и корпоративные сети часто это блокируют; попробуйте мобильный интернет.", approvalTimeout: "Никто не нажал «Разрешить» на детском блоке. Начните заново, когда рядом кто-то будет.", waitingApprovalTap: "Ожидание разрешения на детском блоке — нажмите там «Разрешить»", videoStalled: "Изображение больше не поступает…", brokerSlow: "Сервер сопряжения не отвечает. Проверьте подключение к интернету.", stepBroker: "Вход на сервер сопряжения…", stepFindBaby: "Поиск детского блока…", stepHello: "Представление этого устройства…", stepApproval: "Ожидание разрешения…", stepVideo: "Получение изображения и звука…", scanHint1: "Не сканируется? Увеличьте яркость экрана детского блока и держите телефон ровно и ближе.", scanHint2: "По-прежнему ничего. Введите код комнаты вручную.", scanTypeInstead: "Ввести код",
       language: 'Язык', tagline: 'Приватная радионяня, работающая полностью в вашем браузере. В одной сети Wi‑Fi сервер не нужен. Выберите роль, чтобы начать.',
       roleBabyTitle: 'Детский блок', roleBabyDesc: 'Разместите у ребёнка. Передаёт видео и звук в реальном времени. Показывает QR‑код для связи.',
       roleParentTitle: 'Родительский блок', roleParentDesc: 'Монитор. Отсканируйте QR‑код детского блока, чтобы смотреть и слушать.',
@@ -387,6 +411,8 @@
     },
 
     ur: {
+      signalUnknown: "یہ براؤزر کنکشن کا معیار نہیں بتاتا", batteryUnknown: "اس آلے پر دستیاب نہیں", permissionInApp: "یہ صفحہ کسی دوسری ایپ کے اندرونی براؤزر میں کھلا ہے، جو اکثر کیمرہ آگے نہیں دیتا۔ تین نقطوں پر ٹیپ کریں اور \"براؤزر میں کھولیں\" (Chrome یا Safari) منتخب کریں۔",
+      insecureTitle: "کیمرہ اور مائیکروفون کو محفوظ پتہ چاہیے", insecureBody: "آپ کے براؤزر میں کوئی خرابی نہیں۔ یہ صفحہ سادہ http:// سے کھلا ہے، اور براؤزر کیمرہ اور مائیکروفون صرف https:// یا localhost پر دیتے ہیں۔ یہی صفحہ https:// سے کھولیں، سب کچھ چل پڑے گا۔", insecureCurrentLabel: "کھلا ہوا پتہ", insecureOpenHttps: "https:// سے کھولیں", failBroker: "ہم جوڑنے والے سرور تک نہیں پہنچ پا رہے۔ اپنا انٹرنیٹ کنکشن دیکھیں اور دوبارہ کوشش کریں۔", failNetwork: "اس نیٹ ورک پر رابطہ قائم نہیں ہوتا۔ مہمان اور دفتری نیٹ ورک اکثر اسے روکتے ہیں؛ موبائل ڈیٹا آزمائیں۔", approvalTimeout: "بے بی یونٹ پر کسی نے اجازت دیں نہیں دبایا۔ جب کوئی ساتھ ہو تو دوبارہ شروع کریں۔", waitingApprovalTap: "بے بی یونٹ پر اجازت کا انتظار — وہاں اجازت دیں دبائیں", videoStalled: "تصویر آنا بند ہو گئی…", brokerSlow: "جوڑنے والا سرور جواب نہیں دے رہا۔ اپنا انٹرنیٹ کنکشن دیکھیں۔", stepBroker: "جوڑنے والے سرور میں داخل ہو رہے ہیں…", stepFindBaby: "بے بی یونٹ تلاش کیا جا رہا ہے…", stepHello: "یہ آلہ متعارف کرایا جا رہا ہے…", stepApproval: "اجازت کا انتظار…", stepVideo: "تصویر اور آواز لی جا رہی ہے…", scanHint1: "اسکین نہیں ہو رہا؟ بے بی یونٹ کی اسکرین روشن کریں اور فون کو مستحکم اور قریب رکھیں۔", scanHint2: "اب بھی کچھ نہیں۔ کمرے کا کوڈ ہاتھ سے لکھیں۔", scanTypeInstead: "کوڈ لکھیں",
       language: 'زبان', tagline: 'ایک نجی بے بی مانیٹر جو مکمل طور پر آپ کے براؤزر میں چلتا ہے۔ ایک ہی Wi‑Fi پر سرور کی ضرورت نہیں۔ شروع کرنے کے لیے ایک کردار منتخب کریں۔',
       roleBabyTitle: 'بے بی یونٹ', roleBabyDesc: 'بچے کے پاس رکھیں۔ لائیو کیمرہ اور آواز بھیجتا ہے۔ جوڑنے کے لیے QR کوڈ دکھاتا ہے۔',
       roleParentTitle: 'پیرنٹ یونٹ', roleParentDesc: 'مانیٹر۔ دیکھنے اور سننے کے لیے بے بی یونٹ کا QR کوڈ اسکین کریں۔',
@@ -407,6 +433,8 @@
     },
 
     id: {
+      signalUnknown: "Browser ini tidak melaporkan kualitas koneksi", batteryUnknown: "Tidak tersedia di perangkat ini", permissionInApp: "Halaman ini dibuka di browser bawaan aplikasi lain, yang sering tidak meneruskan kamera. Ketuk tiga titik lalu pilih \"Buka di browser\" (Chrome atau Safari).",
+      insecureTitle: "Kamera dan mikrofon butuh alamat yang aman", insecureBody: "Browser Anda tidak bermasalah. Halaman ini dibuka lewat http:// biasa, dan browser hanya membuka kamera dan mikrofon di https:// atau di localhost. Buka halaman yang sama lewat https:// dan semuanya berjalan.", insecureCurrentLabel: "Dibuka di", insecureOpenHttps: "Buka lewat https://", failBroker: "Kami tidak bisa menjangkau server penyandingan. Periksa koneksi internet Anda lalu coba lagi.", failNetwork: "Koneksi tidak terbentuk di jaringan ini. Jaringan tamu dan kantor sering memblokirnya; coba data seluler.", approvalTimeout: "Tidak ada yang menekan Izinkan di unit bayi. Mulai lagi saat ada orang di sebelahnya.", waitingApprovalTap: "Menunggu persetujuan di unit bayi — tekan Izinkan di sana", videoStalled: "Gambar sudah tidak masuk lagi…", brokerSlow: "Server penyandingan tidak merespons. Periksa koneksi internet Anda.", stepBroker: "Masuk ke server penyandingan…", stepFindBaby: "Mencari unit bayi…", stepHello: "Memperkenalkan perangkat ini…", stepApproval: "Menunggu persetujuan…", stepVideo: "Mengambil gambar dan suara…", scanHint1: "Tidak terbaca? Cerahkan layar unit bayi dan pegang ponsel dengan stabil dan lebih dekat.", scanHint2: "Masih belum. Ketik kode ruangan secara manual saja.", scanTypeInstead: "Ketik kodenya",
       language: 'Bahasa', tagline: 'Monitor bayi pribadi yang berjalan sepenuhnya di browser Anda. Di jaringan Wi‑Fi yang sama tidak perlu server. Pilih peran untuk memulai.',
       roleBabyTitle: 'Unit Bayi', roleBabyDesc: 'Tempatkan dekat bayi. Mengirim kamera dan suara langsung. Menampilkan kode QR untuk memasangkan.',
       roleParentTitle: 'Unit Orang Tua', roleParentDesc: 'Monitornya. Pindai kode QR unit bayi untuk melihat dan mendengar.',
@@ -427,6 +455,8 @@
     },
 
     de: {
+      signalUnknown: "Dieser Browser meldet die Verbindungsqualität nicht", batteryUnknown: "Auf diesem Gerät nicht verfügbar", permissionInApp: "Diese Seite wurde im eingebauten Fenster einer anderen App geöffnet, und das gibt die Kamera oft nicht weiter. Tippe auf die drei Punkte und wähle „Im Browser öffnen“ (Chrome oder Safari).",
+      insecureTitle: "Kamera und Mikrofon brauchen eine sichere Adresse", insecureBody: "Mit deinem Browser ist alles in Ordnung. Diese Seite wurde über einfaches http:// geöffnet, und Browser geben Kamera und Mikrofon nur über https:// oder auf localhost frei. Öffne dieselbe Seite über https://, dann funktioniert alles.", insecureCurrentLabel: "Geöffnet unter", insecureOpenHttps: "Über https:// öffnen", failBroker: "Wir erreichen den Kopplungsserver nicht. Prüfe deine Internetverbindung und versuche es erneut.", failNetwork: "Die Verbindung kommt in diesem Netzwerk nicht zustande. Gast- und Firmennetzwerke blockieren das oft; probiere mobile Daten.", approvalTimeout: "Niemand hat an der Babyeinheit auf Erlauben getippt. Starte neu, wenn jemand daneben steht.", waitingApprovalTap: "Warte auf die Freigabe an der Babyeinheit — tippe dort auf Erlauben", videoStalled: "Es kommt kein Bild mehr an…", brokerSlow: "Der Kopplungsserver antwortet nicht. Prüfe deine Internetverbindung.", stepBroker: "Beim Kopplungsserver anmelden…", stepFindBaby: "Babyeinheit suchen…", stepHello: "Dieses Gerät vorstellen…", stepApproval: "Warten auf Freigabe…", stepVideo: "Bild und Ton abrufen…", scanHint1: "Klappt das Scannen nicht? Mach den Bildschirm der Babyeinheit heller und halte das Handy ruhig und näher.", scanHint2: "Immer noch nichts. Gib den Raumcode stattdessen von Hand ein.", scanTypeInstead: "Code eingeben",
       language: 'Sprache', tagline: 'Ein privates Babyphone, das vollständig im Browser läuft. Im selben WLAN ist kein Server nötig. Wähle eine Rolle, um zu beginnen.',
       roleBabyTitle: 'Baby-Einheit', roleBabyDesc: 'Beim Baby platzieren. Sendet Live-Kamera und Ton. Zeigt einen QR-Code zum Koppeln.',
       roleParentTitle: 'Eltern-Einheit', roleParentDesc: 'Der Monitor. Scanne den QR-Code der Baby-Einheit zum Sehen und Hören.',
@@ -447,6 +477,8 @@
     },
 
     ja: {
+      signalUnknown: "このブラウザは接続品質を報告しません", batteryUnknown: "この端末では利用できません", permissionInApp: "このページは他のアプリの内蔵ブラウザで開かれています。そこではカメラが渡されないことがよくあります。右上の三点メニューから「ブラウザで開く」（Chrome または Safari）を選んでください。",
+      insecureTitle: "カメラとマイクには安全なアドレスが必要です", insecureBody: "ブラウザに問題はありません。このページは通常の http:// で開かれており、ブラウザは https:// か localhost でしかカメラとマイクを許可しません。同じページを https:// で開けば問題なく動きます。", insecureCurrentLabel: "現在のアドレス", insecureOpenHttps: "https:// で開く", failBroker: "ペアリングサーバーに接続できません。インターネット接続を確認してもう一度お試しください。", failNetwork: "このネットワークでは接続を確立できません。ゲスト用や社内のネットワークはよく遮断します。モバイル通信をお試しください。", approvalTimeout: "ベビーユニットで「許可」が押されませんでした。そばに誰かいるときにやり直してください。", waitingApprovalTap: "ベビーユニットの許可待ちです — あちらで「許可」を押してください", videoStalled: "映像が届かなくなりました…", brokerSlow: "ペアリングサーバーが応答しません。インターネット接続を確認してください。", stepBroker: "ペアリングサーバーに接続中…", stepFindBaby: "ベビーユニットを探しています…", stepHello: "この端末を知らせています…", stepApproval: "許可を待っています…", stepVideo: "映像と音声を取得中…", scanHint1: "読み取れませんか？ ベビーユニットの画面を明るくして、スマホを動かさずに近づけてください。", scanHint2: "まだ読めません。ルームコードを手で入力してください。", scanTypeInstead: "コードを入力する",
       language: '言語', tagline: 'ブラウザだけで動く、プライベートなベビーモニター。同じ Wi‑Fi ならサーバー不要です。役割を選んで始めましょう。',
       roleBabyTitle: 'ベビー機', roleBabyDesc: '赤ちゃんのそばに置きます。ライブ映像と音声を送信し、ペア用のQRコードを表示します。',
       roleParentTitle: 'ペアレント機', roleParentDesc: 'モニターです。ベビー機のQRコードをスキャンして見守り・聞き取りします。',
@@ -467,6 +499,8 @@
     },
 
     mr: {
+      signalUnknown: "हा ब्राउझर जोडणीची गुणवत्ता सांगत नाही", batteryUnknown: "या उपकरणावर उपलब्ध नाही", permissionInApp: "हे पान दुसऱ्या ॲपच्या आतल्या ब्राउझरमध्ये उघडलं आहे, जे अनेकदा कॅमेरा पुढे देत नाही. तीन टिंबांवर टॅप करा आणि \"ब्राउझरमध्ये उघडा\" (Chrome किंवा Safari) निवडा.",
+      insecureTitle: "कॅमेरा आणि मायक्रोफोनसाठी सुरक्षित पत्ता लागतो", insecureBody: "तुमच्या ब्राउझरमध्ये काही अडचण नाही. हे पान साध्या http:// ने उघडले आहे, आणि ब्राउझर कॅमेरा व मायक्रोफोन फक्त https:// किंवा localhost वरच देतात. तेच पान https:// ने उघडा, सगळं चालेल.", insecureCurrentLabel: "उघडलेला पत्ता", insecureOpenHttps: "https:// ने उघडा", failBroker: "जोडणी सर्व्हरपर्यंत पोहोचता येत नाही. तुमचं इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.", failNetwork: "या नेटवर्कवर जोडणी होत नाही. पाहुणे आणि कार्यालयीन नेटवर्क हे अनेकदा अडवतात; मोबाइल डेटा वापरून पाहा.", approvalTimeout: "बेबी युनिटवर कोणीही परवानगी द्या दाबलं नाही. कोणी जवळ असताना पुन्हा सुरू करा.", waitingApprovalTap: "बेबी युनिटवर परवानगीची वाट — तिथे परवानगी द्या दाबा", videoStalled: "चित्र येणं थांबलं आहे…", brokerSlow: "जोडणी सर्व्हर प्रतिसाद देत नाही. तुमचं इंटरनेट कनेक्शन तपासा.", stepBroker: "जोडणी सर्व्हरवर नोंदणी होत आहे…", stepFindBaby: "बेबी युनिट शोधत आहे…", stepHello: "हे उपकरण ओळख करून देत आहे…", stepApproval: "परवानगीची वाट…", stepVideo: "चित्र आणि आवाज घेत आहे…", scanHint1: "स्कॅन होत नाही? बेबी युनिटची स्क्रीन उजळ करा आणि फोन स्थिर ठेवून जवळ धरा.", scanHint2: "अजूनही काही नाही. खोलीचा कोड हाताने टाइप करा.", scanTypeInstead: "कोड टाइप करा",
       language: 'भाषा', tagline: 'पूर्णपणे तुमच्या ब्राउझरमध्ये चालणारा खाजगी बेबी मॉनिटर. एकाच वाय‑फायवर सर्व्हरची गरज नाही. सुरू करण्यासाठी भूमिका निवडा.',
       roleBabyTitle: 'बेबी युनिट', roleBabyDesc: 'बाळाजवळ ठेवा. थेट कॅमेरा व आवाज पाठवते. जोडणीसाठी QR कोड दाखवते.',
       roleParentTitle: 'पॅरेंट युनिट', roleParentDesc: 'मॉनिटर. पाहण्यासाठी व ऐकण्यासाठी बेबी युनिटचा QR कोड स्कॅन करा.',
@@ -487,6 +521,8 @@
     },
 
     te: {
+      signalUnknown: "ఈ బ్రౌజర్ కనెక్షన్ నాణ్యతను తెలియజేయదు", batteryUnknown: "ఈ పరికరంలో అందుబాటులో లేదు", permissionInApp: "ఈ పేజీ మరో యాప్ లోపలి బ్రౌజర్‌లో తెరిచారు, అది తరచూ కెమెరాను ఇవ్వదు. మూడు చుక్కలను నొక్కి \"బ్రౌజర్‌లో తెరవండి\" (Chrome లేదా Safari) ఎంచుకోండి.",
+      insecureTitle: "కెమెరా, మైక్రోఫోన్‌కు సురక్షిత చిరునామా కావాలి", insecureBody: "మీ బ్రౌజర్‌లో ఏ లోపమూ లేదు. ఈ పేజీ సాధారణ http:// ద్వారా తెరిచారు, బ్రౌజర్లు కెమెరా, మైక్రోఫోన్‌ను https:// లేదా localhost మీదే ఇస్తాయి. అదే పేజీని https:// ద్వారా తెరవండి, అంతా పనిచేస్తుంది.", insecureCurrentLabel: "తెరిచిన చిరునామా", insecureOpenHttps: "https:// ద్వారా తెరవండి", failBroker: "జత చేసే సర్వర్‌ను చేరుకోలేకపోతున్నాం. మీ ఇంటర్నెట్ కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.", failNetwork: "ఈ నెట్‌వర్క్‌లో కనెక్షన్ ఏర్పడటం లేదు. అతిథి, కార్యాలయ నెట్‌వర్క్‌లు దీన్ని తరచూ అడ్డుకుంటాయి; మొబైల్ డేటా ప్రయత్నించండి.", approvalTimeout: "బేబీ యూనిట్‌లో ఎవరూ అనుమతించు నొక్కలేదు. ఎవరైనా పక్కన ఉన్నప్పుడు మళ్లీ మొదలుపెట్టండి.", waitingApprovalTap: "బేబీ యూనిట్‌లో అనుమతి కోసం వేచి ఉంది — అక్కడ అనుమతించు నొక్కండి", videoStalled: "చిత్రం రావడం ఆగిపోయింది…", brokerSlow: "జత చేసే సర్వర్ స్పందించడం లేదు. మీ ఇంటర్నెట్ కనెక్షన్ చూడండి.", stepBroker: "జత చేసే సర్వర్‌లోకి ప్రవేశిస్తోంది…", stepFindBaby: "బేబీ యూనిట్ కోసం వెతుకుతోంది…", stepHello: "ఈ పరికరాన్ని పరిచయం చేస్తోంది…", stepApproval: "అనుమతి కోసం వేచి ఉంది…", stepVideo: "చిత్రం, శబ్దం తెస్తోంది…", scanHint1: "స్కాన్ కావడం లేదా? బేబీ యూనిట్ తెరను మరింత ప్రకాశవంతం చేసి, ఫోన్‌ను కదలకుండా దగ్గరగా పట్టుకోండి.", scanHint2: "ఇప్పటికీ ఏమీ లేదు. గది కోడ్‌ను చేతితో టైప్ చేయండి.", scanTypeInstead: "కోడ్ టైప్ చేయండి",
       language: 'భాష', tagline: 'పూర్తిగా మీ బ్రౌజర్‌లో నడిచే ప్రైవేట్ బేబీ మానిటర్. ఒకే Wi‑Fiలో సర్వర్ అవసరం లేదు. ప్రారంభించడానికి పాత్రను ఎంచుకోండి.',
       roleBabyTitle: 'బేబీ యూనిట్', roleBabyDesc: 'బిడ్డ దగ్గర ఉంచండి. ప్రత్యక్ష కెమెరా, ధ్వనిని పంపుతుంది. జతచేయడానికి QR కోడ్ చూపుతుంది.',
       roleParentTitle: 'పేరెంట్ యూనిట్', roleParentDesc: 'మానిటర్. చూడటానికి, వినడానికి బేబీ యూనిట్ QR కోడ్‌ను స్కాన్ చేయండి.',
@@ -507,6 +543,8 @@
     },
 
     tr: {
+      signalUnknown: "Bu tarayıcı bağlantı kalitesini bildirmiyor", batteryUnknown: "Bu cihazda kullanılamıyor", permissionInApp: "Bu sayfa başka bir uygulamanın yerleşik tarayıcısında açıldı; orası kamerayı çoğu zaman aktarmaz. Üç noktaya dokunup \"Tarayıcıda aç\" (Chrome veya Safari) seçin.",
+      insecureTitle: "Kamera ve mikrofon güvenli bir adres ister", insecureBody: "Tarayıcınızda sorun yok. Bu sayfa düz http:// ile açıldı ve tarayıcılar kamerayı ve mikrofonu yalnızca https:// üzerinde veya localhost üzerinde serbest bırakır. Aynı sayfayı https:// ile açın, her şey çalışır.", insecureCurrentLabel: "Açıldığı adres", insecureOpenHttps: "https:// ile aç", failBroker: "Eşleştirme sunucusuna ulaşamıyoruz. İnternet bağlantınızı kontrol edip yeniden deneyin.", failNetwork: "Bu ağda bağlantı kurulamıyor. Misafir ve kurum ağları bunu sık sık engeller; mobil veriyi deneyin.", approvalTimeout: "Bebek ünitesinde kimse İzin Ver’e dokunmadı. Yanında biri varken yeniden başlayın.", waitingApprovalTap: "Bebek ünitesinde onay bekleniyor — oradan İzin Ver’e dokunun", videoStalled: "Görüntü artık gelmiyor…", brokerSlow: "Eşleştirme sunucusu yanıt vermiyor. İnternet bağlantınızı kontrol edin.", stepBroker: "Eşleştirme sunucusuna bağlanılıyor…", stepFindBaby: "Bebek ünitesi aranıyor…", stepHello: "Bu cihaz tanıtılıyor…", stepApproval: "Onay bekleniyor…", stepVideo: "Görüntü ve ses alınıyor…", scanHint1: "Taramıyor mu? Bebek ünitesinin ekranını parlaklaştırın ve telefonu sabit ve daha yakın tutun.", scanHint2: "Hâlâ bir şey yok. Oda kodunu elle yazın.", scanTypeInstead: "Kodu yaz",
       language: 'Dil', tagline: 'Tamamen tarayıcınızda çalışan özel bir bebek telsizi. Aynı Wi‑Fi ağında sunucu gerekmez. Başlamak için bir rol seçin.',
       roleBabyTitle: 'Bebek Ünitesi', roleBabyDesc: 'Bebeğin yanına koyun. Canlı kamera ve ses gönderir. Eşleştirmek için QR kodu gösterir.',
       roleParentTitle: 'Ebeveyn Ünitesi', roleParentDesc: 'Monitör. İzlemek ve dinlemek için bebek ünitesinin QR kodunu tarayın.',
@@ -527,6 +565,8 @@
     },
 
     ta: {
+      signalUnknown: "இந்த உலாவி இணைப்புத் தரத்தை அறிவிப்பதில்லை", batteryUnknown: "இந்தச் சாதனத்தில் கிடைக்கவில்லை", permissionInApp: "இந்தப் பக்கம் வேறொரு செயலியின் உள்ளமை உலாவியில் திறக்கப்பட்டது; அது பெரும்பாலும் கேமராவை வழங்காது. மூன்று புள்ளிகளைத் தட்டி \"உலாவியில் திற\" (Chrome அல்லது Safari) என்பதைத் தேர்ந்தெடுக்கவும்.",
+      insecureTitle: "கேமராவுக்கும் மைக்கிற்கும் பாதுகாப்பான முகவரி தேவை", insecureBody: "உங்கள் உலாவியில் பிழை இல்லை. இந்தப் பக்கம் சாதாரண http:// வழியாகத் திறக்கப்பட்டது; உலாவிகள் கேமராவையும் மைக்கையும் https:// அல்லது localhost இல் மட்டுமே வழங்கும். அதே பக்கத்தை https:// வழியாகத் திறந்தால் எல்லாம் வேலை செய்யும்.", insecureCurrentLabel: "திறந்துள்ள முகவரி", insecureOpenHttps: "https:// வழியாகத் திற", failBroker: "இணைப்புச் சேவையகத்தை அடைய முடியவில்லை. உங்கள் இணைய இணைப்பைச் சரிபார்த்து மீண்டும் முயலுங்கள்.", failNetwork: "இந்த வலையமைப்பில் இணைப்பு உருவாகவில்லை. விருந்தினர் மற்றும் அலுவலக வலையமைப்புகள் இதை அடிக்கடி தடுக்கும்; மொபைல் தரவை முயலுங்கள்.", approvalTimeout: "குழந்தை சாதனத்தில் யாரும் அனுமதி என்பதை அழுத்தவில்லை. அருகில் யாராவது இருக்கும்போது மீண்டும் தொடங்குங்கள்.", waitingApprovalTap: "குழந்தை சாதனத்தின் அனுமதிக்காகக் காத்திருக்கிறது — அங்கே அனுமதி என்பதை அழுத்துங்கள்", videoStalled: "படம் வருவது நின்றுவிட்டது…", brokerSlow: "இணைப்புச் சேவையகம் பதிலளிக்கவில்லை. உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்.", stepBroker: "இணைப்புச் சேவையகத்தில் நுழைகிறது…", stepFindBaby: "குழந்தை சாதனத்தைத் தேடுகிறது…", stepHello: "இந்தச் சாதனத்தை அறிமுகப்படுத்துகிறது…", stepApproval: "அனுமதிக்காகக் காத்திருக்கிறது…", stepVideo: "படமும் ஒலியும் பெறப்படுகிறது…", scanHint1: "ஸ்கேன் ஆகவில்லையா? குழந்தை சாதனத்தின் திரையை பிரகாசமாக்கி, தொலைபேசியை அசையாமல் அருகில் பிடியுங்கள்.", scanHint2: "இன்னும் ஒன்றுமில்லை. அறைக் குறியீட்டைக் கையால் தட்டச்சு செய்யுங்கள்.", scanTypeInstead: "குறியீட்டைத் தட்டச்சு செய்",
       language: 'மொழி', tagline: 'உங்கள் உலாவியில் முழுமையாக இயங்கும் தனிப்பட்ட குழந்தை மானிட்டர். ஒரே Wi‑Fiயில் சர்வர் தேவையில்லை. தொடங்க ஒரு பாத்திரத்தைத் தேர்ந்தெடுக்கவும்.',
       roleBabyTitle: 'குழந்தை பிரிவு', roleBabyDesc: 'குழந்தையருகில் வைக்கவும். நேரடி காமிரா, ஒலியை அனுப்பும். இணைக்க QR குறியீட்டைக் காட்டும்.',
       roleParentTitle: 'பெற்றோர் பிரிவு', roleParentDesc: 'மானிட்டர். பார்க்கவும் கேட்கவும் குழந்தை பிரிவின் QR குறியீட்டை ஸ்கேன் செய்யவும்.',
@@ -547,6 +587,8 @@
     },
 
     vi: {
+      signalUnknown: "Trình duyệt này không báo chất lượng kết nối", batteryUnknown: "Không có trên thiết bị này", permissionInApp: "Trang này được mở trong trình duyệt tích hợp của ứng dụng khác, nơi thường không chuyển tiếp camera. Hãy chạm ba chấm và chọn \"Mở trong trình duyệt\" (Chrome hoặc Safari).",
+      insecureTitle: "Camera và micro cần một địa chỉ an toàn", insecureBody: "Trình duyệt của bạn vẫn ổn. Trang này được mở bằng http:// thường, và trình duyệt chỉ mở camera và micro trên https:// hoặc trên localhost. Hãy mở cùng trang đó bằng https:// là mọi thứ chạy được.", insecureCurrentLabel: "Đang mở tại", insecureOpenHttps: "Mở bằng https://", failBroker: "Không liên lạc được với máy chủ ghép nối. Hãy kiểm tra kết nối Internet rồi thử lại.", failNetwork: "Không thiết lập được kết nối trên mạng này. Mạng khách và mạng công ty thường chặn; hãy thử dữ liệu di động.", approvalTimeout: "Không ai chạm Cho phép trên máy bé. Hãy bắt đầu lại khi có người đứng cạnh.", waitingApprovalTap: "Đang chờ chấp thuận trên máy bé — hãy chạm Cho phép ở đó", videoStalled: "Hình đã ngừng về…", brokerSlow: "Máy chủ ghép nối không trả lời. Hãy kiểm tra kết nối Internet.", stepBroker: "Đang đăng nhập máy chủ ghép nối…", stepFindBaby: "Đang tìm máy bé…", stepHello: "Đang giới thiệu thiết bị này…", stepApproval: "Đang chờ chấp thuận…", stepVideo: "Đang lấy hình và tiếng…", scanHint1: "Không quét được? Hãy tăng độ sáng màn hình máy bé và giữ điện thoại chắc tay, gần hơn.", scanHint2: "Vẫn chưa được. Hãy gõ mã phòng bằng tay.", scanTypeInstead: "Gõ mã",
       language: 'Ngôn ngữ', tagline: 'Máy theo dõi em bé riêng tư chạy hoàn toàn trong trình duyệt. Trên cùng mạng Wi‑Fi không cần máy chủ. Chọn một vai trò để bắt đầu.',
       roleBabyTitle: 'Thiết bị Bé', roleBabyDesc: 'Đặt gần bé. Gửi camera và âm thanh trực tiếp. Hiển thị mã QR để ghép nối.',
       roleParentTitle: 'Thiết bị Bố mẹ', roleParentDesc: 'Màn hình. Quét mã QR của thiết bị bé để xem và nghe.',
@@ -567,6 +609,8 @@
     },
 
     ko: {
+      signalUnknown: "이 브라우저는 연결 품질을 알려주지 않아요", batteryUnknown: "이 기기에서는 사용할 수 없어요", permissionInApp: "이 페이지는 다른 앱의 내장 브라우저에서 열렸어요. 그곳은 카메라를 넘겨주지 않는 경우가 많아요. 점 세 개를 누르고 \"브라우저에서 열기\"(Chrome 또는 Safari)를 선택해 주세요.",
+      insecureTitle: "카메라와 마이크에는 안전한 주소가 필요해요", insecureBody: "브라우저에는 문제가 없어요. 이 페이지는 일반 http:// 로 열렸고, 브라우저는 https:// 또는 localhost 에서만 카메라와 마이크를 열어줘요. 같은 페이지를 https:// 로 열면 모두 정상 작동해요.", insecureCurrentLabel: "지금 열린 주소", insecureOpenHttps: "https:// 로 열기", failBroker: "페어링 서버에 연결할 수 없어요. 인터넷 연결을 확인하고 다시 시도해 주세요.", failNetwork: "이 네트워크에서는 연결이 되지 않아요. 게스트망이나 회사망이 자주 막아요. 모바일 데이터를 써 보세요.", approvalTimeout: "아기 기기에서 아무도 허용을 누르지 않았어요. 옆에 사람이 있을 때 다시 시작해 주세요.", waitingApprovalTap: "아기 기기의 승인을 기다리는 중 — 그쪽에서 허용을 눌러 주세요", videoStalled: "화면이 더 이상 들어오지 않아요…", brokerSlow: "페어링 서버가 응답하지 않아요. 인터넷 연결을 확인해 주세요.", stepBroker: "페어링 서버에 접속 중…", stepFindBaby: "아기 기기를 찾는 중…", stepHello: "이 기기를 소개하는 중…", stepApproval: "승인을 기다리는 중…", stepVideo: "화면과 소리를 가져오는 중…", scanHint1: "스캔이 안 되나요? 아기 기기 화면을 더 밝게 하고, 휴대폰을 흔들리지 않게 가까이 대 주세요.", scanHint2: "여전히 안 되네요. 방 코드를 직접 입력해 주세요.", scanTypeInstead: "코드 직접 입력",
       language: '언어', tagline: '브라우저에서 완전히 실행되는 개인용 베이비 모니터. 같은 Wi‑Fi에서는 서버가 필요 없습니다. 역할을 선택해 시작하세요.',
       roleBabyTitle: '베이비 유닛', roleBabyDesc: '아기 곁에 두세요. 실시간 영상과 소리를 전송하고 연결용 QR 코드를 표시합니다.',
       roleParentTitle: '부모 유닛', roleParentDesc: '모니터입니다. 베이비 유닛의 QR 코드를 스캔해 보고 들으세요.',
@@ -587,6 +631,8 @@
     },
 
     it: {
+      signalUnknown: "Questo browser non segnala la qualità della connessione", batteryUnknown: "Non disponibile su questo dispositivo", permissionInApp: "Questa pagina è stata aperta nel browser integrato di un'altra app, che spesso non passa la fotocamera. Tocca i tre puntini e scegli \"Apri nel browser\" (Chrome o Safari).",
+      insecureTitle: "Fotocamera e microfono richiedono un indirizzo sicuro", insecureBody: "Il tuo browser va bene. Questa pagina è stata aperta in semplice http://, e i browser liberano fotocamera e microfono solo su https:// o su localhost. Apri la stessa pagina su https:// e tutto funziona.", insecureCurrentLabel: "Aperta su", insecureOpenHttps: "Apri in https://", failBroker: "Non riusciamo a raggiungere il server di abbinamento. Controlla la connessione a Internet e riprova.", failNetwork: "La connessione non si stabilisce su questa rete. Le reti ospiti e aziendali spesso la bloccano; prova con i dati mobili.", approvalTimeout: "Nessuno ha toccato Consenti sull'unità bambino. Ricomincia quando c'è qualcuno accanto.", waitingApprovalTap: "In attesa dell'autorizzazione sull'unità bambino: tocca Consenti lì", videoStalled: "Non arriva più il video…", brokerSlow: "Il server di abbinamento non risponde. Controlla la connessione a Internet.", stepBroker: "Accesso al server di abbinamento…", stepFindBaby: "Ricerca dell'unità bambino…", stepHello: "Presentazione di questo dispositivo…", stepApproval: "In attesa dell'autorizzazione…", stepVideo: "Recupero di video e audio…", scanHint1: "Non scansiona? Aumenta la luminosità dello schermo dell'unità bambino e tieni il telefono fermo e più vicino.", scanHint2: "Ancora niente. Digita il codice stanza a mano.", scanTypeInstead: "Digita il codice",
       language: 'Lingua', tagline: 'Un baby monitor privato che funziona interamente nel browser. Sulla stessa rete Wi‑Fi non serve alcun server. Scegli un ruolo per iniziare.',
       roleBabyTitle: 'Unità Bimbo', roleBabyDesc: 'Metti vicino al bimbo. Invia video e audio dal vivo. Mostra un codice QR per l’abbinamento.',
       roleParentTitle: 'Unità Genitore', roleParentDesc: 'Il monitor. Scansiona il codice QR dell’unità bimbo per vedere e ascoltare.',
@@ -607,6 +653,8 @@
     },
 
     th: {
+      signalUnknown: "เบราว์เซอร์นี้ไม่รายงานคุณภาพการเชื่อมต่อ", batteryUnknown: "ไม่มีบนอุปกรณ์นี้", permissionInApp: "หน้านี้เปิดในเบราว์เซอร์ในตัวของแอปอื่น ซึ่งมักไม่ส่งต่อกล้องให้ แตะจุดสามจุดแล้วเลือก \"เปิดในเบราว์เซอร์\" (Chrome หรือ Safari)",
+      insecureTitle: "กล้องและไมโครโฟนต้องใช้ที่อยู่ที่ปลอดภัย", insecureBody: "เบราว์เซอร์ของคุณไม่มีปัญหา หน้านี้เปิดผ่าน http:// ธรรมดา และเบราว์เซอร์จะปล่อยกล้องกับไมโครโฟนเฉพาะบน https:// หรือบน localhost เท่านั้น เปิดหน้าเดียวกันผ่าน https:// แล้วทุกอย่างจะใช้งานได้", insecureCurrentLabel: "เปิดอยู่ที่", insecureOpenHttps: "เปิดผ่าน https://", failBroker: "เราติดต่อเซิร์ฟเวอร์จับคู่ไม่ได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่", failNetwork: "เครือข่ายนี้สร้างการเชื่อมต่อไม่ได้ เครือข่ายผู้มาเยือนและเครือข่ายสำนักงานมักบล็อกไว้ ลองใช้เน็ตมือถือ", approvalTimeout: "ไม่มีใครกดอนุญาตที่เครื่องฝั่งทารก เริ่มใหม่เมื่อมีคนอยู่ข้างๆ", waitingApprovalTap: "กำลังรอการอนุญาตที่เครื่องฝั่งทารก — กดอนุญาตที่นั่น", videoStalled: "ภาพหยุดส่งเข้ามาแล้ว…", brokerSlow: "เซิร์ฟเวอร์จับคู่ไม่ตอบสนอง โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต", stepBroker: "กำลังเข้าสู่เซิร์ฟเวอร์จับคู่…", stepFindBaby: "กำลังค้นหาเครื่องฝั่งทารก…", stepHello: "กำลังแนะนำอุปกรณ์นี้…", stepApproval: "กำลังรอการอนุญาต…", stepVideo: "กำลังดึงภาพและเสียง…", scanHint1: "สแกนไม่ติดใช่ไหม เพิ่มความสว่างหน้าจอเครื่องฝั่งทารก และถือโทรศัพท์ให้นิ่งและใกล้ขึ้น", scanHint2: "ยังไม่ได้อีก พิมพ์รหัสห้องด้วยมือแทน", scanTypeInstead: "พิมพ์รหัสแทน",
       language: 'ภาษา', tagline: 'เครื่องเฝ้าดูทารกส่วนตัวที่ทำงานในเบราว์เซอร์ทั้งหมด บนเครือข่าย Wi‑Fi เดียวกันไม่ต้องใช้เซิร์ฟเวอร์ เลือกบทบาทเพื่อเริ่ม',
       roleBabyTitle: 'เครื่องทารก', roleBabyDesc: 'วางไว้ใกล้ทารก ส่งกล้องและเสียงสด แสดงคิวอาร์โค้ดเพื่อจับคู่',
       roleParentTitle: 'เครื่องผู้ปกครอง', roleParentDesc: 'จอมอนิเตอร์ สแกนคิวอาร์โค้ดของเครื่องทารกเพื่อดูและฟัง',
@@ -627,6 +675,8 @@
     },
 
     gu: {
+      signalUnknown: "આ બ્રાઉઝર જોડાણની ગુણવત્તા જણાવતું નથી", batteryUnknown: "આ ઉપકરણ પર ઉપલબ્ધ નથી", permissionInApp: "આ પેજ બીજી ઍપના અંદરના બ્રાઉઝરમાં ખૂલ્યું છે, જે ઘણીવાર કૅમેરા આગળ આપતું નથી. ત્રણ ટપકાં પર ટૅપ કરો અને \"બ્રાઉઝરમાં ખોલો\" (Chrome અથવા Safari) પસંદ કરો.",
+      insecureTitle: "કૅમેરા અને માઇક્રોફોનને સુરક્ષિત સરનામું જોઈએ", insecureBody: "તમારા બ્રાઉઝરમાં કોઈ વાંધો નથી. આ પેજ સાદા http:// થી ખૂલ્યું છે, અને બ્રાઉઝર કૅમેરા તથા માઇક્રોફોન ફક્ત https:// કે localhost પર જ આપે છે. એ જ પેજ https:// થી ખોલો, બધું ચાલશે.", insecureCurrentLabel: "ખૂલેલું સરનામું", insecureOpenHttps: "https:// થી ખોલો", failBroker: "અમે જોડાણ સર્વર સુધી પહોંચી શકતા નથી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.", failNetwork: "આ નેટવર્ક પર જોડાણ બનતું નથી. મહેમાન અને ઓફિસનાં નેટવર્ક ઘણીવાર તેને રોકે છે; મોબાઇલ ડેટા અજમાવો.", approvalTimeout: "બેબી યુનિટ પર કોઈએ મંજૂરી આપો દબાવ્યું નથી. કોઈ પાસે હોય ત્યારે ફરી શરૂ કરો.", waitingApprovalTap: "બેબી યુનિટ પર મંજૂરીની રાહ — ત્યાં મંજૂરી આપો દબાવો", videoStalled: "ચિત્ર આવવાનું બંધ થયું…", brokerSlow: "જોડાણ સર્વર જવાબ આપતું નથી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો.", stepBroker: "જોડાણ સર્વરમાં દાખલ થઈ રહ્યા છીએ…", stepFindBaby: "બેબી યુનિટ શોધાઈ રહ્યું છે…", stepHello: "આ ઉપકરણની ઓળખ અપાઈ રહી છે…", stepApproval: "મંજૂરીની રાહ…", stepVideo: "ચિત્ર અને અવાજ લવાઈ રહ્યાં છે…", scanHint1: "સ્કૅન થતું નથી? બેબી યુનિટની સ્ક્રીન વધુ તેજસ્વી કરો અને ફોન સ્થિર રાખીને નજીક લાવો.", scanHint2: "હજી કશું નહીં. રૂમનો કોડ હાથે ટાઇપ કરો.", scanTypeInstead: "કોડ ટાઇપ કરો",
       language: 'ભાષા', tagline: 'સંપૂર્ણપણે તમારા બ્રાઉઝરમાં ચાલતું ખાનગી બેબી મોનિટર. એક જ Wi‑Fi પર સર્વરની જરૂર નથી. શરૂ કરવા ભૂમિકા પસંદ કરો.',
       roleBabyTitle: 'બેબી યુનિટ', roleBabyDesc: 'બાળક પાસે મૂકો. લાઇવ કૅમેરા અને અવાજ મોકલે છે. જોડવા QR કોડ બતાવે છે.',
       roleParentTitle: 'પેરેન્ટ યુનિટ', roleParentDesc: 'મોનિટર. જોવા અને સાંભળવા બેબી યુનિટનો QR કોડ સ્કૅન કરો.',
@@ -647,6 +697,8 @@
     },
 
     fa: {
+      signalUnknown: "این مرورگر کیفیت اتصال را گزارش نمی‌کند", batteryUnknown: "روی این دستگاه در دسترس نیست", permissionInApp: "این صفحه در مرورگر داخلی یک برنامهٔ دیگر باز شده است و آنجا معمولاً دوربین منتقل نمی‌شود. روی سه نقطه بزنید و «باز کردن در مرورگر» (Chrome یا Safari) را انتخاب کنید.",
+      insecureTitle: "دوربین و میکروفون به نشانی امن نیاز دارند", insecureBody: "مرورگر شما مشکلی ندارد. این صفحه با http:// ساده باز شده است و مرورگرها فقط روی https:// یا localhost دوربین و میکروفون را آزاد می‌کنند. همین صفحه را با https:// باز کنید تا همه چیز کار کند.", insecureCurrentLabel: "باز شده در", insecureOpenHttps: "باز کردن با https://", failBroker: "نمی‌توانیم به سرور جفت‌سازی برسیم. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.", failNetwork: "در این شبکه ارتباط برقرار نمی‌شود. شبکه‌های مهمان و اداری اغلب آن را مسدود می‌کنند؛ اینترنت همراه را امتحان کنید.", approvalTimeout: "کسی روی «اجازه» در دستگاه نوزاد نزد. وقتی کسی کنارش بود دوباره شروع کنید.", waitingApprovalTap: "در انتظار تأیید روی دستگاه نوزاد — آنجا «اجازه» را بزنید", videoStalled: "تصویر دیگر نمی‌رسد…", brokerSlow: "سرور جفت‌سازی پاسخ نمی‌دهد. اتصال اینترنت را بررسی کنید.", stepBroker: "در حال ورود به سرور جفت‌سازی…", stepFindBaby: "در حال یافتن دستگاه نوزاد…", stepHello: "در حال معرفی این دستگاه…", stepApproval: "در انتظار تأیید…", stepVideo: "در حال گرفتن تصویر و صدا…", scanHint1: "اسکن نمی‌شود؟ روشنایی صفحهٔ دستگاه نوزاد را بیشتر کنید و گوشی را ثابت و نزدیک‌تر بگیرید.", scanHint2: "هنوز چیزی نشد. کد اتاق را دستی وارد کنید.", scanTypeInstead: "وارد کردن کد",
       language: 'زبان', tagline: 'یک مانیتور کودک خصوصی که کاملاً در مرورگر شما اجرا می‌شود. در یک شبکه Wi‑Fi نیازی به سرور نیست. برای شروع یک نقش انتخاب کنید.',
       roleBabyTitle: 'واحد کودک', roleBabyDesc: 'کنار کودک قرار دهید. دوربین و صدای زنده می‌فرستد و برای اتصال کد QR نشان می‌دهد.',
       roleParentTitle: 'واحد والدین', roleParentDesc: 'مانیتور. برای دیدن و شنیدن، کد QR واحد کودک را اسکن کنید.',
@@ -667,6 +719,8 @@
     },
 
     pl: {
+      signalUnknown: "Ta przeglądarka nie podaje jakości połączenia", batteryUnknown: "Niedostępne na tym urządzeniu", permissionInApp: "Ta strona została otwarta we wbudowanej przeglądarce innej aplikacji, która często nie przekazuje kamery. Dotknij trzech kropek i wybierz „Otwórz w przeglądarce” (Chrome lub Safari).",
+      insecureTitle: "Kamera i mikrofon wymagają bezpiecznego adresu", insecureBody: "Twoja przeglądarka jest w porządku. Ta strona została otwarta przez zwykłe http://, a przeglądarki udostępniają kamerę i mikrofon tylko przez https:// albo na localhost. Otwórz tę samą stronę przez https:// i wszystko zadziała.", insecureCurrentLabel: "Otwarto pod adresem", insecureOpenHttps: "Otwórz przez https://", failBroker: "Nie możemy połączyć się z serwerem parowania. Sprawdź połączenie z internetem i spróbuj ponownie.", failNetwork: "W tej sieci połączenie nie dochodzi do skutku. Sieci gościnne i firmowe często to blokują; spróbuj danych mobilnych.", approvalTimeout: "Nikt nie dotknął Zezwól na jednostce dziecka. Zacznij od nowa, gdy ktoś będzie obok.", waitingApprovalTap: "Czekam na zgodę na jednostce dziecka — dotknij tam Zezwól", videoStalled: "Obraz przestał przychodzić…", brokerSlow: "Serwer parowania nie odpowiada. Sprawdź połączenie z internetem.", stepBroker: "Logowanie do serwera parowania…", stepFindBaby: "Szukanie jednostki dziecka…", stepHello: "Przedstawianie tego urządzenia…", stepApproval: "Czekam na zgodę…", stepVideo: "Pobieranie obrazu i dźwięku…", scanHint1: "Nie skanuje? Rozjaśnij ekran jednostki dziecka i trzymaj telefon nieruchomo i bliżej.", scanHint2: "Nadal nic. Wpisz kod pokoju ręcznie.", scanTypeInstead: "Wpisz kod",
       language: 'Język', tagline: 'Prywatna niania elektroniczna działająca w całości w przeglądarce. W tej samej sieci Wi‑Fi serwer nie jest potrzebny. Wybierz rolę, aby zacząć.',
       roleBabyTitle: 'Jednostka Dziecka', roleBabyDesc: 'Umieść przy dziecku. Wysyła obraz i dźwięk na żywo. Pokazuje kod QR do parowania.',
       roleParentTitle: 'Jednostka Rodzica', roleParentDesc: 'Monitor. Zeskanuj kod QR jednostki dziecka, aby oglądać i słuchać.',
@@ -687,6 +741,8 @@
     },
 
     uk: {
+      signalUnknown: "Цей браузер не повідомляє якість з’єднання", batteryUnknown: "Недоступно на цьому пристрої", permissionInApp: "Цю сторінку відкрито у вбудованому вікні іншого застосунку, яке часто не передає камеру. Натисніть три крапки й виберіть «Відкрити у браузері» (Chrome або Safari).",
+      insecureTitle: "Камері та мікрофону потрібна захищена адреса", insecureBody: "З вашим браузером усе гаразд. Цю сторінку відкрито через звичайний http://, а браузери дають доступ до камери й мікрофона лише через https:// або на localhost. Відкрийте ту саму сторінку через https:// — і все працюватиме.", insecureCurrentLabel: "Відкрито за адресою", insecureOpenHttps: "Відкрити через https://", failBroker: "Не вдається дістатися до сервера з’єднання. Перевірте інтернет і спробуйте ще раз.", failNetwork: "У цій мережі з’єднання не встановлюється. Гостьові та офісні мережі часто це блокують; спробуйте мобільний інтернет.", approvalTimeout: "Ніхто не натиснув «Дозволити» на дитячому блоці. Почніть знову, коли хтось буде поруч.", waitingApprovalTap: "Очікування дозволу на дитячому блоці — натисніть там «Дозволити»", videoStalled: "Зображення більше не надходить…", brokerSlow: "Сервер з’єднання не відповідає. Перевірте підключення до інтернету.", stepBroker: "Вхід на сервер з’єднання…", stepFindBaby: "Пошук дитячого блока…", stepHello: "Представлення цього пристрою…", stepApproval: "Очікування дозволу…", stepVideo: "Отримання зображення та звуку…", scanHint1: "Не сканується? Збільште яскравість екрана дитячого блока й тримайте телефон нерухомо та ближче.", scanHint2: "Досі нічого. Введіть код кімнати вручну.", scanTypeInstead: "Ввести код",
       language: 'Мова', tagline: 'Приватна радіоняня, що працює повністю у вашому браузері. У тій самій мережі Wi‑Fi сервер не потрібен. Оберіть роль, щоб почати.',
       roleBabyTitle: 'Дитячий блок', roleBabyDesc: 'Розмістіть біля дитини. Передає відео та звук наживо. Показує QR‑код для з’єднання.',
       roleParentTitle: 'Батьківський блок', roleParentDesc: 'Монітор. Відскануйте QR‑код дитячого блоку, щоб бачити й чути.',
@@ -707,6 +763,8 @@
     },
 
     nl: {
+      signalUnknown: "Deze browser meldt de verbindingskwaliteit niet", batteryUnknown: "Niet beschikbaar op dit toestel", permissionInApp: "Deze pagina is geopend in het ingebouwde venster van een andere app, en dat geeft de camera vaak niet door. Tik op de drie puntjes en kies \"Openen in browser\" (Chrome of Safari).",
+      insecureTitle: "Camera en microfoon werken alleen op een beveiligd adres", insecureBody: "Met je browser is niets mis. Deze pagina is geopend via gewoon http://, en browsers geven camera en microfoon alleen vrij op https:// of op localhost. Open dezelfde pagina via https:// en alles werkt.", insecureCurrentLabel: "Geopend op", insecureOpenHttps: "Openen via https://", failBroker: "We kunnen de koppelserver niet bereiken. Controleer je internetverbinding en probeer het opnieuw.", failNetwork: "De verbinding komt niet tot stand op dit netwerk. Een gastnetwerk of bedrijfsnetwerk blokkeert dit vaak; probeer mobiel internet.", approvalTimeout: "Niemand heeft op Toestaan getikt bij de babyunit. Probeer het opnieuw als er iemand bij staat.", waitingApprovalTap: "Wacht op toestemming bij de babyunit — tik daar op Toestaan", videoStalled: "Er komt geen beeld meer binnen…", brokerSlow: "De koppelserver reageert niet. Controleer je internetverbinding.", stepBroker: "Aanmelden bij de koppelserver…", stepFindBaby: "Babyunit zoeken…", stepHello: "Dit toestel voorstellen…", stepApproval: "Wachten op toestemming…", stepVideo: "Beeld en geluid ophalen…", scanHint1: "Lukt het scannen niet? Maak het scherm van de babyunit helderder en houd de telefoon stil en dichterbij.", scanHint2: "Nog steeds niets. Typ de kamercode dan met de hand in.", scanTypeInstead: "Code intypen",
       language: 'Taal', tagline: 'Een privé‑babyfoon die volledig in je browser draait. Op hetzelfde wifi‑netwerk is geen server nodig. Kies een rol om te beginnen.',
       roleBabyTitle: 'Babyunit', roleBabyDesc: 'Bij de baby. Verzendt live camera en geluid. Toont een QR‑code om te koppelen.',
       roleParentTitle: 'Ouderunit', roleParentDesc: 'De monitor. Scan de QR‑code van de babyunit om mee te kijken en te luisteren.',
@@ -716,7 +774,7 @@
       pairCodeTitle: '1 · Koppelcode van de babyunit', phPairCode: 'Plak hier de koppelcode…', yourAnswerCode: '2 · Jouw antwoordcode',
       copyCode: 'Kopieer code', scanQR: 'Scan QR', connect: 'Verbinden', genAnswer: 'Genereer antwoord', back: 'Terug',
       subtitleParent: 'Ouder‑paneel', subtitleBaby: 'Babyunit', connection: 'Verbinding', room: 'Kamer', signal: 'Signaal', latency: 'Vertraging',
-      nightmode: 'Nachtstand', switchCamera: 'Wissel camera', talkIdle: 'Praat tegen baby', talkActive: 'Aan het praten…',
+      nightmode: 'Nachtstand', switchCamera: 'Wissel camera', switchCameraSub: 'Voor- / achtercamera', talkIdle: 'Praat tegen baby', talkActive: 'Aan het praten…',
       volume: 'Volume', brightness: 'Helderheid', nightlight: 'Nachtlamp', sensitivity: 'Gevoeligheid', off: 'UIT',
       record: 'Opnemen', sound: 'Geluid', alarmOn: 'Alarm aan', alarmOff: 'Alarm uit', cryingDetected: '🔔 Huilen gedetecteerd', lullabies: 'Slaapmuziek',
       camera: 'Camera', microphone: 'Microfoon', stop: 'Stoppen', live: 'LIVE', nightModeBadge: 'NACHTSTAND',
@@ -760,7 +818,7 @@
       videoStreaming: 'Videostream', audioStreaming: 'Audiostream',
       audioOnly: 'Alleen geluid', audioOnlySub: 'Stream geluid zonder beeld',
       privacyShade: 'Privacyscherm', hideVideoKeepAudio: 'Verberg beeld, houd geluid',
-      babyTip: 'Tip: houd deze browser open en de telefoon aan de lader om verbonden te blijven.',
+      babyTip: 'Tip: houd deze browser open en de telefoon aan de lader om verbonden te blijven. Wissel niet naar een andere app — de camera kan op de achtergrond stoppen.',
       evBabyConnected: 'Babyunit verbonden', evTalk: 'Terugpraten gebruikt', evTalkSub: 'Je sprak tegen de baby',
       evLullaby: 'Slaapliedje gestart', evSound: 'Geluid gedetecteerd', evSoundSub: 'Boven je ingestelde niveau',
       howTitle: 'Hoe werkt het?',
@@ -779,20 +837,7 @@
       parentUnit: 'Ouderunit', monitoring: 'Meekijken', babyUnit: 'Babyunit',
       footPrivacy: 'Beeld en geluid gaan rechtstreeks tussen je eigen apparaten. Er worden geen beelden opgeslagen.',
       footDisclaimer: 'Een hulpmiddel, geen vervanging voor fysiek toezicht op je baby.',
-      plusTitle: 'BabyPhone Plus',
-      plusSub: 'Voor nachten waarin het écht moet werken.',
-      plusFeat1: 'Eigen relay — gegarandeerde verbinding op elk netwerk',
-      plusFeat2: 'Samen meekijken: meerdere ouder-apparaten tegelijk',
-      plusFeat3: 'Slaap- en geluidsgeschiedenis',
-      plusFeat4: 'Premium slaapliedjes-bibliotheek',
-      plusUpgrade: 'Upgrade naar Plus',
-      plusManage: 'Abonnement beheren',
-      plusRestore: 'Aankoop herstellen',
-      plusSoon: 'Binnenkort beschikbaar',
-      plusActive: 'Plus actief',
-      plusEmailQ: 'Je e-mailadres (van je abonnement):',
-      plusError: 'Er ging iets mis. Probeer het opnieuw.',
-      plusNotFound: 'Geen actief abonnement gevonden voor dat e-mailadres.',
+      or: 'of',
       tapToTalk: 'Tik om te praten',
       talkViewSub: 'Je stem klinkt op de babyunit zolang dit aanstaat.',
       soundscapes: 'Rustige geluiden, afgespeeld op de babyunit.',
@@ -806,7 +851,7 @@
       footTerms: 'Voorwaarden',
       footRefunds: 'Terugbetaling',
       footAccessibility: 'Toegankelijkheid',
-      footContact: 'Contact',
+      footGuide: 'Gids', footContact: 'Contact',
       pairBabySub: 'Toon deze code (of QR) aan je eigen telefoon om te koppelen.',
       pairParentSub: 'Vul de code van de babyunit in, of scan de QR.',
       waitingConnection: 'Wachten op de ouderunit…',
@@ -816,6 +861,8 @@
     },
 
     pa: {
+      signalUnknown: "ਇਹ ਬ੍ਰਾਊਜ਼ਰ ਕਨੈਕਸ਼ਨ ਦੀ ਗੁਣਵੱਤਾ ਨਹੀਂ ਦੱਸਦਾ", batteryUnknown: "ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਉਪਲਬਧ ਨਹੀਂ", permissionInApp: "ਇਹ ਪੰਨਾ ਕਿਸੇ ਹੋਰ ਐਪ ਦੇ ਅੰਦਰਲੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੁੱਲ੍ਹਿਆ ਹੈ, ਜੋ ਅਕਸਰ ਕੈਮਰਾ ਅੱਗੇ ਨਹੀਂ ਦਿੰਦਾ। ਤਿੰਨ ਬਿੰਦੂਆਂ ਉੱਤੇ ਟੈਪ ਕਰੋ ਅਤੇ \"ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ\" (Chrome ਜਾਂ Safari) ਚੁਣੋ।",
+      insecureTitle: "ਕੈਮਰੇ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਲਈ ਸੁਰੱਖਿਅਤ ਪਤਾ ਚਾਹੀਦਾ ਹੈ", insecureBody: "ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਕੋਈ ਖ਼ਰਾਬੀ ਨਹੀਂ। ਇਹ ਪੰਨਾ ਸਧਾਰਨ http:// ਨਾਲ ਖੁੱਲ੍ਹਿਆ ਹੈ, ਅਤੇ ਬ੍ਰਾਊਜ਼ਰ ਕੈਮਰਾ ਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਸਿਰਫ਼ https:// ਜਾਂ localhost ਉੱਤੇ ਹੀ ਦਿੰਦੇ ਹਨ। ਉਹੀ ਪੰਨਾ https:// ਨਾਲ ਖੋਲ੍ਹੋ, ਸਭ ਚੱਲੇਗਾ।", insecureCurrentLabel: "ਖੁੱਲ੍ਹਿਆ ਪਤਾ", insecureOpenHttps: "https:// ਨਾਲ ਖੋਲ੍ਹੋ", failBroker: "ਅਸੀਂ ਜੋੜਨ ਵਾਲੇ ਸਰਵਰ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚ ਸਕਦੇ। ਆਪਣਾ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਵੇਖੋ ਅਤੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", failNetwork: "ਇਸ ਨੈੱਟਵਰਕ ਉੱਤੇ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਬਣਦਾ। ਮਹਿਮਾਨ ਤੇ ਦਫ਼ਤਰੀ ਨੈੱਟਵਰਕ ਅਕਸਰ ਇਹ ਰੋਕਦੇ ਹਨ; ਮੋਬਾਈਲ ਡਾਟਾ ਅਜ਼ਮਾਓ।", approvalTimeout: "ਬੇਬੀ ਯੂਨਿਟ ਉੱਤੇ ਕਿਸੇ ਨੇ ਇਜਾਜ਼ਤ ਦਿਓ ਨਹੀਂ ਦਬਾਇਆ। ਜਦੋਂ ਕੋਈ ਕੋਲ ਹੋਵੇ ਤਾਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰੋ।", waitingApprovalTap: "ਬੇਬੀ ਯੂਨਿਟ ਉੱਤੇ ਇਜਾਜ਼ਤ ਦੀ ਉਡੀਕ — ਉੱਥੇ ਇਜਾਜ਼ਤ ਦਿਓ ਦਬਾਓ", videoStalled: "ਤਸਵੀਰ ਆਉਣੀ ਬੰਦ ਹੋ ਗਈ…", brokerSlow: "ਜੋੜਨ ਵਾਲਾ ਸਰਵਰ ਜਵਾਬ ਨਹੀਂ ਦੇ ਰਿਹਾ। ਆਪਣਾ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਵੇਖੋ।", stepBroker: "ਜੋੜਨ ਵਾਲੇ ਸਰਵਰ ਵਿੱਚ ਦਾਖ਼ਲ ਹੋ ਰਹੇ ਹਾਂ…", stepFindBaby: "ਬੇਬੀ ਯੂਨਿਟ ਲੱਭਿਆ ਜਾ ਰਿਹਾ ਹੈ…", stepHello: "ਇਹ ਡਿਵਾਈਸ ਜਾਣੂ ਕਰਵਾਈ ਜਾ ਰਹੀ ਹੈ…", stepApproval: "ਇਜਾਜ਼ਤ ਦੀ ਉਡੀਕ…", stepVideo: "ਤਸਵੀਰ ਅਤੇ ਆਵਾਜ਼ ਲਈ ਜਾ ਰਹੀ ਹੈ…", scanHint1: "ਸਕੈਨ ਨਹੀਂ ਹੁੰਦਾ? ਬੇਬੀ ਯੂਨਿਟ ਦੀ ਸਕਰੀਨ ਹੋਰ ਚਮਕਦਾਰ ਕਰੋ ਅਤੇ ਫ਼ੋਨ ਸਥਿਰ ਰੱਖ ਕੇ ਨੇੜੇ ਲਿਆਓ।", scanHint2: "ਹਾਲੇ ਵੀ ਕੁਝ ਨਹੀਂ। ਕਮਰੇ ਦਾ ਕੋਡ ਹੱਥ ਨਾਲ ਲਿਖੋ।", scanTypeInstead: "ਕੋਡ ਲਿਖੋ",
       language: 'ਭਾਸ਼ਾ', tagline: 'ਪੂਰੀ ਤਰ੍ਹਾਂ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਚੱਲਣ ਵਾਲਾ ਨਿੱਜੀ ਬੇਬੀ ਮਾਨੀਟਰ। ਇੱਕੋ Wi‑Fi ਉੱਤੇ ਸਰਵਰ ਦੀ ਲੋੜ ਨਹੀਂ। ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਭੂਮਿਕਾ ਚੁਣੋ।',
       roleBabyTitle: 'ਬੇਬੀ ਯੂਨਿਟ', roleBabyDesc: 'ਬੱਚੇ ਕੋਲ ਰੱਖੋ। ਲਾਈਵ ਕੈਮਰਾ ਤੇ ਆਵਾਜ਼ ਭੇਜਦਾ ਹੈ। ਜੋੜਨ ਲਈ QR ਕੋਡ ਦਿਖਾਉਂਦਾ ਹੈ।',
       roleParentTitle: 'ਪੇਰੈਂਟ ਯੂਨਿਟ', roleParentDesc: 'ਮਾਨੀਟਰ। ਵੇਖਣ ਤੇ ਸੁਣਨ ਲਈ ਬੇਬੀ ਯੂਨਿਟ ਦਾ QR ਕੋਡ ਸਕੈਨ ਕਰੋ।',
@@ -836,6 +883,8 @@
     },
 
     sw: {
+      signalUnknown: "Kivinjari hiki hakiripoti ubora wa muunganisho", batteryUnknown: "Haipatikani kwenye kifaa hiki", permissionInApp: "Ukurasa huu ulifunguliwa ndani ya kivinjari cha ndani cha programu nyingine, ambacho mara nyingi hakipitishi kamera. Gusa nukta tatu kisha chagua \"Fungua kwenye kivinjari\" (Chrome au Safari).",
+      insecureTitle: "Kamera na maikrofoni zinahitaji anwani salama", insecureBody: "Kivinjari chako kiko sawa. Ukurasa huu ulifunguliwa kwa http:// ya kawaida, na vivinjari hutoa kamera na maikrofoni kwenye https:// au kwenye localhost pekee. Fungua ukurasa huohuo kwa https:// na kila kitu kitafanya kazi.", insecureCurrentLabel: "Umefunguliwa kwenye", insecureOpenHttps: "Fungua kwa https://", failBroker: "Hatuwezi kufikia seva ya kuunganisha. Angalia muunganisho wako wa intaneti kisha ujaribu tena.", failNetwork: "Muunganisho hauwezi kuanzishwa kwenye mtandao huu. Mitandao ya wageni na ya ofisi mara nyingi huuzuia; jaribu data ya simu.", approvalTimeout: "Hakuna aliyegusa Ruhusu kwenye kifaa cha mtoto. Anza upya wakati mtu yupo kando yake.", waitingApprovalTap: "Inasubiri idhini kwenye kifaa cha mtoto — gusa Ruhusu hapo", videoStalled: "Picha imeacha kuingia…", brokerSlow: "Seva ya kuunganisha haijibu. Angalia muunganisho wako wa intaneti.", stepBroker: "Inaingia kwenye seva ya kuunganisha…", stepFindBaby: "Inatafuta kifaa cha mtoto…", stepHello: "Inatambulisha kifaa hiki…", stepApproval: "Inasubiri idhini…", stepVideo: "Inachukua picha na sauti…", scanHint1: "Haichanganui? Ongeza mwangaza wa skrini ya kifaa cha mtoto na ushike simu tuli na karibu zaidi.", scanHint2: "Bado hakuna kitu. Andika msimbo wa chumba kwa mkono.", scanTypeInstead: "Andika msimbo",
       language: 'Lugha', tagline: 'Kifuatiliaji cha mtoto cha faragha kinachoendeshwa kabisa kwenye kivinjari chako. Kwenye Wi‑Fi ile ile hakuna seva inayohitajika. Chagua jukumu kuanza.',
       roleBabyTitle: 'Kitengo cha Mtoto', roleBabyDesc: 'Weka karibu na mtoto. Hutuma kamera na sauti moja kwa moja. Huonyesha msimbo wa QR kuunganisha.',
       roleParentTitle: 'Kitengo cha Mzazi', roleParentDesc: 'Kifuatiliaji. Changanua msimbo wa QR wa kitengo cha mtoto ili kutazama na kusikiliza.',
@@ -856,6 +905,8 @@
     },
 
     ha: {
+      signalUnknown: "Wannan burauza ba ta bayar da rahoton ingancin haɗin", batteryUnknown: "Babu shi a wannan na’urar", permissionInApp: "An buɗe wannan shafi a cikin burauzar da ke ciki na wata manhaja, wadda sau da yawa ba ta mika kyamara. Danna ɗigo uku sannan ka zaɓi \"Buɗe a burauza\" (Chrome ko Safari).",
+      insecureTitle: "Kyamara da makirufo suna bukatar adireshi mai tsaro", insecureBody: "Burauzarka ba ta da matsala. An buɗe wannan shafi ta hanyar http:// na talakawa, kuma burauza suna ba da kyamara da makirufo ne kawai a kan https:// ko a kan localhost. Buɗe shafi ɗaya ta https:// sai komai ya yi aiki.", insecureCurrentLabel: "An buɗe a", insecureOpenHttps: "Buɗe ta https://", failBroker: "Ba mu iya kaiwa ga uwar garken haɗawa ba. Duba haɗin intanet ɗinka sannan ka sake gwadawa.", failNetwork: "Haɗin ba ya samuwa a kan wannan hanyar sadarwa. Hanyoyin baƙi da na ofis sukan toshe shi; gwada bayanan waya.", approvalTimeout: "Babu wanda ya danna Bada izini a kan na’urar jariri. Fara sake lokacin da wani yake kusa da ita.", waitingApprovalTap: "Ana jiran izini a kan na’urar jariri — danna Bada izini a can", videoStalled: "Hoto ya daina shigowa…", brokerSlow: "Uwar garken haɗawa ba ta amsawa. Duba haɗin intanet ɗinka.", stepBroker: "Ana shiga uwar garken haɗawa…", stepFindBaby: "Ana neman na’urar jariri…", stepHello: "Ana gabatar da wannan na’ura…", stepApproval: "Ana jiran izini…", stepVideo: "Ana ɗaukar hoto da sauti…", scanHint1: "Ba ya karantawa? Ƙara haske allon na’urar jariri sannan ka riƙe wayar sosai kuma kusa.", scanHint2: "Har yanzu babu kome. Rubuta lambar ɗakin da hannu.", scanTypeInstead: "Rubuta lambar",
       language: 'Harshe', tagline: 'Na’urar sa ido kan jariri mai zaman kansa da ke aiki gaba ɗaya cikin burauzarka. A kan Wi‑Fi iri ɗaya babu buƙatar sabar. Zaɓi matsayi don farawa.',
       roleBabyTitle: 'Na’urar Jariri', roleBabyDesc: 'Sanya kusa da jariri. Tana aika kyamara da sauti kai tsaye. Tana nuna lambar QR don haɗawa.',
       roleParentTitle: 'Na’urar Iyaye', roleParentDesc: 'Na’urar sa ido. Duba lambar QR ta na’urar jariri don kallo da saurare.',
@@ -876,6 +927,8 @@
     },
 
     ro: {
+      signalUnknown: "Acest browser nu raportează calitatea conexiunii", batteryUnknown: "Nu este disponibil pe acest dispozitiv", permissionInApp: "Pagina a fost deschisă în browserul integrat al altei aplicații, care de multe ori nu transmite camera. Apasă pe cele trei puncte și alege „Deschide în browser” (Chrome sau Safari).",
+      insecureTitle: "Camera și microfonul au nevoie de o adresă securizată", insecureBody: "Browserul tău e în regulă. Pagina a fost deschisă pe http:// simplu, iar browserele eliberează camera și microfonul doar pe https:// sau pe localhost. Deschide aceeași pagină pe https:// și totul funcționează.", insecureCurrentLabel: "Deschisă la", insecureOpenHttps: "Deschide pe https://", failBroker: "Nu putem ajunge la serverul de asociere. Verifică conexiunea la internet și încearcă din nou.", failNetwork: "Conexiunea nu se stabilește în această rețea. Rețelele de oaspeți și cele de birou o blochează adesea; încearcă date mobile.", approvalTimeout: "Nimeni nu a apăsat Permite pe unitatea bebelușului. Reia când este cineva lângă ea.", waitingApprovalTap: "Se așteaptă aprobarea pe unitatea bebelușului — apasă Permite acolo", videoStalled: "Nu mai vine imagine…", brokerSlow: "Serverul de asociere nu răspunde. Verifică conexiunea la internet.", stepBroker: "Conectare la serverul de asociere…", stepFindBaby: "Se caută unitatea bebelușului…", stepHello: "Se prezintă acest dispozitiv…", stepApproval: "Se așteaptă aprobarea…", stepVideo: "Se preiau imaginea și sunetul…", scanHint1: "Nu scanează? Mărește luminozitatea ecranului unității bebelușului și ține telefonul stabil și mai aproape.", scanHint2: "Tot nimic. Scrie codul camerei de mână.", scanTypeInstead: "Scrie codul",
       language: 'Limbă', tagline: 'Un monitor pentru bebeluși privat care rulează complet în browser. În aceeași rețea Wi‑Fi nu este nevoie de server. Alege un rol pentru a începe.',
       roleBabyTitle: 'Unitate Bebeluș', roleBabyDesc: 'Așază lângă bebeluș. Trimite camera și sunetul live. Afișează un cod QR pentru asociere.',
       roleParentTitle: 'Unitate Părinte', roleParentDesc: 'Monitorul. Scanează codul QR al unității bebeluș pentru a vedea și asculta.',
@@ -903,6 +956,15 @@
   // deze Object.assign-lagen vullen alleen ontbrekende sleutels aan.
   // ------------------------------------------------------------------
   Object.assign(S.zh, {
+    qualityLabel: '画质',
+    qualityAuto: '自动',
+    qualityHigh: '画面 + 声音（清晰）',
+    qualitySaver: '画面 + 声音（省流量）',
+    qualityAudio: '仅声音',
+    qualityNow: '使用中',
+    onlyOneCamera: '此设备只有一个摄像头', cameraSwitchFailed: '切换失败——仍是同一个摄像头',
+    waitingApproval: '正在等待宝宝端授权…',
+    metaTitle: '免费婴儿监护器 — 浏览器里的 BabyPhone.online', metaDesc: '用两台手机组成免费的婴儿监护器，实时视频和声音。无需安装应用、无需注册账号，任何内容都不会被保存，打开浏览器即可使用。',
     qrTapZoom: "👆 点按二维码可放大扫描", qrZoomHint: "用另一部手机的相机对准此码", roomCodeShare: "房间码（分享给父母端）", roomCodeOfBaby: "宝宝端的房间码",
     qrScanHint: "让父母扫描此二维码，或输入上方代码", phCode: "代码", newCode: "新代码", heroTitle: "宝宝，始终在身边。",
     heroSub: "BabyPhone 把两台设备变成安全的婴儿监护器。简单、私密，直接在浏览器中使用。", ctaStartBaby: "启动宝宝端", ctaConnectParent: "以父母身份连接", navPrivacy: "隐私",
@@ -920,7 +982,7 @@
     off2: "关", autoNoise: "自动降噪", excellentConn: "连接极佳", localOnly: "仅限本地网络",
     pairingCode: "配对与房间码", shareToConnect: "分享以连接", scanToConnect: "扫码连接", useParentScan: "用父母端扫描",
     videoStreaming: "视频传输", audioStreaming: "音频传输", audioOnly: "仅音频", audioOnlySub: "只传声音，不传画面",
-    privacyShade: "隐私遮罩", hideVideoKeepAudio: "隐藏画面，保留声音", babyTip: "提示：保持浏览器打开、手机连着充电器，以维持连接。", evBabyConnected: "宝宝端已连接",
+    privacyShade: "隐私遮罩", hideVideoKeepAudio: "隐藏画面，保留声音", babyTip: "提示：保持浏览器打开、手机连着充电器，以维持连接。 不要切换到其他应用 — 摄像头在后台可能会停止。", evBabyConnected: "宝宝端已连接",
     evTalk: "使用了对讲", evTalkSub: "您对宝宝说话了", evLullaby: "摇篮曲已开始", evSound: "检测到声音",
     evSoundSub: "高于您设定的级别", howTitle: "如何使用？", step1t: "放在宝宝旁", step1: "在留在宝宝身边的手机上打开 BabyPhone.online。",
     step2t: "配对", step2: "启动宝宝端，用自己的手机扫描二维码。", step3t: "实时观看", step3: "在父母端实时看到、听到宝宝。",
@@ -929,10 +991,7 @@
     featTitle: "应有尽有", featVideo: "实时视频", featSound: "声音", featTalk: "对讲",
     featNight: "小夜灯", featAlarm: "声音警报", featLullaby: "摇篮曲", featDevices: "支持手机、平板和电脑。",
     parentUnit: "父母端", monitoring: "监护中", babyUnit: "宝宝端", footPrivacy: "画面和声音直接在您自己的设备之间传输，不保存任何录像。",
-    footDisclaimer: "辅助工具，不能代替亲自照看宝宝。", plusTitle: "BabyPhone Plus", plusSub: "为那些绝不能掉线的夜晚。", plusFeat1: "专用中继 — 任何网络下都能连接",
-    plusFeat2: "一起看护：多台父母设备同时在线", plusFeat3: "睡眠与声音记录", plusFeat4: "高级摇篮曲曲库", plusUpgrade: "升级到 Plus",
-    plusManage: "管理订阅", plusRestore: "恢复购买", plusSoon: "即将推出", plusActive: "Plus 已激活",
-    plusEmailQ: "您的邮箱（订阅所用）：", plusError: "出错了，请重试。", plusNotFound: "未找到该邮箱的有效订阅。", tapToTalk: "点按说话",
+    footDisclaimer: "辅助工具，不能代替亲自照看宝宝。", tapToTalk: "点按说话",
     talkViewSub: "开启期间，您的声音会在宝宝端播放。", soundscapes: "在宝宝端播放的舒缓声音。", nightViewSub: "宝宝端屏幕上柔和温暖的光。", alertsViewSub: "检测到哭声时本设备发出提示音。",
     zoom: "缩放", evSleepDone: "睡眠定时结束", reconnecting: "正在重新连接…", connectFailed: "无法连接。请检查代码后重试。",
     retry: "重试", footTerms: "条款", footRefunds: "退款", footAccessibility: "无障碍",
@@ -940,12 +999,21 @@
     cameraActive: "摄像头开", micActive: "麦克风开", micOff: "麦克风关", permissionNeeded: "请允许使用摄像头和麦克风以继续",
     permissionDenied: "摄像头/麦克风被阻止。请在浏览器中允许后重试。", copied: "📋 已复制", copyFail: "复制失败 — 请手动选择", scanFail: "无法打开相机扫描 — 请粘贴代码",
     invalidAnswer: "应答码无效", invalidPair: "配对码无效", pasteAnswerFirst: "请先粘贴或扫描应答码", pastePairFirst: "请先粘贴或扫描配对码",
-    noImage: "暂无画面", recStarted: "⏺️ 已开始录制", saved: "💾 已保存", recNotSupported: "不支持录制",
+    noImage: "暂无画面", unsupportedTitle: "此浏览器无法运行 BabyPhone.online", unsupportedBody: "此页面需要该浏览器不具备的摄像头、麦克风和视频通话支持。请在最新版本的 Chrome、Safari、Firefox 或 Edge 中打开 babyphone.online。", recordVideo: "录制", recStarted: "⏺️ 已开始录制", saved: "💾 已保存", recNotSupported: "不支持录制",
     noStream: "暂无可录制的画面", cameraSwitched: "已切换摄像头", cannotSwitch: "无法切换摄像头", soundMuted: "已静音",
     soundOn: "声音开", stopParentQ: "停止父母端？", stopBabyQ: "停止宝宝端？", noMic: "无法访问麦克风",
     mediaError: "摄像头/麦克风不可用。请使用 https，或在 Chrome/Firefox 中打开。",
   });
   Object.assign(S.hi, {
+    qualityLabel: 'गुणवत्ता',
+    qualityAuto: 'स्वचालित',
+    qualityHigh: 'वीडियो + ध्वनि (स्पष्ट)',
+    qualitySaver: 'वीडियो + ध्वनि (डेटा बचत)',
+    qualityAudio: 'केवल ध्वनि',
+    qualityNow: 'उपयोग में',
+    onlyOneCamera: 'इस डिवाइस में केवल एक ही कैमरा है', cameraSwitchFailed: 'बदलना विफल — वही कैमरा चालू रहा',
+    waitingApproval: 'बेबी यूनिट पर स्वीकृति की प्रतीक्षा…',
+    metaTitle: 'मुफ़्त बेबी मॉनिटर ऐप — BabyPhone.online', metaDesc: 'दो फ़ोन को मुफ़्त बेबी मॉनिटर बनाएँ — लाइव वीडियो और आवाज़ के साथ। कोई ऐप नहीं, कोई अकाउंट नहीं, कुछ भी सहेजा नहीं जाता। सीधे ब्राउज़र में।',
     qrTapZoom: "👆 स्कैन के लिए QR को छूकर बड़ा करें", qrZoomHint: "दूसरे फ़ोन का कैमरा इस कोड की ओर करें", roomCodeShare: "कमरे का कोड (पैरेंट यूनिट से साझा करें)", roomCodeOfBaby: "बेबी यूनिट के कमरे का कोड",
     qrScanHint: "पैरेंट से यह QR स्कैन कराएँ — या ऊपर का कोड लिखें", phCode: "कोड", newCode: "नया कोड", heroTitle: "आपका शिशु, हमेशा पास।",
     heroSub: "BabyPhone दो डिवाइस को सुरक्षित बेबी मॉनिटर बना देता है। सरल, निजी और सीधे ब्राउज़र में।", ctaStartBaby: "बेबी यूनिट शुरू करें", ctaConnectParent: "पैरेंट के रूप में जुड़ें", navPrivacy: "गोपनीयता",
@@ -963,7 +1031,7 @@
     off2: "बंद", autoNoise: "स्वचालित शोर कमी", excellentConn: "बेहतरीन कनेक्शन", localOnly: "केवल लोकल नेटवर्क",
     pairingCode: "पेयरिंग और कमरे का कोड", shareToConnect: "जोड़ने के लिए साझा करें", scanToConnect: "जोड़ने के लिए स्कैन करें", useParentScan: "पैरेंट यूनिट से स्कैन करें",
     videoStreaming: "वीडियो स्ट्रीमिंग", audioStreaming: "ऑडियो स्ट्रीमिंग", audioOnly: "सिर्फ़ आवाज़", audioOnlySub: "बिना वीडियो के आवाज़ भेजें",
-    privacyShade: "गोपनीयता पर्दा", hideVideoKeepAudio: "वीडियो छिपाएँ, आवाज़ रखें", babyTip: "सुझाव: जुड़े रहने के लिए यह ब्राउज़र खुला रखें और फ़ोन चार्जर पर लगा रहने दें।", evBabyConnected: "बेबी यूनिट जुड़ गई",
+    privacyShade: "गोपनीयता पर्दा", hideVideoKeepAudio: "वीडियो छिपाएँ, आवाज़ रखें", babyTip: "सुझाव: जुड़े रहने के लिए यह ब्राउज़र खुला रखें और फ़ोन चार्जर पर लगा रहने दें। किसी दूसरे ऐप पर न जाएं — बैकग्राउंड में कैमरा बंद हो सकता है।", evBabyConnected: "बेबी यूनिट जुड़ गई",
     evTalk: "बातचीत इस्तेमाल हुई", evTalkSub: "आपने शिशु से बात की", evLullaby: "लोरी शुरू हुई", evSound: "आवाज़ का पता चला",
     evSoundSub: "आपके तय स्तर से ऊपर", howTitle: "यह कैसे काम करता है?", step1t: "शिशु के पास", step1: "जो फ़ोन शिशु के पास रहेगा उस पर BabyPhone.online खोलें।",
     step2t: "पेयर करें", step2: "बेबी यूनिट शुरू करें और अपने फ़ोन से QR स्कैन करें।", step3t: "लाइव देखें", step3: "अपनी पैरेंट यूनिट से शिशु को लाइव देखें-सुनें।",
@@ -972,10 +1040,7 @@
     featTitle: "जो चाहिए, सब कुछ", featVideo: "लाइव वीडियो", featSound: "आवाज़", featTalk: "शिशु से बात करें",
     featNight: "नाइट लाइट", featAlarm: "ध्वनि अलार्म", featLullaby: "लोरियाँ", featDevices: "फ़ोन, टैबलेट और कंप्यूटर पर चलता है।",
     parentUnit: "पैरेंट यूनिट", monitoring: "निगरानी", babyUnit: "बेबी यूनिट", footPrivacy: "तस्वीर और आवाज़ सीधे आपके अपने डिवाइसों के बीच जाती है। कोई रिकॉर्डिंग नहीं सहेजी जाती।",
-    footDisclaimer: "एक सहायक साधन, शिशु की व्यक्तिगत देखभाल का विकल्प नहीं।", plusTitle: "BabyPhone Plus", plusSub: "उन रातों के लिए जब यह सचमुच काम आना चाहिए।", plusFeat1: "समर्पित रिले — हर नेटवर्क पर पक्का कनेक्शन",
-    plusFeat2: "साथ देखें: एक साथ कई पैरेंट डिवाइस", plusFeat3: "नींद और आवाज़ का इतिहास", plusFeat4: "प्रीमियम लोरी लाइब्रेरी", plusUpgrade: "Plus में अपग्रेड करें",
-    plusManage: "सदस्यता प्रबंधित करें", plusRestore: "खरीद बहाल करें", plusSoon: "जल्द आ रहा है", plusActive: "Plus सक्रिय",
-    plusEmailQ: "आपका ईमेल (सदस्यता वाला):", plusError: "कुछ गड़बड़ हो गई। फिर कोशिश करें।", plusNotFound: "उस ईमेल के लिए कोई सक्रिय सदस्यता नहीं मिली।", tapToTalk: "बोलने के लिए छुएँ",
+    footDisclaimer: "एक सहायक साधन, शिशु की व्यक्तिगत देखभाल का विकल्प नहीं।", tapToTalk: "बोलने के लिए छुएँ",
     talkViewSub: "जब तक यह चालू है, आपकी आवाज़ बेबी यूनिट पर सुनाई देती है।", soundscapes: "शांत ध्वनियाँ, बेबी यूनिट पर बजती हैं।", nightViewSub: "बेबी यूनिट की स्क्रीन पर नरम, गर्म रोशनी।", alertsViewSub: "रोना पता चलते ही इस डिवाइस पर आवाज़।",
     zoom: "ज़ूम", evSleepDone: "स्लीप टाइमर पूरा हुआ", reconnecting: "फिर से जुड़ रहा है…", connectFailed: "जुड़ नहीं सका। कोड जाँचें और फिर कोशिश करें।",
     retry: "फिर कोशिश करें", footTerms: "शर्तें", footRefunds: "रिफ़ंड", footAccessibility: "सुगम्यता",
@@ -983,12 +1048,23 @@
     cameraActive: "कैमरा चालू", micActive: "माइक चालू", micOff: "माइक बंद", permissionNeeded: "जारी रखने के लिए कैमरा और माइक की अनुमति दें",
     permissionDenied: "कैमरा/माइक अवरुद्ध है। ब्राउज़र में अनुमति देकर फिर कोशिश करें।", copied: "📋 कॉपी हो गया", copyFail: "कॉपी विफल — स्वयं चुनें", scanFail: "स्कैन के लिए कैमरा नहीं खुल रहा — कोड चिपकाएँ",
     invalidAnswer: "अमान्य उत्तर कोड", invalidPair: "अमान्य पेयरिंग कोड", pasteAnswerFirst: "पहले उत्तर कोड चिपकाएँ या स्कैन करें", pastePairFirst: "पहले पेयरिंग कोड चिपकाएँ या स्कैन करें",
-    noImage: "अभी कोई तस्वीर नहीं", recStarted: "⏺️ रिकॉर्डिंग शुरू", saved: "💾 सहेजा गया", recNotSupported: "रिकॉर्डिंग समर्थित नहीं",
+    noImage: "अभी कोई तस्वीर नहीं", unsupportedTitle: "यह ब्राउज़र BabyPhone.online नहीं चला सकता", unsupportedBody: "इस पेज को कैमरा, माइक्रोफ़ोन और वीडियो-कॉल समर्थन चाहिए जो इस ब्राउज़र में नहीं है। कृपया babyphone.online को Chrome, Safari, Firefox या Edge के नए वर्शन में खोलें।", recordVideo: "रिकॉर्ड करें", recStarted: "⏺️ रिकॉर्डिंग शुरू", saved: "💾 सहेजा गया", recNotSupported: "रिकॉर्डिंग समर्थित नहीं",
     noStream: "रिकॉर्ड करने के लिए अभी कोई तस्वीर नहीं", cameraSwitched: "कैमरा बदला गया", cannotSwitch: "कैमरा नहीं बदल सकते", soundMuted: "आवाज़ बंद",
     soundOn: "आवाज़ चालू", stopParentQ: "पैरेंट यूनिट रोकें?", stopBabyQ: "बेबी यूनिट रोकें?", noMic: "माइक तक पहुँच नहीं",
     mediaError: "कैमरा/माइक उपलब्ध नहीं। https इस्तेमाल करें या Chrome/Firefox में खोलें।",
   });
   Object.assign(S.es, {
+    qualityLabel: 'Calidad',
+    qualityAuto: 'Automática',
+    qualityHigh: 'Vídeo + sonido (nítido)',
+    qualitySaver: 'Vídeo + sonido (ahorro)',
+    qualityAudio: 'Solo sonido',
+    qualityNow: 'En uso',
+    onlyOneCamera: 'Este dispositivo solo tiene una cámara', cameraSwitchFailed: 'No se pudo cambiar: siguió la misma cámara',
+    waitingApproval: 'Esperando la autorización en la unidad del bebé…',
+    metaTitle: 'Vigilabebés gratis en el navegador — BabyPhone.online', metaDesc: 'Convierte dos móviles en un vigilabebés gratis con vídeo y sonido en directo. Sin app, sin cuenta y sin guardar nada. En cualquier navegador.',
+    repeatList: 'Repetir',
+    approveTitle: '¿Permitir este dispositivo?', approveAsk: 'Un dispositivo ha introducido tu código de sala y quiere ver y escuchar. Permítelo solo si es tu propio dispositivo.', approveExtra: 'Un segundo dispositivo quiere mirar. Ya hay alguien conectado. Permítelo solo si es tu propio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Rechazar', authRefused: 'La unidad del bebé ha rechazado este dispositivo.', switchCameraSub: 'Cámara frontal / trasera',
     qrTapZoom: "👆 Toca el QR para ampliarlo y escanearlo", qrZoomHint: "Apunta la cámara del otro teléfono a este código", roomCodeShare: "Código de sala (compártelo con la unidad de padres)", roomCodeOfBaby: "Código de sala de la unidad del bebé",
     qrScanHint: "Deja que el padre escanee este QR — o escribe el código de arriba", phCode: "CÓDIGO", newCode: "Nuevo código", heroTitle: "Tu bebé, siempre cerca.",
     heroSub: "BabyPhone convierte dos dispositivos en un vigilabebés seguro. Sencillo, privado y directo en tu navegador.", ctaStartBaby: "Iniciar unidad del bebé", ctaConnectParent: "Conectar como padre/madre", navPrivacy: "Privacidad",
@@ -1006,7 +1082,7 @@
     off2: "No", autoNoise: "Reducción de ruido automática", excellentConn: "Conexión excelente", localOnly: "Solo red local",
     pairingCode: "Emparejamiento y código", shareToConnect: "Comparte para conectar", scanToConnect: "Escanea para conectar", useParentScan: "Escanea con la unidad de padres",
     videoStreaming: "Transmisión de vídeo", audioStreaming: "Transmisión de audio", audioOnly: "Solo audio", audioOnlySub: "Transmitir sonido sin vídeo",
-    privacyShade: "Cortina de privacidad", hideVideoKeepAudio: "Ocultar vídeo, mantener sonido", babyTip: "Consejo: deja este navegador abierto y el teléfono cargando para seguir conectado.", evBabyConnected: "Unidad del bebé conectada",
+    privacyShade: "Cortina de privacidad", hideVideoKeepAudio: "Ocultar vídeo, mantener sonido", babyTip: "Consejo: deja este navegador abierto y el teléfono cargando para seguir conectado. No cambies a otra app — la cámara puede detenerse en segundo plano.", evBabyConnected: "Unidad del bebé conectada",
     evTalk: "Respuesta usada", evTalkSub: "Hablaste con el bebé", evLullaby: "Nana iniciada", evSound: "Sonido detectado",
     evSoundSub: "Por encima de tu nivel", howTitle: "¿Cómo funciona?", step1t: "Junto al bebé", step1: "Abre BabyPhone.online en el teléfono que dejas junto a tu bebé.",
     step2t: "Emparejar", step2: "Inicia la unidad del bebé y escanea el QR con tu propio teléfono.", step3t: "Ver en vivo", step3: "Ve y escucha a tu bebé en vivo desde tu unidad de padres.",
@@ -1015,23 +1091,31 @@
     featTitle: "Todo lo que necesitas", featVideo: "Vídeo en vivo", featSound: "Sonido", featTalk: "Responder",
     featNight: "Luz nocturna", featAlarm: "Alarma de sonido", featLullaby: "Nanas", featDevices: "Funciona en móvil, tablet y ordenador.",
     parentUnit: "Unidad de padres", monitoring: "Vigilancia", babyUnit: "Unidad del bebé", footPrivacy: "La imagen y el sonido van directamente entre tus propios dispositivos. No se guardan grabaciones.",
-    footDisclaimer: "Una ayuda, no un sustituto de la supervisión en persona de tu bebé.", plusTitle: "BabyPhone Plus", plusSub: "Para las noches en que de verdad tiene que funcionar.", plusFeat1: "Relé dedicado: conexión garantizada en cualquier red",
-    plusFeat2: "Ver juntos: varios dispositivos de padres a la vez", plusFeat3: "Historial de sueño y sonidos", plusFeat4: "Biblioteca premium de nanas", plusUpgrade: "Mejorar a Plus",
-    plusManage: "Gestionar suscripción", plusRestore: "Restaurar compra", plusSoon: "Próximamente", plusActive: "Plus activo",
-    plusEmailQ: "Tu correo electrónico (de tu suscripción):", plusError: "Algo salió mal. Inténtalo de nuevo.", plusNotFound: "No hay suscripción activa para ese correo.", tapToTalk: "Toca para hablar",
+    footDisclaimer: "Una ayuda, no un sustituto de la supervisión en persona de tu bebé.", tapToTalk: "Toca para hablar",
     talkViewSub: "Tu voz suena en la unidad del bebé mientras esté activado.", soundscapes: "Sonidos tranquilos, reproducidos en la unidad del bebé.", nightViewSub: "Un suave resplandor cálido en la pantalla de la unidad del bebé.", alertsViewSub: "Un sonido en este dispositivo cuando se detecta llanto.",
     zoom: "Zoom", evSleepDone: "Temporizador terminado", reconnecting: "Reconectando…", connectFailed: "No se pudo conectar. Revisa el código e inténtalo de nuevo.",
     retry: "Reintentar", footTerms: "Condiciones", footRefunds: "Reembolsos", footAccessibility: "Accesibilidad",
-    footContact: "Contacto", pairBabySub: "Muestra este código (o QR) a tu propio teléfono para conectar.", pairParentSub: "Introduce el código de la unidad del bebé o escanea su QR.", waitingConnection: "Esperando a la unidad de padres…",
+    footGuide: "Guía", footContact: "Contacto", pairBabySub: "Muestra este código (o QR) a tu propio teléfono para conectar.", pairParentSub: "Introduce el código de la unidad del bebé o escanea su QR.", waitingConnection: "Esperando a la unidad de padres…",
     cameraActive: "Cámara activada", micActive: "Micrófono activado", micOff: "Micrófono apagado", permissionNeeded: "Permite la cámara y el micrófono para continuar",
     permissionDenied: "Cámara/micrófono bloqueados. Permite el acceso en tu navegador e inténtalo de nuevo.", copied: "📋 Copiado", copyFail: "No se pudo copiar — selecciona manualmente", scanFail: "No se puede abrir la cámara — pega el código",
     invalidAnswer: "Código de respuesta no válido", invalidPair: "Código de emparejamiento no válido", pasteAnswerFirst: "Pega o escanea primero el código de respuesta", pastePairFirst: "Pega o escanea primero el código de emparejamiento",
-    noImage: "Aún no hay imagen", recStarted: "⏺️ Grabación iniciada", saved: "💾 Guardado", recNotSupported: "Grabación no compatible",
+    noImage: "Aún no hay imagen", unsupportedTitle: "Este navegador no puede ejecutar BabyPhone.online", unsupportedBody: "Esta página necesita cámara, micrófono y compatibilidad con videollamadas que este navegador no tiene. Abre babyphone.online en una versión reciente de Chrome, Safari, Firefox o Edge.", posterCameraOff: "Cámara apagada", posterOffline: "Sin conexión", cameraLabel: "Cámara", ledLight: "Luz LED", ledOn: "💡 LED encendida", ledOff: "LED apagada", recordVideo: "Grabar", recStarted: "⏺️ Grabación iniciada", saved: "💾 Guardado", recNotSupported: "Grabación no compatible",
     noStream: "Aún no hay imagen que grabar", cameraSwitched: "Cámara cambiada", cannotSwitch: "No se puede cambiar de cámara", soundMuted: "Sonido silenciado",
     soundOn: "Sonido activado", stopParentQ: "¿Detener la unidad de padres?", stopBabyQ: "¿Detener la unidad del bebé?", noMic: "Sin acceso al micrófono",
     mediaError: "Cámara/micrófono no disponibles. Usa https o abre en Chrome/Firefox.",
   });
   Object.assign(S.fr, {
+    qualityLabel: 'Qualité',
+    qualityAuto: 'Automatique',
+    qualityHigh: 'Image + son (net)',
+    qualitySaver: 'Image + son (économe)',
+    qualityAudio: 'Son uniquement',
+    qualityNow: 'Utilisé',
+    onlyOneCamera: 'Cet appareil n\'a qu\'une seule caméra', cameraSwitchFailed: 'Échec du changement — la même caméra est restée active',
+    waitingApproval: 'En attente d\'autorisation sur l\'unité bébé…',
+    metaTitle: 'Babyphone gratuit dans le navigateur — BabyPhone.online', metaDesc: 'Transformez deux téléphones en babyphone gratuit avec image et son en direct. Sans appli, sans compte, rien n’est enregistré. Dans votre navigateur.',
+    repeatList: 'Répéter',
+    approveTitle: 'Autoriser cet appareil ?', approveAsk: 'Un appareil a saisi votre code de chambre et veut voir et écouter. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveExtra: 'Un deuxième appareil veut regarder. Quelqu\'un est déjà connecté. N\'autorisez que s\'il s\'agit de votre propre appareil.', approveAllow: 'Autoriser', approveDeny: 'Refuser', authRefused: 'L\'unité bébé a refusé cet appareil.', switchCameraSub: 'Caméra avant / arrière',
     qrTapZoom: "👆 Touchez le QR pour l'agrandir et le scanner", qrZoomHint: "Pointez la caméra de l'autre téléphone vers ce code", roomCodeShare: "Code de la chambre (à partager avec l'unité parents)", roomCodeOfBaby: "Code de la chambre de l'unité bébé",
     qrScanHint: "Faites scanner ce QR par le parent — ou saisissez le code ci-dessus", phCode: "CODE", newCode: "Nouveau code", heroTitle: "Votre bébé, toujours tout près.",
     heroSub: "BabyPhone transforme deux appareils en un babyphone sûr. Simple, privé, directement dans votre navigateur.", ctaStartBaby: "Démarrer l'unité bébé", ctaConnectParent: "Se connecter comme parent", navPrivacy: "Confidentialité",
@@ -1049,7 +1133,7 @@
     off2: "Désactivé", autoNoise: "Réduction de bruit automatique", excellentConn: "Excellente connexion", localOnly: "Réseau local uniquement",
     pairingCode: "Jumelage & code de chambre", shareToConnect: "Partagez pour connecter", scanToConnect: "Scannez pour connecter", useParentScan: "Scannez avec l'unité parents",
     videoStreaming: "Diffusion vidéo", audioStreaming: "Diffusion audio", audioOnly: "Audio seul", audioOnlySub: "Diffuser le son sans la vidéo",
-    privacyShade: "Voile de confidentialité", hideVideoKeepAudio: "Masquer la vidéo, garder le son", babyTip: "Astuce : laissez ce navigateur ouvert et le téléphone sur son chargeur pour rester connecté.", evBabyConnected: "Unité bébé connectée",
+    privacyShade: "Voile de confidentialité", hideVideoKeepAudio: "Masquer la vidéo, garder le son", babyTip: "Astuce : laissez ce navigateur ouvert et le téléphone sur son chargeur pour rester connecté. Ne passez pas à une autre appli — la caméra peut s’arrêter en arrière-plan.", evBabyConnected: "Unité bébé connectée",
     evTalk: "Réponse utilisée", evTalkSub: "Vous avez parlé au bébé", evLullaby: "Berceuse lancée", evSound: "Son détecté",
     evSoundSub: "Au-dessus de votre niveau réglé", howTitle: "Comment ça marche ?", step1t: "Près du bébé", step1: "Ouvrez BabyPhone.online sur le téléphone laissé près de votre bébé.",
     step2t: "Jumeler", step2: "Démarrez l'unité bébé et scannez le QR avec votre propre téléphone.", step3t: "Regarder en direct", step3: "Voyez et écoutez votre bébé en direct depuis votre unité parents.",
@@ -1058,23 +1142,29 @@
     featTitle: "Tout ce qu'il vous faut", featVideo: "Vidéo en direct", featSound: "Son", featTalk: "Répondre",
     featNight: "Veilleuse", featAlarm: "Alarme sonore", featLullaby: "Berceuses", featDevices: "Fonctionne sur téléphone, tablette et ordinateur.",
     parentUnit: "Unité parents", monitoring: "Surveillance", babyUnit: "Unité bébé", footPrivacy: "L'image et le son vont directement entre vos propres appareils. Aucun enregistrement n'est stocké.",
-    footDisclaimer: "Une aide, pas un substitut à la surveillance en personne de votre bébé.", plusTitle: "BabyPhone Plus", plusSub: "Pour les nuits où ça doit vraiment marcher.", plusFeat1: "Relais dédié — connexion garantie sur tout réseau",
-    plusFeat2: "Regarder ensemble : plusieurs appareils parents à la fois", plusFeat3: "Historique du sommeil et des sons", plusFeat4: "Bibliothèque premium de berceuses", plusUpgrade: "Passer à Plus",
-    plusManage: "Gérer l'abonnement", plusRestore: "Restaurer l'achat", plusSoon: "Bientôt disponible", plusActive: "Plus actif",
-    plusEmailQ: "Votre adresse e-mail (de votre abonnement) :", plusError: "Un problème est survenu. Veuillez réessayer.", plusNotFound: "Aucun abonnement actif trouvé pour cet e-mail.", tapToTalk: "Touchez pour parler",
+    footDisclaimer: "Une aide, pas un substitut à la surveillance en personne de votre bébé.", tapToTalk: "Touchez pour parler",
     talkViewSub: "Votre voix est diffusée sur l'unité bébé tant que c'est activé.", soundscapes: "Sons apaisants, joués sur l'unité bébé.", nightViewSub: "Une douce lueur chaude sur l'écran de l'unité bébé.", alertsViewSub: "Un son sur cet appareil dès que des pleurs sont détectés.",
     zoom: "Zoom", evSleepDone: "Minuterie sommeil terminée", reconnecting: "Reconnexion…", connectFailed: "Connexion impossible. Vérifiez le code et réessayez.",
     retry: "Réessayer", footTerms: "Conditions", footRefunds: "Remboursements", footAccessibility: "Accessibilité",
-    footContact: "Contact", pairBabySub: "Montrez ce code (ou QR) à votre propre téléphone pour connecter.", pairParentSub: "Saisissez le code de l'unité bébé, ou scannez son QR.", waitingConnection: "En attente de l'unité parents…",
+    footGuide: "Guide", footContact: "Contact", pairBabySub: "Montrez ce code (ou QR) à votre propre téléphone pour connecter.", pairParentSub: "Saisissez le code de l'unité bébé, ou scannez son QR.", waitingConnection: "En attente de l'unité parents…",
     cameraActive: "Caméra activée", micActive: "Micro activé", micOff: "Micro désactivé", permissionNeeded: "Autorisez la caméra et le micro pour continuer",
     permissionDenied: "Caméra/micro bloqués. Autorisez l'accès dans votre navigateur et réessayez.", copied: "📋 Copié", copyFail: "Échec de la copie — sélectionnez manuellement", scanFail: "Impossible d'ouvrir la caméra — collez le code",
     invalidAnswer: "Code de réponse invalide", invalidPair: "Code de jumelage invalide", pasteAnswerFirst: "Collez ou scannez d'abord le code de réponse", pastePairFirst: "Collez ou scannez d'abord le code de jumelage",
-    noImage: "Pas encore d'image", recStarted: "⏺️ Enregistrement démarré", saved: "💾 Enregistré", recNotSupported: "Enregistrement non pris en charge",
+    noImage: "Pas encore d'image", unsupportedTitle: "Ce navigateur ne peut pas exécuter BabyPhone.online", unsupportedBody: "Cette page a besoin de la caméra, du micro et de la prise en charge des appels vidéo que ce navigateur n’a pas. Ouvrez babyphone.online dans une version récente de Chrome, Safari, Firefox ou Edge.", posterCameraOff: "Caméra éteinte", posterOffline: "Hors ligne", cameraLabel: "Caméra", ledLight: "Lumière LED", ledOn: "💡 LED allumée", ledOff: "LED éteinte", recordVideo: "Enregistrer", recStarted: "⏺️ Enregistrement démarré", saved: "💾 Enregistré", recNotSupported: "Enregistrement non pris en charge",
     noStream: "Pas encore d'image à enregistrer", cameraSwitched: "Caméra changée", cannotSwitch: "Impossible de changer de caméra", soundMuted: "Son coupé",
     soundOn: "Son activé", stopParentQ: "Arrêter l'unité parents ?", stopBabyQ: "Arrêter l'unité bébé ?", noMic: "Pas d'accès au micro",
     mediaError: "Caméra/micro indisponibles. Utilisez https ou ouvrez dans Chrome/Firefox.",
   });
   Object.assign(S.ar, {
+    qualityLabel: 'الجودة',
+    qualityAuto: 'تلقائي',
+    qualityHigh: 'صورة وصوت (واضح)',
+    qualitySaver: 'صورة وصوت (توفير)',
+    qualityAudio: 'الصوت فقط',
+    qualityNow: 'قيد الاستخدام',
+    onlyOneCamera: 'هذا الجهاز يحتوي على كاميرا واحدة فقط', cameraSwitchFailed: 'فشل التبديل — بقيت الكاميرا نفسها',
+    waitingApproval: 'في انتظار الموافقة على وحدة الطفل…',
+    metaTitle: 'جهاز مراقبة الرضيع مجانًا — BabyPhone.online', metaDesc: 'حوّل هاتفين إلى جهاز مراقبة رضيع مجاني بالصوت والفيديو المباشر. بلا تطبيق وبلا حساب، ولا يُحفظ أي شيء. يعمل في أي متصفح.',
     qrTapZoom: "👆 المس رمز QR لتكبيره ومسحه", qrZoomHint: "وجّه كاميرا الهاتف الآخر نحو هذا الرمز", roomCodeShare: "رمز الغرفة (شاركه مع وحدة الوالدين)", roomCodeOfBaby: "رمز غرفة وحدة الرضيع",
     qrScanHint: "دع الوالد يمسح هذا الرمز — أو اكتب الرمز أعلاه", phCode: "الرمز", newCode: "رمز جديد", heroTitle: "طفلك، قريب منك دائمًا.",
     heroSub: "يحوّل BabyPhone جهازين إلى جهاز مراقبة آمن للرضيع. بسيط وخاص ومباشرة في المتصفح.", ctaStartBaby: "تشغيل وحدة الرضيع", ctaConnectParent: "الاتصال كوالد", navPrivacy: "الخصوصية",
@@ -1092,7 +1182,7 @@
     off2: "متوقف", autoNoise: "خفض ضوضاء تلقائي", excellentConn: "اتصال ممتاز", localOnly: "الشبكة المحلية فقط",
     pairingCode: "الاقتران ورمز الغرفة", shareToConnect: "شارك للاتصال", scanToConnect: "امسح للاتصال", useParentScan: "امسح بوحدة الوالدين",
     videoStreaming: "بث الفيديو", audioStreaming: "بث الصوت", audioOnly: "صوت فقط", audioOnlySub: "بث الصوت دون الصورة",
-    privacyShade: "ستارة الخصوصية", hideVideoKeepAudio: "أخفِ الصورة وأبقِ الصوت", babyTip: "نصيحة: أبقِ هذا المتصفح مفتوحًا والهاتف على الشاحن للبقاء متصلًا.", evBabyConnected: "وحدة الرضيع متصلة",
+    privacyShade: "ستارة الخصوصية", hideVideoKeepAudio: "أخفِ الصورة وأبقِ الصوت", babyTip: "نصيحة: أبقِ هذا المتصفح مفتوحًا والهاتف على الشاحن للبقاء متصلًا. لا تنتقل إلى تطبيق آخر — قد تتوقف الكاميرا في الخلفية.", evBabyConnected: "وحدة الرضيع متصلة",
     evTalk: "استُخدم التحدث", evTalkSub: "تحدثت إلى الطفل", evLullaby: "بدأت التهويدة", evSound: "رُصد صوت",
     evSoundSub: "فوق المستوى الذي حددته", howTitle: "كيف يعمل؟", step1t: "بجانب الرضيع", step1: "افتح BabyPhone.online على الهاتف الذي يبقى بجانب طفلك.",
     step2t: "الاقتران", step2: "شغّل وحدة الرضيع وامسح رمز QR بهاتفك.", step3t: "شاهد مباشرة", step3: "شاهد طفلك واسمعه مباشرة من وحدة الوالدين.",
@@ -1101,10 +1191,7 @@
     featTitle: "كل ما تحتاجه", featVideo: "فيديو مباشر", featSound: "صوت", featTalk: "تحدث إلى الطفل",
     featNight: "ضوء ليلي", featAlarm: "إنذار صوتي", featLullaby: "تهويدات", featDevices: "يعمل على الهاتف والجهاز اللوحي والحاسوب.",
     parentUnit: "وحدة الوالدين", monitoring: "مراقبة", babyUnit: "وحدة الرضيع", footPrivacy: "تنتقل الصورة والصوت مباشرة بين أجهزتك. لا تُحفظ أي تسجيلات.",
-    footDisclaimer: "وسيلة مساعدة، وليست بديلًا عن مراقبة طفلك شخصيًا.", plusTitle: "BabyPhone Plus", plusSub: "لليالي التي يجب أن يعمل فيها فعلًا.", plusFeat1: "مُرحّل مخصص — اتصال مضمون على أي شبكة",
-    plusFeat2: "المشاهدة معًا: عدة أجهزة للوالدين في آن واحد", plusFeat3: "سجل النوم والأصوات", plusFeat4: "مكتبة تهويدات مميزة", plusUpgrade: "الترقية إلى Plus",
-    plusManage: "إدارة الاشتراك", plusRestore: "استعادة الشراء", plusSoon: "قريبًا", plusActive: "Plus مفعّل",
-    plusEmailQ: "بريدك الإلكتروني (الخاص باشتراكك):", plusError: "حدث خطأ ما. حاول مرة أخرى.", plusNotFound: "لا يوجد اشتراك نشط لهذا البريد.", tapToTalk: "المس للتحدث",
+    footDisclaimer: "وسيلة مساعدة، وليست بديلًا عن مراقبة طفلك شخصيًا.", tapToTalk: "المس للتحدث",
     talkViewSub: "يُسمع صوتك على وحدة الرضيع ما دام هذا مفعّلًا.", soundscapes: "أصوات هادئة تُشغَّل على وحدة الرضيع.", nightViewSub: "توهج دافئ ولطيف على شاشة وحدة الرضيع.", alertsViewSub: "صوت على هذا الجهاز عند رصد البكاء.",
     zoom: "تكبير", evSleepDone: "انتهى مؤقت النوم", reconnecting: "إعادة الاتصال…", connectFailed: "تعذّر الاتصال. تحقق من الرمز وحاول مجددًا.",
     retry: "حاول مجددًا", footTerms: "الشروط", footRefunds: "الاسترداد", footAccessibility: "إمكانية الوصول",
@@ -1112,12 +1199,21 @@
     cameraActive: "الكاميرا مفعّلة", micActive: "الميكروفون مفعّل", micOff: "الميكروفون متوقف", permissionNeeded: "اسمح بالكاميرا والميكروفون للمتابعة",
     permissionDenied: "الكاميرا/الميكروفون محجوبان. اسمح بالوصول في المتصفح وحاول مجددًا.", copied: "📋 نُسخ", copyFail: "فشل النسخ — حدد يدويًا", scanFail: "تعذّر فتح الكاميرا للمسح — الصق الرمز",
     invalidAnswer: "رمز إجابة غير صالح", invalidPair: "رمز اقتران غير صالح", pasteAnswerFirst: "الصق أو امسح رمز الإجابة أولًا", pastePairFirst: "الصق أو امسح رمز الاقتران أولًا",
-    noImage: "لا صورة بعد", recStarted: "⏺️ بدأ التسجيل", saved: "💾 حُفظ", recNotSupported: "التسجيل غير مدعوم",
+    noImage: "لا صورة بعد", unsupportedTitle: "هذا المتصفح لا يمكنه تشغيل BabyPhone.online", unsupportedBody: "تحتاج هذه الصفحة إلى دعم الكاميرا والميكروفون ومكالمات الفيديو غير المتوفر في هذا المتصفح. يرجى فتح babyphone.online في إصدار حديث من Chrome أو Safari أو Firefox أو Edge.", recordVideo: "تسجيل", recStarted: "⏺️ بدأ التسجيل", saved: "💾 حُفظ", recNotSupported: "التسجيل غير مدعوم",
     noStream: "لا صورة للتسجيل بعد", cameraSwitched: "بُدّلت الكاميرا", cannotSwitch: "تعذّر تبديل الكاميرا", soundMuted: "الصوت مكتوم",
     soundOn: "الصوت مفعّل", stopParentQ: "إيقاف وحدة الوالدين؟", stopBabyQ: "إيقاف وحدة الرضيع؟", noMic: "لا وصول إلى الميكروفون",
     mediaError: "الكاميرا/الميكروفون غير متاحين. استخدم https أو افتح في Chrome/Firefox.",
   });
   Object.assign(S.bn, {
+    qualityLabel: 'মান',
+    qualityAuto: 'স্বয়ংক্রিয়',
+    qualityHigh: 'ভিডিও + শব্দ (স্পষ্ট)',
+    qualitySaver: 'ভিডিও + শব্দ (ডেটা সাশ্রয়)',
+    qualityAudio: 'শুধু শব্দ',
+    qualityNow: 'ব্যবহৃত',
+    onlyOneCamera: 'এই ডিভাইসে কেবল একটি ক্যামেরা আছে', cameraSwitchFailed: 'বদলানো যায়নি — একই ক্যামেরা চালু থাকল',
+    waitingApproval: 'বেবি ইউনিটে অনুমোদনের অপেক্ষায়…',
+    metaTitle: 'ফ্রি বেবি মনিটর অ্যাপ — BabyPhone.online', metaDesc: 'দুটি ফোনকে বিনামূল্যের বেবি মনিটরে বদলে নিন — লাইভ ভিডিও ও শব্দ সহ। কোনো অ্যাপ নয়, অ্যাকাউন্ট নয়, কিছুই সংরক্ষণ হয় না।',
     qrTapZoom: "👆 স্ক্যানের জন্য QR-এ চেপে বড় করুন", qrZoomHint: "অন্য ফোনের ক্যামেরা এই কোডের দিকে ধরুন", roomCodeShare: "রুম কোড (অভিভাবক ইউনিটের সাথে শেয়ার করুন)", roomCodeOfBaby: "শিশু ইউনিটের রুম কোড",
     qrScanHint: "অভিভাবককে এই QR স্ক্যান করতে দিন — বা উপরের কোডটি লিখুন", phCode: "কোড", newCode: "নতুন কোড", heroTitle: "আপনার শিশু, সবসময় কাছে।",
     heroSub: "BabyPhone দুটি ডিভাইসকে নিরাপদ বেবি মনিটরে বদলে দেয়। সহজ, ব্যক্তিগত, সরাসরি ব্রাউজারে।", ctaStartBaby: "শিশু ইউনিট চালু করুন", ctaConnectParent: "অভিভাবক হিসেবে যুক্ত হোন", navPrivacy: "গোপনীয়তা",
@@ -1135,7 +1231,7 @@
     off2: "বন্ধ", autoNoise: "স্বয়ংক্রিয় শব্দ হ্রাস", excellentConn: "চমৎকার সংযোগ", localOnly: "শুধু লোকাল নেটওয়ার্ক",
     pairingCode: "পেয়ারিং ও রুম কোড", shareToConnect: "যুক্ত করতে শেয়ার করুন", scanToConnect: "যুক্ত করতে স্ক্যান করুন", useParentScan: "অভিভাবক ইউনিট দিয়ে স্ক্যান করুন",
     videoStreaming: "ভিডিও স্ট্রিমিং", audioStreaming: "অডিও স্ট্রিমিং", audioOnly: "শুধু শব্দ", audioOnlySub: "ভিডিও ছাড়া শব্দ পাঠান",
-    privacyShade: "গোপনীয়তার পর্দা", hideVideoKeepAudio: "ভিডিও লুকান, শব্দ রাখুন", babyTip: "পরামর্শ: যুক্ত থাকতে এই ব্রাউজারটি খোলা রাখুন এবং ফোনটি চার্জারে লাগিয়ে রাখুন।", evBabyConnected: "শিশু ইউনিট যুক্ত হয়েছে",
+    privacyShade: "গোপনীয়তার পর্দা", hideVideoKeepAudio: "ভিডিও লুকান, শব্দ রাখুন", babyTip: "পরামর্শ: যুক্ত থাকতে এই ব্রাউজারটি খোলা রাখুন এবং ফোনটি চার্জারে লাগিয়ে রাখুন। অন্য অ্যাপে যাবেন না — ব্যাকগ্রাউন্ডে ক্যামেরা বন্ধ হয়ে যেতে পারে।", evBabyConnected: "শিশু ইউনিট যুক্ত হয়েছে",
     evTalk: "কথা বলা হয়েছে", evTalkSub: "আপনি শিশুর সাথে কথা বলেছেন", evLullaby: "ঘুমপাড়ানি গান শুরু", evSound: "শব্দ শনাক্ত হয়েছে",
     evSoundSub: "আপনার নির্ধারিত মাত্রার উপরে", howTitle: "এটা কীভাবে কাজ করে?", step1t: "শিশুর পাশে", step1: "যে ফোনটি শিশুর পাশে থাকবে তাতে BabyPhone.online খুলুন।",
     step2t: "পেয়ার করুন", step2: "শিশু ইউনিট চালু করুন এবং নিজের ফোন দিয়ে QR স্ক্যান করুন।", step3t: "লাইভ দেখুন", step3: "অভিভাবক ইউনিট থেকে শিশুকে লাইভ দেখুন ও শুনুন।",
@@ -1144,10 +1240,7 @@
     featTitle: "যা যা দরকার সবই", featVideo: "লাইভ ভিডিও", featSound: "শব্দ", featTalk: "শিশুর সাথে কথা বলুন",
     featNight: "রাতের আলো", featAlarm: "শব্দ সতর্কতা", featLullaby: "ঘুমপাড়ানি গান", featDevices: "ফোন, ট্যাবলেট ও কম্পিউটারে চলে।",
     parentUnit: "অভিভাবক ইউনিট", monitoring: "পর্যবেক্ষণ", babyUnit: "শিশু ইউনিট", footPrivacy: "ছবি ও শব্দ সরাসরি আপনার নিজের ডিভাইসগুলির মধ্যে যায়। কোনো রেকর্ডিং সংরক্ষণ হয় না।",
-    footDisclaimer: "সহায়ক মাধ্যম, শিশুর সরাসরি দেখাশোনার বিকল্প নয়।", plusTitle: "BabyPhone Plus", plusSub: "যে রাতগুলোতে সত্যিই কাজ করতে হবে, তার জন্য।", plusFeat1: "ডেডিকেটেড রিলে — যেকোনো নেটওয়ার্কে নিশ্চিত সংযোগ",
-    plusFeat2: "একসাথে দেখুন: একই সময়ে একাধিক অভিভাবক ডিভাইস", plusFeat3: "ঘুম ও শব্দের ইতিহাস", plusFeat4: "প্রিমিয়াম ঘুমপাড়ানি গানের সংগ্রহ", plusUpgrade: "Plus-এ আপগ্রেড করুন",
-    plusManage: "সাবস্ক্রিপশন পরিচালনা", plusRestore: "কেনা ফিরিয়ে আনুন", plusSoon: "শীঘ্রই আসছে", plusActive: "Plus সক্রিয়",
-    plusEmailQ: "আপনার ইমেইল (সাবস্ক্রিপশনের):", plusError: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।", plusNotFound: "ওই ইমেইলের জন্য সক্রিয় সাবস্ক্রিপশন পাওয়া যায়নি।", tapToTalk: "কথা বলতে চাপুন",
+    footDisclaimer: "সহায়ক মাধ্যম, শিশুর সরাসরি দেখাশোনার বিকল্প নয়।", tapToTalk: "কথা বলতে চাপুন",
     talkViewSub: "এটি চালু থাকা পর্যন্ত আপনার কণ্ঠ শিশু ইউনিটে শোনা যায়।", soundscapes: "শান্ত শব্দ, শিশু ইউনিটে বাজে।", nightViewSub: "শিশু ইউনিটের পর্দায় নরম, উষ্ণ আলো।", alertsViewSub: "কান্না শনাক্ত হলে এই ডিভাইসে শব্দ হয়।",
     zoom: "জুম", evSleepDone: "ঘুম টাইমার শেষ", reconnecting: "আবার যুক্ত হচ্ছে…", connectFailed: "যুক্ত হওয়া গেল না। কোড দেখে আবার চেষ্টা করুন।",
     retry: "আবার চেষ্টা করুন", footTerms: "শর্তাবলি", footRefunds: "ফেরত", footAccessibility: "প্রবেশযোগ্যতা",
@@ -1155,12 +1248,23 @@
     cameraActive: "ক্যামেরা চালু", micActive: "মাইক্রোফোন চালু", micOff: "মাইক্রোফোন বন্ধ", permissionNeeded: "চালিয়ে যেতে ক্যামেরা ও মাইক্রোফোনের অনুমতি দিন",
     permissionDenied: "ক্যামেরা/মাইক্রোফোন অবরুদ্ধ। ব্রাউজারে অনুমতি দিয়ে আবার চেষ্টা করুন।", copied: "📋 কপি হয়েছে", copyFail: "কপি ব্যর্থ — নিজে নির্বাচন করুন", scanFail: "স্ক্যানের জন্য ক্যামেরা খোলা যাচ্ছে না — কোডটি পেস্ট করুন",
     invalidAnswer: "অবৈধ উত্তর কোড", invalidPair: "অবৈধ পেয়ারিং কোড", pasteAnswerFirst: "আগে উত্তর কোড পেস্ট বা স্ক্যান করুন", pastePairFirst: "আগে পেয়ারিং কোড পেস্ট বা স্ক্যান করুন",
-    noImage: "এখনও কোনো ছবি নেই", recStarted: "⏺️ রেকর্ডিং শুরু", saved: "💾 সংরক্ষিত", recNotSupported: "রেকর্ডিং সমর্থিত নয়",
+    noImage: "এখনও কোনো ছবি নেই", unsupportedTitle: "এই ব্রাউজারে BabyPhone.online চলবে না", unsupportedBody: "এই পৃষ্ঠার জন্য ক্যামেরা, মাইক্রোফোন এবং ভিডিও-কল সমর্থন দরকার যা এই ব্রাউজারে নেই। অনুগ্রহ করে Chrome, Safari, Firefox বা Edge-এর সাম্প্রতিক সংস্করণে babyphone.online খুলুন।", recordVideo: "রেকর্ড", recStarted: "⏺️ রেকর্ডিং শুরু", saved: "💾 সংরক্ষিত", recNotSupported: "রেকর্ডিং সমর্থিত নয়",
     noStream: "রেকর্ড করার মতো ছবি এখনও নেই", cameraSwitched: "ক্যামেরা বদলানো হয়েছে", cannotSwitch: "ক্যামেরা বদলানো যাচ্ছে না", soundMuted: "শব্দ বন্ধ",
     soundOn: "শব্দ চালু", stopParentQ: "অভিভাবক ইউনিট থামাবেন?", stopBabyQ: "শিশু ইউনিট থামাবেন?", noMic: "মাইক্রোফোনে প্রবেশ নেই",
     mediaError: "ক্যামেরা/মাইক্রোফোন পাওয়া যাচ্ছে না। https ব্যবহার করুন বা Chrome/Firefox-এ খুলুন।",
   });
   Object.assign(S.pt, {
+    qualityLabel: 'Qualidade',
+    qualityAuto: 'Automática',
+    qualityHigh: 'Vídeo + som (nítido)',
+    qualitySaver: 'Vídeo + som (poupança)',
+    qualityAudio: 'Apenas som',
+    qualityNow: 'Em uso',
+    onlyOneCamera: 'Este dispositivo só tem uma câmara', cameraSwitchFailed: 'Falha ao trocar — a mesma câmara continuou ativa',
+    waitingApproval: 'A aguardar aprovação na unidade do bebé…',
+    metaTitle: 'Babá eletrônica grátis no navegador — BabyPhone.online', metaDesc: 'Transforme dois celulares em uma babá eletrônica grátis com vídeo e som ao vivo. Sem app, sem conta e sem guardar nada. Direto no navegador.',
+    repeatList: 'Repetir',
+    approveTitle: 'Permitir este dispositivo?', approveAsk: 'Um dispositivo introduziu o seu código de sala e quer ver e ouvir. Permita apenas se for o seu próprio dispositivo.', approveExtra: 'Um segundo dispositivo quer assistir. Já há alguém ligado. Permita apenas se for o seu próprio dispositivo.', approveAllow: 'Permitir', approveDeny: 'Recusar', authRefused: 'A unidade do bebé recusou este dispositivo.', switchCameraSub: 'Câmara frontal / traseira',
     qrTapZoom: "👆 Toque no QR para ampliá-lo e escanear", qrZoomHint: "Aponte a câmera do outro telefone para este código", roomCodeShare: "Código da sala (compartilhe com a unidade dos pais)", roomCodeOfBaby: "Código da sala da unidade do bebê",
     qrScanHint: "Deixe o responsável escanear este QR — ou digite o código acima", phCode: "CÓDIGO", newCode: "Novo código", heroTitle: "Seu bebê, sempre por perto.",
     heroSub: "O BabyPhone transforma dois aparelhos em uma babá eletrônica segura. Simples, privada e direto no navegador.", ctaStartBaby: "Iniciar unidade do bebê", ctaConnectParent: "Conectar como responsável", navPrivacy: "Privacidade",
@@ -1178,7 +1282,7 @@
     off2: "Desligado", autoNoise: "Redução automática de ruído", excellentConn: "Conexão excelente", localOnly: "Apenas rede local",
     pairingCode: "Pareamento e código", shareToConnect: "Compartilhe para conectar", scanToConnect: "Escaneie para conectar", useParentScan: "Escaneie com a unidade dos pais",
     videoStreaming: "Transmissão de vídeo", audioStreaming: "Transmissão de áudio", audioOnly: "Só áudio", audioOnlySub: "Transmitir som sem vídeo",
-    privacyShade: "Cortina de privacidade", hideVideoKeepAudio: "Ocultar vídeo, manter o som", babyTip: "Dica: deixe este navegador aberto e o telefone no carregador para continuar conectado.", evBabyConnected: "Unidade do bebê conectada",
+    privacyShade: "Cortina de privacidade", hideVideoKeepAudio: "Ocultar vídeo, manter o som", babyTip: "Dica: deixe este navegador aberto e o telefone no carregador para continuar conectado. Não mude para outro app — a câmera pode parar em segundo plano.", evBabyConnected: "Unidade do bebê conectada",
     evTalk: "Resposta usada", evTalkSub: "Você falou com o bebê", evLullaby: "Canção iniciada", evSound: "Som detectado",
     evSoundSub: "Acima do seu nível definido", howTitle: "Como funciona?", step1t: "Perto do bebê", step1: "Abra o BabyPhone.online no telefone que fica ao lado do seu bebê.",
     step2t: "Parear", step2: "Inicie a unidade do bebê e escaneie o QR com o seu próprio telefone.", step3t: "Assistir ao vivo", step3: "Veja e ouça seu bebê ao vivo na sua unidade dos pais.",
@@ -1187,23 +1291,30 @@
     featTitle: "Tudo o que você precisa", featVideo: "Vídeo ao vivo", featSound: "Som", featTalk: "Responder",
     featNight: "Luz noturna", featAlarm: "Alarme de som", featLullaby: "Canções de ninar", featDevices: "Funciona no celular, tablet e computador.",
     parentUnit: "Unidade dos pais", monitoring: "Monitorando", babyUnit: "Unidade do bebê", footPrivacy: "Imagem e som vão direto entre os seus aparelhos. Nenhuma gravação é armazenada.",
-    footDisclaimer: "Uma ajuda, não um substituto da supervisão presencial do seu bebê.", plusTitle: "BabyPhone Plus", plusSub: "Para as noites em que precisa mesmo funcionar.", plusFeat1: "Relay dedicado — conexão garantida em qualquer rede",
-    plusFeat2: "Assistam juntos: vários aparelhos dos pais ao mesmo tempo", plusFeat3: "Histórico de sono e sons", plusFeat4: "Biblioteca premium de canções", plusUpgrade: "Assinar o Plus",
-    plusManage: "Gerenciar assinatura", plusRestore: "Restaurar compra", plusSoon: "Em breve", plusActive: "Plus ativo",
-    plusEmailQ: "Seu e-mail (da assinatura):", plusError: "Algo deu errado. Tente novamente.", plusNotFound: "Nenhuma assinatura ativa para esse e-mail.", tapToTalk: "Toque para falar",
+    footDisclaimer: "Uma ajuda, não um substituto da supervisão presencial do seu bebê.", tapToTalk: "Toque para falar",
     talkViewSub: "Sua voz toca na unidade do bebê enquanto isto estiver ligado.", soundscapes: "Sons calmos, tocados na unidade do bebê.", nightViewSub: "Um brilho suave e quente na tela da unidade do bebê.", alertsViewSub: "Um som neste aparelho quando choro for detectado.",
     zoom: "Zoom", evSleepDone: "Timer de sono encerrado", reconnecting: "Reconectando…", connectFailed: "Não foi possível conectar. Verifique o código e tente de novo.",
     retry: "Tentar novamente", footTerms: "Termos", footRefunds: "Reembolsos", footAccessibility: "Acessibilidade",
-    footContact: "Contato", pairBabySub: "Mostre este código (ou QR) ao seu próprio telefone para conectar.", pairParentSub: "Digite o código da unidade do bebê ou escaneie o QR dela.", waitingConnection: "Aguardando a unidade dos pais…",
+    footGuide: "Guia", footContact: "Contato", pairBabySub: "Mostre este código (ou QR) ao seu próprio telefone para conectar.", pairParentSub: "Digite o código da unidade do bebê ou escaneie o QR dela.", waitingConnection: "Aguardando a unidade dos pais…",
     cameraActive: "Câmera ligada", micActive: "Microfone ligado", micOff: "Microfone desligado", permissionNeeded: "Permita câmera e microfone para continuar",
     permissionDenied: "Câmera/microfone bloqueados. Permita o acesso no navegador e tente de novo.", copied: "📋 Copiado", copyFail: "Falha ao copiar — selecione manualmente", scanFail: "Não foi possível abrir a câmera — cole o código",
     invalidAnswer: "Código de resposta inválido", invalidPair: "Código de pareamento inválido", pasteAnswerFirst: "Cole ou escaneie primeiro o código de resposta", pastePairFirst: "Cole ou escaneie primeiro o código de pareamento",
-    noImage: "Ainda sem imagem", recStarted: "⏺️ Gravação iniciada", saved: "💾 Salvo", recNotSupported: "Gravação não suportada",
+    noImage: "Ainda sem imagem", unsupportedTitle: "Este navegador não consegue executar o BabyPhone.online", unsupportedBody: "Esta página precisa de câmera, microfone e suporte a videochamada que este navegador não tem. Abra babyphone.online em uma versão recente do Chrome, Safari, Firefox ou Edge.", posterCameraOff: "Câmara desligada", posterOffline: "Offline", cameraLabel: "Câmara", ledLight: "Luz LED", ledOn: "💡 LED ligada", ledOff: "LED desligada", recordVideo: "Gravar", recStarted: "⏺️ Gravação iniciada", saved: "💾 Salvo", recNotSupported: "Gravação não suportada",
     noStream: "Ainda não há imagem para gravar", cameraSwitched: "Câmera trocada", cannotSwitch: "Não foi possível trocar de câmera", soundMuted: "Som desativado",
     soundOn: "Som ativado", stopParentQ: "Parar a unidade dos pais?", stopBabyQ: "Parar a unidade do bebê?", noMic: "Sem acesso ao microfone",
     mediaError: "Câmera/microfone indisponíveis. Use https ou abra no Chrome/Firefox.",
   });
   Object.assign(S.ru, {
+    qualityLabel: 'Качество',
+    qualityAuto: 'Автоматически',
+    qualityHigh: 'Видео и звук (чётко)',
+    qualitySaver: 'Видео и звук (экономно)',
+    qualityAudio: 'Только звук',
+    qualityNow: 'Используется',
+    onlyOneCamera: 'На этом устройстве только одна камера', cameraSwitchFailed: 'Не удалось переключить — осталась та же камера',
+    waitingApproval: 'Ожидание подтверждения на детском блоке…',
+    metaTitle: 'Бесплатная радионяня в браузере — BabyPhone.online', metaDesc: 'Превратите два телефона в бесплатную радионяню с видео и звуком в реальном времени. Без приложения, без аккаунта, ничего не сохраняется.',
+    approveTitle: 'Разрешить это устройство?', approveAsk: 'Устройство ввело код вашей комнаты и хочет смотреть и слушать. Разрешайте только если это ваше устройство.', approveExtra: 'Второе устройство хочет смотреть. Кто-то уже подключён. Разрешайте только если это ваше устройство.', approveAllow: 'Разрешить', approveDeny: 'Отклонить', authRefused: 'Детский блок отклонил это устройство.', switchCameraSub: 'Передняя / задняя камера',
     qrTapZoom: "👆 Нажмите на QR, чтобы увеличить его", qrZoomHint: "Наведите камеру другого телефона на этот код", roomCodeShare: "Код комнаты (поделитесь с родительским блоком)", roomCodeOfBaby: "Код комнаты детского блока",
     qrScanHint: "Пусть родитель отсканирует этот QR — или введите код выше", phCode: "КОД", newCode: "Новый код", heroTitle: "Ваш малыш всегда рядом.",
     heroSub: "BabyPhone превращает два устройства в безопасную радионяню. Просто, приватно и прямо в браузере.", ctaStartBaby: "Запустить детский блок", ctaConnectParent: "Подключиться как родитель", navPrivacy: "Приватность",
@@ -1221,7 +1332,7 @@
     off2: "Выкл.", autoNoise: "Автошумоподавление", excellentConn: "Отличное соединение", localOnly: "Только локальная сеть",
     pairingCode: "Сопряжение и код комнаты", shareToConnect: "Поделитесь для подключения", scanToConnect: "Отсканируйте для подключения", useParentScan: "Сканируйте родительским блоком",
     videoStreaming: "Видеопоток", audioStreaming: "Аудиопоток", audioOnly: "Только звук", audioOnlySub: "Передавать звук без видео",
-    privacyShade: "Шторка приватности", hideVideoKeepAudio: "Скрыть видео, оставить звук", babyTip: "Совет: держите этот браузер открытым, а телефон на зарядке, чтобы оставаться на связи.", evBabyConnected: "Детский блок подключён",
+    privacyShade: "Шторка приватности", hideVideoKeepAudio: "Скрыть видео, оставить звук", babyTip: "Совет: держите этот браузер открытым, а телефон на зарядке, чтобы оставаться на связи. Не переключайтесь на другое приложение — камера может остановиться в фоне.", evBabyConnected: "Детский блок подключён",
     evTalk: "Использован ответ", evTalkSub: "Вы говорили с малышом", evLullaby: "Колыбельная включена", evSound: "Обнаружен звук",
     evSoundSub: "Выше заданного уровня", howTitle: "Как это работает?", step1t: "Рядом с малышом", step1: "Откройте BabyPhone.online на телефоне, который остаётся рядом с малышом.",
     step2t: "Сопрягите", step2: "Запустите детский блок и отсканируйте QR своим телефоном.", step3t: "Смотрите вживую", step3: "Смотрите и слушайте малыша вживую с родительского блока.",
@@ -1230,10 +1341,7 @@
     featTitle: "Всё необходимое", featVideo: "Видео вживую", featSound: "Звук", featTalk: "Ответить",
     featNight: "Ночник", featAlarm: "Звуковой сигнал", featLullaby: "Колыбельные", featDevices: "Работает на телефоне, планшете и компьютере.",
     parentUnit: "Родительский блок", monitoring: "Наблюдение", babyUnit: "Детский блок", footPrivacy: "Изображение и звук идут напрямую между вашими устройствами. Записи не сохраняются.",
-    footDisclaimer: "Помощник, а не замена личного присмотра за малышом.", plusTitle: "BabyPhone Plus", plusSub: "Для ночей, когда всё должно работать.", plusFeat1: "Выделенный ретранслятор — гарантированное соединение в любой сети",
-    plusFeat2: "Смотрите вместе: несколько родительских устройств сразу", plusFeat3: "История сна и звуков", plusFeat4: "Премиальная библиотека колыбельных", plusUpgrade: "Перейти на Plus",
-    plusManage: "Управлять подпиской", plusRestore: "Восстановить покупку", plusSoon: "Скоро", plusActive: "Plus активен",
-    plusEmailQ: "Ваш e-mail (подписки):", plusError: "Что-то пошло не так. Попробуйте ещё раз.", plusNotFound: "Активная подписка для этого адреса не найдена.", tapToTalk: "Нажмите, чтобы говорить",
+    footDisclaimer: "Помощник, а не замена личного присмотра за малышом.", tapToTalk: "Нажмите, чтобы говорить",
     talkViewSub: "Ваш голос звучит на детском блоке, пока это включено.", soundscapes: "Спокойные звуки, воспроизводимые на детском блоке.", nightViewSub: "Мягкий тёплый свет на экране детского блока.", alertsViewSub: "Звук на этом устройстве при обнаружении плача.",
     zoom: "Масштаб", evSleepDone: "Таймер сна завершён", reconnecting: "Переподключение…", connectFailed: "Не удалось подключиться. Проверьте код и попробуйте снова.",
     retry: "Повторить", footTerms: "Условия", footRefunds: "Возвраты", footAccessibility: "Доступность",
@@ -1241,12 +1349,21 @@
     cameraActive: "Камера включена", micActive: "Микрофон включён", micOff: "Микрофон выключен", permissionNeeded: "Разрешите камеру и микрофон, чтобы продолжить",
     permissionDenied: "Камера/микрофон заблокированы. Разрешите доступ в браузере и попробуйте снова.", copied: "📋 Скопировано", copyFail: "Не удалось скопировать — выделите вручную", scanFail: "Не удаётся открыть камеру — вставьте код",
     invalidAnswer: "Неверный код ответа", invalidPair: "Неверный код сопряжения", pasteAnswerFirst: "Сначала вставьте или отсканируйте код ответа", pastePairFirst: "Сначала вставьте или отсканируйте код сопряжения",
-    noImage: "Изображения пока нет", recStarted: "⏺️ Запись начата", saved: "💾 Сохранено", recNotSupported: "Запись не поддерживается",
+    noImage: "Изображения пока нет", unsupportedTitle: "Этот браузер не может запустить BabyPhone.online", unsupportedBody: "Этой странице нужны камера, микрофон и поддержка видеозвонков, которых нет в этом браузере. Откройте babyphone.online в свежей версии Chrome, Safari, Firefox или Edge.", recordVideo: "Запись", recStarted: "⏺️ Запись начата", saved: "💾 Сохранено", recNotSupported: "Запись не поддерживается",
     noStream: "Пока нечего записывать", cameraSwitched: "Камера переключена", cannotSwitch: "Не удалось переключить камеру", soundMuted: "Звук выключен",
     soundOn: "Звук включён", stopParentQ: "Остановить родительский блок?", stopBabyQ: "Остановить детский блок?", noMic: "Нет доступа к микрофону",
     mediaError: "Камера/микрофон недоступны. Используйте https или откройте в Chrome/Firefox.",
   });
   Object.assign(S.ur, {
+    qualityLabel: 'معیار',
+    qualityAuto: 'خودکار',
+    qualityHigh: 'ویڈیو + آواز (واضح)',
+    qualitySaver: 'ویڈیو + آواز (ڈیٹا بچت)',
+    qualityAudio: 'صرف آواز',
+    qualityNow: 'زیر استعمال',
+    onlyOneCamera: 'اس ڈیوائس میں صرف ایک کیمرہ ہے', cameraSwitchFailed: 'تبدیلی ناکام — وہی کیمرہ چلتا رہا',
+    waitingApproval: 'بے بی یونٹ پر منظوری کا انتظار…',
+    metaTitle: 'مفت بے بی مانیٹر — BabyPhone.online', metaDesc: 'دو فون کو مفت بے بی مانیٹر بنائیں، لائیو ویڈیو اور آواز کے ساتھ۔ کوئی ایپ نہیں، کوئی اکاؤنٹ نہیں، کچھ محفوظ نہیں ہوتا۔',
     qrTapZoom: "👆 اسکین کے لیے QR کو چھو کر بڑا کریں", qrZoomHint: "دوسرے فون کا کیمرہ اس کوڈ کی طرف کریں", roomCodeShare: "کمرے کا کوڈ (والدین یونٹ سے شیئر کریں)", roomCodeOfBaby: "بے بی یونٹ کے کمرے کا کوڈ",
     qrScanHint: "والدین سے یہ QR اسکین کروائیں — یا اوپر کا کوڈ لکھیں", phCode: "کوڈ", newCode: "نیا کوڈ", heroTitle: "آپ کا بچہ، ہمیشہ قریب۔",
     heroSub: "BabyPhone دو آلات کو محفوظ بے بی مانیٹر بنا دیتا ہے۔ سادہ، نجی اور سیدھا براؤزر میں۔", ctaStartBaby: "بے بی یونٹ شروع کریں", ctaConnectParent: "بطور والدین جڑیں", navPrivacy: "رازداری",
@@ -1264,7 +1381,7 @@
     off2: "آف", autoNoise: "خودکار شور کمی", excellentConn: "بہترین کنکشن", localOnly: "صرف مقامی نیٹ ورک",
     pairingCode: "پیئرنگ اور کمرے کا کوڈ", shareToConnect: "جوڑنے کے لیے شیئر کریں", scanToConnect: "جوڑنے کے لیے اسکین کریں", useParentScan: "والدین یونٹ سے اسکین کریں",
     videoStreaming: "ویڈیو اسٹریمنگ", audioStreaming: "آڈیو اسٹریمنگ", audioOnly: "صرف آواز", audioOnlySub: "ویڈیو کے بغیر آواز بھیجیں",
-    privacyShade: "رازداری پردہ", hideVideoKeepAudio: "ویڈیو چھپائیں، آواز رکھیں", babyTip: "مشورہ: جڑے رہنے کے لیے یہ براؤزر کھلا رکھیں اور فون چارجر پر لگا رہنے دیں۔", evBabyConnected: "بے بی یونٹ جڑ گیا",
+    privacyShade: "رازداری پردہ", hideVideoKeepAudio: "ویڈیو چھپائیں، آواز رکھیں", babyTip: "مشورہ: جڑے رہنے کے لیے یہ براؤزر کھلا رکھیں اور فون چارجر پر لگا رہنے دیں۔ دوسری ایپ پر نہ جائیں — بیک گراؤنڈ میں کیمرہ بند ہو سکتا ہے۔", evBabyConnected: "بے بی یونٹ جڑ گیا",
     evTalk: "بات چیت استعمال ہوئی", evTalkSub: "آپ نے بچے سے بات کی", evLullaby: "لوری شروع ہوئی", evSound: "آواز محسوس ہوئی",
     evSoundSub: "آپ کی مقررہ سطح سے اوپر", howTitle: "یہ کیسے کام کرتا ہے؟", step1t: "بچے کے پاس", step1: "جو فون بچے کے پاس رہے گا اس پر BabyPhone.online کھولیں۔",
     step2t: "جوڑیں", step2: "بے بی یونٹ شروع کریں اور اپنے فون سے QR اسکین کریں۔", step3t: "براہِ راست دیکھیں", step3: "اپنے والدین یونٹ سے بچے کو براہِ راست دیکھیں اور سنیں۔",
@@ -1273,10 +1390,7 @@
     featTitle: "سب کچھ جو آپ کو چاہیے", featVideo: "براہِ راست ویڈیو", featSound: "آواز", featTalk: "بچے سے بات کریں",
     featNight: "نائٹ لائٹ", featAlarm: "آواز کا الارم", featLullaby: "لوریاں", featDevices: "فون، ٹیبلٹ اور کمپیوٹر پر چلتا ہے۔",
     parentUnit: "والدین یونٹ", monitoring: "نگرانی", babyUnit: "بے بی یونٹ", footPrivacy: "تصویر اور آواز سیدھی آپ کے اپنے آلات کے درمیان جاتی ہے۔ کوئی ریکارڈنگ محفوظ نہیں ہوتی۔",
-    footDisclaimer: "ایک معاون ذریعہ، بچے کی بذاتِ خود نگرانی کا متبادل نہیں۔", plusTitle: "BabyPhone Plus", plusSub: "ان راتوں کے لیے جب اسے واقعی کام کرنا ہو۔", plusFeat1: "مخصوص ریلے — ہر نیٹ ورک پر یقینی کنکشن",
-    plusFeat2: "مل کر دیکھیں: بیک وقت کئی والدین آلات", plusFeat3: "نیند اور آواز کی تاریخ", plusFeat4: "پریمیم لوری لائبریری", plusUpgrade: "Plus میں اپ گریڈ کریں",
-    plusManage: "سبسکرپشن منظم کریں", plusRestore: "خریداری بحال کریں", plusSoon: "جلد آ رہا ہے", plusActive: "Plus فعال",
-    plusEmailQ: "آپ کا ای میل (سبسکرپشن والا):", plusError: "کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔", plusNotFound: "اس ای میل کے لیے کوئی فعال سبسکرپشن نہیں ملی۔", tapToTalk: "بات کرنے کے لیے چھوئیں",
+    footDisclaimer: "ایک معاون ذریعہ، بچے کی بذاتِ خود نگرانی کا متبادل نہیں۔", tapToTalk: "بات کرنے کے لیے چھوئیں",
     talkViewSub: "جب تک یہ آن ہے، آپ کی آواز بے بی یونٹ پر سنائی دیتی ہے۔", soundscapes: "پرسکون آوازیں، بے بی یونٹ پر چلتی ہیں۔", nightViewSub: "بے بی یونٹ کی اسکرین پر نرم، گرم روشنی۔", alertsViewSub: "رونا محسوس ہوتے ہی اس آلے پر آواز۔",
     zoom: "زوم", evSleepDone: "نیند ٹائمر ختم ہوا", reconnecting: "دوبارہ جڑ رہا ہے…", connectFailed: "جڑ نہیں سکا۔ کوڈ چیک کر کے دوبارہ کوشش کریں۔",
     retry: "دوبارہ کوشش کریں", footTerms: "شرائط", footRefunds: "رقم کی واپسی", footAccessibility: "رسائی",
@@ -1284,12 +1398,22 @@
     cameraActive: "کیمرہ آن", micActive: "مائیک آن", micOff: "مائیک آف", permissionNeeded: "جاری رکھنے کے لیے کیمرہ اور مائیک کی اجازت دیں",
     permissionDenied: "کیمرہ/مائیک بلاک ہے۔ براؤزر میں اجازت دے کر دوبارہ کوشش کریں۔", copied: "📋 کاپی ہو گیا", copyFail: "کاپی ناکام — خود منتخب کریں", scanFail: "اسکین کے لیے کیمرہ نہیں کھل رہا — کوڈ پیسٹ کریں",
     invalidAnswer: "غلط جوابی کوڈ", invalidPair: "غلط پیئرنگ کوڈ", pasteAnswerFirst: "پہلے جوابی کوڈ پیسٹ یا اسکین کریں", pastePairFirst: "پہلے پیئرنگ کوڈ پیسٹ یا اسکین کریں",
-    noImage: "ابھی کوئی تصویر نہیں", recStarted: "⏺️ ریکارڈنگ شروع", saved: "💾 محفوظ ہو گیا", recNotSupported: "ریکارڈنگ معاون نہیں",
+    noImage: "ابھی کوئی تصویر نہیں", unsupportedTitle: "یہ براؤزر BabyPhone.online نہیں چلا سکتا", unsupportedBody: "اس صفحے کو کیمرہ، مائیکروفون اور ویڈیو کال سپورٹ درکار ہے جو اس براؤزر میں موجود نہیں۔ براہ کرم babyphone.online کو Chrome، Safari، Firefox یا Edge کے نئے ورژن میں کھولیں۔", recordVideo: "ریکارڈ کریں", recStarted: "⏺️ ریکارڈنگ شروع", saved: "💾 محفوظ ہو گیا", recNotSupported: "ریکارڈنگ معاون نہیں",
     noStream: "ریکارڈ کرنے کے لیے ابھی کوئی تصویر نہیں", cameraSwitched: "کیمرہ بدل گیا", cannotSwitch: "کیمرہ بدلا نہیں جا سکتا", soundMuted: "آواز بند",
     soundOn: "آواز آن", stopParentQ: "والدین یونٹ روکیں؟", stopBabyQ: "بے بی یونٹ روکیں؟", noMic: "مائیک تک رسائی نہیں",
     mediaError: "کیمرہ/مائیک دستیاب نہیں۔ https استعمال کریں یا Chrome/Firefox میں کھولیں۔",
   });
   Object.assign(S.id, {
+    qualityLabel: 'Kualitas',
+    qualityAuto: 'Otomatis',
+    qualityHigh: 'Video + suara (tajam)',
+    qualitySaver: 'Video + suara (hemat data)',
+    qualityAudio: 'Hanya suara',
+    qualityNow: 'Digunakan',
+    onlyOneCamera: 'Perangkat ini hanya punya satu kamera', cameraSwitchFailed: 'Gagal beralih — kamera yang sama tetap aktif',
+    waitingApproval: 'Menunggu persetujuan di unit bayi…',
+    metaTitle: 'Baby monitor gratis di browser — BabyPhone.online', metaDesc: 'Ubah dua ponsel menjadi baby monitor gratis dengan video dan suara langsung. Tanpa aplikasi, tanpa akun, tidak ada yang disimpan.',
+    approveTitle: 'Izinkan perangkat ini?', approveAsk: 'Sebuah perangkat memasukkan kode ruangan Anda dan ingin melihat dan mendengar. Izinkan hanya jika itu perangkat Anda sendiri.', approveExtra: 'Perangkat kedua ingin ikut melihat. Seseorang sudah terhubung. Izinkan hanya jika itu perangkat Anda sendiri.', approveAllow: 'Izinkan', approveDeny: 'Tolak', authRefused: 'Unit bayi menolak perangkat ini.', switchCameraSub: 'Kamera depan / belakang',
     qrTapZoom: "👆 Ketuk QR untuk memperbesar agar mudah dipindai", qrZoomHint: "Arahkan kamera ponsel satunya ke kode ini", roomCodeShare: "Kode kamar (bagikan ke unit orang tua)", roomCodeOfBaby: "Kode kamar unit bayi",
     qrScanHint: "Minta orang tua memindai QR ini — atau ketik kode di atas", phCode: "KODE", newCode: "Kode baru", heroTitle: "Bayi Anda, selalu dekat.",
     heroSub: "BabyPhone mengubah dua perangkat menjadi monitor bayi yang aman. Sederhana, privat, langsung di browser.", ctaStartBaby: "Mulai unit bayi", ctaConnectParent: "Hubungkan sebagai orang tua", navPrivacy: "Privasi",
@@ -1307,7 +1431,7 @@
     off2: "Mati", autoNoise: "Peredam bising otomatis", excellentConn: "Koneksi sangat baik", localOnly: "Hanya jaringan lokal",
     pairingCode: "Pemasangan & kode kamar", shareToConnect: "Bagikan untuk menghubungkan", scanToConnect: "Pindai untuk menghubungkan", useParentScan: "Pindai dengan unit orang tua",
     videoStreaming: "Streaming video", audioStreaming: "Streaming audio", audioOnly: "Hanya audio", audioOnlySub: "Kirim suara tanpa video",
-    privacyShade: "Tirai privasi", hideVideoKeepAudio: "Sembunyikan video, tetap ada suara", babyTip: "Tips: biarkan browser ini terbuka dan ponsel tersambung ke charger agar tetap terhubung.", evBabyConnected: "Unit bayi terhubung",
+    privacyShade: "Tirai privasi", hideVideoKeepAudio: "Sembunyikan video, tetap ada suara", babyTip: "Tips: biarkan browser ini terbuka dan ponsel tersambung ke charger agar tetap terhubung. Jangan beralih ke aplikasi lain — kamera bisa berhenti di latar belakang.", evBabyConnected: "Unit bayi terhubung",
     evTalk: "Bicara balik digunakan", evTalkSub: "Anda berbicara ke bayi", evLullaby: "Nina bobo dimulai", evSound: "Suara terdeteksi",
     evSoundSub: "Di atas level yang Anda atur", howTitle: "Bagaimana cara kerjanya?", step1t: "Di dekat bayi", step1: "Buka BabyPhone.online di ponsel yang ditinggal di dekat bayi.",
     step2t: "Pasangkan", step2: "Mulai unit bayi dan pindai QR dengan ponsel Anda sendiri.", step3t: "Tonton langsung", step3: "Lihat dan dengar bayi Anda langsung dari unit orang tua.",
@@ -1316,10 +1440,7 @@
     featTitle: "Semua yang Anda butuhkan", featVideo: "Video langsung", featSound: "Suara", featTalk: "Bicara balik",
     featNight: "Lampu tidur", featAlarm: "Alarm suara", featLullaby: "Nina bobo", featDevices: "Berfungsi di ponsel, tablet, dan komputer.",
     parentUnit: "Unit orang tua", monitoring: "Memantau", babyUnit: "Unit bayi", footPrivacy: "Gambar dan suara mengalir langsung antar perangkat Anda sendiri. Tidak ada rekaman yang disimpan.",
-    footDisclaimer: "Alat bantu, bukan pengganti pengawasan langsung terhadap bayi Anda.", plusTitle: "BabyPhone Plus", plusSub: "Untuk malam-malam yang tidak boleh gagal.", plusFeat1: "Relay khusus — koneksi terjamin di jaringan apa pun",
-    plusFeat2: "Menonton bersama: beberapa perangkat orang tua sekaligus", plusFeat3: "Riwayat tidur & suara", plusFeat4: "Perpustakaan nina bobo premium", plusUpgrade: "Tingkatkan ke Plus",
-    plusManage: "Kelola langganan", plusRestore: "Pulihkan pembelian", plusSoon: "Segera hadir", plusActive: "Plus aktif",
-    plusEmailQ: "Alamat email Anda (langganan):", plusError: "Terjadi kesalahan. Silakan coba lagi.", plusNotFound: "Tidak ada langganan aktif untuk email itu.", tapToTalk: "Ketuk untuk bicara",
+    footDisclaimer: "Alat bantu, bukan pengganti pengawasan langsung terhadap bayi Anda.", tapToTalk: "Ketuk untuk bicara",
     talkViewSub: "Suara Anda terdengar di unit bayi selama ini menyala.", soundscapes: "Suara menenangkan, diputar di unit bayi.", nightViewSub: "Cahaya hangat lembut di layar unit bayi.", alertsViewSub: "Bunyi di perangkat ini saat tangisan terdeteksi.",
     zoom: "Zoom", evSleepDone: "Timer tidur selesai", reconnecting: "Menghubungkan ulang…", connectFailed: "Tidak bisa terhubung. Periksa kode dan coba lagi.",
     retry: "Coba lagi", footTerms: "Ketentuan", footRefunds: "Pengembalian dana", footAccessibility: "Aksesibilitas",
@@ -1327,12 +1448,23 @@
     cameraActive: "Kamera nyala", micActive: "Mikrofon nyala", micOff: "Mikrofon mati", permissionNeeded: "Izinkan kamera dan mikrofon untuk melanjutkan",
     permissionDenied: "Kamera/mikrofon diblokir. Izinkan di browser lalu coba lagi.", copied: "📋 Disalin", copyFail: "Gagal menyalin — pilih manual", scanFail: "Tidak bisa membuka kamera — tempel kodenya",
     invalidAnswer: "Kode jawaban tidak valid", invalidPair: "Kode pemasangan tidak valid", pasteAnswerFirst: "Tempel atau pindai kode jawaban dulu", pastePairFirst: "Tempel atau pindai kode pemasangan dulu",
-    noImage: "Belum ada gambar", recStarted: "⏺️ Perekaman dimulai", saved: "💾 Tersimpan", recNotSupported: "Perekaman tidak didukung",
+    noImage: "Belum ada gambar", unsupportedTitle: "Browser ini tidak bisa menjalankan BabyPhone.online", unsupportedBody: "Halaman ini butuh dukungan kamera, mikrofon, dan panggilan video yang tidak dimiliki browser ini. Silakan buka babyphone.online di versi terbaru Chrome, Safari, Firefox, atau Edge.", recordVideo: "Rekam", recStarted: "⏺️ Perekaman dimulai", saved: "💾 Tersimpan", recNotSupported: "Perekaman tidak didukung",
     noStream: "Belum ada gambar untuk direkam", cameraSwitched: "Kamera diganti", cannotSwitch: "Tidak bisa mengganti kamera", soundMuted: "Suara dimatikan",
     soundOn: "Suara nyala", stopParentQ: "Hentikan unit orang tua?", stopBabyQ: "Hentikan unit bayi?", noMic: "Tidak ada akses mikrofon",
     mediaError: "Kamera/mikrofon tidak tersedia. Gunakan https atau buka di Chrome/Firefox.",
   });
   Object.assign(S.de, {
+    qualityLabel: 'Qualität',
+    qualityAuto: 'Automatisch',
+    qualityHigh: 'Bild + Ton (scharf)',
+    qualitySaver: 'Bild + Ton (datensparend)',
+    qualityAudio: 'Nur Ton',
+    qualityNow: 'In Verwendung',
+    onlyOneCamera: 'Dieses Gerät hat nur eine Kamera', cameraSwitchFailed: 'Wechsel fehlgeschlagen — dieselbe Kamera blieb aktiv',
+    waitingApproval: 'Warte auf Freigabe am Babyphone…',
+    metaTitle: 'Kostenloses Babyphone im Browser — BabyPhone.online', metaDesc: 'Mach aus zwei Handys ein kostenloses Babyphone mit Live-Bild und -Ton. Ohne App, ohne Konto, nichts wird gespeichert. Läuft in jedem Browser.',
+    repeatList: 'Wiederholen',
+    approveTitle: 'Dieses Gerät zulassen?', approveAsk: 'Ein Gerät hat deinen Raumcode eingegeben und möchte mitsehen und mithören. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveExtra: 'Ein zweites Gerät möchte mitsehen. Es ist bereits jemand verbunden. Erlaube das nur, wenn es dein eigenes Gerät ist.', approveAllow: 'Zulassen', approveDeny: 'Ablehnen', authRefused: 'Die Babyeinheit hat dieses Gerät abgelehnt.', switchCameraSub: 'Vordere / hintere Kamera',
     qrTapZoom: "👆 Tippe auf den QR-Code, um ihn zu vergrößern", qrZoomHint: "Richte die Kamera des anderen Handys auf diesen Code", roomCodeShare: "Raumcode (mit der Elterneinheit teilen)", roomCodeOfBaby: "Raumcode der Babyeinheit",
     qrScanHint: "Lass die Eltern diesen QR scannen — oder tippe den Code oben ein", phCode: "CODE", newCode: "Neuer Code", heroTitle: "Dein Baby, immer ganz nah.",
     heroSub: "BabyPhone macht aus zwei Geräten ein sicheres Babyfon. Einfach, privat und direkt im Browser.", ctaStartBaby: "Babyeinheit starten", ctaConnectParent: "Als Eltern verbinden", navPrivacy: "Datenschutz",
@@ -1350,7 +1482,7 @@
     off2: "Aus", autoNoise: "Automatische Rauschunterdrückung", excellentConn: "Ausgezeichnete Verbindung", localOnly: "Nur lokales Netzwerk",
     pairingCode: "Kopplung & Raumcode", shareToConnect: "Zum Verbinden teilen", scanToConnect: "Zum Verbinden scannen", useParentScan: "Mit der Elterneinheit scannen",
     videoStreaming: "Video-Streaming", audioStreaming: "Audio-Streaming", audioOnly: "Nur Audio", audioOnlySub: "Ton ohne Bild übertragen",
-    privacyShade: "Sichtschutz", hideVideoKeepAudio: "Bild aus, Ton bleibt an", babyTip: "Tipp: Lass diesen Browser offen und das Handy am Ladegerät, um verbunden zu bleiben.", evBabyConnected: "Babyeinheit verbunden",
+    privacyShade: "Sichtschutz", hideVideoKeepAudio: "Bild aus, Ton bleibt an", babyTip: "Tipp: Lass diesen Browser offen und das Handy am Ladegerät, um verbunden zu bleiben. Wechsle nicht zu einer anderen App — die Kamera kann im Hintergrund stoppen.", evBabyConnected: "Babyeinheit verbunden",
     evTalk: "Zurücksprechen genutzt", evTalkSub: "Du hast mit dem Baby gesprochen", evLullaby: "Schlaflied gestartet", evSound: "Geräusch erkannt",
     evSoundSub: "Über deinem eingestellten Pegel", howTitle: "Wie funktioniert es?", step1t: "Beim Baby", step1: "Öffne BabyPhone.online auf dem Handy, das beim Baby bleibt.",
     step2t: "Koppeln", step2: "Starte die Babyeinheit und scanne den QR-Code mit deinem eigenen Handy.", step3t: "Live zusehen", step3: "Sieh und höre dein Baby live auf deiner Elterneinheit.",
@@ -1359,23 +1491,29 @@
     featTitle: "Alles, was du brauchst", featVideo: "Live-Video", featSound: "Ton", featTalk: "Zurücksprechen",
     featNight: "Nachtlicht", featAlarm: "Geräuschalarm", featLullaby: "Schlaflieder", featDevices: "Funktioniert auf Handy, Tablet und Computer.",
     parentUnit: "Elterneinheit", monitoring: "Überwachung", babyUnit: "Babyeinheit", footPrivacy: "Bild und Ton laufen direkt zwischen deinen eigenen Geräten. Es werden keine Aufnahmen gespeichert.",
-    footDisclaimer: "Ein Hilfsmittel, kein Ersatz für persönliche Aufsicht über dein Baby.", plusTitle: "BabyPhone Plus", plusSub: "Für Nächte, in denen es wirklich funktionieren muss.", plusFeat1: "Eigenes Relay — garantierte Verbindung in jedem Netz",
-    plusFeat2: "Gemeinsam zusehen: mehrere Elterngeräte gleichzeitig", plusFeat3: "Schlaf- und Geräuschverlauf", plusFeat4: "Premium-Schlaflieder-Bibliothek", plusUpgrade: "Auf Plus upgraden",
-    plusManage: "Abo verwalten", plusRestore: "Kauf wiederherstellen", plusSoon: "Bald verfügbar", plusActive: "Plus aktiv",
-    plusEmailQ: "Deine E-Mail-Adresse (für dein Abo):", plusError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.", plusNotFound: "Kein aktives Abo für diese E-Mail gefunden.", tapToTalk: "Zum Sprechen tippen",
+    footDisclaimer: "Ein Hilfsmittel, kein Ersatz für persönliche Aufsicht über dein Baby.", tapToTalk: "Zum Sprechen tippen",
     talkViewSub: "Deine Stimme ist auf der Babyeinheit zu hören, solange dies an ist.", soundscapes: "Ruhige Klänge, abgespielt auf der Babyeinheit.", nightViewSub: "Ein sanftes, warmes Licht auf dem Bildschirm der Babyeinheit.", alertsViewSub: "Ein Ton auf diesem Gerät, sobald Weinen erkannt wird.",
     zoom: "Zoom", evSleepDone: "Schlaftimer abgelaufen", reconnecting: "Verbinde erneut…", connectFailed: "Verbindung nicht möglich. Prüfe den Code und versuche es erneut.",
     retry: "Erneut versuchen", footTerms: "AGB", footRefunds: "Erstattung", footAccessibility: "Barrierefreiheit",
-    footContact: "Kontakt", pairBabySub: "Zeige diesen Code (oder QR) deinem eigenen Handy zum Verbinden.", pairParentSub: "Gib den Code der Babyeinheit ein oder scanne ihren QR.", waitingConnection: "Warten auf die Elterneinheit…",
+    footGuide: "Ratgeber", footContact: "Kontakt", pairBabySub: "Zeige diesen Code (oder QR) deinem eigenen Handy zum Verbinden.", pairParentSub: "Gib den Code der Babyeinheit ein oder scanne ihren QR.", waitingConnection: "Warten auf die Elterneinheit…",
     cameraActive: "Kamera an", micActive: "Mikrofon an", micOff: "Mikrofon aus", permissionNeeded: "Bitte erlaube Kamera und Mikrofon, um fortzufahren",
     permissionDenied: "Kamera/Mikrofon blockiert. Erlaube den Zugriff im Browser und versuche es erneut.", copied: "📋 Kopiert", copyFail: "Kopieren fehlgeschlagen — manuell auswählen", scanFail: "Kamera zum Scannen nicht verfügbar — füge den Code ein",
     invalidAnswer: "Ungültiger Antwortcode", invalidPair: "Ungültiger Kopplungscode", pasteAnswerFirst: "Füge zuerst den Antwortcode ein oder scanne ihn", pastePairFirst: "Füge zuerst den Kopplungscode ein oder scanne ihn",
-    noImage: "Noch kein Bild", recStarted: "⏺️ Aufnahme gestartet", saved: "💾 Gespeichert", recNotSupported: "Aufnahme nicht unterstützt",
+    noImage: "Noch kein Bild", unsupportedTitle: "Dieser Browser kann BabyPhone.online nicht ausführen", unsupportedBody: "Diese Seite benötigt Kamera-, Mikrofon- und Videoanruf-Unterstützung, die dieser Browser nicht hat. Bitte öffne babyphone.online in einer aktuellen Version von Chrome, Safari, Firefox oder Edge.", posterCameraOff: "Kamera aus", posterOffline: "Offline", cameraLabel: "Kamera", ledLight: "LED-Licht", ledOn: "💡 LED an", ledOff: "LED aus", recordVideo: "Aufnehmen", recStarted: "⏺️ Aufnahme gestartet", saved: "💾 Gespeichert", recNotSupported: "Aufnahme nicht unterstützt",
     noStream: "Noch kein Bild zum Aufnehmen", cameraSwitched: "Kamera gewechselt", cannotSwitch: "Kamera kann nicht gewechselt werden", soundMuted: "Ton aus",
     soundOn: "Ton an", stopParentQ: "Elterneinheit stoppen?", stopBabyQ: "Babyeinheit stoppen?", noMic: "Kein Mikrofonzugriff",
     mediaError: "Kamera/Mikrofon nicht verfügbar. Nutze https oder öffne die Seite in Chrome/Firefox.",
   });
   Object.assign(S.ja, {
+    qualityLabel: '画質',
+    qualityAuto: '自動',
+    qualityHigh: '映像＋音声（高画質）',
+    qualitySaver: '映像＋音声（省データ）',
+    qualityAudio: '音声のみ',
+    qualityNow: '使用中',
+    onlyOneCamera: 'この端末にはカメラが1つしかありません', cameraSwitchFailed: '切り替えに失敗しました — 同じカメラのままです',
+    waitingApproval: 'ベビーユニットの許可を待っています…',
+    metaTitle: '無料のベビーモニター — ブラウザで使う BabyPhone.online', metaDesc: 'スマホ2台が無料のベビーモニターに。ライブ映像と音声をそのまま届けます。アプリ不要、登録不要、録画は一切保存されません。ブラウザだけで使えます。',
     qrTapZoom: "👆 QRをタップすると拡大してスキャンできます", qrZoomHint: "もう一方のスマホのカメラをこのコードに向けてください", roomCodeShare: "ルームコード（親機と共有）", roomCodeOfBaby: "赤ちゃん機のルームコード",
     qrScanHint: "このQRを親に読み取ってもらうか、上のコードを入力してください", phCode: "コード", newCode: "新しいコード", heroTitle: "赤ちゃんを、いつもそばに。",
     heroSub: "BabyPhoneは2台の端末を安全なベビーモニターに変えます。シンプルでプライベート、ブラウザだけで使えます。", ctaStartBaby: "赤ちゃん機を開始", ctaConnectParent: "親として接続", navPrivacy: "プライバシー",
@@ -1393,7 +1531,7 @@
     off2: "オフ", autoNoise: "自動ノイズ低減", excellentConn: "接続良好", localOnly: "ローカルネットワークのみ",
     pairingCode: "ペアリングとルームコード", shareToConnect: "共有して接続", scanToConnect: "スキャンして接続", useParentScan: "親機でスキャンしてください",
     videoStreaming: "映像ストリーミング", audioStreaming: "音声ストリーミング", audioOnly: "音声のみ", audioOnlySub: "映像なしで音声を送る",
-    privacyShade: "プライバシーシェード", hideVideoKeepAudio: "映像を隠して音声は残す", babyTip: "ヒント：接続を保つため、このブラウザを開いたまま、スマホは充電器につないでおいてください。", evBabyConnected: "赤ちゃん機が接続されました",
+    privacyShade: "プライバシーシェード", hideVideoKeepAudio: "映像を隠して音声は残す", babyTip: "ヒント：接続を保つため、このブラウザを開いたまま、スマホは充電器につないでおいてください。 他のアプリに切り替えないでください — バックグラウンドではカメラが止まることがあります。", evBabyConnected: "赤ちゃん機が接続されました",
     evTalk: "話しかけを使用", evTalkSub: "赤ちゃんに話しかけました", evLullaby: "子守唄を開始", evSound: "音を検知",
     evSoundSub: "設定レベルを超えました", howTitle: "使い方は？", step1t: "赤ちゃんのそばで", step1: "赤ちゃんのそばに置くスマホでBabyPhone.onlineを開きます。",
     step2t: "ペアリング", step2: "赤ちゃん機を起動し、自分のスマホでQRを読み取ります。", step3t: "ライブで見守る", step3: "親機から赤ちゃんの様子をライブで見て聞けます。",
@@ -1402,10 +1540,7 @@
     featTitle: "必要なものすべて", featVideo: "ライブ映像", featSound: "音声", featTalk: "話しかけ",
     featNight: "ナイトライト", featAlarm: "サウンドアラーム", featLullaby: "子守唄", featDevices: "スマホ・タブレット・パソコンで動作。",
     parentUnit: "親機", monitoring: "見守り中", babyUnit: "赤ちゃん機", footPrivacy: "映像と音声はご自身の端末間を直接流れます。録画は保存されません。",
-    footDisclaimer: "補助ツールであり、直接の見守りの代わりにはなりません。", plusTitle: "BabyPhone Plus", plusSub: "絶対に切れてほしくない夜のために。", plusFeat1: "専用リレー — どんなネットワークでも確実に接続",
-    plusFeat2: "一緒に見守り：複数の親機を同時に", plusFeat3: "睡眠と音の履歴", plusFeat4: "プレミアム子守唄ライブラリ", plusUpgrade: "Plusにアップグレード",
-    plusManage: "サブスクリプション管理", plusRestore: "購入を復元", plusSoon: "近日公開", plusActive: "Plus有効",
-    plusEmailQ: "メールアドレス（サブスクリプション用）：", plusError: "問題が発生しました。もう一度お試しください。", plusNotFound: "そのメールの有効なサブスクリプションが見つかりません。", tapToTalk: "タップして話す",
+    footDisclaimer: "補助ツールであり、直接の見守りの代わりにはなりません。", tapToTalk: "タップして話す",
     talkViewSub: "オンの間、あなたの声が赤ちゃん機で流れます。", soundscapes: "赤ちゃん機で流れる穏やかな音。", nightViewSub: "赤ちゃん機の画面にやわらかく温かい光を。", alertsViewSub: "泣き声を検知するとこの端末で音が鳴ります。",
     zoom: "ズーム", evSleepDone: "スリープタイマー終了", reconnecting: "再接続中…", connectFailed: "接続できませんでした。コードを確認してもう一度お試しください。",
     retry: "再試行", footTerms: "利用規約", footRefunds: "返金", footAccessibility: "アクセシビリティ",
@@ -1413,12 +1548,21 @@
     cameraActive: "カメラ オン", micActive: "マイク オン", micOff: "マイク オフ", permissionNeeded: "続けるにはカメラとマイクを許可してください",
     permissionDenied: "カメラ/マイクがブロックされています。ブラウザで許可して再試行してください。", copied: "📋 コピーしました", copyFail: "コピー失敗 — 手動で選択してください", scanFail: "カメラを開けません — コードを貼り付けてください",
     invalidAnswer: "応答コードが無効です", invalidPair: "ペアリングコードが無効です", pasteAnswerFirst: "先に応答コードを貼り付けるか読み取ってください", pastePairFirst: "先にペアリングコードを貼り付けるか読み取ってください",
-    noImage: "まだ映像がありません", recStarted: "⏺️ 録画開始", saved: "💾 保存しました", recNotSupported: "録画は未対応です",
+    noImage: "まだ映像がありません", unsupportedTitle: "このブラウザでは BabyPhone.online を実行できません", unsupportedBody: "このページにはカメラ、マイク、ビデオ通話のサポートが必要ですが、このブラウザにはありません。最新版の Chrome、Safari、Firefox、Edge で babyphone.online を開いてください。", recordVideo: "録画", recStarted: "⏺️ 録画開始", saved: "💾 保存しました", recNotSupported: "録画は未対応です",
     noStream: "録画できる映像がまだありません", cameraSwitched: "カメラを切り替えました", cannotSwitch: "カメラを切り替えられません", soundMuted: "消音",
     soundOn: "音声オン", stopParentQ: "親機を停止しますか？", stopBabyQ: "赤ちゃん機を停止しますか？", noMic: "マイクにアクセスできません",
     mediaError: "カメラ/マイクを使用できません。httpsを使うか、Chrome/Firefoxで開いてください。",
   });
   Object.assign(S.mr, {
+    qualityLabel: 'गुणवत्ता',
+    qualityAuto: 'स्वयंचलित',
+    qualityHigh: 'व्हिडिओ + आवाज (स्पष्ट)',
+    qualitySaver: 'व्हिडिओ + आवाज (डेटा बचत)',
+    qualityAudio: 'फक्त आवाज',
+    qualityNow: 'वापरात',
+    onlyOneCamera: 'या उपकरणात फक्त एकच कॅमेरा आहे', cameraSwitchFailed: 'बदलणे अयशस्वी — तोच कॅमेरा सुरू राहिला',
+    waitingApproval: 'बेबी युनिटवर मंजुरीची प्रतीक्षा…',
+    metaTitle: 'मोफत बेबी मॉनिटर — BabyPhone.online', metaDesc: 'दोन फोनचे मोफत बेबी मॉनिटरमध्ये रूपांतर करा — थेट व्हिडिओ आणि आवाजासह. अ‍ॅप नाही, खाते नाही, काहीही जतन होत नाही. थेट ब्राउझरमध्ये.',
     qrTapZoom: "👆 स्कॅनसाठी QR ला स्पर्श करून मोठा करा", qrZoomHint: "दुसऱ्या फोनचा कॅमेरा या कोडकडे धरा", roomCodeShare: "खोलीचा कोड (पालक युनिटसोबत शेअर करा)", roomCodeOfBaby: "बाळ युनिटच्या खोलीचा कोड",
     qrScanHint: "पालकांना हा QR स्कॅन करू द्या — किंवा वरचा कोड टाइप करा", phCode: "कोड", newCode: "नवा कोड", heroTitle: "तुमचं बाळ, नेहमी जवळ.",
     heroSub: "BabyPhone दोन उपकरणांना सुरक्षित बेबी मॉनिटर बनवतो. सोपं, खासगी आणि थेट ब्राउझरमध्ये.", ctaStartBaby: "बाळ युनिट सुरू करा", ctaConnectParent: "पालक म्हणून जोडा", navPrivacy: "गोपनीयता",
@@ -1436,7 +1580,7 @@
     off2: "बंद", autoNoise: "स्वयंचलित आवाज कपात", excellentConn: "उत्तम कनेक्शन", localOnly: "फक्त स्थानिक नेटवर्क",
     pairingCode: "जोडणी व खोली कोड", shareToConnect: "जोडण्यासाठी शेअर करा", scanToConnect: "जोडण्यासाठी स्कॅन करा", useParentScan: "पालक युनिटने स्कॅन करा",
     videoStreaming: "व्हिडिओ स्ट्रीमिंग", audioStreaming: "ऑडिओ स्ट्रीमिंग", audioOnly: "फक्त आवाज", audioOnlySub: "व्हिडिओशिवाय आवाज पाठवा",
-    privacyShade: "गोपनीयतेचा पडदा", hideVideoKeepAudio: "व्हिडिओ लपवा, आवाज ठेवा", babyTip: "टीप: जोडलेले राहण्यासाठी हा ब्राउझर उघडा ठेवा आणि फोन चार्जरला लावा.", evBabyConnected: "बाळ युनिट जोडलं",
+    privacyShade: "गोपनीयतेचा पडदा", hideVideoKeepAudio: "व्हिडिओ लपवा, आवाज ठेवा", babyTip: "टीप: जोडलेले राहण्यासाठी हा ब्राउझर उघडा ठेवा आणि फोन चार्जरला लावा. दुसऱ्या अ‍ॅपवर जाऊ नका — बॅकग्राउंडमध्ये कॅमेरा बंद होऊ शकतो.", evBabyConnected: "बाळ युनिट जोडलं",
     evTalk: "बोलणं वापरलं", evTalkSub: "तुम्ही बाळाशी बोललात", evLullaby: "अंगाई सुरू", evSound: "आवाज आढळला",
     evSoundSub: "तुमच्या ठरवलेल्या पातळीच्या वर", howTitle: "हे कसं चालतं?", step1t: "बाळाजवळ", step1: "बाळाजवळ राहणाऱ्या फोनवर BabyPhone.online उघडा.",
     step2t: "जोडा", step2: "बाळ युनिट सुरू करा आणि तुमच्या फोनने QR स्कॅन करा.", step3t: "थेट पाहा", step3: "पालक युनिटवरून बाळाला थेट पाहा-ऐका.",
@@ -1445,10 +1589,7 @@
     featTitle: "हवं ते सगळं", featVideo: "थेट व्हिडिओ", featSound: "आवाज", featTalk: "बाळाशी बोला",
     featNight: "रात्रदिवा", featAlarm: "आवाज इशारा", featLullaby: "अंगाया", featDevices: "फोन, टॅबलेट आणि संगणकावर चालतं.",
     parentUnit: "पालक युनिट", monitoring: "देखरेख", babyUnit: "बाळ युनिट", footPrivacy: "चित्र आणि आवाज थेट तुमच्या उपकरणांमध्ये जातो. कोणतंही रेकॉर्डिंग साठवलं जात नाही.",
-    footDisclaimer: "मदतीचं साधन, बाळावर प्रत्यक्ष लक्ष ठेवण्याचा पर्याय नाही.", plusTitle: "BabyPhone Plus", plusSub: "ज्या रात्री खरंच चालायला हवं, त्यांच्यासाठी.", plusFeat1: "खास रिले — कोणत्याही नेटवर्कवर हमखास कनेक्शन",
-    plusFeat2: "एकत्र पाहा: एकाच वेळी अनेक पालक उपकरणं", plusFeat3: "झोप व आवाजाचा इतिहास", plusFeat4: "प्रीमियम अंगाई संग्रह", plusUpgrade: "Plus वर जा",
-    plusManage: "सदस्यता व्यवस्थापन", plusRestore: "खरेदी पुनर्संचयित करा", plusSoon: "लवकरच", plusActive: "Plus सक्रिय",
-    plusEmailQ: "तुमचा ईमेल (सदस्यतेचा):", plusError: "काहीतरी चुकलं. पुन्हा प्रयत्न करा.", plusNotFound: "त्या ईमेलसाठी सक्रिय सदस्यता नाही.", tapToTalk: "बोलण्यासाठी स्पर्श करा",
+    footDisclaimer: "मदतीचं साधन, बाळावर प्रत्यक्ष लक्ष ठेवण्याचा पर्याय नाही.", tapToTalk: "बोलण्यासाठी स्पर्श करा",
     talkViewSub: "हे चालू असेपर्यंत तुमचा आवाज बाळ युनिटवर ऐकू येतो.", soundscapes: "शांत आवाज, बाळ युनिटवर वाजतात.", nightViewSub: "बाळ युनिटच्या स्क्रीनवर मऊ, उबदार प्रकाश.", alertsViewSub: "रडणं आढळताच या उपकरणावर आवाज.",
     zoom: "झूम", evSleepDone: "झोप टायमर संपला", reconnecting: "पुन्हा जोडतोय…", connectFailed: "जोडता आलं नाही. कोड तपासा आणि पुन्हा प्रयत्न करा.",
     retry: "पुन्हा प्रयत्न करा", footTerms: "अटी", footRefunds: "परतावा", footAccessibility: "सुलभता",
@@ -1456,12 +1597,21 @@
     cameraActive: "कॅमेरा चालू", micActive: "माइक चालू", micOff: "माइक बंद", permissionNeeded: "पुढे जाण्यासाठी कॅमेरा व माइकला परवानगी द्या",
     permissionDenied: "कॅमेरा/माइक अडवला आहे. ब्राउझरमध्ये परवानगी देऊन पुन्हा प्रयत्न करा.", copied: "📋 कॉपी झालं", copyFail: "कॉपी अयशस्वी — स्वतः निवडा", scanFail: "स्कॅनसाठी कॅमेरा उघडत नाही — कोड पेस्ट करा",
     invalidAnswer: "अवैध उत्तर कोड", invalidPair: "अवैध जोडणी कोड", pasteAnswerFirst: "आधी उत्तर कोड पेस्ट किंवा स्कॅन करा", pastePairFirst: "आधी जोडणी कोड पेस्ट किंवा स्कॅन करा",
-    noImage: "अजून चित्र नाही", recStarted: "⏺️ रेकॉर्डिंग सुरू", saved: "💾 जतन केलं", recNotSupported: "रेकॉर्डिंगला आधार नाही",
+    noImage: "अजून चित्र नाही", unsupportedTitle: "हा ब्राउझर BabyPhone.online चालवू शकत नाही", unsupportedBody: "या पेजला कॅमेरा, मायक्रोफोन आणि व्हिडिओ-कॉल सपोर्ट लागतो जो या ब्राउझरमध्ये नाही. कृपया babyphone.online Chrome, Safari, Firefox किंवा Edge च्या नव्या आवृत्तीत उघडा.", recordVideo: "रेकॉर्ड करा", recStarted: "⏺️ रेकॉर्डिंग सुरू", saved: "💾 जतन केलं", recNotSupported: "रेकॉर्डिंगला आधार नाही",
     noStream: "रेकॉर्ड करण्यासाठी अजून चित्र नाही", cameraSwitched: "कॅमेरा बदलला", cannotSwitch: "कॅमेरा बदलता येत नाही", soundMuted: "आवाज बंद",
     soundOn: "आवाज चालू", stopParentQ: "पालक युनिट थांबवायचं?", stopBabyQ: "बाळ युनिट थांबवायचं?", noMic: "माइकचा प्रवेश नाही",
     mediaError: "कॅमेरा/माइक उपलब्ध नाही. https वापरा किंवा Chrome/Firefox मध्ये उघडा.",
   });
   Object.assign(S.te, {
+    qualityLabel: 'నాణ్యత',
+    qualityAuto: 'స్వయంచాలకం',
+    qualityHigh: 'వీడియో + శబ్దం (స్పష్టం)',
+    qualitySaver: 'వీడియో + శబ్దం (డేటా ఆదా)',
+    qualityAudio: 'శబ్దం మాత్రమే',
+    qualityNow: 'వాడుకలో',
+    onlyOneCamera: 'ఈ పరికరంలో ఒకే కెమెరా ఉంది', cameraSwitchFailed: 'మార్చడం విఫలమైంది — అదే కెమెరా కొనసాగింది',
+    waitingApproval: 'బేబీ యూనిట్‌లో ఆమోదం కోసం వేచి ఉంది…',
+    metaTitle: 'ఉచిత బేబీ మానిటర్ — BabyPhone.online', metaDesc: 'రెండు ఫోన్లను ఉచిత బేబీ మానిటర్‌గా మార్చండి — ప్రత్యక్ష వీడియో మరియు శబ్దంతో. యాప్ అవసరం లేదు, ఖాతా అవసరం లేదు, ఏదీ నిల్వ చేయబడదు.',
     qrTapZoom: "👆 స్కాన్ కోసం QR ను తాకి పెద్దది చేయండి", qrZoomHint: "మరో ఫోన్ కెమెరాను ఈ కోడ్ వైపు పెట్టండి", roomCodeShare: "గది కోడ్ (తల్లిదండ్రుల యూనిట్‌తో పంచుకోండి)", roomCodeOfBaby: "పాప యూనిట్ గది కోడ్",
     qrScanHint: "తల్లిదండ్రులతో ఈ QR స్కాన్ చేయించండి — లేదా పై కోడ్ టైప్ చేయండి", phCode: "కోడ్", newCode: "కొత్త కోడ్", heroTitle: "మీ పాప, ఎప్పుడూ దగ్గరే.",
     heroSub: "BabyPhone రెండు పరికరాలను సురక్షిత బేబీ మానిటర్‌గా మారుస్తుంది. సులభం, ప్రైవేట్, నేరుగా బ్రౌజర్‌లో.", ctaStartBaby: "పాప యూనిట్ ప్రారంభించండి", ctaConnectParent: "తల్లి/తండ్రిగా కనెక్ట్ అవ్వండి", navPrivacy: "గోప్యత",
@@ -1479,7 +1629,7 @@
     off2: "ఆఫ్", autoNoise: "స్వయంచాలక శబ్ద తగ్గింపు", excellentConn: "అద్భుతమైన కనెక్షన్", localOnly: "లోకల్ నెట్‌వర్క్ మాత్రమే",
     pairingCode: "జత చేయడం & గది కోడ్", shareToConnect: "కనెక్ట్ చేయడానికి పంచుకోండి", scanToConnect: "కనెక్ట్ చేయడానికి స్కాన్ చేయండి", useParentScan: "తల్లిదండ్రుల యూనిట్‌తో స్కాన్ చేయండి",
     videoStreaming: "వీడియో స్ట్రీమింగ్", audioStreaming: "ఆడియో స్ట్రీమింగ్", audioOnly: "శబ్దం మాత్రమే", audioOnlySub: "వీడియో లేకుండా శబ్దం పంపండి",
-    privacyShade: "గోప్యతా తెర", hideVideoKeepAudio: "వీడియో దాచండి, శబ్దం ఉంచండి", babyTip: "చిట్కా: కనెక్ట్‌గా ఉండటానికి ఈ బ్రౌజర్ తెరిచి ఉంచండి, ఫోన్‌ను ఛార్జర్‌కు పెట్టండి.", evBabyConnected: "పాప యూనిట్ కనెక్ట్ అయ్యింది",
+    privacyShade: "గోప్యతా తెర", hideVideoKeepAudio: "వీడియో దాచండి, శబ్దం ఉంచండి", babyTip: "చిట్కా: కనెక్ట్‌గా ఉండటానికి ఈ బ్రౌజర్ తెరిచి ఉంచండి, ఫోన్‌ను ఛార్జర్‌కు పెట్టండి. వేరే యాప్‌కు మారవద్దు — బ్యాక్‌గ్రౌండ్‌లో కెమెరా ఆగిపోవచ్చు.", evBabyConnected: "పాప యూనిట్ కనెక్ట్ అయ్యింది",
     evTalk: "మాట్లాడటం వాడారు", evTalkSub: "మీరు పాపతో మాట్లాడారు", evLullaby: "జోలపాట మొదలైంది", evSound: "శబ్దం గుర్తించబడింది",
     evSoundSub: "మీరు పెట్టిన స్థాయి కంటే ఎక్కువ", howTitle: "ఇది ఎలా పనిచేస్తుంది?", step1t: "పాప దగ్గర", step1: "పాప దగ్గర ఉంచే ఫోన్‌లో BabyPhone.online తెరవండి.",
     step2t: "జత చేయండి", step2: "పాప యూనిట్ ప్రారంభించి మీ ఫోన్‌తో QR స్కాన్ చేయండి.", step3t: "లైవ్ చూడండి", step3: "తల్లిదండ్రుల యూనిట్ నుంచి పాపను లైవ్‌గా చూడండి, వినండి.",
@@ -1488,10 +1638,7 @@
     featTitle: "మీకు కావాల్సినవన్నీ", featVideo: "లైవ్ వీడియో", featSound: "శబ్దం", featTalk: "పాపతో మాట్లాడండి",
     featNight: "రాత్రి దీపం", featAlarm: "శబ్ద హెచ్చరిక", featLullaby: "జోలపాటలు", featDevices: "ఫోన్, టాబ్లెట్, కంప్యూటర్‌పై పనిచేస్తుంది.",
     parentUnit: "తల్లిదండ్రుల యూనిట్", monitoring: "పర్యవేక్షణ", babyUnit: "పాప యూనిట్", footPrivacy: "చిత్రం, శబ్దం నేరుగా మీ సొంత పరికరాల మధ్య వెళ్తాయి. రికార్డింగ్‌లు నిల్వ కావు.",
-    footDisclaimer: "సహాయ సాధనం, పాపను స్వయంగా చూసుకోవడానికి ప్రత్యామ్నాయం కాదు.", plusTitle: "BabyPhone Plus", plusSub: "నిజంగా పనిచేయాల్సిన రాత్రుల కోసం.", plusFeat1: "ప్రత్యేక రిలే — ఏ నెట్‌వర్క్‌లోనైనా హామీ కనెక్షన్",
-    plusFeat2: "కలిసి చూడండి: ఒకేసారి పలు తల్లిదండ్రుల పరికరాలు", plusFeat3: "నిద్ర & శబ్ద చరిత్ర", plusFeat4: "ప్రీమియం జోలపాటల సేకరణ", plusUpgrade: "Plus కు అప్‌గ్రేడ్ చేయండి",
-    plusManage: "చందా నిర్వహించండి", plusRestore: "కొనుగోలు పునరుద్ధరించండి", plusSoon: "త్వరలో", plusActive: "Plus యాక్టివ్",
-    plusEmailQ: "మీ ఇమెయిల్ (చందాది):", plusError: "ఏదో తప్పు జరిగింది. మళ్లీ ప్రయత్నించండి.", plusNotFound: "ఆ ఇమెయిల్‌కు యాక్టివ్ చందా లేదు.", tapToTalk: "మాట్లాడటానికి తాకండి",
+    footDisclaimer: "సహాయ సాధనం, పాపను స్వయంగా చూసుకోవడానికి ప్రత్యామ్నాయం కాదు.", tapToTalk: "మాట్లాడటానికి తాకండి",
     talkViewSub: "ఇది ఆన్‌లో ఉన్నంతవరకు మీ స్వరం పాప యూనిట్‌పై వినిపిస్తుంది.", soundscapes: "ప్రశాంత శబ్దాలు, పాప యూనిట్‌పై ప్లే అవుతాయి.", nightViewSub: "పాప యూనిట్ తెరపై మృదువైన, వెచ్చని వెలుగు.", alertsViewSub: "ఏడుపు గుర్తించగానే ఈ పరికరంపై శబ్దం.",
     zoom: "జూమ్", evSleepDone: "నిద్ర టైమర్ ముగిసింది", reconnecting: "మళ్లీ కనెక్ట్ అవుతోంది…", connectFailed: "కనెక్ట్ కాలేదు. కోడ్ చూసి మళ్లీ ప్రయత్నించండి.",
     retry: "మళ్లీ ప్రయత్నించండి", footTerms: "నిబంధనలు", footRefunds: "వాపసు", footAccessibility: "అందుబాటు",
@@ -1499,12 +1646,22 @@
     cameraActive: "కెమెరా ఆన్", micActive: "మైక్ ఆన్", micOff: "మైక్ ఆఫ్", permissionNeeded: "కొనసాగడానికి కెమెరా, మైక్‌లను అనుమతించండి",
     permissionDenied: "కెమెరా/మైక్ నిరోధించబడ్డాయి. బ్రౌజర్‌లో అనుమతించి మళ్లీ ప్రయత్నించండి.", copied: "📋 కాపీ అయ్యింది", copyFail: "కాపీ విఫలం — స్వయంగా ఎంచుకోండి", scanFail: "స్కాన్ కోసం కెమెరా తెరవలేకపోతోంది — కోడ్ అతికించండి",
     invalidAnswer: "చెల్లని సమాధాన కోడ్", invalidPair: "చెల్లని జత కోడ్", pasteAnswerFirst: "ముందు సమాధాన కోడ్ అతికించండి లేదా స్కాన్ చేయండి", pastePairFirst: "ముందు జత కోడ్ అతికించండి లేదా స్కాన్ చేయండి",
-    noImage: "ఇంకా చిత్రం లేదు", recStarted: "⏺️ రికార్డింగ్ మొదలైంది", saved: "💾 సేవ్ అయ్యింది", recNotSupported: "రికార్డింగ్‌కు మద్దతు లేదు",
+    noImage: "ఇంకా చిత్రం లేదు", unsupportedTitle: "ఈ బ్రౌజర్ BabyPhone.online నడపలేదు", unsupportedBody: "ఈ పేజీకి కెమెరా, మైక్రోఫోన్ మరియు వీడియో-కాల్ మద్దతు అవసరం, ఇది ఈ బ్రౌజర్‌లో లేదు. దయచేసి babyphone.online ను Chrome, Safari, Firefox లేదా Edge యొక్క తాజా వెర్షన్‌లో తెరవండి.", recordVideo: "రికార్డ్", recStarted: "⏺️ రికార్డింగ్ మొదలైంది", saved: "💾 సేవ్ అయ్యింది", recNotSupported: "రికార్డింగ్‌కు మద్దతు లేదు",
     noStream: "రికార్డ్ చేయడానికి ఇంకా చిత్రం లేదు", cameraSwitched: "కెమెరా మారింది", cannotSwitch: "కెమెరా మార్చలేకపోతున్నాం", soundMuted: "శబ్దం ఆఫ్",
     soundOn: "శబ్దం ఆన్", stopParentQ: "తల్లిదండ్రుల యూనిట్ ఆపాలా?", stopBabyQ: "పాప యూనిట్ ఆపాలా?", noMic: "మైక్ యాక్సెస్ లేదు",
     mediaError: "కెమెరా/మైక్ అందుబాటులో లేవు. https వాడండి లేదా Chrome/Firefox లో తెరవండి.",
   });
   Object.assign(S.tr, {
+    qualityLabel: 'Kalite',
+    qualityAuto: 'Otomatik',
+    qualityHigh: 'Görüntü + ses (net)',
+    qualitySaver: 'Görüntü + ses (tasarruf)',
+    qualityAudio: 'Yalnızca ses',
+    qualityNow: 'Kullanımda',
+    onlyOneCamera: 'Bu cihazda yalnızca bir kamera var', cameraSwitchFailed: 'Değiştirilemedi — aynı kamera açık kaldı',
+    waitingApproval: 'Bebek ünitesinde onay bekleniyor…',
+    metaTitle: 'Ücretsiz bebek telsizi — tarayıcıda BabyPhone.online', metaDesc: 'İki telefonu canlı görüntü ve sesle ücretsiz bir bebek telsizine dönüştürün. Uygulama yok, hesap yok, hiçbir şey kaydedilmez.',
+    approveTitle: 'Bu cihaza izin verilsin mi?', approveAsk: 'Bir cihaz oda kodunuzu girdi ve izlemek ve dinlemek istiyor. Yalnızca kendi cihazınızsa izin verin.', approveExtra: 'İkinci bir cihaz izlemek istiyor. Zaten bağlı biri var. Yalnızca kendi cihazınızsa izin verin.', approveAllow: 'İzin ver', approveDeny: 'Reddet', authRefused: 'Bebek ünitesi bu cihazı reddetti.', switchCameraSub: 'Ön / arka kamera',
     qrTapZoom: "👆 Taramak için QR'a dokunup büyütün", qrZoomHint: "Diğer telefonun kamerasını bu koda doğrultun", roomCodeShare: "Oda kodu (ebeveyn ünitesiyle paylaşın)", roomCodeOfBaby: "Bebek ünitesinin oda kodu",
     qrScanHint: "Bu QR'ı ebeveyne taratın — veya yukarıdaki kodu yazın", phCode: "KOD", newCode: "Yeni kod", heroTitle: "Bebeğiniz, her zaman yakınınızda.",
     heroSub: "BabyPhone iki cihazı güvenli bir bebek telsizine dönüştürür. Basit, gizli ve doğrudan tarayıcınızda.", ctaStartBaby: "Bebek ünitesini başlat", ctaConnectParent: "Ebeveyn olarak bağlan", navPrivacy: "Gizlilik",
@@ -1522,7 +1679,7 @@
     off2: "Kapalı", autoNoise: "Otomatik gürültü azaltma", excellentConn: "Mükemmel bağlantı", localOnly: "Yalnızca yerel ağ",
     pairingCode: "Eşleştirme ve oda kodu", shareToConnect: "Bağlanmak için paylaşın", scanToConnect: "Bağlanmak için tarayın", useParentScan: "Ebeveyn ünitesiyle tarayın",
     videoStreaming: "Video akışı", audioStreaming: "Ses akışı", audioOnly: "Yalnızca ses", audioOnlySub: "Görüntüsüz ses aktarın",
-    privacyShade: "Gizlilik perdesi", hideVideoKeepAudio: "Görüntüyü gizle, sesi koru", babyTip: "İpucu: bağlı kalmak için bu tarayıcıyı açık, telefonu şarjda tutun.", evBabyConnected: "Bebek ünitesi bağlandı",
+    privacyShade: "Gizlilik perdesi", hideVideoKeepAudio: "Görüntüyü gizle, sesi koru", babyTip: "İpucu: bağlı kalmak için bu tarayıcıyı açık, telefonu şarjda tutun. Başka bir uygulamaya geçmeyin — kamera arka planda durabilir.", evBabyConnected: "Bebek ünitesi bağlandı",
     evTalk: "Yanıt kullanıldı", evTalkSub: "Bebekle konuştunuz", evLullaby: "Ninni başlatıldı", evSound: "Ses algılandı",
     evSoundSub: "Ayarladığınız seviyenin üzerinde", howTitle: "Nasıl çalışır?", step1t: "Bebeğin yanında", step1: "Bebeğinizin yanında bırakacağınız telefonda BabyPhone.online'ı açın.",
     step2t: "Eşleştir", step2: "Bebek ünitesini başlatın ve QR'ı kendi telefonunuzla tarayın.", step3t: "Canlı izleyin", step3: "Bebeğinizi ebeveyn ünitenizden canlı izleyin ve dinleyin.",
@@ -1531,10 +1688,7 @@
     featTitle: "İhtiyacınız olan her şey", featVideo: "Canlı video", featSound: "Ses", featTalk: "Yanıt ver",
     featNight: "Gece lambası", featAlarm: "Ses alarmı", featLullaby: "Ninniler", featDevices: "Telefon, tablet ve bilgisayarda çalışır.",
     parentUnit: "Ebeveyn ünitesi", monitoring: "İzleme", babyUnit: "Bebek ünitesi", footPrivacy: "Görüntü ve ses doğrudan kendi cihazlarınız arasında akar. Kayıt saklanmaz.",
-    footDisclaimer: "Bir yardımcı; bebeğinize bizzat göz kulak olmanın yerini tutmaz.", plusTitle: "BabyPhone Plus", plusSub: "Gerçekten çalışması gereken geceler için.", plusFeat1: "Özel aktarıcı — her ağda garantili bağlantı",
-    plusFeat2: "Birlikte izleyin: aynı anda birden çok ebeveyn cihazı", plusFeat3: "Uyku ve ses geçmişi", plusFeat4: "Premium ninni kitaplığı", plusUpgrade: "Plus'a yükselt",
-    plusManage: "Aboneliği yönet", plusRestore: "Satın alımı geri yükle", plusSoon: "Çok yakında", plusActive: "Plus etkin",
-    plusEmailQ: "E-posta adresiniz (aboneliğinizin):", plusError: "Bir şeyler ters gitti. Lütfen tekrar deneyin.", plusNotFound: "Bu e-posta için etkin abonelik bulunamadı.", tapToTalk: "Konuşmak için dokunun",
+    footDisclaimer: "Bir yardımcı; bebeğinize bizzat göz kulak olmanın yerini tutmaz.", tapToTalk: "Konuşmak için dokunun",
     talkViewSub: "Bu açıkken sesiniz bebek ünitesinde duyulur.", soundscapes: "Bebek ünitesinde çalınan sakin sesler.", nightViewSub: "Bebek ünitesinin ekranında yumuşak, sıcak bir ışık.", alertsViewSub: "Ağlama algılandığında bu cihazda bir ses.",
     zoom: "Yakınlaştırma", evSleepDone: "Uyku sayacı bitti", reconnecting: "Yeniden bağlanılıyor…", connectFailed: "Bağlanılamadı. Kodu kontrol edip tekrar deneyin.",
     retry: "Tekrar dene", footTerms: "Koşullar", footRefunds: "İadeler", footAccessibility: "Erişilebilirlik",
@@ -1542,12 +1696,21 @@
     cameraActive: "Kamera açık", micActive: "Mikrofon açık", micOff: "Mikrofon kapalı", permissionNeeded: "Devam etmek için kamera ve mikrofona izin verin",
     permissionDenied: "Kamera/mikrofon engellendi. Tarayıcıdan izin verip tekrar deneyin.", copied: "📋 Kopyalandı", copyFail: "Kopyalanamadı — elle seçin", scanFail: "Tarama için kamera açılamıyor — kodu yapıştırın",
     invalidAnswer: "Geçersiz yanıt kodu", invalidPair: "Geçersiz eşleştirme kodu", pasteAnswerFirst: "Önce yanıt kodunu yapıştırın veya tarayın", pastePairFirst: "Önce eşleştirme kodunu yapıştırın veya tarayın",
-    noImage: "Henüz görüntü yok", recStarted: "⏺️ Kayıt başladı", saved: "💾 Kaydedildi", recNotSupported: "Kayıt desteklenmiyor",
+    noImage: "Henüz görüntü yok", unsupportedTitle: "Bu tarayıcı BabyPhone.online'ı çalıştıramıyor", unsupportedBody: "Bu sayfa, bu tarayıcıda bulunmayan kamera, mikrofon ve görüntülü arama desteğine ihtiyaç duyuyor. Lütfen babyphone.online'ı Chrome, Safari, Firefox veya Edge'in güncel bir sürümünde açın.", recordVideo: "Kaydet", recStarted: "⏺️ Kayıt başladı", saved: "💾 Kaydedildi", recNotSupported: "Kayıt desteklenmiyor",
     noStream: "Kaydedilecek görüntü henüz yok", cameraSwitched: "Kamera değiştirildi", cannotSwitch: "Kamera değiştirilemiyor", soundMuted: "Ses kapalı",
     soundOn: "Ses açık", stopParentQ: "Ebeveyn ünitesi durdurulsun mu?", stopBabyQ: "Bebek ünitesi durdurulsun mu?", noMic: "Mikrofon erişimi yok",
     mediaError: "Kamera/mikrofon kullanılamıyor. https kullanın veya Chrome/Firefox'ta açın.",
   });
   Object.assign(S.ta, {
+    qualityLabel: 'தரம்',
+    qualityAuto: 'தானியங்கி',
+    qualityHigh: 'காணொளி + ஒலி (தெளிவு)',
+    qualitySaver: 'காணொளி + ஒலி (சிக்கனம்)',
+    qualityAudio: 'ஒலி மட்டும்',
+    qualityNow: 'பயன்பாட்டில்',
+    onlyOneCamera: 'இந்தச் சாதனத்தில் ஒரே ஒரு கேமரா மட்டுமே உள்ளது', cameraSwitchFailed: 'மாற்ற முடியவில்லை — அதே கேமரா தொடர்ந்தது',
+    waitingApproval: 'குழந்தை சாதனத்தில் அனுமதிக்காகக் காத்திருக்கிறது…',
+    metaTitle: 'இலவச பேபி மானிட்டர் — BabyPhone.online', metaDesc: 'இரண்டு தொலைபேசிகளை இலவச பேபி மானிட்டராக மாற்றுங்கள் — நேரலை காணொலி மற்றும் ஒலியுடன். செயலி வேண்டாம், கணக்கு வேண்டாம், எதுவும் சேமிக்கப்படாது.',
     qrTapZoom: "👆 ஸ்கேன் செய்ய QR ஐத் தொட்டு பெரிதாக்குங்கள்", qrZoomHint: "மற்றொரு போனின் கேமராவை இந்தக் குறியீட்டை நோக்கி வையுங்கள்", roomCodeShare: "அறை குறியீடு (பெற்றோர் யூனிட்டுடன் பகிரவும்)", roomCodeOfBaby: "குழந்தை யூனிட்டின் அறை குறியீடு",
     qrScanHint: "பெற்றோரை இந்த QR ஐ ஸ்கேன் செய்ய விடுங்கள் — அல்லது மேலே உள்ள குறியீட்டை உள்ளிடுங்கள்", phCode: "குறியீடு", newCode: "புதிய குறியீடு", heroTitle: "உங்கள் குழந்தை, எப்போதும் அருகில்.",
     heroSub: "BabyPhone இரண்டு சாதனங்களைப் பாதுகாப்பான பேபி மானிட்டராக மாற்றுகிறது. எளிமை, தனியுரிமை, நேரடியாக உலாவியில்.", ctaStartBaby: "குழந்தை யூனிட்டைத் தொடங்கு", ctaConnectParent: "பெற்றோராக இணை", navPrivacy: "தனியுரிமை",
@@ -1565,7 +1728,7 @@
     off2: "நிறுத்தம்", autoNoise: "தானியங்கி இரைச்சல் குறைப்பு", excellentConn: "சிறந்த இணைப்பு", localOnly: "உள்ளூர் நெட்வொர்க் மட்டும்",
     pairingCode: "இணைத்தல் & அறை குறியீடு", shareToConnect: "இணைக்கப் பகிரவும்", scanToConnect: "இணைக்க ஸ்கேன் செய்யவும்", useParentScan: "பெற்றோர் யூனிட்டால் ஸ்கேன் செய்யவும்",
     videoStreaming: "வீடியோ ஸ்ட்ரீமிங்", audioStreaming: "ஒலி ஸ்ட்ரீமிங்", audioOnly: "ஒலி மட்டும்", audioOnlySub: "வீடியோ இன்றி ஒலியை அனுப்பு",
-    privacyShade: "தனியுரிமைத் திரை", hideVideoKeepAudio: "வீடியோவை மறைத்து, ஒலியை வைத்திரு", babyTip: "குறிப்பு: இணைப்பில் இருக்க இந்த உலாவியைத் திறந்து வைத்து, போனை சார்ஜரில் வைக்கவும்.", evBabyConnected: "குழந்தை யூனிட் இணைந்தது",
+    privacyShade: "தனியுரிமைத் திரை", hideVideoKeepAudio: "வீடியோவை மறைத்து, ஒலியை வைத்திரு", babyTip: "குறிப்பு: இணைப்பில் இருக்க இந்த உலாவியைத் திறந்து வைத்து, போனை சார்ஜரில் வைக்கவும். வேறு ஆப்பிற்கு மாறாதீர்கள் — பின்னணியில் கேமரா நிற்கலாம்.", evBabyConnected: "குழந்தை யூனிட் இணைந்தது",
     evTalk: "பேச்சு பயன்படுத்தப்பட்டது", evTalkSub: "நீங்கள் குழந்தையிடம் பேசினீர்கள்", evLullaby: "தாலாட்டு தொடங்கியது", evSound: "ஒலி கண்டறியப்பட்டது",
     evSoundSub: "நீங்கள் அமைத்த அளவுக்கு மேல்", howTitle: "இது எப்படி வேலை செய்கிறது?", step1t: "குழந்தையின் அருகில்", step1: "குழந்தையின் அருகில் இருக்கும் போனில் BabyPhone.online ஐத் திறங்கள்.",
     step2t: "இணைக்கவும்", step2: "குழந்தை யூனிட்டைத் தொடங்கி, உங்கள் போனால் QR ஐ ஸ்கேன் செய்யுங்கள்.", step3t: "நேரடியாகப் பாருங்கள்", step3: "பெற்றோர் யூனிட்டிலிருந்து குழந்தையை நேரடியாகப் பார்த்து கேளுங்கள்.",
@@ -1574,10 +1737,7 @@
     featTitle: "தேவையான அனைத்தும்", featVideo: "நேரடி வீடியோ", featSound: "ஒலி", featTalk: "குழந்தையிடம் பேசு",
     featNight: "இரவு விளக்கு", featAlarm: "ஒலி எச்சரிக்கை", featLullaby: "தாலாட்டுகள்", featDevices: "போன், டேப்லெட், கணினியில் இயங்கும்.",
     parentUnit: "பெற்றோர் யூனிட்", monitoring: "கண்காணிப்பு", babyUnit: "குழந்தை யூனிட்", footPrivacy: "படமும் ஒலியும் நேரடியாக உங்கள் சாதனங்களுக்கிடையே செல்கின்றன. பதிவுகள் சேமிக்கப்படுவதில்லை.",
-    footDisclaimer: "துணைக்கருவி; குழந்தையை நேரில் கவனிப்பதற்கு மாற்றல்ல.", plusTitle: "BabyPhone Plus", plusSub: "உண்மையில் வேலை செய்ய வேண்டிய இரவுகளுக்காக.", plusFeat1: "தனி ரிலே — எந்த நெட்வொர்க்கிலும் உறுதியான இணைப்பு",
-    plusFeat2: "சேர்ந்து பாருங்கள்: ஒரே நேரத்தில் பல பெற்றோர் சாதனங்கள்", plusFeat3: "தூக்கம் & ஒலி வரலாறு", plusFeat4: "பிரீமியம் தாலாட்டு நூலகம்", plusUpgrade: "Plus க்கு மேம்படுத்து",
-    plusManage: "சந்தாவை நிர்வகி", plusRestore: "வாங்கியதை மீட்டெடு", plusSoon: "விரைவில்", plusActive: "Plus செயலில்",
-    plusEmailQ: "உங்கள் மின்னஞ்சல் (சந்தாவின்):", plusError: "ஏதோ தவறு. மீண்டும் முயற்சிக்கவும்.", plusNotFound: "அந்த மின்னஞ்சலுக்கு செயலில் உள்ள சந்தா இல்லை.", tapToTalk: "பேசத் தொடுங்கள்",
+    footDisclaimer: "துணைக்கருவி; குழந்தையை நேரில் கவனிப்பதற்கு மாற்றல்ல.", tapToTalk: "பேசத் தொடுங்கள்",
     talkViewSub: "இது இயக்கத்தில் இருக்கும்வரை உங்கள் குரல் குழந்தை யூனிட்டில் ஒலிக்கும்.", soundscapes: "அமைதியான ஒலிகள், குழந்தை யூனிட்டில் ஒலிக்கும்.", nightViewSub: "குழந்தை யூனிட் திரையில் மென்மையான, கதகதப்பான ஒளி.", alertsViewSub: "அழுகை கண்டறிந்ததும் இந்தச் சாதனத்தில் ஒலி.",
     zoom: "பெரிதாக்கு", evSleepDone: "தூக்க டைமர் முடிந்தது", reconnecting: "மீண்டும் இணைகிறது…", connectFailed: "இணைக்க முடியவில்லை. குறியீட்டைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
     retry: "மீண்டும் முயற்சி", footTerms: "விதிமுறைகள்", footRefunds: "பணத்திரும்பம்", footAccessibility: "அணுகல்",
@@ -1585,12 +1745,21 @@
     cameraActive: "கேமரா இயக்கம்", micActive: "மைக் இயக்கம்", micOff: "மைக் நிறுத்தம்", permissionNeeded: "தொடர கேமரா, மைக்கை அனுமதிக்கவும்",
     permissionDenied: "கேமரா/மைக் தடுக்கப்பட்டுள்ளது. உலாவியில் அனுமதித்து மீண்டும் முயற்சிக்கவும்.", copied: "📋 நகலெடுக்கப்பட்டது", copyFail: "நகல் தோல்வி — கையால் தேர்ந்தெடுக்கவும்", scanFail: "ஸ்கேனுக்குக் கேமரா திறக்கவில்லை — குறியீட்டை ஒட்டவும்",
     invalidAnswer: "தவறான பதில் குறியீடு", invalidPair: "தவறான இணைப்புக் குறியீடு", pasteAnswerFirst: "முதலில் பதில் குறியீட்டை ஒட்டவும் அல்லது ஸ்கேன் செய்யவும்", pastePairFirst: "முதலில் இணைப்புக் குறியீட்டை ஒட்டவும் அல்லது ஸ்கேன் செய்யவும்",
-    noImage: "இன்னும் படம் இல்லை", recStarted: "⏺️ பதிவு தொடங்கியது", saved: "💾 சேமிக்கப்பட்டது", recNotSupported: "பதிவுக்கு ஆதரவில்லை",
+    noImage: "இன்னும் படம் இல்லை", unsupportedTitle: "இந்த உலாவியால் BabyPhone.online-ஐ இயக்க முடியாது", unsupportedBody: "இந்தப் பக்கத்திற்கு கேமரா, மைக்ரோஃபோன் மற்றும் வீடியோ-அழைப்பு ஆதரவு தேவை, இது இந்த உலாவியில் இல்லை. தயவுசெய்து babyphone.online-ஐ Chrome, Safari, Firefox அல்லது Edge-இன் புதிய பதிப்பில் திறக்கவும்.", recordVideo: "பதிவு செய்", recStarted: "⏺️ பதிவு தொடங்கியது", saved: "💾 சேமிக்கப்பட்டது", recNotSupported: "பதிவுக்கு ஆதரவில்லை",
     noStream: "பதிவு செய்ய இன்னும் படம் இல்லை", cameraSwitched: "கேமரா மாற்றப்பட்டது", cannotSwitch: "கேமராவை மாற்ற முடியவில்லை", soundMuted: "ஒலி நிறுத்தம்",
     soundOn: "ஒலி இயக்கம்", stopParentQ: "பெற்றோர் யூனிட்டை நிறுத்தவா?", stopBabyQ: "குழந்தை யூனிட்டை நிறுத்தவா?", noMic: "மைக் அணுகல் இல்லை",
     mediaError: "கேமரா/மைக் கிடைக்கவில்லை. https பயன்படுத்துங்கள் அல்லது Chrome/Firefox இல் திறங்கள்.",
   });
   Object.assign(S.vi, {
+    qualityLabel: 'Chất lượng',
+    qualityAuto: 'Tự động',
+    qualityHigh: 'Hình + tiếng (sắc nét)',
+    qualitySaver: 'Hình + tiếng (tiết kiệm)',
+    qualityAudio: 'Chỉ tiếng',
+    qualityNow: 'Đang dùng',
+    onlyOneCamera: 'Thiết bị này chỉ có một máy ảnh', cameraSwitchFailed: 'Chuyển đổi thất bại — vẫn là máy ảnh cũ',
+    waitingApproval: 'Đang chờ phê duyệt trên thiết bị em bé…',
+    metaTitle: 'Máy báo khóc miễn phí — BabyPhone.online', metaDesc: 'Biến hai điện thoại thành máy báo khóc miễn phí với hình ảnh và âm thanh trực tiếp. Không cần ứng dụng, không cần tài khoản, không lưu gì cả.',
     qrTapZoom: "👆 Chạm vào mã QR để phóng to và quét", qrZoomHint: "Hướng camera của điện thoại kia vào mã này", roomCodeShare: "Mã phòng (chia sẻ với thiết bị của bố mẹ)", roomCodeOfBaby: "Mã phòng của thiết bị bé",
     qrScanHint: "Để bố mẹ quét mã QR này — hoặc nhập mã ở trên", phCode: "MÃ", newCode: "Mã mới", heroTitle: "Bé yêu, luôn thật gần.",
     heroSub: "BabyPhone biến hai thiết bị thành máy báo khóc an toàn. Đơn giản, riêng tư, ngay trong trình duyệt.", ctaStartBaby: "Khởi động thiết bị bé", ctaConnectParent: "Kết nối với vai trò bố mẹ", navPrivacy: "Quyền riêng tư",
@@ -1608,7 +1777,7 @@
     off2: "Tắt", autoNoise: "Tự động giảm ồn", excellentConn: "Kết nối tuyệt vời", localOnly: "Chỉ mạng nội bộ",
     pairingCode: "Ghép nối & mã phòng", shareToConnect: "Chia sẻ để kết nối", scanToConnect: "Quét để kết nối", useParentScan: "Dùng thiết bị bố mẹ để quét",
     videoStreaming: "Truyền hình ảnh", audioStreaming: "Truyền âm thanh", audioOnly: "Chỉ âm thanh", audioOnlySub: "Truyền tiếng, không truyền hình",
-    privacyShade: "Màn che riêng tư", hideVideoKeepAudio: "Ẩn hình, giữ tiếng", babyTip: "Mẹo: giữ trình duyệt này mở và cắm sạc điện thoại để duy trì kết nối.", evBabyConnected: "Thiết bị bé đã kết nối",
+    privacyShade: "Màn che riêng tư", hideVideoKeepAudio: "Ẩn hình, giữ tiếng", babyTip: "Mẹo: giữ trình duyệt này mở và cắm sạc điện thoại để duy trì kết nối. Đừng chuyển sang ứng dụng khác — camera có thể dừng khi ở nền.", evBabyConnected: "Thiết bị bé đã kết nối",
     evTalk: "Đã dùng nói chuyện", evTalkSub: "Bạn đã nói với bé", evLullaby: "Đã bật hát ru", evSound: "Phát hiện âm thanh",
     evSoundSub: "Vượt mức bạn đặt", howTitle: "Hoạt động thế nào?", step1t: "Cạnh bé", step1: "Mở BabyPhone.online trên điện thoại đặt cạnh bé.",
     step2t: "Ghép nối", step2: "Khởi động thiết bị bé và quét mã QR bằng điện thoại của bạn.", step3t: "Xem trực tiếp", step3: "Nhìn và nghe bé trực tiếp từ thiết bị bố mẹ.",
@@ -1617,10 +1786,7 @@
     featTitle: "Mọi thứ bạn cần", featVideo: "Video trực tiếp", featSound: "Âm thanh", featTalk: "Nói chuyện",
     featNight: "Đèn ngủ", featAlarm: "Báo động âm thanh", featLullaby: "Hát ru", featDevices: "Chạy trên điện thoại, máy tính bảng và máy tính.",
     parentUnit: "Thiết bị bố mẹ", monitoring: "Đang theo dõi", babyUnit: "Thiết bị bé", footPrivacy: "Hình và tiếng đi thẳng giữa các thiết bị của bạn. Không lưu bản ghi nào.",
-    footDisclaimer: "Công cụ hỗ trợ, không thay thế việc trông bé trực tiếp.", plusTitle: "BabyPhone Plus", plusSub: "Cho những đêm nhất định phải hoạt động.", plusFeat1: "Bộ chuyển tiếp riêng — đảm bảo kết nối trên mọi mạng",
-    plusFeat2: "Cùng xem: nhiều thiết bị bố mẹ cùng lúc", plusFeat3: "Lịch sử giấc ngủ & âm thanh", plusFeat4: "Thư viện hát ru cao cấp", plusUpgrade: "Nâng cấp lên Plus",
-    plusManage: "Quản lý gói đăng ký", plusRestore: "Khôi phục giao dịch", plusSoon: "Sắp ra mắt", plusActive: "Plus đang hoạt động",
-    plusEmailQ: "Email của bạn (của gói đăng ký):", plusError: "Có lỗi xảy ra. Vui lòng thử lại.", plusNotFound: "Không tìm thấy gói đăng ký nào cho email đó.", tapToTalk: "Chạm để nói",
+    footDisclaimer: "Công cụ hỗ trợ, không thay thế việc trông bé trực tiếp.", tapToTalk: "Chạm để nói",
     talkViewSub: "Giọng của bạn phát trên thiết bị bé khi bật.", soundscapes: "Âm thanh êm dịu, phát trên thiết bị bé.", nightViewSub: "Ánh sáng ấm áp dịu nhẹ trên màn hình thiết bị bé.", alertsViewSub: "Thiết bị này kêu khi phát hiện tiếng khóc.",
     zoom: "Thu phóng", evSleepDone: "Hết giờ hẹn ngủ", reconnecting: "Đang kết nối lại…", connectFailed: "Không thể kết nối. Kiểm tra mã và thử lại.",
     retry: "Thử lại", footTerms: "Điều khoản", footRefunds: "Hoàn tiền", footAccessibility: "Trợ năng",
@@ -1628,12 +1794,21 @@
     cameraActive: "Camera bật", micActive: "Micro bật", micOff: "Micro tắt", permissionNeeded: "Hãy cho phép camera và micro để tiếp tục",
     permissionDenied: "Camera/micro bị chặn. Cho phép trong trình duyệt rồi thử lại.", copied: "📋 Đã sao chép", copyFail: "Sao chép thất bại — hãy chọn thủ công", scanFail: "Không mở được camera — hãy dán mã",
     invalidAnswer: "Mã trả lời không hợp lệ", invalidPair: "Mã ghép nối không hợp lệ", pasteAnswerFirst: "Hãy dán hoặc quét mã trả lời trước", pastePairFirst: "Hãy dán hoặc quét mã ghép nối trước",
-    noImage: "Chưa có hình", recStarted: "⏺️ Đã bắt đầu ghi", saved: "💾 Đã lưu", recNotSupported: "Không hỗ trợ ghi",
+    noImage: "Chưa có hình", unsupportedTitle: "Trình duyệt này không thể chạy BabyPhone.online", unsupportedBody: "Trang này cần hỗ trợ camera, micro và gọi video mà trình duyệt này không có. Vui lòng mở babyphone.online bằng phiên bản mới của Chrome, Safari, Firefox hoặc Edge.", recordVideo: "Ghi hình", recStarted: "⏺️ Đã bắt đầu ghi", saved: "💾 Đã lưu", recNotSupported: "Không hỗ trợ ghi",
     noStream: "Chưa có hình để ghi", cameraSwitched: "Đã đổi camera", cannotSwitch: "Không đổi được camera", soundMuted: "Đã tắt tiếng",
     soundOn: "Tiếng bật", stopParentQ: "Dừng thiết bị bố mẹ?", stopBabyQ: "Dừng thiết bị bé?", noMic: "Không truy cập được micro",
     mediaError: "Camera/micro không khả dụng. Dùng https hoặc mở bằng Chrome/Firefox.",
   });
   Object.assign(S.ko, {
+    qualityLabel: '품질',
+    qualityAuto: '자동',
+    qualityHigh: '영상 + 소리 (선명)',
+    qualitySaver: '영상 + 소리 (데이터 절약)',
+    qualityAudio: '소리만',
+    qualityNow: '사용 중',
+    onlyOneCamera: '이 기기에는 카메라가 하나뿐입니다', cameraSwitchFailed: '전환 실패 — 같은 카메라가 유지되었습니다',
+    waitingApproval: '베이비 유닛의 승인을 기다리는 중…',
+    metaTitle: '무료 베이비 모니터 — 브라우저의 BabyPhone.online', metaDesc: '휴대폰 두 대로 무료 베이비 모니터를 만드세요. 실시간 영상과 소리를 그대로 전달하며, 앱 설치도 계정도 필요 없고 아무것도 저장되지 않습니다.',
     qrTapZoom: "👆 QR을 누르면 크게 보여 스캔하기 쉬워요", qrZoomHint: "다른 휴대폰의 카메라를 이 코드에 비추세요", roomCodeShare: "방 코드(부모 기기와 공유)", roomCodeOfBaby: "아기 기기의 방 코드",
     qrScanHint: "부모가 이 QR을 스캔하게 하거나 위 코드를 입력하세요", phCode: "코드", newCode: "새 코드", heroTitle: "아기와 언제나 가까이.",
     heroSub: "BabyPhone은 두 기기를 안전한 베이비 모니터로 바꿔 줍니다. 간단하고 프라이빗하게, 브라우저에서 바로.", ctaStartBaby: "아기 기기 시작", ctaConnectParent: "부모로 연결", navPrivacy: "개인정보",
@@ -1651,7 +1826,7 @@
     off2: "끔", autoNoise: "자동 소음 감소", excellentConn: "연결 상태 최상", localOnly: "로컬 네트워크 전용",
     pairingCode: "페어링 및 방 코드", shareToConnect: "공유해서 연결", scanToConnect: "스캔해서 연결", useParentScan: "부모 기기로 스캔하세요",
     videoStreaming: "영상 스트리밍", audioStreaming: "오디오 스트리밍", audioOnly: "오디오만", audioOnlySub: "영상 없이 소리만 전송",
-    privacyShade: "프라이버시 가림막", hideVideoKeepAudio: "영상은 가리고 소리는 유지", babyTip: "팁: 연결 유지를 위해 이 브라우저를 열어 두고 휴대폰을 충전기에 꽂아 두세요.", evBabyConnected: "아기 기기 연결됨",
+    privacyShade: "프라이버시 가림막", hideVideoKeepAudio: "영상은 가리고 소리는 유지", babyTip: "팁: 연결 유지를 위해 이 브라우저를 열어 두고 휴대폰을 충전기에 꽂아 두세요. 다른 앱으로 전환하지 마세요 — 백그라운드에서는 카메라가 멈출 수 있어요.", evBabyConnected: "아기 기기 연결됨",
     evTalk: "말 걸기 사용", evTalkSub: "아기에게 말했어요", evLullaby: "자장가 시작", evSound: "소리 감지",
     evSoundSub: "설정한 수준 초과", howTitle: "어떻게 사용하나요?", step1t: "아기 곁에", step1: "아기 곁에 둘 휴대폰에서 BabyPhone.online을 여세요.",
     step2t: "페어링", step2: "아기 기기를 시작하고 내 휴대폰으로 QR을 스캔하세요.", step3t: "실시간 보기", step3: "부모 기기에서 아기를 실시간으로 보고 들으세요.",
@@ -1660,10 +1835,7 @@
     featTitle: "필요한 모든 것", featVideo: "실시간 영상", featSound: "소리", featTalk: "말 걸기",
     featNight: "수유등", featAlarm: "소리 알람", featLullaby: "자장가", featDevices: "휴대폰, 태블릿, 컴퓨터에서 작동.",
     parentUnit: "부모 기기", monitoring: "모니터링", babyUnit: "아기 기기", footPrivacy: "영상과 소리는 내 기기 사이를 직접 오갑니다. 녹화는 저장되지 않습니다.",
-    footDisclaimer: "보조 도구이며 직접 돌봄을 대신하지 않습니다.", plusTitle: "BabyPhone Plus", plusSub: "꼭 되어야 하는 밤을 위해.", plusFeat1: "전용 릴레이 — 어떤 네트워크에서도 보장된 연결",
-    plusFeat2: "함께 보기: 여러 부모 기기 동시 접속", plusFeat3: "수면·소리 기록", plusFeat4: "프리미엄 자장가 라이브러리", plusUpgrade: "Plus로 업그레이드",
-    plusManage: "구독 관리", plusRestore: "구매 복원", plusSoon: "곧 출시", plusActive: "Plus 사용 중",
-    plusEmailQ: "이메일 주소(구독용):", plusError: "문제가 발생했어요. 다시 시도해 주세요.", plusNotFound: "해당 이메일의 활성 구독이 없습니다.", tapToTalk: "눌러서 말하기",
+    footDisclaimer: "보조 도구이며 직접 돌봄을 대신하지 않습니다.", tapToTalk: "눌러서 말하기",
     talkViewSub: "켜져 있는 동안 내 목소리가 아기 기기에서 나옵니다.", soundscapes: "아기 기기에서 재생되는 잔잔한 소리.", nightViewSub: "아기 기기 화면의 은은하고 따뜻한 빛.", alertsViewSub: "울음이 감지되면 이 기기에서 소리가 납니다.",
     zoom: "확대", evSleepDone: "수면 타이머 종료", reconnecting: "다시 연결 중…", connectFailed: "연결할 수 없어요. 코드를 확인하고 다시 시도하세요.",
     retry: "다시 시도", footTerms: "이용약관", footRefunds: "환불", footAccessibility: "접근성",
@@ -1671,12 +1843,23 @@
     cameraActive: "카메라 켬", micActive: "마이크 켬", micOff: "마이크 끔", permissionNeeded: "계속하려면 카메라와 마이크를 허용하세요",
     permissionDenied: "카메라/마이크가 차단됐어요. 브라우저에서 허용 후 다시 시도하세요.", copied: "📋 복사됨", copyFail: "복사 실패 — 직접 선택하세요", scanFail: "스캔용 카메라를 열 수 없어요 — 코드를 붙여넣으세요",
     invalidAnswer: "잘못된 응답 코드", invalidPair: "잘못된 페어링 코드", pasteAnswerFirst: "먼저 응답 코드를 붙여넣거나 스캔하세요", pastePairFirst: "먼저 페어링 코드를 붙여넣거나 스캔하세요",
-    noImage: "아직 영상이 없어요", recStarted: "⏺️ 녹화 시작", saved: "💾 저장됨", recNotSupported: "녹화가 지원되지 않아요",
+    noImage: "아직 영상이 없어요", unsupportedTitle: "이 브라우저에서는 BabyPhone.online을 실행할 수 없어요", unsupportedBody: "이 페이지는 카메라, 마이크, 영상 통화 지원이 필요한데 이 브라우저에는 없어요. 최신 버전의 Chrome, Safari, Firefox, Edge에서 babyphone.online을 열어주세요.", recordVideo: "녹화", recStarted: "⏺️ 녹화 시작", saved: "💾 저장됨", recNotSupported: "녹화가 지원되지 않아요",
     noStream: "아직 녹화할 영상이 없어요", cameraSwitched: "카메라 전환됨", cannotSwitch: "카메라를 전환할 수 없어요", soundMuted: "소리 끔",
     soundOn: "소리 켬", stopParentQ: "부모 기기를 중지할까요?", stopBabyQ: "아기 기기를 중지할까요?", noMic: "마이크 접근 불가",
     mediaError: "카메라/마이크를 사용할 수 없어요. https를 사용하거나 Chrome/Firefox에서 여세요.",
   });
   Object.assign(S.it, {
+    qualityLabel: 'Qualità',
+    qualityAuto: 'Automatica',
+    qualityHigh: 'Video + audio (nitido)',
+    qualitySaver: 'Video + audio (risparmio)',
+    qualityAudio: 'Solo audio',
+    qualityNow: 'In uso',
+    onlyOneCamera: 'Questo dispositivo ha una sola fotocamera', cameraSwitchFailed: 'Cambio non riuscito — è rimasta la stessa fotocamera',
+    waitingApproval: 'In attesa di approvazione sull\'unità bambino…',
+    metaTitle: 'Baby monitor gratis nel browser — BabyPhone.online', metaDesc: 'Trasforma due telefoni in un baby monitor gratuito con video e audio dal vivo. Senza app, senza account, nulla viene salvato. Solo il browser.',
+    repeatList: 'Ripeti',
+    approveTitle: 'Consentire questo dispositivo?', approveAsk: 'Un dispositivo ha inserito il tuo codice stanza e vuole guardare e ascoltare. Consenti solo se è il tuo dispositivo.', approveExtra: 'Un secondo dispositivo vuole guardare. Qualcuno è già collegato. Consenti solo se è il tuo dispositivo.', approveAllow: 'Consenti', approveDeny: 'Rifiuta', authRefused: 'L\'unità bambino ha rifiutato questo dispositivo.', switchCameraSub: 'Fotocamera anteriore / posteriore',
     qrTapZoom: "👆 Tocca il QR per ingrandirlo e scansionarlo", qrZoomHint: "Punta la fotocamera dell'altro telefono su questo codice", roomCodeShare: "Codice stanza (condividilo con l'unità genitori)", roomCodeOfBaby: "Codice stanza dell'unità bimbo",
     qrScanHint: "Fai scansionare questo QR al genitore — o digita il codice sopra", phCode: "CODICE", newCode: "Nuovo codice", heroTitle: "Il tuo bimbo, sempre vicino.",
     heroSub: "BabyPhone trasforma due dispositivi in un baby monitor sicuro. Semplice, privato e direttamente nel browser.", ctaStartBaby: "Avvia unità bimbo", ctaConnectParent: "Connettiti come genitore", navPrivacy: "Privacy",
@@ -1694,7 +1877,7 @@
     off2: "Off", autoNoise: "Riduzione automatica del rumore", excellentConn: "Connessione eccellente", localOnly: "Solo rete locale",
     pairingCode: "Abbinamento e codice", shareToConnect: "Condividi per connettere", scanToConnect: "Scansiona per connettere", useParentScan: "Scansiona con l'unità genitori",
     videoStreaming: "Streaming video", audioStreaming: "Streaming audio", audioOnly: "Solo audio", audioOnlySub: "Trasmetti il suono senza video",
-    privacyShade: "Tendina privacy", hideVideoKeepAudio: "Nascondi il video, tieni l'audio", babyTip: "Consiglio: lascia aperto questo browser e il telefono in carica per restare connesso.", evBabyConnected: "Unità bimbo connessa",
+    privacyShade: "Tendina privacy", hideVideoKeepAudio: "Nascondi il video, tieni l'audio", babyTip: "Consiglio: lascia aperto questo browser e il telefono in carica per restare connesso. Non passare a un’altra app — la fotocamera potrebbe fermarsi in background.", evBabyConnected: "Unità bimbo connessa",
     evTalk: "Risposta usata", evTalkSub: "Hai parlato al bimbo", evLullaby: "Ninna nanna avviata", evSound: "Suono rilevato",
     evSoundSub: "Sopra il livello impostato", howTitle: "Come funziona?", step1t: "Vicino al bimbo", step1: "Apri BabyPhone.online sul telefono che lasci vicino al tuo bimbo.",
     step2t: "Abbina", step2: "Avvia l'unità bimbo e scansiona il QR con il tuo telefono.", step3t: "Guarda dal vivo", step3: "Guarda e ascolta il tuo bimbo dal vivo dalla tua unità genitori.",
@@ -1703,23 +1886,29 @@
     featTitle: "Tutto quello che serve", featVideo: "Video dal vivo", featSound: "Suono", featTalk: "Rispondi",
     featNight: "Luce notturna", featAlarm: "Allarme sonoro", featLullaby: "Ninne nanne", featDevices: "Funziona su telefono, tablet e computer.",
     parentUnit: "Unità genitori", monitoring: "Monitoraggio", babyUnit: "Unità bimbo", footPrivacy: "Immagine e suono viaggiano direttamente tra i tuoi dispositivi. Nessuna registrazione viene salvata.",
-    footDisclaimer: "Un aiuto, non un sostituto della supervisione di persona del tuo bimbo.", plusTitle: "BabyPhone Plus", plusSub: "Per le notti in cui deve funzionare davvero.", plusFeat1: "Relay dedicato — connessione garantita su ogni rete",
-    plusFeat2: "Guardate insieme: più dispositivi genitori alla volta", plusFeat3: "Cronologia sonno e suoni", plusFeat4: "Libreria premium di ninne nanne", plusUpgrade: "Passa a Plus",
-    plusManage: "Gestisci abbonamento", plusRestore: "Ripristina acquisto", plusSoon: "In arrivo", plusActive: "Plus attivo",
-    plusEmailQ: "La tua email (dell'abbonamento):", plusError: "Qualcosa è andato storto. Riprova.", plusNotFound: "Nessun abbonamento attivo per quell'email.", tapToTalk: "Tocca per parlare",
+    footDisclaimer: "Un aiuto, non un sostituto della supervisione di persona del tuo bimbo.", tapToTalk: "Tocca per parlare",
     talkViewSub: "La tua voce si sente sull'unità bimbo finché è attivo.", soundscapes: "Suoni rilassanti, riprodotti sull'unità bimbo.", nightViewSub: "Una luce calda e soffusa sullo schermo dell'unità bimbo.", alertsViewSub: "Un suono su questo dispositivo quando viene rilevato il pianto.",
     zoom: "Zoom", evSleepDone: "Timer nanna terminato", reconnecting: "Riconnessione…", connectFailed: "Impossibile connettersi. Controlla il codice e riprova.",
     retry: "Riprova", footTerms: "Termini", footRefunds: "Rimborsi", footAccessibility: "Accessibilità",
-    footContact: "Contatti", pairBabySub: "Mostra questo codice (o QR) al tuo telefono per connettere.", pairParentSub: "Inserisci il codice dell'unità bimbo o scansiona il suo QR.", waitingConnection: "In attesa dell'unità genitori…",
+    footGuide: "Guida", footContact: "Contatti", pairBabySub: "Mostra questo codice (o QR) al tuo telefono per connettere.", pairParentSub: "Inserisci il codice dell'unità bimbo o scansiona il suo QR.", waitingConnection: "In attesa dell'unità genitori…",
     cameraActive: "Fotocamera attiva", micActive: "Microfono attivo", micOff: "Microfono spento", permissionNeeded: "Consenti fotocamera e microfono per continuare",
     permissionDenied: "Fotocamera/microfono bloccati. Consenti l'accesso nel browser e riprova.", copied: "📋 Copiato", copyFail: "Copia non riuscita — seleziona manualmente", scanFail: "Impossibile aprire la fotocamera — incolla il codice",
     invalidAnswer: "Codice di risposta non valido", invalidPair: "Codice di abbinamento non valido", pasteAnswerFirst: "Prima incolla o scansiona il codice di risposta", pastePairFirst: "Prima incolla o scansiona il codice di abbinamento",
-    noImage: "Ancora nessuna immagine", recStarted: "⏺️ Registrazione avviata", saved: "💾 Salvato", recNotSupported: "Registrazione non supportata",
+    noImage: "Ancora nessuna immagine", unsupportedTitle: "Questo browser non può eseguire BabyPhone.online", unsupportedBody: "Questa pagina richiede supporto per fotocamera, microfono e videochiamate che questo browser non ha. Apri babyphone.online in una versione recente di Chrome, Safari, Firefox o Edge.", posterCameraOff: "Fotocamera spenta", posterOffline: "Offline", cameraLabel: "Fotocamera", ledLight: "Luce LED", ledOn: "💡 LED accesa", ledOff: "LED spenta", recordVideo: "Registra", recStarted: "⏺️ Registrazione avviata", saved: "💾 Salvato", recNotSupported: "Registrazione non supportata",
     noStream: "Ancora nessuna immagine da registrare", cameraSwitched: "Fotocamera cambiata", cannotSwitch: "Impossibile cambiare fotocamera", soundMuted: "Audio disattivato",
     soundOn: "Audio attivo", stopParentQ: "Fermare l'unità genitori?", stopBabyQ: "Fermare l'unità bimbo?", noMic: "Nessun accesso al microfono",
     mediaError: "Fotocamera/microfono non disponibili. Usa https o apri in Chrome/Firefox.",
   });
   Object.assign(S.th, {
+    qualityLabel: 'คุณภาพ',
+    qualityAuto: 'อัตโนมัติ',
+    qualityHigh: 'ภาพ + เสียง (คมชัด)',
+    qualitySaver: 'ภาพ + เสียง (ประหยัดเน็ต)',
+    qualityAudio: 'เสียงเท่านั้น',
+    qualityNow: 'กำลังใช้',
+    onlyOneCamera: 'อุปกรณ์นี้มีกล้องเพียงตัวเดียว', cameraSwitchFailed: 'สลับไม่สำเร็จ — ยังเป็นกล้องเดิม',
+    waitingApproval: 'กำลังรอการอนุมัติที่เครื่องเด็ก…',
+    metaTitle: 'เบบี้มอนิเตอร์ฟรี — BabyPhone.online', metaDesc: 'เปลี่ยนโทรศัพท์สองเครื่องให้เป็นเบบี้มอนิเตอร์ฟรี พร้อมภาพและเสียงสด ไม่ต้องติดตั้งแอป ไม่ต้องสมัครสมาชิก และไม่มีการบันทึกข้อมูลใด ๆ',
     qrTapZoom: "👆 แตะ QR เพื่อขยายให้สแกนง่าย", qrZoomHint: "หันกล้องของโทรศัพท์อีกเครื่องมาที่โค้ดนี้", roomCodeShare: "รหัสห้อง (แชร์ให้เครื่องพ่อแม่)", roomCodeOfBaby: "รหัสห้องของเครื่องลูก",
     qrScanHint: "ให้พ่อแม่สแกน QR นี้ — หรือพิมพ์รหัสด้านบน", phCode: "รหัส", newCode: "รหัสใหม่", heroTitle: "ลูกน้อย อยู่ใกล้คุณเสมอ",
     heroSub: "BabyPhone เปลี่ยนอุปกรณ์สองเครื่องให้เป็นเบบี้มอนิเตอร์ที่ปลอดภัย ง่าย เป็นส่วนตัว ใช้ได้ทันทีในเบราว์เซอร์", ctaStartBaby: "เริ่มเครื่องลูก", ctaConnectParent: "เชื่อมต่อในฐานะพ่อแม่", navPrivacy: "ความเป็นส่วนตัว",
@@ -1737,7 +1926,7 @@
     off2: "ปิด", autoNoise: "ลดเสียงรบกวนอัตโนมัติ", excellentConn: "การเชื่อมต่อดีเยี่ยม", localOnly: "เฉพาะเครือข่ายท้องถิ่น",
     pairingCode: "การจับคู่และรหัสห้อง", shareToConnect: "แชร์เพื่อเชื่อมต่อ", scanToConnect: "สแกนเพื่อเชื่อมต่อ", useParentScan: "ใช้เครื่องพ่อแม่สแกน",
     videoStreaming: "สตรีมวิดีโอ", audioStreaming: "สตรีมเสียง", audioOnly: "เสียงอย่างเดียว", audioOnlySub: "ส่งเสียงโดยไม่มีภาพ",
-    privacyShade: "ม่านความเป็นส่วนตัว", hideVideoKeepAudio: "ซ่อนภาพ เก็บเสียงไว้", babyTip: "เคล็ดลับ: เปิดเบราว์เซอร์นี้ทิ้งไว้และเสียบชาร์จโทรศัพท์เพื่อให้เชื่อมต่อตลอด", evBabyConnected: "เครื่องลูกเชื่อมต่อแล้ว",
+    privacyShade: "ม่านความเป็นส่วนตัว", hideVideoKeepAudio: "ซ่อนภาพ เก็บเสียงไว้", babyTip: "เคล็ดลับ: เปิดเบราว์เซอร์นี้ทิ้งไว้และเสียบชาร์จโทรศัพท์เพื่อให้เชื่อมต่อตลอด อย่าสลับไปแอปอื่น — กล้องอาจหยุดทำงานเมื่ออยู่เบื้องหลัง", evBabyConnected: "เครื่องลูกเชื่อมต่อแล้ว",
     evTalk: "ใช้การพูดกับลูก", evTalkSub: "คุณพูดกับลูกแล้ว", evLullaby: "เริ่มเพลงกล่อมแล้ว", evSound: "ตรวจพบเสียง",
     evSoundSub: "เกินระดับที่คุณตั้งไว้", howTitle: "ใช้งานอย่างไร?", step1t: "ข้างลูกน้อย", step1: "เปิด BabyPhone.online บนโทรศัพท์ที่วางไว้ข้างลูก",
     step2t: "จับคู่", step2: "เริ่มเครื่องลูกแล้วสแกน QR ด้วยโทรศัพท์ของคุณ", step3t: "ดูแบบสด", step3: "ดูและฟังลูกน้อยแบบสดจากเครื่องพ่อแม่",
@@ -1746,10 +1935,7 @@
     featTitle: "ทุกอย่างที่คุณต้องการ", featVideo: "วิดีโอสด", featSound: "เสียง", featTalk: "พูดกับลูก",
     featNight: "ไฟกลางคืน", featAlarm: "เตือนด้วยเสียง", featLullaby: "เพลงกล่อม", featDevices: "ใช้ได้บนโทรศัพท์ แท็บเล็ต และคอมพิวเตอร์",
     parentUnit: "เครื่องพ่อแม่", monitoring: "กำลังเฝ้าดู", babyUnit: "เครื่องลูก", footPrivacy: "ภาพและเสียงส่งตรงระหว่างอุปกรณ์ของคุณเอง ไม่มีการบันทึกใด ๆ",
-    footDisclaimer: "ตัวช่วย ไม่ใช่สิ่งทดแทนการดูแลลูกด้วยตนเอง", plusTitle: "BabyPhone Plus", plusSub: "สำหรับคืนที่ต้องใช้งานได้จริง ๆ", plusFeat1: "รีเลย์เฉพาะ — รับประกันการเชื่อมต่อทุกเครือข่าย",
-    plusFeat2: "ดูด้วยกัน: อุปกรณ์พ่อแม่หลายเครื่องพร้อมกัน", plusFeat3: "ประวัติการนอนและเสียง", plusFeat4: "คลังเพลงกล่อมพรีเมียม", plusUpgrade: "อัปเกรดเป็น Plus",
-    plusManage: "จัดการการสมัคร", plusRestore: "กู้คืนการซื้อ", plusSoon: "เร็ว ๆ นี้", plusActive: "Plus ใช้งานอยู่",
-    plusEmailQ: "อีเมลของคุณ (ของการสมัคร):", plusError: "เกิดข้อผิดพลาด โปรดลองอีกครั้ง", plusNotFound: "ไม่พบการสมัครที่ใช้งานอยู่สำหรับอีเมลนั้น", tapToTalk: "แตะเพื่อพูด",
+    footDisclaimer: "ตัวช่วย ไม่ใช่สิ่งทดแทนการดูแลลูกด้วยตนเอง", tapToTalk: "แตะเพื่อพูด",
     talkViewSub: "เสียงของคุณจะดังที่เครื่องลูกตราบที่เปิดอยู่", soundscapes: "เสียงผ่อนคลาย เล่นที่เครื่องลูก", nightViewSub: "แสงอุ่นนุ่มนวลบนหน้าจอเครื่องลูก", alertsViewSub: "มีเสียงที่เครื่องนี้เมื่อพบเสียงร้องไห้",
     zoom: "ซูม", evSleepDone: "หมดเวลาตั้งนอน", reconnecting: "กำลังเชื่อมต่อใหม่…", connectFailed: "เชื่อมต่อไม่ได้ ตรวจสอบรหัสแล้วลองใหม่",
     retry: "ลองอีกครั้ง", footTerms: "ข้อกำหนด", footRefunds: "การคืนเงิน", footAccessibility: "การเข้าถึง",
@@ -1757,12 +1943,21 @@
     cameraActive: "กล้องเปิด", micActive: "ไมค์เปิด", micOff: "ไมค์ปิด", permissionNeeded: "โปรดอนุญาตกล้องและไมค์เพื่อดำเนินการต่อ",
     permissionDenied: "กล้อง/ไมค์ถูกบล็อก อนุญาตในเบราว์เซอร์แล้วลองใหม่", copied: "📋 คัดลอกแล้ว", copyFail: "คัดลอกไม่สำเร็จ — เลือกเอง", scanFail: "เปิดกล้องสแกนไม่ได้ — วางรหัสแทน",
     invalidAnswer: "รหัสตอบกลับไม่ถูกต้อง", invalidPair: "รหัสจับคู่ไม่ถูกต้อง", pasteAnswerFirst: "วางหรือสแกนรหัสตอบกลับก่อน", pastePairFirst: "วางหรือสแกนรหัสจับคู่ก่อน",
-    noImage: "ยังไม่มีภาพ", recStarted: "⏺️ เริ่มบันทึกแล้ว", saved: "💾 บันทึกแล้ว", recNotSupported: "ไม่รองรับการบันทึก",
+    noImage: "ยังไม่มีภาพ", unsupportedTitle: "เบราว์เซอร์นี้ใช้งาน BabyPhone.online ไม่ได้", unsupportedBody: "หน้านี้ต้องการการรองรับกล้อง ไมโครโฟน และวิดีโอคอลที่เบราว์เซอร์นี้ไม่มี โปรดเปิด babyphone.online ด้วย Chrome, Safari, Firefox หรือ Edge เวอร์ชันล่าสุด", recordVideo: "บันทึก", recStarted: "⏺️ เริ่มบันทึกแล้ว", saved: "💾 บันทึกแล้ว", recNotSupported: "ไม่รองรับการบันทึก",
     noStream: "ยังไม่มีภาพให้บันทึก", cameraSwitched: "สลับกล้องแล้ว", cannotSwitch: "สลับกล้องไม่ได้", soundMuted: "ปิดเสียง",
     soundOn: "เปิดเสียง", stopParentQ: "หยุดเครื่องพ่อแม่?", stopBabyQ: "หยุดเครื่องลูก?", noMic: "เข้าถึงไมค์ไม่ได้",
     mediaError: "กล้อง/ไมค์ใช้งานไม่ได้ ใช้ https หรือเปิดใน Chrome/Firefox",
   });
   Object.assign(S.gu, {
+    qualityLabel: 'ગુણવત્તા',
+    qualityAuto: 'આપોઆપ',
+    qualityHigh: 'વિડિયો + અવાજ (સ્પષ્ટ)',
+    qualitySaver: 'વિડિયો + અવાજ (ડેટા બચત)',
+    qualityAudio: 'ફક્ત અવાજ',
+    qualityNow: 'ઉપયોગમાં',
+    onlyOneCamera: 'આ ઉપકરણમાં ફક્ત એક જ કૅમેરા છે', cameraSwitchFailed: 'બદલવામાં નિષ્ફળ — એ જ કૅમેરા ચાલુ રહ્યો',
+    waitingApproval: 'બેબી યુનિટ પર મંજૂરીની રાહ જોવાઈ રહી છે…',
+    metaTitle: 'મફત બેબી મોનિટર — BabyPhone.online', metaDesc: 'બે ફોનને મફત બેબી મોનિટરમાં ફેરવો — જીવંત વીડિયો અને અવાજ સાથે. કોઈ એપ નહીં, કોઈ ખાતું નહીં, કશું સાચવવામાં આવતું નથી.',
     qrTapZoom: "👆 સ્કેન માટે QR ને દબાવીને મોટું કરો", qrZoomHint: "બીજા ફોનનો કૅમેરો આ કોડ તરફ રાખો", roomCodeShare: "રૂમ કોડ (પેરેન્ટ યુનિટ સાથે શેર કરો)", roomCodeOfBaby: "બેબી યુનિટનો રૂમ કોડ",
     qrScanHint: "પેરેન્ટને આ QR સ્કેન કરવા દો — અથવા ઉપરનો કોડ લખો", phCode: "કોડ", newCode: "નવો કોડ", heroTitle: "તમારું બાળક, હંમેશા નજીક.",
     heroSub: "BabyPhone બે ડિવાઇસને સુરક્ષિત બેબી મોનિટર બનાવે છે. સરળ, ખાનગી અને સીધું બ્રાઉઝરમાં.", ctaStartBaby: "બેબી યુનિટ શરૂ કરો", ctaConnectParent: "પેરેન્ટ તરીકે જોડાઓ", navPrivacy: "ગોપનીયતા",
@@ -1780,7 +1975,7 @@
     off2: "બંધ", autoNoise: "સ્વયંસંચાલિત ઘોંઘાટ ઘટાડો", excellentConn: "ઉત્તમ જોડાણ", localOnly: "માત્ર લોકલ નેટવર્ક",
     pairingCode: "જોડાણ અને રૂમ કોડ", shareToConnect: "જોડવા શેર કરો", scanToConnect: "જોડવા સ્કેન કરો", useParentScan: "પેરેન્ટ યુનિટથી સ્કેન કરો",
     videoStreaming: "વિડિયો સ્ટ્રીમિંગ", audioStreaming: "ઑડિયો સ્ટ્રીમિંગ", audioOnly: "માત્ર અવાજ", audioOnlySub: "વિડિયો વગર અવાજ મોકલો",
-    privacyShade: "ગોપનીયતાનો પડદો", hideVideoKeepAudio: "વિડિયો છુપાવો, અવાજ રાખો", babyTip: "સૂચન: જોડાયેલા રહેવા આ બ્રાઉઝર ખુલ્લું રાખો અને ફોન ચાર્જર પર રાખો.", evBabyConnected: "બેબી યુનિટ જોડાયું",
+    privacyShade: "ગોપનીયતાનો પડદો", hideVideoKeepAudio: "વિડિયો છુપાવો, અવાજ રાખો", babyTip: "સૂચન: જોડાયેલા રહેવા આ બ્રાઉઝર ખુલ્લું રાખો અને ફોન ચાર્જર પર રાખો. બીજી ઍપ પર ન જાઓ — બેકગ્રાઉન્ડમાં કૅમેરો બંધ થઈ શકે છે.", evBabyConnected: "બેબી યુનિટ જોડાયું",
     evTalk: "વાતચીત વપરાઈ", evTalkSub: "તમે બાળક સાથે વાત કરી", evLullaby: "હાલરડું શરૂ થયું", evSound: "અવાજ મળ્યો",
     evSoundSub: "તમારા નક્કી કરેલા સ્તરથી ઉપર", howTitle: "આ કેવી રીતે કામ કરે?", step1t: "બાળક પાસે", step1: "બાળક પાસે રહેનારા ફોન પર BabyPhone.online ખોલો.",
     step2t: "જોડો", step2: "બેબી યુનિટ શરૂ કરો અને તમારા ફોનથી QR સ્કેન કરો.", step3t: "લાઇવ જુઓ", step3: "પેરેન્ટ યુનિટ પરથી બાળકને લાઇવ જુઓ-સાંભળો.",
@@ -1789,10 +1984,7 @@
     featTitle: "જોઈએ તે બધું", featVideo: "લાઇવ વિડિયો", featSound: "અવાજ", featTalk: "બાળક સાથે વાત કરો",
     featNight: "નાઇટ લાઇટ", featAlarm: "અવાજ ચેતવણી", featLullaby: "હાલરડાં", featDevices: "ફોન, ટૅબ્લેટ અને કમ્પ્યુટર પર ચાલે.",
     parentUnit: "પેરેન્ટ યુનિટ", monitoring: "દેખરેખ", babyUnit: "બેબી યુનિટ", footPrivacy: "છબી અને અવાજ સીધા તમારા પોતાના ડિવાઇસ વચ્ચે જાય છે. કોઈ રેકોર્ડિંગ સચવાતું નથી.",
-    footDisclaimer: "સહાયક સાધન, બાળક પર જાતે નજર રાખવાનો વિકલ્પ નથી.", plusTitle: "BabyPhone Plus", plusSub: "એ રાતો માટે જ્યારે ખરેખર કામ કરવું જોઈએ.", plusFeat1: "ડેડિકેટેડ રિલે — કોઈપણ નેટવર્ક પર ખાતરીપૂર્વક જોડાણ",
-    plusFeat2: "સાથે જુઓ: એક સાથે અનેક પેરેન્ટ ડિવાઇસ", plusFeat3: "ઊંઘ અને અવાજનો ઇતિહાસ", plusFeat4: "પ્રીમિયમ હાલરડાં સંગ્રહ", plusUpgrade: "Plus પર અપગ્રેડ કરો",
-    plusManage: "સબ્સ્ક્રિપ્શન મેનેજ કરો", plusRestore: "ખરીદી પુનઃસ્થાપિત કરો", plusSoon: "જલ્દી આવે છે", plusActive: "Plus સક્રિય",
-    plusEmailQ: "તમારો ઇમેઇલ (સબ્સ્ક્રિપ્શનનો):", plusError: "કંઈક ખોટું થયું. ફરી પ્રયત્ન કરો.", plusNotFound: "એ ઇમેઇલ માટે સક્રિય સબ્સ્ક્રિપ્શન નથી.", tapToTalk: "બોલવા દબાવો",
+    footDisclaimer: "સહાયક સાધન, બાળક પર જાતે નજર રાખવાનો વિકલ્પ નથી.", tapToTalk: "બોલવા દબાવો",
     talkViewSub: "આ ચાલુ હોય ત્યાં સુધી તમારો અવાજ બેબી યુનિટ પર સંભળાય છે.", soundscapes: "શાંત અવાજો, બેબી યુનિટ પર વાગે છે.", nightViewSub: "બેબી યુનિટની સ્ક્રીન પર નરમ, હૂંફાળો પ્રકાશ.", alertsViewSub: "રડવાનું મળતાં આ ડિવાઇસ પર અવાજ.",
     zoom: "ઝૂમ", evSleepDone: "ઊંઘ ટાઇમર પૂરો", reconnecting: "ફરી જોડાઈ રહ્યું…", connectFailed: "જોડાઈ શકાયું નહીં. કોડ તપાસી ફરી પ્રયત્ન કરો.",
     retry: "ફરી પ્રયત્ન કરો", footTerms: "શરતો", footRefunds: "રિફંડ", footAccessibility: "સુલભતા",
@@ -1800,12 +1992,21 @@
     cameraActive: "કૅમેરો ચાલુ", micActive: "માઇક ચાલુ", micOff: "માઇક બંધ", permissionNeeded: "આગળ વધવા કૅમેરા અને માઇકને મંજૂરી આપો",
     permissionDenied: "કૅમેરો/માઇક અવરોધિત છે. બ્રાઉઝરમાં મંજૂરી આપી ફરી પ્રયત્ન કરો.", copied: "📋 કૉપિ થયું", copyFail: "કૉપિ નિષ્ફળ — જાતે પસંદ કરો", scanFail: "સ્કેન માટે કૅમેરો ખૂલતો નથી — કોડ પેસ્ટ કરો",
     invalidAnswer: "અમાન્ય જવાબ કોડ", invalidPair: "અમાન્ય જોડાણ કોડ", pasteAnswerFirst: "પહેલા જવાબ કોડ પેસ્ટ કે સ્કેન કરો", pastePairFirst: "પહેલા જોડાણ કોડ પેસ્ટ કે સ્કેન કરો",
-    noImage: "હજી છબી નથી", recStarted: "⏺️ રેકોર્ડિંગ શરૂ", saved: "💾 સાચવ્યું", recNotSupported: "રેકોર્ડિંગ સપોર્ટેડ નથી",
+    noImage: "હજી છબી નથી", unsupportedTitle: "આ બ્રાઉઝર BabyPhone.online ચલાવી શકતું નથી", unsupportedBody: "આ પેજને કૅમેરો, માઇક્રોફોન અને વિડિયો-કૉલ સપોર્ટની જરૂર છે જે આ બ્રાઉઝરમાં નથી. કૃપા કરી babyphone.online ને Chrome, Safari, Firefox અથવા Edge ના તાજેતરના વર્ઝનમાં ખોલો.", recordVideo: "રેકોર્ડ કરો", recStarted: "⏺️ રેકોર્ડિંગ શરૂ", saved: "💾 સાચવ્યું", recNotSupported: "રેકોર્ડિંગ સપોર્ટેડ નથી",
     noStream: "રેકોર્ડ કરવા હજી છબી નથી", cameraSwitched: "કૅમેરો બદલાયો", cannotSwitch: "કૅમેરો બદલી શકાતો નથી", soundMuted: "અવાજ બંધ",
     soundOn: "અવાજ ચાલુ", stopParentQ: "પેરેન્ટ યુનિટ બંધ કરવું?", stopBabyQ: "બેબી યુનિટ બંધ કરવું?", noMic: "માઇકની ઍક્સેસ નથી",
     mediaError: "કૅમેરો/માઇક ઉપલબ્ધ નથી. https વાપરો અથવા Chrome/Firefox માં ખોલો.",
   });
   Object.assign(S.fa, {
+    qualityLabel: 'کیفیت',
+    qualityAuto: 'خودکار',
+    qualityHigh: 'تصویر و صدا (واضح)',
+    qualitySaver: 'تصویر و صدا (کم‌مصرف)',
+    qualityAudio: 'فقط صدا',
+    qualityNow: 'در حال استفاده',
+    onlyOneCamera: 'این دستگاه فقط یک دوربین دارد', cameraSwitchFailed: 'تعویض ناموفق بود — همان دوربین فعال ماند',
+    waitingApproval: 'در انتظار تأیید در دستگاه نوزاد…',
+    metaTitle: 'مانیتور نوزاد رایگان — BabyPhone.online', metaDesc: 'دو گوشی را به مانیتور نوزاد رایگان با تصویر و صدای زنده تبدیل کنید. بدون برنامه، بدون حساب کاربری و بدون ذخیره‌سازی. مستقیم در مرورگر.',
     qrTapZoom: "👆 برای بزرگ‌نمایی و اسکن، روی QR بزنید", qrZoomHint: "دوربین گوشی دیگر را به این کد بگیرید", roomCodeShare: "کد اتاق (با واحد والدین به اشتراک بگذارید)", roomCodeOfBaby: "کد اتاق واحد نوزاد",
     qrScanHint: "بگذارید والد این QR را اسکن کند — یا کد بالا را وارد کنید", phCode: "کد", newCode: "کد جدید", heroTitle: "کودک شما، همیشه نزدیک.",
     heroSub: "BabyPhone دو دستگاه را به یک دوربین مراقبت امن از نوزاد تبدیل می‌کند. ساده، خصوصی و مستقیم در مرورگر.", ctaStartBaby: "شروع واحد نوزاد", ctaConnectParent: "اتصال به‌عنوان والد", navPrivacy: "حریم خصوصی",
@@ -1823,7 +2024,7 @@
     off2: "خاموش", autoNoise: "کاهش نویز خودکار", excellentConn: "اتصال عالی", localOnly: "فقط شبکه محلی",
     pairingCode: "جفت‌سازی و کد اتاق", shareToConnect: "برای اتصال به اشتراک بگذارید", scanToConnect: "برای اتصال اسکن کنید", useParentScan: "با واحد والدین اسکن کنید",
     videoStreaming: "پخش تصویر", audioStreaming: "پخش صدا", audioOnly: "فقط صدا", audioOnlySub: "پخش صدا بدون تصویر",
-    privacyShade: "پرده حریم خصوصی", hideVideoKeepAudio: "تصویر پنهان، صدا برقرار", babyTip: "نکته: برای حفظ اتصال، این مرورگر را باز و گوشی را به شارژر متصل نگه دارید.", evBabyConnected: "واحد نوزاد متصل شد",
+    privacyShade: "پرده حریم خصوصی", hideVideoKeepAudio: "تصویر پنهان، صدا برقرار", babyTip: "نکته: برای حفظ اتصال، این مرورگر را باز و گوشی را به شارژر متصل نگه دارید. به برنامه دیگری نروید — دوربین ممکن است در پس‌زمینه متوقف شود.", evBabyConnected: "واحد نوزاد متصل شد",
     evTalk: "صحبت استفاده شد", evTalkSub: "با نوزاد صحبت کردید", evLullaby: "لالایی شروع شد", evSound: "صدا شناسایی شد",
     evSoundSub: "بالاتر از سطح تعیین‌شده", howTitle: "چطور کار می‌کند؟", step1t: "کنار نوزاد", step1: "BabyPhone.online را روی گوشی‌ای که کنار نوزاد می‌ماند باز کنید.",
     step2t: "جفت‌سازی", step2: "واحد نوزاد را شروع کنید و QR را با گوشی خودتان اسکن کنید.", step3t: "تماشای زنده", step3: "نوزادتان را از واحد والدین زنده ببینید و بشنوید.",
@@ -1832,10 +2033,7 @@
     featTitle: "هرچه نیاز دارید", featVideo: "ویدیوی زنده", featSound: "صدا", featTalk: "صحبت با نوزاد",
     featNight: "چراغ خواب", featAlarm: "هشدار صوتی", featLullaby: "لالایی‌ها", featDevices: "روی گوشی، تبلت و رایانه کار می‌کند.",
     parentUnit: "واحد والدین", monitoring: "در حال پایش", babyUnit: "واحد نوزاد", footPrivacy: "تصویر و صدا مستقیم بین دستگاه‌های خودتان جابه‌جا می‌شود. هیچ ضبطی ذخیره نمی‌شود.",
-    footDisclaimer: "ابزاری کمکی، نه جایگزین مراقبت حضوری از نوزاد.", plusTitle: "BabyPhone Plus", plusSub: "برای شب‌هایی که واقعاً باید کار کند.", plusFeat1: "رله اختصاصی — اتصال تضمینی در هر شبکه",
-    plusFeat2: "تماشای هم‌زمان: چند دستگاه والد با هم", plusFeat3: "تاریخچه خواب و صدا", plusFeat4: "کتابخانه لالایی ویژه", plusUpgrade: "ارتقا به Plus",
-    plusManage: "مدیریت اشتراک", plusRestore: "بازیابی خرید", plusSoon: "به‌زودی", plusActive: "Plus فعال",
-    plusEmailQ: "ایمیل شما (مربوط به اشتراک):", plusError: "مشکلی پیش آمد. دوباره تلاش کنید.", plusNotFound: "اشتراک فعالی برای این ایمیل یافت نشد.", tapToTalk: "برای صحبت بزنید",
+    footDisclaimer: "ابزاری کمکی، نه جایگزین مراقبت حضوری از نوزاد.", tapToTalk: "برای صحبت بزنید",
     talkViewSub: "تا وقتی روشن است، صدای شما روی واحد نوزاد پخش می‌شود.", soundscapes: "صداهای آرام، پخش‌شده روی واحد نوزاد.", nightViewSub: "نوری گرم و ملایم روی صفحه واحد نوزاد.", alertsViewSub: "با شناسایی گریه، این دستگاه صدا می‌دهد.",
     zoom: "بزرگ‌نمایی", evSleepDone: "تایمر خواب تمام شد", reconnecting: "اتصال دوباره…", connectFailed: "اتصال ممکن نشد. کد را بررسی و دوباره تلاش کنید.",
     retry: "تلاش دوباره", footTerms: "شرایط", footRefunds: "بازپرداخت", footAccessibility: "دسترس‌پذیری",
@@ -1843,12 +2041,22 @@
     cameraActive: "دوربین روشن", micActive: "میکروفون روشن", micOff: "میکروفون خاموش", permissionNeeded: "برای ادامه، دوربین و میکروفون را مجاز کنید",
     permissionDenied: "دوربین/میکروفون مسدود است. در مرورگر اجازه دهید و دوباره تلاش کنید.", copied: "📋 کپی شد", copyFail: "کپی نشد — دستی انتخاب کنید", scanFail: "دوربین برای اسکن باز نمی‌شود — کد را بچسبانید",
     invalidAnswer: "کد پاسخ نامعتبر", invalidPair: "کد جفت‌سازی نامعتبر", pasteAnswerFirst: "اول کد پاسخ را بچسبانید یا اسکن کنید", pastePairFirst: "اول کد جفت‌سازی را بچسبانید یا اسکن کنید",
-    noImage: "هنوز تصویری نیست", recStarted: "⏺️ ضبط شروع شد", saved: "💾 ذخیره شد", recNotSupported: "ضبط پشتیبانی نمی‌شود",
+    noImage: "هنوز تصویری نیست", unsupportedTitle: "این مرورگر نمی‌تواند BabyPhone.online را اجرا کند", unsupportedBody: "این صفحه به پشتیبانی از دوربین، میکروفون و تماس تصویری نیاز دارد که این مرورگر ندارد. لطفاً babyphone.online را در نسخه جدید Chrome، Safari، Firefox یا Edge باز کنید.", recordVideo: "ضبط", recStarted: "⏺️ ضبط شروع شد", saved: "💾 ذخیره شد", recNotSupported: "ضبط پشتیبانی نمی‌شود",
     noStream: "هنوز تصویری برای ضبط نیست", cameraSwitched: "دوربین عوض شد", cannotSwitch: "تعویض دوربین ممکن نیست", soundMuted: "صدا قطع",
     soundOn: "صدا وصل", stopParentQ: "واحد والدین متوقف شود؟", stopBabyQ: "واحد نوزاد متوقف شود؟", noMic: "دسترسی به میکروفون نیست",
     mediaError: "دوربین/میکروفون در دسترس نیست. از https استفاده کنید یا در Chrome/Firefox باز کنید.",
   });
   Object.assign(S.pl, {
+    qualityLabel: 'Jakość',
+    qualityAuto: 'Automatycznie',
+    qualityHigh: 'Obraz + dźwięk (ostry)',
+    qualitySaver: 'Obraz + dźwięk (oszczędny)',
+    qualityAudio: 'Tylko dźwięk',
+    qualityNow: 'W użyciu',
+    onlyOneCamera: 'To urządzenie ma tylko jedną kamerę', cameraSwitchFailed: 'Nie udało się przełączyć — została ta sama kamera',
+    waitingApproval: 'Czekam na zgodę na jednostce dziecka…',
+    metaTitle: 'Darmowa niania elektroniczna — BabyPhone.online', metaDesc: 'Zamień dwa telefony w darmową nianię elektroniczną z obrazem i dźwiękiem na żywo. Bez aplikacji, bez konta, nic nie jest zapisywane.',
+    approveTitle: 'Zezwolić temu urządzeniu?', approveAsk: 'Urządzenie wpisało Twój kod pokoju i chce oglądać i słuchać. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveExtra: 'Drugie urządzenie chce oglądać. Ktoś jest już połączony. Zezwól tylko, jeśli to Twoje własne urządzenie.', approveAllow: 'Zezwól', approveDeny: 'Odrzuć', authRefused: 'Jednostka dziecięca odrzuciła to urządzenie.', switchCameraSub: 'Kamera przednia / tylna',
     qrTapZoom: "👆 Dotknij kodu QR, aby go powiększyć", qrZoomHint: "Skieruj aparat drugiego telefonu na ten kod", roomCodeShare: "Kod pokoju (udostępnij jednostce rodzica)", roomCodeOfBaby: "Kod pokoju jednostki dziecka",
     qrScanHint: "Pozwól rodzicowi zeskanować ten QR — albo wpisz kod powyżej", phCode: "KOD", newCode: "Nowy kod", heroTitle: "Twoje dziecko, zawsze blisko.",
     heroSub: "BabyPhone zamienia dwa urządzenia w bezpieczną nianię elektroniczną. Prosto, prywatnie, wprost w przeglądarce.", ctaStartBaby: "Uruchom jednostkę dziecka", ctaConnectParent: "Połącz jako rodzic", navPrivacy: "Prywatność",
@@ -1866,7 +2074,7 @@
     off2: "Wył.", autoNoise: "Automatyczna redukcja szumów", excellentConn: "Doskonałe połączenie", localOnly: "Tylko sieć lokalna",
     pairingCode: "Parowanie i kod pokoju", shareToConnect: "Udostępnij, aby połączyć", scanToConnect: "Zeskanuj, aby połączyć", useParentScan: "Zeskanuj jednostką rodzica",
     videoStreaming: "Strumień wideo", audioStreaming: "Strumień audio", audioOnly: "Tylko dźwięk", audioOnlySub: "Przesyłaj dźwięk bez obrazu",
-    privacyShade: "Zasłona prywatności", hideVideoKeepAudio: "Ukryj obraz, zostaw dźwięk", babyTip: "Wskazówka: zostaw tę przeglądarkę otwartą, a telefon na ładowarce, aby utrzymać połączenie.", evBabyConnected: "Jednostka dziecka połączona",
+    privacyShade: "Zasłona prywatności", hideVideoKeepAudio: "Ukryj obraz, zostaw dźwięk", babyTip: "Wskazówka: zostaw tę przeglądarkę otwartą, a telefon na ładowarce, aby utrzymać połączenie. Nie przełączaj się na inną aplikację — kamera może zatrzymać się w tle.", evBabyConnected: "Jednostka dziecka połączona",
     evTalk: "Użyto odpowiadania", evTalkSub: "Mówiłeś/aś do dziecka", evLullaby: "Kołysanka włączona", evSound: "Wykryto dźwięk",
     evSoundSub: "Powyżej ustawionego poziomu", howTitle: "Jak to działa?", step1t: "Przy dziecku", step1: "Otwórz BabyPhone.online na telefonie, który zostaje przy dziecku.",
     step2t: "Sparuj", step2: "Uruchom jednostkę dziecka i zeskanuj QR swoim telefonem.", step3t: "Oglądaj na żywo", step3: "Zobacz i usłysz dziecko na żywo na jednostce rodzica.",
@@ -1875,10 +2083,7 @@
     featTitle: "Wszystko, czego potrzebujesz", featVideo: "Wideo na żywo", featSound: "Dźwięk", featTalk: "Odpowiedz",
     featNight: "Lampka nocna", featAlarm: "Alarm dźwiękowy", featLullaby: "Kołysanki", featDevices: "Działa na telefonie, tablecie i komputerze.",
     parentUnit: "Jednostka rodzica", monitoring: "Monitorowanie", babyUnit: "Jednostka dziecka", footPrivacy: "Obraz i dźwięk płyną bezpośrednio między Twoimi urządzeniami. Nagrania nie są zapisywane.",
-    footDisclaimer: "Pomoc, a nie zastępstwo osobistej opieki nad dzieckiem.", plusTitle: "BabyPhone Plus", plusSub: "Na noce, kiedy naprawdę musi działać.", plusFeat1: "Dedykowany przekaźnik — gwarantowane połączenie w każdej sieci",
-    plusFeat2: "Oglądajcie razem: kilka urządzeń rodziców naraz", plusFeat3: "Historia snu i dźwięków", plusFeat4: "Biblioteka kołysanek premium", plusUpgrade: "Przejdź na Plus",
-    plusManage: "Zarządzaj subskrypcją", plusRestore: "Przywróć zakup", plusSoon: "Wkrótce", plusActive: "Plus aktywny",
-    plusEmailQ: "Twój e-mail (z subskrypcji):", plusError: "Coś poszło nie tak. Spróbuj ponownie.", plusNotFound: "Brak aktywnej subskrypcji dla tego e-maila.", tapToTalk: "Dotknij, aby mówić",
+    footDisclaimer: "Pomoc, a nie zastępstwo osobistej opieki nad dzieckiem.", tapToTalk: "Dotknij, aby mówić",
     talkViewSub: "Twój głos słychać na jednostce dziecka, dopóki to jest włączone.", soundscapes: "Spokojne dźwięki odtwarzane na jednostce dziecka.", nightViewSub: "Miękka, ciepła poświata na ekranie jednostki dziecka.", alertsViewSub: "Dźwięk na tym urządzeniu, gdy wykryty zostanie płacz.",
     zoom: "Zoom", evSleepDone: "Timer snu zakończony", reconnecting: "Ponowne łączenie…", connectFailed: "Nie udało się połączyć. Sprawdź kod i spróbuj ponownie.",
     retry: "Spróbuj ponownie", footTerms: "Regulamin", footRefunds: "Zwroty", footAccessibility: "Dostępność",
@@ -1886,12 +2091,21 @@
     cameraActive: "Kamera włączona", micActive: "Mikrofon włączony", micOff: "Mikrofon wyłączony", permissionNeeded: "Zezwól na kamerę i mikrofon, aby kontynuować",
     permissionDenied: "Kamera/mikrofon zablokowane. Zezwól w przeglądarce i spróbuj ponownie.", copied: "📋 Skopiowano", copyFail: "Kopiowanie nie powiodło się — zaznacz ręcznie", scanFail: "Nie można otworzyć aparatu — wklej kod",
     invalidAnswer: "Nieprawidłowy kod odpowiedzi", invalidPair: "Nieprawidłowy kod parowania", pasteAnswerFirst: "Najpierw wklej lub zeskanuj kod odpowiedzi", pastePairFirst: "Najpierw wklej lub zeskanuj kod parowania",
-    noImage: "Jeszcze brak obrazu", recStarted: "⏺️ Nagrywanie rozpoczęte", saved: "💾 Zapisano", recNotSupported: "Nagrywanie nieobsługiwane",
+    noImage: "Jeszcze brak obrazu", unsupportedTitle: "Ta przeglądarka nie obsługuje BabyPhone.online", unsupportedBody: "Ta strona wymaga obsługi kamery, mikrofonu i połączeń wideo, których ta przeglądarka nie ma. Otwórz babyphone.online w najnowszej wersji Chrome, Safari, Firefox lub Edge.", recordVideo: "Nagraj", recStarted: "⏺️ Nagrywanie rozpoczęte", saved: "💾 Zapisano", recNotSupported: "Nagrywanie nieobsługiwane",
     noStream: "Nie ma jeszcze obrazu do nagrania", cameraSwitched: "Kamera przełączona", cannotSwitch: "Nie można przełączyć kamery", soundMuted: "Dźwięk wyciszony",
     soundOn: "Dźwięk włączony", stopParentQ: "Zatrzymać jednostkę rodzica?", stopBabyQ: "Zatrzymać jednostkę dziecka?", noMic: "Brak dostępu do mikrofonu",
     mediaError: "Kamera/mikrofon niedostępne. Użyj https lub otwórz w Chrome/Firefox.",
   });
   Object.assign(S.uk, {
+    qualityLabel: 'Якість',
+    qualityAuto: 'Автоматично',
+    qualityHigh: 'Відео та звук (чітко)',
+    qualitySaver: 'Відео та звук (економно)',
+    qualityAudio: 'Лише звук',
+    qualityNow: 'Використовується',
+    onlyOneCamera: 'На цьому пристрої лише одна камера', cameraSwitchFailed: 'Не вдалося перемкнути — залишилася та сама камера',
+    waitingApproval: 'Очікування підтвердження на дитячому блоці…',
+    metaTitle: 'Безкоштовна радіоняня — BabyPhone.online', metaDesc: 'Перетворіть два телефони на безкоштовну радіоняню з відео та звуком у реальному часі. Без застосунку, без акаунта, нічого не зберігається.',
     qrTapZoom: "👆 Торкніться QR, щоб збільшити його", qrZoomHint: "Наведіть камеру іншого телефона на цей код", roomCodeShare: "Код кімнати (поділіться з батьківським блоком)", roomCodeOfBaby: "Код кімнати дитячого блока",
     qrScanHint: "Нехай батьки зісканують цей QR — або введіть код вище", phCode: "КОД", newCode: "Новий код", heroTitle: "Ваше малятко завжди поруч.",
     heroSub: "BabyPhone перетворює два пристрої на безпечну радіоняню. Просто, приватно й одразу в браузері.", ctaStartBaby: "Запустити дитячий блок", ctaConnectParent: "Підключитися як батьки", navPrivacy: "Приватність",
@@ -1909,7 +2123,7 @@
     off2: "Вимк.", autoNoise: "Автозаглушення шуму", excellentConn: "Чудове з'єднання", localOnly: "Лише локальна мережа",
     pairingCode: "Парування та код кімнати", shareToConnect: "Поділіться, щоб з'єднати", scanToConnect: "Зіскануйте, щоб з'єднати", useParentScan: "Скануйте батьківським блоком",
     videoStreaming: "Потік відео", audioStreaming: "Потік аудіо", audioOnly: "Лише звук", audioOnlySub: "Передавати звук без відео",
-    privacyShade: "Шторка приватності", hideVideoKeepAudio: "Сховати відео, лишити звук", babyTip: "Порада: тримайте цей браузер відкритим, а телефон на зарядці, щоб лишатися на зв'язку.", evBabyConnected: "Дитячий блок підключено",
+    privacyShade: "Шторка приватності", hideVideoKeepAudio: "Сховати відео, лишити звук", babyTip: "Порада: тримайте цей браузер відкритим, а телефон на зарядці, щоб лишатися на зв'язку. Не перемикайтесь на інший додаток — камера може зупинитися у фоні.", evBabyConnected: "Дитячий блок підключено",
     evTalk: "Використано відповідь", evTalkSub: "Ви говорили з малям", evLullaby: "Колискову увімкнено", evSound: "Виявлено звук",
     evSoundSub: "Вище встановленого рівня", howTitle: "Як це працює?", step1t: "Біля маляти", step1: "Відкрийте BabyPhone.online на телефоні, що лишається біля дитини.",
     step2t: "Спаруйте", step2: "Запустіть дитячий блок і зіскануйте QR своїм телефоном.", step3t: "Дивіться наживо", step3: "Дивіться та слухайте маля наживо з батьківського блока.",
@@ -1918,10 +2132,7 @@
     featTitle: "Усе необхідне", featVideo: "Відео наживо", featSound: "Звук", featTalk: "Відповісти",
     featNight: "Нічник", featAlarm: "Звуковий сигнал", featLullaby: "Колискові", featDevices: "Працює на телефоні, планшеті та комп'ютері.",
     parentUnit: "Батьківський блок", monitoring: "Спостереження", babyUnit: "Дитячий блок", footPrivacy: "Зображення та звук ідуть напряму між вашими пристроями. Записи не зберігаються.",
-    footDisclaimer: "Помічник, а не заміна особистого нагляду за дитиною.", plusTitle: "BabyPhone Plus", plusSub: "Для ночей, коли все мусить працювати.", plusFeat1: "Виділений ретранслятор — гарантоване з'єднання в будь-якій мережі",
-    plusFeat2: "Дивіться разом: кілька батьківських пристроїв одночасно", plusFeat3: "Історія сну та звуків", plusFeat4: "Преміальна бібліотека колискових", plusUpgrade: "Перейти на Plus",
-    plusManage: "Керувати підпискою", plusRestore: "Відновити покупку", plusSoon: "Незабаром", plusActive: "Plus активний",
-    plusEmailQ: "Ваша електронна адреса (підписки):", plusError: "Щось пішло не так. Спробуйте ще раз.", plusNotFound: "Активної підписки для цієї адреси не знайдено.", tapToTalk: "Торкніться, щоб говорити",
+    footDisclaimer: "Помічник, а не заміна особистого нагляду за дитиною.", tapToTalk: "Торкніться, щоб говорити",
     talkViewSub: "Ваш голос лунає на дитячому блоці, поки це ввімкнено.", soundscapes: "Спокійні звуки, що лунають на дитячому блоці.", nightViewSub: "М'яке тепле світло на екрані дитячого блока.", alertsViewSub: "Звук на цьому пристрої, коли виявлено плач.",
     zoom: "Масштаб", evSleepDone: "Таймер сну завершено", reconnecting: "Повторне під'єднання…", connectFailed: "Не вдалося під'єднатися. Перевірте код і спробуйте ще раз.",
     retry: "Спробувати ще раз", footTerms: "Умови", footRefunds: "Повернення", footAccessibility: "Доступність",
@@ -1929,19 +2140,40 @@
     cameraActive: "Камера ввімкнена", micActive: "Мікрофон увімкнено", micOff: "Мікрофон вимкнено", permissionNeeded: "Дозвольте камеру та мікрофон, щоб продовжити",
     permissionDenied: "Камера/мікрофон заблоковані. Дозвольте доступ у браузері та спробуйте ще раз.", copied: "📋 Скопійовано", copyFail: "Не вдалося скопіювати — виділіть вручну", scanFail: "Не вдалося відкрити камеру — вставте код",
     invalidAnswer: "Хибний код відповіді", invalidPair: "Хибний код парування", pasteAnswerFirst: "Спершу вставте або зіскануйте код відповіді", pastePairFirst: "Спершу вставте або зіскануйте код парування",
-    noImage: "Зображення ще немає", recStarted: "⏺️ Запис розпочато", saved: "💾 Збережено", recNotSupported: "Запис не підтримується",
+    noImage: "Зображення ще немає", unsupportedTitle: "Цей браузер не може запустити BabyPhone.online", unsupportedBody: "Ця сторінка потребує підтримки камери, мікрофона та відеодзвінків, яких немає в цьому браузері. Відкрийте babyphone.online в актуальній версії Chrome, Safari, Firefox або Edge.", recordVideo: "Запис", recStarted: "⏺️ Запис розпочато", saved: "💾 Збережено", recNotSupported: "Запис не підтримується",
     noStream: "Ще немає зображення для запису", cameraSwitched: "Камеру змінено", cannotSwitch: "Не вдалося змінити камеру", soundMuted: "Звук вимкнено",
     soundOn: "Звук увімкнено", stopParentQ: "Зупинити батьківський блок?", stopBabyQ: "Зупинити дитячий блок?", noMic: "Немає доступу до мікрофона",
     mediaError: "Камера/мікрофон недоступні. Використайте https або відкрийте у Chrome/Firefox.",
   });
   Object.assign(S.nl, {
+    cameraRecovered: 'Camera hersteld',
+    qualityLabel: 'Kwaliteit',
+    qualityAuto: 'Automatisch',
+    qualityHigh: 'Beeld + geluid (scherp)',
+    qualitySaver: 'Beeld + geluid (databesparend)',
+    qualityAudio: 'Alleen geluid',
+    qualityNow: 'In gebruik',
+    onlyOneCamera: 'Dit toestel heeft maar één camera', cameraSwitchFailed: 'Wisselen mislukt — dezelfde camera bleef aan',
+    waitingApproval: 'Wacht op toestemming bij de babyunit…',
+    metaTitle: 'Gratis babyfoon app online — BabyPhone.online', metaDesc: 'Maak van twee telefoons een gratis babyfoon met live beeld en geluid. Geen app installeren, geen account, niets wordt opgeslagen. In je browser.',
+    repeatList: 'Herhalen',
+    approveTitle: 'Dit apparaat toelaten?', approveAsk: 'Een apparaat heeft je kamercode ingevoerd en wil meekijken en meeluisteren. Sta dit alleen toe als het je eigen apparaat is.', approveExtra: 'Een tweede apparaat wil meekijken. Er is al iemand verbonden. Sta dit alleen toe als het je eigen apparaat is.', approveAllow: 'Toestaan', approveDeny: 'Weigeren', authRefused: 'De babyunit heeft dit apparaat geweigerd.',
     copied: "📋 Gekopieerd", copyFail: "Kopiëren mislukt — selecteer handmatig", scanFail: "Camera voor scannen niet beschikbaar — plak de code", invalidAnswer: "Ongeldige antwoordcode",
     invalidPair: "Ongeldige koppelcode", pasteAnswerFirst: "Plak of scan eerst de antwoordcode", pastePairFirst: "Plak of scan eerst de koppelcode", noImage: "Nog geen beeld",
-    recStarted: "⏺️ Opname gestart", saved: "💾 Opgeslagen", recNotSupported: "Opnemen niet ondersteund", noStream: "Nog geen beeld om op te nemen",
+    unsupportedTitle: "Deze browser kan BabyPhone.online niet gebruiken", unsupportedBody: "Deze pagina heeft camera, microfoon en video-bel-ondersteuning nodig die deze browser niet heeft. Open babyphone.online in een recente versie van Chrome, Safari, Firefox of Edge.", posterCameraOff: "Camera uit", posterOffline: "Offline", cameraLabel: "Camera", ledLight: "LED-lampje", ledOn: "💡 LED aan", ledOff: "LED uit", recordVideo: "Opnemen", recStarted: "⏺️ Opname gestart", saved: "💾 Opgeslagen", recNotSupported: "Opnemen niet ondersteund", noStream: "Nog geen beeld om op te nemen",
     cameraSwitched: "Camera gewisseld", cannotSwitch: "Camera wisselen lukt niet", soundMuted: "Geluid uit", soundOn: "Geluid aan",
     stopParentQ: "Ouderunit stoppen?", stopBabyQ: "Babyunit stoppen?", noMic: "Geen microfoontoegang", mediaError: "Camera/microfoon niet beschikbaar. Gebruik https of open in Chrome/Firefox.",
   });
   Object.assign(S.pa, {
+    qualityLabel: 'ਗੁਣਵੱਤਾ',
+    qualityAuto: 'ਆਪਣੇ-ਆਪ',
+    qualityHigh: 'ਵੀਡੀਓ + ਆਵਾਜ਼ (ਸਾਫ਼)',
+    qualitySaver: 'ਵੀਡੀਓ + ਆਵਾਜ਼ (ਡਾਟਾ ਬਚਤ)',
+    qualityAudio: 'ਸਿਰਫ਼ ਆਵਾਜ਼',
+    qualityNow: 'ਵਰਤੋਂ ਵਿੱਚ',
+    onlyOneCamera: 'ਇਸ ਡਿਵਾਈਸ ਵਿੱਚ ਸਿਰਫ਼ ਇੱਕ ਹੀ ਕੈਮਰਾ ਹੈ', cameraSwitchFailed: 'ਬਦਲਣਾ ਅਸਫਲ — ਉਹੀ ਕੈਮਰਾ ਚਾਲੂ ਰਿਹਾ',
+    waitingApproval: 'ਬੇਬੀ ਯੂਨਿਟ ਉੱਤੇ ਮਨਜ਼ੂਰੀ ਦੀ ਉਡੀਕ…',
+    metaTitle: 'ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ — BabyPhone.online', metaDesc: 'ਦੋ ਫ਼ੋਨਾਂ ਨੂੰ ਮੁਫ਼ਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾਓ — ਲਾਈਵ ਵੀਡੀਓ ਅਤੇ ਆਵਾਜ਼ ਨਾਲ। ਕੋਈ ਐਪ ਨਹੀਂ, ਕੋਈ ਖਾਤਾ ਨਹੀਂ, ਕੁਝ ਵੀ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ।',
     qrTapZoom: "👆 ਸਕੈਨ ਲਈ QR ਨੂੰ ਛੂਹ ਕੇ ਵੱਡਾ ਕਰੋ", qrZoomHint: "ਦੂਜੇ ਫ਼ੋਨ ਦਾ ਕੈਮਰਾ ਇਸ ਕੋਡ ਵੱਲ ਕਰੋ", roomCodeShare: "ਕਮਰੇ ਦਾ ਕੋਡ (ਮਾਪੇ ਯੂਨਿਟ ਨਾਲ ਸਾਂਝਾ ਕਰੋ)", roomCodeOfBaby: "ਬੱਚਾ ਯੂਨਿਟ ਦੇ ਕਮਰੇ ਦਾ ਕੋਡ",
     qrScanHint: "ਮਾਪੇ ਤੋਂ ਇਹ QR ਸਕੈਨ ਕਰਵਾਓ — ਜਾਂ ਉੱਪਰਲਾ ਕੋਡ ਲਿਖੋ", phCode: "ਕੋਡ", newCode: "ਨਵਾਂ ਕੋਡ", heroTitle: "ਤੁਹਾਡਾ ਬੱਚਾ, ਹਮੇਸ਼ਾ ਨੇੜੇ।",
     heroSub: "BabyPhone ਦੋ ਡਿਵਾਈਸਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਬੇਬੀ ਮਾਨੀਟਰ ਬਣਾ ਦਿੰਦਾ ਹੈ। ਸੌਖਾ, ਨਿੱਜੀ ਅਤੇ ਸਿੱਧਾ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ।", ctaStartBaby: "ਬੱਚਾ ਯੂਨਿਟ ਸ਼ੁਰੂ ਕਰੋ", ctaConnectParent: "ਮਾਪੇ ਵਜੋਂ ਜੁੜੋ", navPrivacy: "ਪਰਦੇਦਾਰੀ",
@@ -1959,7 +2191,7 @@
     off2: "ਬੰਦ", autoNoise: "ਆਟੋ ਸ਼ੋਰ ਘਟਾਉ", excellentConn: "ਵਧੀਆ ਕਨੈਕਸ਼ਨ", localOnly: "ਸਿਰਫ਼ ਲੋਕਲ ਨੈੱਟਵਰਕ",
     pairingCode: "ਜੋੜੀ ਅਤੇ ਕਮਰੇ ਦਾ ਕੋਡ", shareToConnect: "ਜੋੜਨ ਲਈ ਸਾਂਝਾ ਕਰੋ", scanToConnect: "ਜੋੜਨ ਲਈ ਸਕੈਨ ਕਰੋ", useParentScan: "ਮਾਪੇ ਯੂਨਿਟ ਨਾਲ ਸਕੈਨ ਕਰੋ",
     videoStreaming: "ਵੀਡੀਓ ਸਟ੍ਰੀਮਿੰਗ", audioStreaming: "ਆਡੀਓ ਸਟ੍ਰੀਮਿੰਗ", audioOnly: "ਸਿਰਫ਼ ਆਵਾਜ਼", audioOnlySub: "ਵੀਡੀਓ ਬਿਨਾਂ ਆਵਾਜ਼ ਭੇਜੋ",
-    privacyShade: "ਪਰਦੇਦਾਰੀ ਪਰਦਾ", hideVideoKeepAudio: "ਵੀਡੀਓ ਲੁਕਾਓ, ਆਵਾਜ਼ ਰੱਖੋ", babyTip: "ਸੁਝਾਅ: ਜੁੜੇ ਰਹਿਣ ਲਈ ਇਹ ਬ੍ਰਾਊਜ਼ਰ ਖੁੱਲ੍ਹਾ ਰੱਖੋ ਅਤੇ ਫ਼ੋਨ ਚਾਰਜਰ 'ਤੇ ਲਾਈ ਰੱਖੋ।", evBabyConnected: "ਬੱਚਾ ਯੂਨਿਟ ਜੁੜ ਗਿਆ",
+    privacyShade: "ਪਰਦੇਦਾਰੀ ਪਰਦਾ", hideVideoKeepAudio: "ਵੀਡੀਓ ਲੁਕਾਓ, ਆਵਾਜ਼ ਰੱਖੋ", babyTip: "ਸੁਝਾਅ: ਜੁੜੇ ਰਹਿਣ ਲਈ ਇਹ ਬ੍ਰਾਊਜ਼ਰ ਖੁੱਲ੍ਹਾ ਰੱਖੋ ਅਤੇ ਫ਼ੋਨ ਚਾਰਜਰ 'ਤੇ ਲਾਈ ਰੱਖੋ। ਦੂਜੀ ਐਪ ਤੇ ਨਾ ਜਾਓ — ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਕੈਮਰਾ ਬੰਦ ਹੋ ਸਕਦਾ ਹੈ।", evBabyConnected: "ਬੱਚਾ ਯੂਨਿਟ ਜੁੜ ਗਿਆ",
     evTalk: "ਗੱਲਬਾਤ ਵਰਤੀ", evTalkSub: "ਤੁਸੀਂ ਬੱਚੇ ਨਾਲ ਗੱਲ ਕੀਤੀ", evLullaby: "ਲੋਰੀ ਸ਼ੁਰੂ ਹੋਈ", evSound: "ਆਵਾਜ਼ ਮਿਲੀ",
     evSoundSub: "ਤੁਹਾਡੇ ਮਿੱਥੇ ਪੱਧਰ ਤੋਂ ਉੱਪਰ", howTitle: "ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ?", step1t: "ਬੱਚੇ ਕੋਲ", step1: "ਜੋ ਫ਼ੋਨ ਬੱਚੇ ਕੋਲ ਰਹੇਗਾ ਉਸ 'ਤੇ BabyPhone.online ਖੋਲ੍ਹੋ।",
     step2t: "ਜੋੜੋ", step2: "ਬੱਚਾ ਯੂਨਿਟ ਸ਼ੁਰੂ ਕਰੋ ਅਤੇ ਆਪਣੇ ਫ਼ੋਨ ਨਾਲ QR ਸਕੈਨ ਕਰੋ।", step3t: "ਲਾਈਵ ਵੇਖੋ", step3: "ਆਪਣੇ ਮਾਪੇ ਯੂਨਿਟ ਤੋਂ ਬੱਚੇ ਨੂੰ ਲਾਈਵ ਵੇਖੋ-ਸੁਣੋ।",
@@ -1968,10 +2200,7 @@
     featTitle: "ਸਭ ਕੁਝ ਜੋ ਚਾਹੀਦਾ", featVideo: "ਲਾਈਵ ਵੀਡੀਓ", featSound: "ਆਵਾਜ਼", featTalk: "ਬੱਚੇ ਨਾਲ ਗੱਲ ਕਰੋ",
     featNight: "ਰਾਤ ਦੀ ਬੱਤੀ", featAlarm: "ਆਵਾਜ਼ ਅਲਾਰਮ", featLullaby: "ਲੋਰੀਆਂ", featDevices: "ਫ਼ੋਨ, ਟੈਬਲੇਟ ਅਤੇ ਕੰਪਿਊਟਰ 'ਤੇ ਚੱਲਦਾ ਹੈ।",
     parentUnit: "ਮਾਪੇ ਯੂਨਿਟ", monitoring: "ਨਿਗਰਾਨੀ", babyUnit: "ਬੱਚਾ ਯੂਨਿਟ", footPrivacy: "ਤਸਵੀਰ ਅਤੇ ਆਵਾਜ਼ ਸਿੱਧੀ ਤੁਹਾਡੀਆਂ ਆਪਣੀਆਂ ਡਿਵਾਈਸਾਂ ਵਿਚਕਾਰ ਜਾਂਦੀ ਹੈ। ਕੋਈ ਰਿਕਾਰਡਿੰਗ ਨਹੀਂ ਸੰਭਾਲੀ ਜਾਂਦੀ।",
-    footDisclaimer: "ਸਹਾਇਕ ਸਾਧਨ, ਬੱਚੇ ਦੀ ਖ਼ੁਦ ਨਿਗਰਾਨੀ ਦਾ ਬਦਲ ਨਹੀਂ।", plusTitle: "BabyPhone Plus", plusSub: "ਉਹਨਾਂ ਰਾਤਾਂ ਲਈ ਜਦੋਂ ਇਹ ਸੱਚਮੁੱਚ ਕੰਮ ਕਰਨਾ ਚਾਹੀਦਾ।", plusFeat1: "ਖ਼ਾਸ ਰਿਲੇ — ਹਰ ਨੈੱਟਵਰਕ 'ਤੇ ਪੱਕਾ ਕਨੈਕਸ਼ਨ",
-    plusFeat2: "ਇਕੱਠੇ ਵੇਖੋ: ਇੱਕੋ ਵੇਲੇ ਕਈ ਮਾਪੇ ਡਿਵਾਈਸਾਂ", plusFeat3: "ਨੀਂਦ ਅਤੇ ਆਵਾਜ਼ ਦਾ ਇਤਿਹਾਸ", plusFeat4: "ਪ੍ਰੀਮੀਅਮ ਲੋਰੀ ਲਾਇਬ੍ਰੇਰੀ", plusUpgrade: "Plus 'ਤੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ",
-    plusManage: "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਸੰਭਾਲੋ", plusRestore: "ਖ਼ਰੀਦ ਬਹਾਲ ਕਰੋ", plusSoon: "ਜਲਦੀ ਆ ਰਿਹਾ", plusActive: "Plus ਚਾਲੂ",
-    plusEmailQ: "ਤੁਹਾਡਾ ਈਮੇਲ (ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਵਾਲਾ):", plusError: "ਕੁਝ ਗ਼ਲਤ ਹੋ ਗਿਆ। ਫਿਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", plusNotFound: "ਉਸ ਈਮੇਲ ਲਈ ਕੋਈ ਚਾਲੂ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ ਮਿਲੀ।", tapToTalk: "ਬੋਲਣ ਲਈ ਛੂਹੋ",
+    footDisclaimer: "ਸਹਾਇਕ ਸਾਧਨ, ਬੱਚੇ ਦੀ ਖ਼ੁਦ ਨਿਗਰਾਨੀ ਦਾ ਬਦਲ ਨਹੀਂ।", tapToTalk: "ਬੋਲਣ ਲਈ ਛੂਹੋ",
     talkViewSub: "ਜਦ ਤੱਕ ਇਹ ਚਾਲੂ ਹੈ, ਤੁਹਾਡੀ ਆਵਾਜ਼ ਬੱਚਾ ਯੂਨਿਟ 'ਤੇ ਸੁਣਾਈ ਦਿੰਦੀ ਹੈ।", soundscapes: "ਸ਼ਾਂਤ ਆਵਾਜ਼ਾਂ, ਬੱਚਾ ਯੂਨਿਟ 'ਤੇ ਵੱਜਦੀਆਂ ਹਨ।", nightViewSub: "ਬੱਚਾ ਯੂਨਿਟ ਦੀ ਸਕ੍ਰੀਨ 'ਤੇ ਨਰਮ, ਗਰਮ ਰੋਸ਼ਨੀ।", alertsViewSub: "ਰੋਣਾ ਮਿਲਦਿਆਂ ਹੀ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਆਵਾਜ਼।",
     zoom: "ਜ਼ੂਮ", evSleepDone: "ਨੀਂਦ ਟਾਈਮਰ ਪੂਰਾ", reconnecting: "ਮੁੜ ਜੁੜ ਰਿਹਾ…", connectFailed: "ਜੁੜ ਨਹੀਂ ਸਕਿਆ। ਕੋਡ ਵੇਖ ਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     retry: "ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ", footTerms: "ਸ਼ਰਤਾਂ", footRefunds: "ਰਿਫੰਡ", footAccessibility: "ਪਹੁੰਚਯੋਗਤਾ",
@@ -1979,12 +2208,21 @@
     cameraActive: "ਕੈਮਰਾ ਚਾਲੂ", micActive: "ਮਾਈਕ ਚਾਲੂ", micOff: "ਮਾਈਕ ਬੰਦ", permissionNeeded: "ਜਾਰੀ ਰੱਖਣ ਲਈ ਕੈਮਰਾ ਅਤੇ ਮਾਈਕ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ",
     permissionDenied: "ਕੈਮਰਾ/ਮਾਈਕ ਰੋਕਿਆ ਹੋਇਆ ਹੈ। ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਇਜਾਜ਼ਤ ਦੇ ਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", copied: "📋 ਕਾਪੀ ਹੋ ਗਿਆ", copyFail: "ਕਾਪੀ ਅਸਫਲ — ਖ਼ੁਦ ਚੁਣੋ", scanFail: "ਸਕੈਨ ਲਈ ਕੈਮਰਾ ਨਹੀਂ ਖੁੱਲ੍ਹਦਾ — ਕੋਡ ਪੇਸਟ ਕਰੋ",
     invalidAnswer: "ਗ਼ਲਤ ਜਵਾਬ ਕੋਡ", invalidPair: "ਗ਼ਲਤ ਜੋੜੀ ਕੋਡ", pasteAnswerFirst: "ਪਹਿਲਾਂ ਜਵਾਬ ਕੋਡ ਪੇਸਟ ਜਾਂ ਸਕੈਨ ਕਰੋ", pastePairFirst: "ਪਹਿਲਾਂ ਜੋੜੀ ਕੋਡ ਪੇਸਟ ਜਾਂ ਸਕੈਨ ਕਰੋ",
-    noImage: "ਹਾਲੇ ਕੋਈ ਤਸਵੀਰ ਨਹੀਂ", recStarted: "⏺️ ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ", saved: "💾 ਸੰਭਾਲਿਆ", recNotSupported: "ਰਿਕਾਰਡਿੰਗ ਸਹਿਯੋਗੀ ਨਹੀਂ",
+    noImage: "ਹਾਲੇ ਕੋਈ ਤਸਵੀਰ ਨਹੀਂ", unsupportedTitle: "ਇਹ ਬ੍ਰਾਊਜ਼ਰ BabyPhone.online ਨਹੀਂ ਚਲਾ ਸਕਦਾ", unsupportedBody: "ਇਸ ਪੇਜ ਨੂੰ ਕੈਮਰਾ, ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਤੇ ਵੀਡੀਓ-ਕਾਲ ਸਹਾਇਤਾ ਦੀ ਲੋੜ ਹੈ ਜੋ ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ babyphone.online ਨੂੰ Chrome, Safari, Firefox ਜਾਂ Edge ਦੇ ਨਵੇਂ ਵਰਜਨ ਵਿੱਚ ਖੋਲ੍ਹੋ।", recordVideo: "ਰਿਕਾਰਡ ਕਰੋ", recStarted: "⏺️ ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ", saved: "💾 ਸੰਭਾਲਿਆ", recNotSupported: "ਰਿਕਾਰਡਿੰਗ ਸਹਿਯੋਗੀ ਨਹੀਂ",
     noStream: "ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਹਾਲੇ ਤਸਵੀਰ ਨਹੀਂ", cameraSwitched: "ਕੈਮਰਾ ਬਦਲਿਆ", cannotSwitch: "ਕੈਮਰਾ ਬਦਲ ਨਹੀਂ ਸਕਦੇ", soundMuted: "ਆਵਾਜ਼ ਬੰਦ",
     soundOn: "ਆਵਾਜ਼ ਚਾਲੂ", stopParentQ: "ਮਾਪੇ ਯੂਨਿਟ ਰੋਕਣਾ?", stopBabyQ: "ਬੱਚਾ ਯੂਨਿਟ ਰੋਕਣਾ?", noMic: "ਮਾਈਕ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ",
     mediaError: "ਕੈਮਰਾ/ਮਾਈਕ ਉਪਲਬਧ ਨਹੀਂ। https ਵਰਤੋ ਜਾਂ Chrome/Firefox ਵਿੱਚ ਖੋਲ੍ਹੋ।",
   });
   Object.assign(S.sw, {
+    qualityLabel: 'Ubora',
+    qualityAuto: 'Kiotomatiki',
+    qualityHigh: 'Video + sauti (wazi)',
+    qualitySaver: 'Video + sauti (kuokoa data)',
+    qualityAudio: 'Sauti pekee',
+    qualityNow: 'Inatumika',
+    onlyOneCamera: 'Kifaa hiki kina kamera moja tu', cameraSwitchFailed: 'Kubadilisha kumeshindikana — kamera ile ile imebaki',
+    waitingApproval: 'Inasubiri idhini kwenye kifaa cha mtoto…',
+    metaTitle: 'Kifuatiliaji cha mtoto bila malipo — BabyPhone.online', metaDesc: 'Geuza simu mbili kuwa kifuatiliaji cha mtoto bila malipo, chenye video na sauti moja kwa moja. Hakuna programu, hakuna akaunti, hakuna kinachohifadhiwa.',
     qrTapZoom: "👆 Gusa QR ili kuikuza kwa kuskani", qrZoomHint: "Elekeza kamera ya simu nyingine kwenye msimbo huu", roomCodeShare: "Msimbo wa chumba (shiriki na kifaa cha mzazi)", roomCodeOfBaby: "Msimbo wa chumba wa kifaa cha mtoto",
     qrScanHint: "Mwache mzazi askani QR hii — au andika msimbo hapo juu", phCode: "MSIMBO", newCode: "Msimbo mpya", heroTitle: "Mtoto wako, karibu kila wakati.",
     heroSub: "BabyPhone hubadilisha vifaa viwili kuwa kifaa salama cha kumtazama mtoto. Rahisi, faragha, moja kwa moja kwenye kivinjari.", ctaStartBaby: "Anzisha kifaa cha mtoto", ctaConnectParent: "Unganisha kama mzazi", navPrivacy: "Faragha",
@@ -2002,7 +2240,7 @@
     off2: "Imezimwa", autoNoise: "Upunguzaji kelele otomatiki", excellentConn: "Muunganisho bora", localOnly: "Mtandao wa ndani pekee",
     pairingCode: "Kuoanisha & msimbo wa chumba", shareToConnect: "Shiriki ili kuunganisha", scanToConnect: "Skani ili kuunganisha", useParentScan: "Skani kwa kifaa cha mzazi",
     videoStreaming: "Utiririshaji wa video", audioStreaming: "Utiririshaji wa sauti", audioOnly: "Sauti pekee", audioOnlySub: "Tuma sauti bila video",
-    privacyShade: "Pazia la faragha", hideVideoKeepAudio: "Ficha video, baki na sauti", babyTip: "Kidokezo: acha kivinjari hiki kikiwa wazi na simu kwenye chaja ili kubaki umeunganishwa.", evBabyConnected: "Kifaa cha mtoto kimeunganishwa",
+    privacyShade: "Pazia la faragha", hideVideoKeepAudio: "Ficha video, baki na sauti", babyTip: "Kidokezo: acha kivinjari hiki kikiwa wazi na simu kwenye chaja ili kubaki umeunganishwa. Usibadilishe kwenda programu nyingine — kamera inaweza kusimama ikiwa nyuma.", evBabyConnected: "Kifaa cha mtoto kimeunganishwa",
     evTalk: "Kuongea kumetumika", evTalkSub: "Ulizungumza na mtoto", evLullaby: "Wimbo umeanza", evSound: "Sauti imegunduliwa",
     evSoundSub: "Juu ya kiwango ulichoweka", howTitle: "Inafanyaje kazi?", step1t: "Karibu na mtoto", step1: "Fungua BabyPhone.online kwenye simu itakayobaki karibu na mtoto.",
     step2t: "Oanisha", step2: "Anzisha kifaa cha mtoto kisha uskani QR kwa simu yako.", step3t: "Tazama moja kwa moja", step3: "Mwone na umsikie mtoto wako moja kwa moja kutoka kifaa cha mzazi.",
@@ -2011,10 +2249,7 @@
     featTitle: "Kila unachohitaji", featVideo: "Video ya moja kwa moja", featSound: "Sauti", featTalk: "Ongea na mtoto",
     featNight: "Taa ya usiku", featAlarm: "Kengele ya sauti", featLullaby: "Nyimbo za kubembeleza", featDevices: "Inafanya kazi kwenye simu, kompyuta kibao na kompyuta.",
     parentUnit: "Kifaa cha mzazi", monitoring: "Kufuatilia", babyUnit: "Kifaa cha mtoto", footPrivacy: "Picha na sauti huenda moja kwa moja kati ya vifaa vyako. Hakuna rekodi zinazohifadhiwa.",
-    footDisclaimer: "Msaada, si mbadala wa kumtazama mtoto wako mwenyewe.", plusTitle: "BabyPhone Plus", plusSub: "Kwa usiku ambazo lazima ifanye kazi kweli.", plusFeat1: "Relay maalum — muunganisho wa uhakika kwenye mtandao wowote",
-    plusFeat2: "Tazameni pamoja: vifaa vingi vya wazazi kwa wakati mmoja", plusFeat3: "Historia ya usingizi na sauti", plusFeat4: "Maktaba bora ya nyimbo za kubembeleza", plusUpgrade: "Pandisha hadi Plus",
-    plusManage: "Simamia usajili", plusRestore: "Rejesha ununuzi", plusSoon: "Inakuja hivi karibuni", plusActive: "Plus inatumika",
-    plusEmailQ: "Barua pepe yako (ya usajili):", plusError: "Kuna hitilafu. Jaribu tena.", plusNotFound: "Hakuna usajili unaotumika kwa barua pepe hiyo.", tapToTalk: "Gusa uongee",
+    footDisclaimer: "Msaada, si mbadala wa kumtazama mtoto wako mwenyewe.", tapToTalk: "Gusa uongee",
     talkViewSub: "Sauti yako inasikika kwenye kifaa cha mtoto ikiwa imewashwa.", soundscapes: "Sauti tulivu, zinazochezwa kwenye kifaa cha mtoto.", nightViewSub: "Mwanga laini wa joto kwenye skrini ya kifaa cha mtoto.", alertsViewSub: "Sauti kwenye kifaa hiki kilio kikigunduliwa.",
     zoom: "Kuza", evSleepDone: "Kipima muda cha usingizi kimeisha", reconnecting: "Inaunganisha upya…", connectFailed: "Imeshindwa kuunganisha. Angalia msimbo kisha ujaribu tena.",
     retry: "Jaribu tena", footTerms: "Masharti", footRefunds: "Marejesho", footAccessibility: "Ufikivu",
@@ -2022,12 +2257,21 @@
     cameraActive: "Kamera imewashwa", micActive: "Maikrofoni imewashwa", micOff: "Maikrofoni imezimwa", permissionNeeded: "Ruhusu kamera na maikrofoni ili kuendelea",
     permissionDenied: "Kamera/maikrofoni imezuiwa. Ruhusu kwenye kivinjari kisha ujaribu tena.", copied: "📋 Imenakiliwa", copyFail: "Kunakili kumeshindikana — chagua mwenyewe", scanFail: "Kamera ya kuskani haifunguki — bandika msimbo",
     invalidAnswer: "Msimbo wa jibu si sahihi", invalidPair: "Msimbo wa kuoanisha si sahihi", pasteAnswerFirst: "Bandika au skani msimbo wa jibu kwanza", pastePairFirst: "Bandika au skani msimbo wa kuoanisha kwanza",
-    noImage: "Bado hakuna picha", recStarted: "⏺️ Kurekodi kumeanza", saved: "💾 Imehifadhiwa", recNotSupported: "Kurekodi hakutumiki",
+    noImage: "Bado hakuna picha", unsupportedTitle: "Kivinjari hiki hakiwezi kuendesha BabyPhone.online", unsupportedBody: "Ukurasa huu unahitaji msaada wa kamera, maikrofoni na video-call ambao kivinjari hiki hakina. Tafadhali fungua babyphone.online kwa toleo jipya la Chrome, Safari, Firefox au Edge.", recordVideo: "Rekodi", recStarted: "⏺️ Kurekodi kumeanza", saved: "💾 Imehifadhiwa", recNotSupported: "Kurekodi hakutumiki",
     noStream: "Bado hakuna picha ya kurekodi", cameraSwitched: "Kamera imebadilishwa", cannotSwitch: "Haiwezekani kubadilisha kamera", soundMuted: "Sauti imezimwa",
     soundOn: "Sauti imewashwa", stopParentQ: "Usimamishe kifaa cha mzazi?", stopBabyQ: "Usimamishe kifaa cha mtoto?", noMic: "Hakuna ufikiaji wa maikrofoni",
     mediaError: "Kamera/maikrofoni haipatikani. Tumia https au fungua kwenye Chrome/Firefox.",
   });
   Object.assign(S.ha, {
+    qualityLabel: 'Inganci',
+    qualityAuto: 'Ta atomatik',
+    qualityHigh: 'Bidiyo + sauti (bayyananne)',
+    qualitySaver: 'Bidiyo + sauti (tanadin data)',
+    qualityAudio: 'Sauti kawai',
+    qualityNow: 'Ana amfani',
+    onlyOneCamera: 'Na\'urar nan tana da kyamara ɗaya kawai', cameraSwitchFailed: 'Sauyawa ya gaza — kyamara ɗaya ta ci gaba',
+    waitingApproval: 'Ana jiran amincewa a na\'urar jariri…',
+    metaTitle: 'Na’urar sa ido kan jariri kyauta — BabyPhone.online', metaDesc: 'Mai da wayoyi biyu zuwa na’urar sa ido kan jariri kyauta mai bidiyo da sauti kai tsaye. Babu manhaja, babu asusu, ba a adana komai.',
     qrTapZoom: "👆 Taɓa QR don girmama shi don sikan", qrZoomHint: "Nuna kyamarar wayar ɗayan zuwa wannan lambar", roomCodeShare: "Lambar ɗaki (raba wa na'urar iyaye)", roomCodeOfBaby: "Lambar ɗakin na'urar jariri",
     qrScanHint: "Bari iyaye su sikan wannan QR — ko rubuta lambar da ke sama", phCode: "LAMBA", newCode: "Sabuwar lamba", heroTitle: "Jaririnka, kusa da kai koyaushe.",
     heroSub: "BabyPhone yana mai da na'urori biyu zuwa ingantaccen na'urar sa ido kan jariri. Mai sauƙi, na sirri, kai tsaye a cikin burauza.", ctaStartBaby: "Fara na'urar jariri", ctaConnectParent: "Haɗa a matsayin iyaye", navPrivacy: "Sirri",
@@ -2045,7 +2289,7 @@
     off2: "Kashe", autoNoise: "Rage hayaniya ta atomatik", excellentConn: "Kyakkyawan haɗi", localOnly: "Hanyar sadarwa ta gida kawai",
     pairingCode: "Haɗawa & lambar ɗaki", shareToConnect: "Raba don haɗawa", scanToConnect: "Sikan don haɗawa", useParentScan: "Yi sikan da na'urar iyaye",
     videoStreaming: "Watsa bidiyo", audioStreaming: "Watsa sauti", audioOnly: "Sauti kawai", audioOnlySub: "Aika sauti ba tare da bidiyo ba",
-    privacyShade: "Labulen sirri", hideVideoKeepAudio: "Ɓoye bidiyo, riƙe sauti", babyTip: "Shawara: bar wannan burauzar a buɗe kuma wayar a kan caja don ci gaba da haɗi.", evBabyConnected: "An haɗa na'urar jariri",
+    privacyShade: "Labulen sirri", hideVideoKeepAudio: "Ɓoye bidiyo, riƙe sauti", babyTip: "Shawara: bar wannan burauzar a buɗe kuma wayar a kan caja don ci gaba da haɗi. Kada ka koma wata app — kyamara na iya tsayawa idan a baya.", evBabyConnected: "An haɗa na'urar jariri",
     evTalk: "An yi amfani da magana", evTalkSub: "Ka yi magana da jariri", evLullaby: "Waƙar barci ta fara", evSound: "An gano sauti",
     evSoundSub: "Sama da matakin da ka saita", howTitle: "Yaya yake aiki?", step1t: "Kusa da jariri", step1: "Buɗe BabyPhone.online a wayar da za ta kasance kusa da jaririnka.",
     step2t: "Haɗa", step2: "Fara na'urar jariri sannan ka sikan QR da wayarka.", step3t: "Kalla kai tsaye", step3: "Ka gani kuma ka ji jaririnka kai tsaye daga na'urar iyaye.",
@@ -2054,10 +2298,7 @@
     featTitle: "Duk abin da kake buƙata", featVideo: "Bidiyo kai tsaye", featSound: "Sauti", featTalk: "Yi magana da jariri",
     featNight: "Fitilar dare", featAlarm: "Ƙararrawar sauti", featLullaby: "Waƙoƙin barci", featDevices: "Yana aiki a waya, tablet da kwamfuta.",
     parentUnit: "Na'urar iyaye", monitoring: "Sa ido", babyUnit: "Na'urar jariri", footPrivacy: "Hoto da sauti suna tafiya kai tsaye tsakanin na'urorinka. Ba a adana rikodi.",
-    footDisclaimer: "Kayan taimako, ba madadin kula da jariri da kanka ba.", plusTitle: "BabyPhone Plus", plusSub: "Don darare da dole ya yi aiki.", plusFeat1: "Keɓaɓɓen relay — tabbataccen haɗi a kowace hanyar sadarwa",
-    plusFeat2: "Kalla tare: na'urorin iyaye da yawa a lokaci ɗaya", plusFeat3: "Tarihin barci da sauti", plusFeat4: "Ɗakin karatu na waƙoƙin barci na musamman", plusUpgrade: "Haɓaka zuwa Plus",
-    plusManage: "Sarrafa biyan kuɗi", plusRestore: "Dawo da saye", plusSoon: "Nan ba da jimawa ba", plusActive: "Plus yana aiki",
-    plusEmailQ: "Imel ɗinka (na biyan kuɗi):", plusError: "Wani abu ya ɓaci. Sake gwadawa.", plusNotFound: "Babu biyan kuɗi mai aiki don wannan imel.", tapToTalk: "Taɓa don magana",
+    footDisclaimer: "Kayan taimako, ba madadin kula da jariri da kanka ba.", tapToTalk: "Taɓa don magana",
     talkViewSub: "Ana jin muryarka a na'urar jariri muddin wannan yana kunne.", soundscapes: "Sautuka masu natsuwa, ana kunna su a na'urar jariri.", nightViewSub: "Haske mai laushi da ɗumi a allon na'urar jariri.", alertsViewSub: "Sauti a wannan na'urar idan an gano kuka.",
     zoom: "Kusanto", evSleepDone: "Agogon barci ya ƙare", reconnecting: "Ana sake haɗawa…", connectFailed: "Ba a iya haɗawa ba. Duba lambar ka sake gwadawa.",
     retry: "Sake gwadawa", footTerms: "Sharuɗɗa", footRefunds: "Maido da kuɗi", footAccessibility: "Samun dama",
@@ -2065,12 +2306,22 @@
     cameraActive: "Kyamara a kunne", micActive: "Makirufo a kunne", micOff: "Makirufo a kashe", permissionNeeded: "Ba da izinin kyamara da makirufo don ci gaba",
     permissionDenied: "An toshe kyamara/makirufo. Ba da izini a burauza ka sake gwadawa.", copied: "📋 An kwafa", copyFail: "Kwafa ya gaza — zaɓa da kanka", scanFail: "Ba a iya buɗe kyamara don sikan — liƙa lambar",
     invalidAnswer: "Lambar amsa mara inganci", invalidPair: "Lambar haɗawa mara inganci", pasteAnswerFirst: "Fara liƙa ko sikan lambar amsa", pastePairFirst: "Fara liƙa ko sikan lambar haɗawa",
-    noImage: "Babu hoto tukuna", recStarted: "⏺️ An fara rikodi", saved: "💾 An ajiye", recNotSupported: "Ba a goyi bayan rikodi",
+    noImage: "Babu hoto tukuna", unsupportedTitle: "Wannan burauza ba za ta iya gudanar da BabyPhone.online ba", unsupportedBody: "Wannan shafi yana bukatar tallafin kyamara, makirufo, da kiran bidiyo wanda wannan burauza ba ta da shi. Da fatan za a buɗe babyphone.online a sabon sigar Chrome, Safari, Firefox ko Edge.", recordVideo: "Yi rikodi", recStarted: "⏺️ An fara rikodi", saved: "💾 An ajiye", recNotSupported: "Ba a goyi bayan rikodi",
     noStream: "Babu hoton da za a yi rikodi tukuna", cameraSwitched: "An sauya kyamara", cannotSwitch: "Ba a iya sauya kyamara", soundMuted: "An kashe sauti",
     soundOn: "Sauti a kunne", stopParentQ: "A dakatar da na'urar iyaye?", stopBabyQ: "A dakatar da na'urar jariri?", noMic: "Babu damar makirufo",
     mediaError: "Kyamara/makirufo ba ya samuwa. Yi amfani da https ko buɗe a Chrome/Firefox.",
   });
   Object.assign(S.ro, {
+    qualityLabel: 'Calitate',
+    qualityAuto: 'Automat',
+    qualityHigh: 'Video + sunet (clar)',
+    qualitySaver: 'Video + sunet (economic)',
+    qualityAudio: 'Doar sunet',
+    qualityNow: 'În uz',
+    onlyOneCamera: 'Acest dispozitiv are o singură cameră', cameraSwitchFailed: 'Comutarea a eșuat — a rămas aceeași cameră',
+    waitingApproval: 'Se așteaptă aprobarea pe unitatea bebelușului…',
+    metaTitle: 'Babyphone gratuit în browser — BabyPhone.online', metaDesc: 'Transformă două telefoane într-un babyphone gratuit, cu imagine și sunet live. Fără aplicație, fără cont, nimic nu este stocat.',
+    approveTitle: 'Permiteți acest dispozitiv?', approveAsk: 'Un dispozitiv a introdus codul camerei și dorește să vadă și să asculte. Permiteți doar dacă este dispozitivul dvs.', approveExtra: 'Un al doilea dispozitiv dorește să privească. Cineva este deja conectat. Permiteți doar dacă este dispozitivul dvs.', approveAllow: 'Permite', approveDeny: 'Refuză', authRefused: 'Unitatea pentru bebeluș a refuzat acest dispozitiv.', switchCameraSub: 'Cameră față / spate',
     qrTapZoom: "👆 Atinge codul QR pentru a-l mări", qrZoomHint: "Îndreaptă camera celuilalt telefon spre acest cod", roomCodeShare: "Codul camerei (împarte-l cu unitatea părinților)", roomCodeOfBaby: "Codul camerei unității bebelușului",
     qrScanHint: "Lasă părintele să scaneze acest QR — sau tastează codul de mai sus", phCode: "COD", newCode: "Cod nou", heroTitle: "Bebelușul tău, mereu aproape.",
     heroSub: "BabyPhone transformă două dispozitive într-un monitor sigur pentru bebeluși. Simplu, privat, direct în browser.", ctaStartBaby: "Pornește unitatea bebelușului", ctaConnectParent: "Conectează-te ca părinte", navPrivacy: "Confidențialitate",
@@ -2088,7 +2339,7 @@
     off2: "Oprit", autoNoise: "Reducere automată a zgomotului", excellentConn: "Conexiune excelentă", localOnly: "Doar rețea locală",
     pairingCode: "Asociere și cod cameră", shareToConnect: "Împarte pentru a conecta", scanToConnect: "Scanează pentru a conecta", useParentScan: "Scanează cu unitatea părinților",
     videoStreaming: "Transmisie video", audioStreaming: "Transmisie audio", audioOnly: "Doar audio", audioOnlySub: "Transmite sunetul fără imagine",
-    privacyShade: "Perdea de confidențialitate", hideVideoKeepAudio: "Ascunde imaginea, păstrează sunetul", babyTip: "Sfat: lasă acest browser deschis și telefonul la încărcător ca să rămâi conectat.", evBabyConnected: "Unitatea bebelușului conectată",
+    privacyShade: "Perdea de confidențialitate", hideVideoKeepAudio: "Ascunde imaginea, păstrează sunetul", babyTip: "Sfat: lasă acest browser deschis și telefonul la încărcător ca să rămâi conectat. Nu treci la altă aplicație — camera se poate opri în fundal.", evBabyConnected: "Unitatea bebelușului conectată",
     evTalk: "Răspuns folosit", evTalkSub: "Ai vorbit cu bebelușul", evLullaby: "Cântec pornit", evSound: "Sunet detectat",
     evSoundSub: "Peste nivelul setat", howTitle: "Cum funcționează?", step1t: "Lângă bebeluș", step1: "Deschide BabyPhone.online pe telefonul lăsat lângă bebeluș.",
     step2t: "Asociază", step2: "Pornește unitatea bebelușului și scanează QR-ul cu telefonul tău.", step3t: "Privește în direct", step3: "Vezi și auzi bebelușul în direct de pe unitatea părinților.",
@@ -2097,10 +2348,7 @@
     featTitle: "Tot ce ai nevoie", featVideo: "Video în direct", featSound: "Sunet", featTalk: "Răspunde",
     featNight: "Lumină de veghe", featAlarm: "Alarmă de sunet", featLullaby: "Cântece de leagăn", featDevices: "Merge pe telefon, tabletă și calculator.",
     parentUnit: "Unitatea părinților", monitoring: "Monitorizare", babyUnit: "Unitatea bebelușului", footPrivacy: "Imaginea și sunetul circulă direct între dispozitivele tale. Nu se stochează înregistrări.",
-    footDisclaimer: "Un ajutor, nu un înlocuitor al supravegherii în persoană a bebelușului.", plusTitle: "BabyPhone Plus", plusSub: "Pentru nopțile în care chiar trebuie să funcționeze.", plusFeat1: "Releu dedicat — conexiune garantată pe orice rețea",
-    plusFeat2: "Priviți împreună: mai multe dispozitive ale părinților simultan", plusFeat3: "Istoric somn și sunete", plusFeat4: "Bibliotecă premium de cântece", plusUpgrade: "Treci la Plus",
-    plusManage: "Gestionează abonamentul", plusRestore: "Restaurează achiziția", plusSoon: "În curând", plusActive: "Plus activ",
-    plusEmailQ: "Adresa ta de e-mail (a abonamentului):", plusError: "Ceva n-a mers. Încearcă din nou.", plusNotFound: "Niciun abonament activ pentru acel e-mail.", tapToTalk: "Atinge pentru a vorbi",
+    footDisclaimer: "Un ajutor, nu un înlocuitor al supravegherii în persoană a bebelușului.", tapToTalk: "Atinge pentru a vorbi",
     talkViewSub: "Vocea ta se aude pe unitatea bebelușului cât timp e activ.", soundscapes: "Sunete liniștitoare, redate pe unitatea bebelușului.", nightViewSub: "O lumină caldă și blândă pe ecranul unității bebelușului.", alertsViewSub: "Un sunet pe acest dispozitiv când se detectează plâns.",
     zoom: "Zoom", evSleepDone: "Temporizatorul de somn s-a terminat", reconnecting: "Reconectare…", connectFailed: "Conectarea nu a reușit. Verifică codul și încearcă din nou.",
     retry: "Încearcă din nou", footTerms: "Termeni", footRefunds: "Rambursări", footAccessibility: "Accesibilitate",
@@ -2108,10 +2356,1829 @@
     cameraActive: "Cameră pornită", micActive: "Microfon pornit", micOff: "Microfon oprit", permissionNeeded: "Permite camera și microfonul pentru a continua",
     permissionDenied: "Cameră/microfon blocate. Permite accesul în browser și încearcă din nou.", copied: "📋 Copiat", copyFail: "Copierea a eșuat — selectează manual", scanFail: "Camera nu se poate deschide — lipește codul",
     invalidAnswer: "Cod de răspuns nevalid", invalidPair: "Cod de asociere nevalid", pasteAnswerFirst: "Lipește sau scanează mai întâi codul de răspuns", pastePairFirst: "Lipește sau scanează mai întâi codul de asociere",
-    noImage: "Încă nicio imagine", recStarted: "⏺️ Înregistrare pornită", saved: "💾 Salvat", recNotSupported: "Înregistrarea nu este suportată",
+    noImage: "Încă nicio imagine", unsupportedTitle: "Acest browser nu poate rula BabyPhone.online", unsupportedBody: "Această pagină are nevoie de cameră, microfon și suport pentru apeluri video pe care acest browser nu le are. Deschide babyphone.online într-o versiune recentă de Chrome, Safari, Firefox sau Edge.", recordVideo: "Înregistrează", recStarted: "⏺️ Înregistrare pornită", saved: "💾 Salvat", recNotSupported: "Înregistrarea nu este suportată",
     noStream: "Încă nu există imagine de înregistrat", cameraSwitched: "Cameră schimbată", cannotSwitch: "Camera nu poate fi schimbată", soundMuted: "Sunet oprit",
     soundOn: "Sunet pornit", stopParentQ: "Oprești unitatea părinților?", stopBabyQ: "Oprești unitatea bebelușului?", noMic: "Fără acces la microfon",
     mediaError: "Cameră/microfon indisponibile. Folosește https sau deschide în Chrome/Firefox.",
+  });
+
+
+  // ---------------------------------------------------------------------
+  // Aanvulling: sleutels die in de lagen hierboven alleen voor een deel van
+  // de talen bestonden. Zonder deze regels viel de tekst terug op het Engels
+  // — zichtbaar bij o.a. het woord "of" op de startpagina, de knop
+  // "Herhalen", de toestemmingsvraag op de babyunit en de LED-bediening.
+  // ---------------------------------------------------------------------
+  Object.assign(S.de, {
+    cameraRecovered: 'Kamera wiederhergestellt',
+    or: "oder",
+  });
+  Object.assign(S.fr, {
+    cameraRecovered: 'Caméra rétablie',
+    or: "ou",
+  });
+  Object.assign(S.es, {
+    cameraRecovered: 'Cámara restaurada',
+    or: "o",
+  });
+  Object.assign(S.pt, {
+    cameraRecovered: 'Câmara restaurada',
+    or: "ou",
+  });
+  Object.assign(S.it, {
+    cameraRecovered: 'Videocamera ripristinata',
+    or: "o",
+  });
+  Object.assign(S.ru, {
+    cameraRecovered: 'Камера восстановлена',
+    repeatList: "Повтор",
+    or: "или",
+    footGuide: "Руководство",
+    posterCameraOff: "Камера выключена",
+    posterOffline: "Не в сети",
+    cameraLabel: "Камера",
+    ledLight: "Светодиод",
+    ledOn: "💡 Светодиод включён",
+    ledOff: "Светодиод выключен",
+  });
+  Object.assign(S.zh, {
+    cameraRecovered: '摄像头已恢复',
+    switchCameraSub: "前置 / 后置摄像头",
+    repeatList: "循环播放",
+    approveTitle: "允许此设备？",
+    approveAsk: "有设备输入了你的房间码，想要观看和收听。只有当它是你自己的设备时才允许。",
+    approveExtra: "第二台设备想要一起观看。已经有人连接了。只有当它是你自己的设备时才允许。",
+    approveAllow: "允许",
+    approveDeny: "拒绝",
+    authRefused: "宝宝端拒绝了此设备。",
+    or: "或",
+    footGuide: "指南",
+    posterCameraOff: "摄像头已关闭",
+    posterOffline: "离线",
+    cameraLabel: "摄像头",
+    ledLight: "LED 灯",
+    ledOn: "💡 LED 已开",
+    ledOff: "LED 已关",
+  });
+  Object.assign(S.hi, {
+    cameraRecovered: 'कैमरा बहाल हुआ',
+    switchCameraSub: "आगे / पीछे का कैमरा",
+    repeatList: "दोहराएँ",
+    approveTitle: "इस डिवाइस को अनुमति दें?",
+    approveAsk: "किसी डिवाइस ने आपका रूम कोड डाला है और देखना-सुनना चाहता है. केवल तभी अनुमति दें जब यह आपका अपना डिवाइस हो.",
+    approveExtra: "दूसरा डिवाइस भी देखना चाहता है. कोई पहले से जुड़ा है. केवल तभी अनुमति दें जब यह आपका अपना डिवाइस हो.",
+    approveAllow: "अनुमति दें",
+    approveDeny: "मना करें",
+    authRefused: "बेबी यूनिट ने इस डिवाइस को अस्वीकार कर दिया.",
+    or: "या",
+    footGuide: "गाइड",
+    posterCameraOff: "कैमरा बंद",
+    posterOffline: "ऑफ़लाइन",
+    cameraLabel: "कैमरा",
+    ledLight: "LED लाइट",
+    ledOn: "💡 LED चालू",
+    ledOff: "LED बंद",
+  });
+  Object.assign(S.ar, {
+    cameraRecovered: 'تمت استعادة الكاميرا',
+    switchCameraSub: "الكاميرا الأمامية / الخلفية",
+    repeatList: "تكرار",
+    approveTitle: "هل تسمح لهذا الجهاز؟",
+    approveAsk: "أدخل جهاز رمز غرفتك ويريد المشاهدة والاستماع. لا تسمح إلا إذا كان جهازك أنت.",
+    approveExtra: "يريد جهاز ثانٍ المشاهدة. هناك شخص متصل بالفعل. لا تسمح إلا إذا كان جهازك أنت.",
+    approveAllow: "سماح",
+    approveDeny: "رفض",
+    authRefused: "رفضت وحدة الطفل هذا الجهاز.",
+    or: "أو",
+    footGuide: "دليل",
+    posterCameraOff: "الكاميرا مغلقة",
+    posterOffline: "غير متصل",
+    cameraLabel: "الكاميرا",
+    ledLight: "ضوء LED",
+    ledOn: "💡 LED مُشغَّل",
+    ledOff: "LED مُطفأ",
+  });
+  Object.assign(S.bn, {
+    cameraRecovered: 'ক্যামেরা পুনরুদ্ধার হয়েছে',
+    switchCameraSub: "সামনের / পিছনের ক্যামেরা",
+    repeatList: "পুনরাবৃত্তি",
+    approveTitle: "এই ডিভাইসটি অনুমতি দেবেন?",
+    approveAsk: "একটি ডিভাইস আপনার রুম কোড দিয়েছে এবং দেখতে ও শুনতে চায়। এটি আপনার নিজের ডিভাইস হলেই অনুমতি দিন।",
+    approveExtra: "দ্বিতীয় একটি ডিভাইস দেখতে চায়। ইতিমধ্যে কেউ সংযুক্ত আছে। এটি আপনার নিজের ডিভাইস হলেই অনুমতি দিন।",
+    approveAllow: "অনুমতি দিন",
+    approveDeny: "প্রত্যাখ্যান",
+    authRefused: "বেবি ইউনিট এই ডিভাইসটি প্রত্যাখ্যান করেছে।",
+    or: "অথবা",
+    footGuide: "গাইড",
+    posterCameraOff: "ক্যামেরা বন্ধ",
+    posterOffline: "অফলাইন",
+    cameraLabel: "ক্যামেরা",
+    ledLight: "LED আলো",
+    ledOn: "💡 LED চালু",
+    ledOff: "LED বন্ধ",
+  });
+  Object.assign(S.ur, {
+    cameraRecovered: 'کیمرہ بحال ہو گیا',
+    switchCameraSub: "سامنے / پیچھے کا کیمرا",
+    repeatList: "دہرائیں",
+    approveTitle: "اس ڈیوائس کو اجازت دیں؟",
+    approveAsk: "ایک ڈیوائس نے آپ کا روم کوڈ درج کیا ہے اور دیکھنا اور سننا چاہتی ہے۔ صرف اسی صورت میں اجازت دیں جب یہ آپ کی اپنی ڈیوائس ہو۔",
+    approveExtra: "دوسری ڈیوائس بھی دیکھنا چاہتی ہے۔ کوئی پہلے سے جڑا ہوا ہے۔ صرف اسی صورت میں اجازت دیں جب یہ آپ کی اپنی ڈیوائس ہو۔",
+    approveAllow: "اجازت دیں",
+    approveDeny: "انکار",
+    authRefused: "بے بی یونٹ نے اس ڈیوائس کو مسترد کر دیا۔",
+    or: "یا",
+    footGuide: "رہنما",
+    posterCameraOff: "کیمرا بند",
+    posterOffline: "آف لائن",
+    cameraLabel: "کیمرا",
+    ledLight: "LED روشنی",
+    ledOn: "💡 LED آن",
+    ledOff: "LED آف",
+  });
+  Object.assign(S.id, {
+    cameraRecovered: 'Kamera dipulihkan',
+    repeatList: "Ulangi",
+    or: "atau",
+    footGuide: "Panduan",
+    posterCameraOff: "Kamera mati",
+    posterOffline: "Offline",
+    cameraLabel: "Kamera",
+    ledLight: "Lampu LED",
+    ledOn: "💡 LED menyala",
+    ledOff: "LED mati",
+  });
+  Object.assign(S.ja, {
+    cameraRecovered: 'カメラを復元しました',
+    switchCameraSub: "前面 / 背面カメラ",
+    repeatList: "リピート",
+    approveTitle: "この端末を許可しますか？",
+    approveAsk: "ある端末がルームコードを入力し、映像と音声を受け取ろうとしています。自分の端末の場合だけ許可してください。",
+    approveExtra: "2台目の端末が接続しようとしています。すでに接続中の端末があります。自分の端末の場合だけ許可してください。",
+    approveAllow: "許可",
+    approveDeny: "拒否",
+    authRefused: "ベビーユニットがこの端末を拒否しました。",
+    or: "または",
+    footGuide: "ガイド",
+    posterCameraOff: "カメラオフ",
+    posterOffline: "オフライン",
+    cameraLabel: "カメラ",
+    ledLight: "LEDライト",
+    ledOn: "💡 LEDオン",
+    ledOff: "LEDオフ",
+  });
+  Object.assign(S.mr, {
+    cameraRecovered: 'कॅमेरा पुनर्संचयित',
+    switchCameraSub: "पुढील / मागील कॅमेरा",
+    repeatList: "पुन्हा",
+    approveTitle: "हे डिव्हाइस अनुमत करायचे?",
+    approveAsk: "एका डिव्हाइसने तुमचा रूम कोड टाकला आहे आणि त्याला पाहायचे व ऐकायचे आहे. ते तुमचेच डिव्हाइस असेल तरच परवानगी द्या.",
+    approveExtra: "दुसऱ्या डिव्हाइसला सोबत पाहायचे आहे. आधीच कोणीतरी जोडलेले आहे. ते तुमचेच डिव्हाइस असेल तरच परवानगी द्या.",
+    approveAllow: "परवानगी द्या",
+    approveDeny: "नकार द्या",
+    authRefused: "बेबी युनिटने हे डिव्हाइस नाकारले.",
+    or: "किंवा",
+    footGuide: "मार्गदर्शक",
+    posterCameraOff: "कॅमेरा बंद",
+    posterOffline: "ऑफलाइन",
+    cameraLabel: "कॅमेरा",
+    ledLight: "LED दिवा",
+    ledOn: "💡 LED चालू",
+    ledOff: "LED बंद",
+  });
+  Object.assign(S.te, {
+    cameraRecovered: 'కెమెరా పునరుద్ధరించబడింది',
+    switchCameraSub: "ముందు / వెనుక కెమెరా",
+    repeatList: "పునరావృతం",
+    approveTitle: "ఈ పరికరాన్ని అనుమతించాలా?",
+    approveAsk: "ఒక పరికరం మీ రూమ్ కోడ్ నమోదు చేసి చూడాలని, వినాలని కోరుతోంది. అది మీ స్వంత పరికరం అయితేనే అనుమతించండి.",
+    approveExtra: "రెండో పరికరం కూడా చూడాలనుకుంటోంది. ఇప్పటికే ఒకరు కనెక్ట్ అయ్యారు. అది మీ స్వంత పరికరం అయితేనే అనుమతించండి.",
+    approveAllow: "అనుమతించు",
+    approveDeny: "తిరస్కరించు",
+    authRefused: "బేబీ యూనిట్ ఈ పరికరాన్ని తిరస్కరించింది.",
+    or: "లేదా",
+    footGuide: "మార్గదర్శి",
+    posterCameraOff: "కెమెరా ఆఫ్",
+    posterOffline: "ఆఫ్‌లైన్",
+    cameraLabel: "కెమెరా",
+    ledLight: "LED లైట్",
+    ledOn: "💡 LED ఆన్",
+    ledOff: "LED ఆఫ్",
+  });
+  Object.assign(S.tr, {
+    cameraRecovered: 'Kamera geri yüklendi',
+    repeatList: "Tekrarla",
+    or: "veya",
+    footGuide: "Rehber",
+    posterCameraOff: "Kamera kapalı",
+    posterOffline: "Çevrimdışı",
+    cameraLabel: "Kamera",
+    ledLight: "LED ışık",
+    ledOn: "💡 LED açık",
+    ledOff: "LED kapalı",
+  });
+  Object.assign(S.ta, {
+    cameraRecovered: 'கேமரா மீட்டமைக்கப்பட்டது',
+    switchCameraSub: "முன் / பின் கேமரா",
+    repeatList: "மீண்டும்",
+    approveTitle: "இந்தச் சாதனத்தை அனுமதிக்கவா?",
+    approveAsk: "ஒரு சாதனம் உங்கள் அறைக் குறியீட்டை உள்ளிட்டு பார்க்கவும் கேட்கவும் விரும்புகிறது. அது உங்கள் சொந்தச் சாதனமாக இருந்தால் மட்டுமே அனுமதிக்கவும்.",
+    approveExtra: "இரண்டாவது சாதனம் சேர்ந்து பார்க்க விரும்புகிறது. ஏற்கனவே ஒருவர் இணைந்துள்ளார். அது உங்கள் சொந்தச் சாதனமாக இருந்தால் மட்டுமே அனுமதிக்கவும்.",
+    approveAllow: "அனுமதி",
+    approveDeny: "மறு",
+    authRefused: "குழந்தை பிரிவு இந்தச் சாதனத்தை மறுத்தது.",
+    or: "அல்லது",
+    footGuide: "வழிகாட்டி",
+    posterCameraOff: "கேமரா அணைப்பு",
+    posterOffline: "ஆஃப்லைன்",
+    cameraLabel: "கேமரா",
+    ledLight: "LED விளக்கு",
+    ledOn: "💡 LED ஆன்",
+    ledOff: "LED ஆஃப்",
+  });
+  Object.assign(S.vi, {
+    cameraRecovered: 'Đã khôi phục camera',
+    switchCameraSub: "Camera trước / sau",
+    repeatList: "Lặp lại",
+    approveTitle: "Cho phép thiết bị này?",
+    approveAsk: "Một thiết bị đã nhập mã phòng của bạn và muốn xem và nghe. Chỉ cho phép nếu đó là thiết bị của chính bạn.",
+    approveExtra: "Một thiết bị thứ hai muốn xem cùng. Đã có người kết nối. Chỉ cho phép nếu đó là thiết bị của chính bạn.",
+    approveAllow: "Cho phép",
+    approveDeny: "Từ chối",
+    authRefused: "Thiết bị bé đã từ chối thiết bị này.",
+    or: "hoặc",
+    footGuide: "Hướng dẫn",
+    posterCameraOff: "Camera tắt",
+    posterOffline: "Ngoại tuyến",
+    cameraLabel: "Camera",
+    ledLight: "Đèn LED",
+    ledOn: "💡 LED bật",
+    ledOff: "LED tắt",
+  });
+  Object.assign(S.ko, {
+    cameraRecovered: '카메라가 복구되었습니다',
+    switchCameraSub: "전면 / 후면 카메라",
+    repeatList: "반복",
+    approveTitle: "이 기기를 허용할까요?",
+    approveAsk: "어떤 기기가 방 코드를 입력하고 영상과 소리를 받으려고 합니다. 본인의 기기일 때만 허용하세요.",
+    approveExtra: "두 번째 기기가 함께 보려고 합니다. 이미 연결된 기기가 있습니다. 본인의 기기일 때만 허용하세요.",
+    approveAllow: "허용",
+    approveDeny: "거부",
+    authRefused: "베이비 유닛이 이 기기를 거부했습니다.",
+    or: "또는",
+    footGuide: "가이드",
+    posterCameraOff: "카메라 꺼짐",
+    posterOffline: "오프라인",
+    cameraLabel: "카메라",
+    ledLight: "LED 조명",
+    ledOn: "💡 LED 켜짐",
+    ledOff: "LED 꺼짐",
+  });
+  Object.assign(S.th, {
+    cameraRecovered: 'กู้คืนกล้องแล้ว',
+    switchCameraSub: "กล้องหน้า / กล้องหลัง",
+    repeatList: "เล่นซ้ำ",
+    approveTitle: "อนุญาตอุปกรณ์นี้ไหม",
+    approveAsk: "มีอุปกรณ์ใส่รหัสห้องของคุณและต้องการดูและฟัง อนุญาตเฉพาะเมื่อเป็นอุปกรณ์ของคุณเอง",
+    approveExtra: "อุปกรณ์เครื่องที่สองต้องการดูด้วย มีคนเชื่อมต่ออยู่แล้ว อนุญาตเฉพาะเมื่อเป็นอุปกรณ์ของคุณเอง",
+    approveAllow: "อนุญาต",
+    approveDeny: "ปฏิเสธ",
+    authRefused: "เครื่องฝั่งเด็กปฏิเสธอุปกรณ์นี้",
+    or: "หรือ",
+    footGuide: "คู่มือ",
+    posterCameraOff: "ปิดกล้อง",
+    posterOffline: "ออฟไลน์",
+    cameraLabel: "กล้อง",
+    ledLight: "ไฟ LED",
+    ledOn: "💡 เปิดไฟ LED",
+    ledOff: "ปิดไฟ LED",
+  });
+  Object.assign(S.gu, {
+    cameraRecovered: 'કૅમેરા પુનઃસ્થાપિત',
+    switchCameraSub: "આગળનો / પાછળનો કૅમેરા",
+    repeatList: "પુનરાવર્તન",
+    approveTitle: "આ ડિવાઇસને મંજૂરી આપવી?",
+    approveAsk: "એક ડિવાઇસે તમારો રૂમ કોડ દાખલ કર્યો છે અને જોવા-સાંભળવા માંગે છે. તે તમારું પોતાનું ડિવાઇસ હોય તો જ મંજૂરી આપો.",
+    approveExtra: "બીજું ડિવાઇસ પણ જોવા માંગે છે. કોઈ પહેલેથી જોડાયેલું છે. તે તમારું પોતાનું ડિવાઇસ હોય તો જ મંજૂરી આપો.",
+    approveAllow: "મંજૂરી આપો",
+    approveDeny: "નકારો",
+    authRefused: "બેબી યુનિટે આ ડિવાઇસને નકારી દીધું.",
+    or: "અથવા",
+    footGuide: "માર્ગદર્શિકા",
+    posterCameraOff: "કૅમેરા બંધ",
+    posterOffline: "ઑફલાઇન",
+    cameraLabel: "કૅમેરા",
+    ledLight: "LED લાઇટ",
+    ledOn: "💡 LED ચાલુ",
+    ledOff: "LED બંધ",
+  });
+  Object.assign(S.fa, {
+    cameraRecovered: 'دوربین بازیابی شد',
+    switchCameraSub: "دوربین جلو / پشت",
+    repeatList: "تکرار",
+    approveTitle: "این دستگاه مجاز باشد؟",
+    approveAsk: "دستگاهی کد اتاق شما را وارد کرده و می‌خواهد ببیند و بشنود. فقط اگر دستگاه خودتان است اجازه دهید.",
+    approveExtra: "دستگاه دومی می‌خواهد همراه ببیند. کسی از قبل متصل است. فقط اگر دستگاه خودتان است اجازه دهید.",
+    approveAllow: "اجازه",
+    approveDeny: "رد",
+    authRefused: "واحد کودک این دستگاه را رد کرد.",
+    or: "یا",
+    footGuide: "راهنما",
+    posterCameraOff: "دوربین خاموش",
+    posterOffline: "آفلاین",
+    cameraLabel: "دوربین",
+    ledLight: "چراغ LED",
+    ledOn: "💡 LED روشن",
+    ledOff: "LED خاموش",
+  });
+  Object.assign(S.pl, {
+    cameraRecovered: 'Przywrócono kamerę',
+    repeatList: "Powtarzaj",
+    or: "lub",
+    footGuide: "Poradnik",
+    posterCameraOff: "Kamera wyłączona",
+    posterOffline: "Offline",
+    cameraLabel: "Kamera",
+    ledLight: "Światło LED",
+    ledOn: "💡 LED włączony",
+    ledOff: "LED wyłączony",
+  });
+  Object.assign(S.uk, {
+    cameraRecovered: 'Камеру відновлено',
+    switchCameraSub: "Передня / задня камера",
+    repeatList: "Повтор",
+    approveTitle: "Дозволити цей пристрій?",
+    approveAsk: "Пристрій увів код вашої кімнати й хоче дивитися та слухати. Дозволяйте, лише якщо це ваш власний пристрій.",
+    approveExtra: "Другий пристрій хоче приєднатися. Хтось уже підключений. Дозволяйте, лише якщо це ваш власний пристрій.",
+    approveAllow: "Дозволити",
+    approveDeny: "Відхилити",
+    authRefused: "Дитячий блок відхилив цей пристрій.",
+    or: "або",
+    footGuide: "Посібник",
+    posterCameraOff: "Камера вимкнена",
+    posterOffline: "Не в мережі",
+    cameraLabel: "Камера",
+    ledLight: "Світлодіод",
+    ledOn: "💡 Світлодіод увімкнено",
+    ledOff: "Світлодіод вимкнено",
+  });
+  Object.assign(S.pa, {
+    cameraRecovered: 'ਕੈਮਰਾ ਬਹਾਲ ਹੋਇਆ',
+    switchCameraSub: "ਅਗਲਾ / ਪਿਛਲਾ ਕੈਮਰਾ",
+    repeatList: "ਦੁਹਰਾਓ",
+    approveTitle: "ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?",
+    approveAsk: "ਇੱਕ ਡਿਵਾਈਸ ਨੇ ਤੁਹਾਡਾ ਰੂਮ ਕੋਡ ਪਾਇਆ ਹੈ ਅਤੇ ਦੇਖਣਾ ਤੇ ਸੁਣਨਾ ਚਾਹੁੰਦਾ ਹੈ। ਸਿਰਫ਼ ਤਾਂ ਹੀ ਇਜਾਜ਼ਤ ਦਿਓ ਜੇ ਇਹ ਤੁਹਾਡਾ ਆਪਣਾ ਡਿਵਾਈਸ ਹੈ।",
+    approveExtra: "ਦੂਜਾ ਡਿਵਾਈਸ ਵੀ ਦੇਖਣਾ ਚਾਹੁੰਦਾ ਹੈ। ਕੋਈ ਪਹਿਲਾਂ ਹੀ ਜੁੜਿਆ ਹੋਇਆ ਹੈ। ਸਿਰਫ਼ ਤਾਂ ਹੀ ਇਜਾਜ਼ਤ ਦਿਓ ਜੇ ਇਹ ਤੁਹਾਡਾ ਆਪਣਾ ਡਿਵਾਈਸ ਹੈ।",
+    approveAllow: "ਇਜਾਜ਼ਤ ਦਿਓ",
+    approveDeny: "ਇਨਕਾਰ",
+    authRefused: "ਬੇਬੀ ਯੂਨਿਟ ਨੇ ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ।",
+    or: "ਜਾਂ",
+    footGuide: "ਗਾਈਡ",
+    posterCameraOff: "ਕੈਮਰਾ ਬੰਦ",
+    posterOffline: "ਆਫ਼ਲਾਈਨ",
+    cameraLabel: "ਕੈਮਰਾ",
+    ledLight: "LED ਲਾਈਟ",
+    ledOn: "💡 LED ਚਾਲੂ",
+    ledOff: "LED ਬੰਦ",
+  });
+  Object.assign(S.sw, {
+    cameraRecovered: 'Kamera imerejeshwa',
+    switchCameraSub: "Kamera ya mbele / nyuma",
+    repeatList: "Rudia",
+    approveTitle: "Ruhusu kifaa hiki?",
+    approveAsk: "Kifaa kimeweka msimbo wa chumba chako na kinataka kuona na kusikia. Ruhusu tu ikiwa ni kifaa chako mwenyewe.",
+    approveExtra: "Kifaa cha pili kinataka kuangalia pia. Tayari kuna mtu ameunganishwa. Ruhusu tu ikiwa ni kifaa chako mwenyewe.",
+    approveAllow: "Ruhusu",
+    approveDeny: "Kataa",
+    authRefused: "Kitengo cha mtoto kimekataa kifaa hiki.",
+    or: "au",
+    footGuide: "Mwongozo",
+    posterCameraOff: "Kamera imezimwa",
+    posterOffline: "Nje ya mtandao",
+    cameraLabel: "Kamera",
+    ledLight: "Taa ya LED",
+    ledOn: "💡 LED imewashwa",
+    ledOff: "LED imezimwa",
+  });
+  Object.assign(S.ha, {
+    cameraRecovered: 'An dawo da kyamara',
+    switchCameraSub: "Kyamara ta gaba / ta baya",
+    repeatList: "Maimaita",
+    approveTitle: "A bar wannan na'urar?",
+    approveAsk: "Wata na'ura ta shigar da lambar ɗakinka kuma tana son kallo da saurare. Ka ba da izini kawai idan na'urarka ce.",
+    approveExtra: "Na'ura ta biyu tana son kallo tare. Wani ya riga ya haɗu. Ka ba da izini kawai idan na'urarka ce.",
+    approveAllow: "Ba da izini",
+    approveDeny: "Ƙi",
+    authRefused: "Na'urar jariri ta ƙi wannan na'urar.",
+    or: "ko",
+    footGuide: "Jagora",
+    posterCameraOff: "Kyamara a kashe",
+    posterOffline: "Ba a kan layi",
+    cameraLabel: "Kyamara",
+    ledLight: "Fitilar LED",
+    ledOn: "💡 LED a kunne",
+    ledOff: "LED a kashe",
+  });
+  Object.assign(S.ro, {
+    cameraRecovered: 'Cameră restabilită',
+    repeatList: "Repetă",
+    or: "sau",
+    footGuide: "Ghid",
+    posterCameraOff: "Cameră oprită",
+    posterOffline: "Offline",
+    cameraLabel: "Cameră",
+    ledLight: "Lumină LED",
+    ledOn: "💡 LED pornit",
+    ledOff: "LED oprit",
+  });
+
+  // ------------------------------------------------------------------
+  // Aanvullingen n.a.v. de audit: technische diagnose achter een uitklap,
+  // de eerlijke privacy- en audioclaims, de wachttekst van de babyunit en
+  // de knop die het huilalarm scherpstelt. In alle 30 talen, zodat er niets
+  // stil op Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    techDetails: 'Technical details',
+    waitingReconnect: 'Waiting for the parent unit',
+    p2pEncrypted: 'Encrypted, directly between your devices',
+    rawAudio: 'Unprocessed — soft sounds stay audible',
+    alarmTest: 'Test alarm sound',
+    alarmTestHint: 'Tap once so the cry alarm can make a sound on this device.',
+    alarmSilent: 'Crying detected — alarm stayed silent',
+  });
+  Object.assign(S.zh, {
+    techDetails: '技术细节',
+    waitingReconnect: '正在等待家长端',
+    p2pEncrypted: '加密传输，直接在你的设备之间',
+    rawAudio: '未经处理 — 轻微的声音也听得见',
+    alarmTest: '测试警报声',
+    alarmTestHint: '请轻触一次，让哭声警报可以在本设备上发出声音。',
+    alarmSilent: '检测到哭声 — 警报没有发声',
+  });
+  Object.assign(S.hi, {
+    techDetails: 'तकनीकी विवरण',
+    waitingReconnect: 'पैरेंट यूनिट का इंतज़ार',
+    p2pEncrypted: 'एन्क्रिप्टेड, सीधे आपके डिवाइसों के बीच',
+    rawAudio: 'बिना प्रोसेसिंग — धीमी आवाज़ें भी सुनाई देती हैं',
+    alarmTest: 'अलार्म ध्वनि जाँचें',
+    alarmTestHint: 'एक बार टैप करें ताकि रोने का अलार्म इस डिवाइस पर आवाज़ कर सके।',
+    alarmSilent: 'रोना पहचाना गया — अलार्म चुप रहा',
+  });
+  Object.assign(S.es, {
+    techDetails: 'Detalles técnicos',
+    waitingReconnect: 'Esperando la unidad de padres',
+    p2pEncrypted: 'Cifrado, directamente entre tus dispositivos',
+    rawAudio: 'Sin procesar: los sonidos suaves siguen audibles',
+    alarmTest: 'Probar sonido de alarma',
+    alarmTestHint: 'Toca una vez para que la alarma de llanto pueda sonar en este dispositivo.',
+    alarmSilent: 'Llanto detectado: la alarma no sonó',
+  });
+  Object.assign(S.fr, {
+    techDetails: 'Détails techniques',
+    waitingReconnect: 'En attente de l\'unité parent',
+    p2pEncrypted: 'Chiffré, directement entre vos appareils',
+    rawAudio: 'Non traité — les sons faibles restent audibles',
+    alarmTest: 'Tester le son d\'alarme',
+    alarmTestHint: 'Touchez une fois pour que l\'alarme de pleurs puisse sonner sur cet appareil.',
+    alarmSilent: 'Pleurs détectés — l\'alarme est restée muette',
+  });
+  Object.assign(S.ar, {
+    techDetails: 'تفاصيل تقنية',
+    waitingReconnect: 'في انتظار جهاز الوالدين',
+    p2pEncrypted: 'مشفّر، مباشرةً بين أجهزتك',
+    rawAudio: 'بدون معالجة — تبقى الأصوات الخافتة مسموعة',
+    alarmTest: 'اختبار صوت التنبيه',
+    alarmTestHint: 'انقر مرة واحدة حتى يتمكن تنبيه البكاء من إصدار صوت على هذا الجهاز.',
+    alarmSilent: 'تم رصد بكاء — بقي التنبيه صامتًا',
+  });
+  Object.assign(S.bn, {
+    techDetails: 'কারিগরি বিবরণ',
+    waitingReconnect: 'প্যারেন্ট ইউনিটের অপেক্ষায়',
+    p2pEncrypted: 'এনক্রিপ্টেড, সরাসরি আপনার ডিভাইসের মধ্যে',
+    rawAudio: 'প্রক্রিয়াবিহীন — মৃদু শব্দও শোনা যায়',
+    alarmTest: 'অ্যালার্ম শব্দ পরীক্ষা করুন',
+    alarmTestHint: 'একবার ট্যাপ করুন যাতে কান্নার অ্যালার্ম এই ডিভাইসে শব্দ করতে পারে।',
+    alarmSilent: 'কান্না শনাক্ত — অ্যালার্ম নীরব ছিল',
+  });
+  Object.assign(S.pt, {
+    techDetails: 'Detalhes técnicos',
+    waitingReconnect: 'Aguardando a unidade dos pais',
+    p2pEncrypted: 'Criptografado, diretamente entre os seus dispositivos',
+    rawAudio: 'Sem processamento — sons suaves continuam audíveis',
+    alarmTest: 'Testar som do alarme',
+    alarmTestHint: 'Toque uma vez para que o alarme de choro possa emitir som neste dispositivo.',
+    alarmSilent: 'Choro detectado — o alarme ficou em silêncio',
+  });
+  Object.assign(S.ru, {
+    techDetails: 'Технические сведения',
+    waitingReconnect: 'Ожидание родительского блока',
+    p2pEncrypted: 'Шифрование, напрямую между вашими устройствами',
+    rawAudio: 'Без обработки — тихие звуки остаются слышны',
+    alarmTest: 'Проверить звук тревоги',
+    alarmTestHint: 'Коснитесь один раз, чтобы сигнал плача мог звучать на этом устройстве.',
+    alarmSilent: 'Обнаружен плач — сигнал остался беззвучным',
+  });
+  Object.assign(S.ur, {
+    techDetails: 'تکنیکی تفصیلات',
+    waitingReconnect: 'پیرنٹ یونٹ کا انتظار',
+    p2pEncrypted: 'خفیہ کردہ، براہِ راست آپ کے آلات کے درمیان',
+    rawAudio: 'بغیر پروسیسنگ — ہلکی آوازیں بھی سنائی دیتی ہیں',
+    alarmTest: 'الارم کی آواز جانچیں',
+    alarmTestHint: 'ایک بار ٹیپ کریں تاکہ رونے کا الارم اس ڈیوائس پر آواز نکال سکے۔',
+    alarmSilent: 'رونا پہچانا گیا — الارم خاموش رہا',
+  });
+  Object.assign(S.id, {
+    techDetails: 'Detail teknis',
+    waitingReconnect: 'Menunggu unit orang tua',
+    p2pEncrypted: 'Terenkripsi, langsung antar perangkat Anda',
+    rawAudio: 'Tanpa pemrosesan — suara lembut tetap terdengar',
+    alarmTest: 'Uji suara alarm',
+    alarmTestHint: 'Ketuk sekali agar alarm tangisan dapat berbunyi di perangkat ini.',
+    alarmSilent: 'Tangisan terdeteksi — alarm tetap senyap',
+  });
+  Object.assign(S.de, {
+    techDetails: 'Technische Details',
+    waitingReconnect: 'Warten auf die Elterneinheit',
+    p2pEncrypted: 'Verschlüsselt, direkt zwischen deinen Geräten',
+    rawAudio: 'Unbearbeitet — leise Geräusche bleiben hörbar',
+    alarmTest: 'Alarmton testen',
+    alarmTestHint: 'Einmal tippen, damit der Schreialarm auf diesem Gerät Ton geben darf.',
+    alarmSilent: 'Weinen erkannt — Alarm blieb stumm',
+  });
+  Object.assign(S.ja, {
+    techDetails: '技術的な詳細',
+    waitingReconnect: '親機を待っています',
+    p2pEncrypted: '暗号化され、あなたの端末どうしで直接',
+    rawAudio: '未加工 — かすかな音も聞こえます',
+    alarmTest: 'アラーム音をテスト',
+    alarmTestHint: '一度タップすると、泣き声アラームがこの端末で音を鳴らせます。',
+    alarmSilent: '泣き声を検知 — アラームは鳴りませんでした',
+  });
+  Object.assign(S.mr, {
+    techDetails: 'तांत्रिक तपशील',
+    waitingReconnect: 'पालक युनिटची प्रतीक्षा',
+    p2pEncrypted: 'एन्क्रिप्टेड, थेट तुमच्या डिव्हाइसदरम्यान',
+    rawAudio: 'प्रक्रिया न केलेले — हलके आवाजही ऐकू येतात',
+    alarmTest: 'अलार्मचा आवाज तपासा',
+    alarmTestHint: 'एकदा टॅप करा, म्हणजे रडण्याचा अलार्म या डिव्हाइसवर आवाज करू शकेल.',
+    alarmSilent: 'रडणे आढळले — अलार्म शांत राहिला',
+  });
+  Object.assign(S.te, {
+    techDetails: 'సాంకేతిక వివరాలు',
+    waitingReconnect: 'పేరెంట్ యూనిట్ కోసం వేచి ఉంది',
+    p2pEncrypted: 'ఎన్‌క్రిప్ట్ చేయబడింది, నేరుగా మీ పరికరాల మధ్య',
+    rawAudio: 'ప్రాసెస్ చేయని ధ్వని — మెల్లని శబ్దాలూ వినిపిస్తాయి',
+    alarmTest: 'అలారం శబ్దాన్ని పరీక్షించండి',
+    alarmTestHint: 'ఒకసారి నొక్కండి, అప్పుడు ఏడుపు అలారం ఈ పరికరంలో శబ్దం చేయగలదు.',
+    alarmSilent: 'ఏడుపు గుర్తించబడింది — అలారం మౌనంగా ఉంది',
+  });
+  Object.assign(S.tr, {
+    techDetails: 'Teknik ayrıntılar',
+    waitingReconnect: 'Ebeveyn ünitesi bekleniyor',
+    p2pEncrypted: 'Şifreli, doğrudan cihazlarınız arasında',
+    rawAudio: 'İşlenmemiş — hafif sesler de duyulur',
+    alarmTest: 'Alarm sesini dene',
+    alarmTestHint: 'Ağlama alarmının bu cihazda ses çıkarabilmesi için bir kez dokunun.',
+    alarmSilent: 'Ağlama algılandı — alarm sessiz kaldı',
+  });
+  Object.assign(S.ta, {
+    techDetails: 'தொழில்நுட்ப விவரங்கள்',
+    waitingReconnect: 'பெற்றோர் சாதனத்திற்காகக் காத்திருக்கிறது',
+    p2pEncrypted: 'குறியாக்கம் செய்யப்பட்டு, நேரடியாக உங்கள் சாதனங்களுக்கு இடையே',
+    rawAudio: 'பதப்படுத்தப்படாதது — மெல்லிய ஒலிகளும் கேட்கும்',
+    alarmTest: 'அலாரம் ஒலியைச் சோதிக்கவும்',
+    alarmTestHint: 'அழுகை அலாரம் இந்தச் சாதனத்தில் ஒலிக்க ஒருமுறை தட்டவும்.',
+    alarmSilent: 'அழுகை கண்டறியப்பட்டது — அலாரம் ஒலிக்கவில்லை',
+  });
+  Object.assign(S.vi, {
+    techDetails: 'Chi tiết kỹ thuật',
+    waitingReconnect: 'Đang chờ thiết bị cha mẹ',
+    p2pEncrypted: 'Được mã hoá, trực tiếp giữa các thiết bị của bạn',
+    rawAudio: 'Không xử lý — âm thanh nhỏ vẫn nghe rõ',
+    alarmTest: 'Thử âm báo động',
+    alarmTestHint: 'Chạm một lần để báo động tiếng khóc có thể phát ra âm thanh trên thiết bị này.',
+    alarmSilent: 'Phát hiện tiếng khóc — báo động không phát ra tiếng',
+  });
+  Object.assign(S.ko, {
+    techDetails: '기술 세부정보',
+    waitingReconnect: '부모 기기를 기다리는 중',
+    p2pEncrypted: '암호화되어 내 기기끼리 직접 연결',
+    rawAudio: '가공하지 않음 — 작은 소리도 들립니다',
+    alarmTest: '알람 소리 테스트',
+    alarmTestHint: '한 번 눌러야 울음 알람이 이 기기에서 소리를 낼 수 있습니다.',
+    alarmSilent: '울음 감지 — 알람이 소리를 내지 못했습니다',
+  });
+  Object.assign(S.it, {
+    techDetails: 'Dettagli tecnici',
+    waitingReconnect: 'In attesa dell\'unità genitore',
+    p2pEncrypted: 'Crittografato, direttamente tra i tuoi dispositivi',
+    rawAudio: 'Non elaborato — i suoni deboli restano udibili',
+    alarmTest: 'Prova il suono dell\'allarme',
+    alarmTestHint: 'Tocca una volta per permettere all\'allarme pianto di emettere suono su questo dispositivo.',
+    alarmSilent: 'Pianto rilevato — l\'allarme è rimasto muto',
+  });
+  Object.assign(S.th, {
+    techDetails: 'รายละเอียดทางเทคนิค',
+    waitingReconnect: 'กำลังรออุปกรณ์ฝั่งพ่อแม่',
+    p2pEncrypted: 'เข้ารหัส ส่งตรงระหว่างอุปกรณ์ของคุณ',
+    rawAudio: 'ไม่ผ่านการปรับแต่ง — เสียงเบายังได้ยิน',
+    alarmTest: 'ทดสอบเสียงเตือน',
+    alarmTestHint: 'แตะหนึ่งครั้งเพื่อให้เสียงเตือนการร้องไห้ดังบนอุปกรณ์นี้ได้',
+    alarmSilent: 'ตรวจพบการร้องไห้ — เสียงเตือนไม่ดัง',
+  });
+  Object.assign(S.gu, {
+    techDetails: 'તકનીકી વિગતો',
+    waitingReconnect: 'પેરેન્ટ યુનિટની રાહ જોવાય છે',
+    p2pEncrypted: 'એન્ક્રિપ્ટેડ, સીધું તમારાં ઉપકરણો વચ્ચે',
+    rawAudio: 'પ્રોસેસ કર્યા વગર — ધીમા અવાજ પણ સંભળાય છે',
+    alarmTest: 'એલાર્મ અવાજ ચકાસો',
+    alarmTestHint: 'એક વાર ટૅપ કરો જેથી રડવાનું એલાર્મ આ ઉપકરણ પર અવાજ કરી શકે.',
+    alarmSilent: 'રડવાનું જણાયું — એલાર્મ શાંત રહ્યું',
+  });
+  Object.assign(S.fa, {
+    techDetails: 'جزئیات فنی',
+    waitingReconnect: 'در انتظار دستگاه والدین',
+    p2pEncrypted: 'رمزگذاری‌شده، مستقیم میان دستگاه‌های شما',
+    rawAudio: 'بدون پردازش — صداهای آرام هم شنیده می‌شوند',
+    alarmTest: 'آزمایش صدای هشدار',
+    alarmTestHint: 'یک بار ضربه بزنید تا هشدار گریه بتواند روی این دستگاه صدا بدهد.',
+    alarmSilent: 'گریه شناسایی شد — هشدار بی‌صدا ماند',
+  });
+  Object.assign(S.pl, {
+    techDetails: 'Szczegóły techniczne',
+    waitingReconnect: 'Oczekiwanie na jednostkę rodzica',
+    p2pEncrypted: 'Szyfrowane, bezpośrednio między Twoimi urządzeniami',
+    rawAudio: 'Bez obróbki — ciche dźwięki pozostają słyszalne',
+    alarmTest: 'Przetestuj dźwięk alarmu',
+    alarmTestHint: 'Dotknij raz, aby alarm płaczu mógł wydać dźwięk na tym urządzeniu.',
+    alarmSilent: 'Wykryto płacz — alarm pozostał cichy',
+  });
+  Object.assign(S.uk, {
+    techDetails: 'Технічні деталі',
+    waitingReconnect: 'Очікування батьківського пристрою',
+    p2pEncrypted: 'Зашифровано, напряму між вашими пристроями',
+    rawAudio: 'Без обробки — тихі звуки лишаються чутними',
+    alarmTest: 'Перевірити звук тривоги',
+    alarmTestHint: 'Торкніться один раз, щоб сигнал плачу міг звучати на цьому пристрої.',
+    alarmSilent: 'Виявлено плач — сигнал не пролунав',
+  });
+  Object.assign(S.nl, {
+    techDetails: 'Technische details',
+    waitingReconnect: 'Wacht op de ouderunit',
+    p2pEncrypted: 'Versleuteld, rechtstreeks tussen je apparaten',
+    rawAudio: 'Onbewerkt — zachte geluiden blijven hoorbaar',
+    alarmTest: 'Alarmgeluid testen',
+    alarmTestHint: 'Tik één keer, zodat het huilalarm op dit apparaat geluid mag maken.',
+    alarmSilent: 'Gehuil gedetecteerd — alarm bleef stil',
+  });
+  Object.assign(S.pa, {
+    techDetails: 'ਤਕਨੀਕੀ ਵੇਰਵੇ',
+    waitingReconnect: 'ਪੇਰੈਂਟ ਯੂਨਿਟ ਦੀ ਉਡੀਕ',
+    p2pEncrypted: 'ਐਨਕ੍ਰਿਪਟਡ, ਸਿੱਧਾ ਤੁਹਾਡੇ ਡਿਵਾਈਸਾਂ ਵਿਚਕਾਰ',
+    rawAudio: 'ਬਿਨਾਂ ਪ੍ਰੋਸੈਸਿੰਗ — ਹੌਲੀ ਆਵਾਜ਼ਾਂ ਵੀ ਸੁਣਾਈ ਦਿੰਦੀਆਂ ਹਨ',
+    alarmTest: 'ਅਲਾਰਮ ਆਵਾਜ਼ ਪਰਖੋ',
+    alarmTestHint: 'ਇੱਕ ਵਾਰ ਟੈਪ ਕਰੋ ਤਾਂ ਜੋ ਰੋਣ ਦਾ ਅਲਾਰਮ ਇਸ ਡਿਵਾਈਸ \'ਤੇ ਆਵਾਜ਼ ਕਰ ਸਕੇ।',
+    alarmSilent: 'ਰੋਣਾ ਪਛਾਣਿਆ ਗਿਆ — ਅਲਾਰਮ ਚੁੱਪ ਰਿਹਾ',
+  });
+  Object.assign(S.sw, {
+    techDetails: 'Maelezo ya kiufundi',
+    waitingReconnect: 'Inasubiri kifaa cha mzazi',
+    p2pEncrypted: 'Imesimbwa, moja kwa moja kati ya vifaa vyako',
+    rawAudio: 'Bila kuchakatwa — sauti hafifu bado zinasikika',
+    alarmTest: 'Jaribu sauti ya kengele',
+    alarmTestHint: 'Gusa mara moja ili kengele ya kilio iweze kutoa sauti kwenye kifaa hiki.',
+    alarmSilent: 'Kilio kimetambuliwa — kengele ilibaki kimya',
+  });
+  Object.assign(S.ha, {
+    techDetails: 'Bayanan fasaha',
+    waitingReconnect: 'Ana jiran na\'urar iyaye',
+    p2pEncrypted: 'An ɓoye, kai tsaye tsakanin na\'urorinka',
+    rawAudio: 'Ba a sarrafa ba — ana jin ƙananan sautuka',
+    alarmTest: 'Gwada sautin ƙararrawa',
+    alarmTestHint: 'Danna sau ɗaya don ƙararrawar kuka ta iya yin sauti a wannan na\'urar.',
+    alarmSilent: 'An gano kuka — ƙararrawa ta yi shiru',
+  });
+  Object.assign(S.ro, {
+    techDetails: 'Detalii tehnice',
+    waitingReconnect: 'Se așteaptă unitatea părinte',
+    p2pEncrypted: 'Criptat, direct între dispozitivele tale',
+    rawAudio: 'Neprelucrat — sunetele slabe rămân audibile',
+    alarmTest: 'Testează sunetul de alarmă',
+    alarmTestHint: 'Atinge o dată pentru ca alarma de plâns să poată suna pe acest dispozitiv.',
+    alarmSilent: 'Plâns detectat — alarma a rămas silențioasă',
+  });
+
+  // ------------------------------------------------------------------
+  // Aanvullingen n.a.v. de audit. In alle 30 talen, zodat er niets stil op
+  // Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    netSlow: 'slow network',
+    netFast: 'fast network',
+  });
+  Object.assign(S.zh, {
+    netSlow: '网络较慢',
+    netFast: '网络较快',
+  });
+  Object.assign(S.hi, {
+    netSlow: 'धीमा नेटवर्क',
+    netFast: 'तेज़ नेटवर्क',
+  });
+  Object.assign(S.es, {
+    netSlow: 'red lenta',
+    netFast: 'red rápida',
+  });
+  Object.assign(S.fr, {
+    netSlow: 'réseau lent',
+    netFast: 'réseau rapide',
+  });
+  Object.assign(S.ar, {
+    netSlow: 'شبكة بطيئة',
+    netFast: 'شبكة سريعة',
+  });
+  Object.assign(S.bn, {
+    netSlow: 'ধীর নেটওয়ার্ক',
+    netFast: 'দ্রুত নেটওয়ার্ক',
+  });
+  Object.assign(S.pt, {
+    netSlow: 'rede lenta',
+    netFast: 'rede rápida',
+  });
+  Object.assign(S.ru, {
+    netSlow: 'медленная сеть',
+    netFast: 'быстрая сеть',
+  });
+  Object.assign(S.ur, {
+    netSlow: 'سست نیٹ ورک',
+    netFast: 'تیز نیٹ ورک',
+  });
+  Object.assign(S.id, {
+    netSlow: 'jaringan lambat',
+    netFast: 'jaringan cepat',
+  });
+  Object.assign(S.de, {
+    netSlow: 'langsames Netz',
+    netFast: 'schnelles Netz',
+  });
+  Object.assign(S.ja, {
+    netSlow: '低速な回線',
+    netFast: '高速な回線',
+  });
+  Object.assign(S.mr, {
+    netSlow: 'संथ नेटवर्क',
+    netFast: 'वेगवान नेटवर्क',
+  });
+  Object.assign(S.te, {
+    netSlow: 'నెమ్మది నెట్‌వర్క్',
+    netFast: 'వేగవంతమైన నెట్‌వర్క్',
+  });
+  Object.assign(S.tr, {
+    netSlow: 'yavaş ağ',
+    netFast: 'hızlı ağ',
+  });
+  Object.assign(S.ta, {
+    netSlow: 'மெதுவான நெட்வொர்க்',
+    netFast: 'வேகமான நெட்வொர்க்',
+  });
+  Object.assign(S.vi, {
+    netSlow: 'mạng chậm',
+    netFast: 'mạng nhanh',
+  });
+  Object.assign(S.ko, {
+    netSlow: '느린 네트워크',
+    netFast: '빠른 네트워크',
+  });
+  Object.assign(S.it, {
+    netSlow: 'rete lenta',
+    netFast: 'rete veloce',
+  });
+  Object.assign(S.th, {
+    netSlow: 'เครือข่ายช้า',
+    netFast: 'เครือข่ายเร็ว',
+  });
+  Object.assign(S.gu, {
+    netSlow: 'ધીમું નેટવર્ક',
+    netFast: 'ઝડપી નેટવર્ક',
+  });
+  Object.assign(S.fa, {
+    netSlow: 'شبکه کند',
+    netFast: 'شبکه سریع',
+  });
+  Object.assign(S.pl, {
+    netSlow: 'wolna sieć',
+    netFast: 'szybka sieć',
+  });
+  Object.assign(S.uk, {
+    netSlow: 'повільна мережа',
+    netFast: 'швидка мережа',
+  });
+  Object.assign(S.nl, {
+    netSlow: 'traag netwerk',
+    netFast: 'snel netwerk',
+  });
+  Object.assign(S.pa, {
+    netSlow: 'ਹੌਲੀ ਨੈੱਟਵਰਕ',
+    netFast: 'ਤੇਜ਼ ਨੈੱਟਵਰਕ',
+  });
+  Object.assign(S.sw, {
+    netSlow: 'mtandao wa polepole',
+    netFast: 'mtandao wa kasi',
+  });
+  Object.assign(S.ha, {
+    netSlow: 'hanyar sadarwa a hankali',
+    netFast: 'hanyar sadarwa mai sauri',
+  });
+  Object.assign(S.ro, {
+    netSlow: 'rețea lentă',
+    netFast: 'rețea rapidă',
+  });
+
+
+  // ------------------------------------------------------------------
+  // Scherm-uit (blackout) en onderbroken sporen. In alle 30 talen, zodat
+  // de eerlijke uitleg over vergrendelen nergens stil op Engels terugvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    screenOff: 'Screen off',
+    screenOffSub: 'Dark screen, sound keeps running',
+    blackoutHint: 'Screen is dark — sound keeps playing. Tap to wake.',
+    lockScreenWarn: 'Screen off keeps this page open: camera, microphone and sound keep working. Locking the phone or switching to another app does stop them — on iPhone and iPad the system pauses the browser and no website can prevent that.',
+    streamPaused: 'Baby unit interrupted — no sound coming in',
+    streamResumed: 'Baby unit is sending sound again',
+    micInterrupted: 'Interrupted by the phone — restoring…',
+  });
+  Object.assign(S.zh, {
+    screenOff: '关闭屏幕',
+    screenOffSub: '屏幕变黑，声音继续',
+    blackoutHint: '屏幕已变黑 — 声音继续播放。点按可唤醒。',
+    lockScreenWarn: '“关闭屏幕”会让本页面保持打开：摄像头、麦克风和声音继续工作。但锁定手机或切换到其他应用会让它们停止 — 在 iPhone 和 iPad 上系统会暂停浏览器，任何网站都无法阻止。',
+    streamPaused: '宝宝端被中断 — 没有声音传入',
+    streamResumed: '宝宝端重新开始传声',
+    micInterrupted: '被手机中断 — 正在恢复…',
+  });
+  Object.assign(S.hi, {
+    screenOff: 'स्क्रीन बंद',
+    screenOffSub: 'स्क्रीन काली, आवाज़ चालू रहती है',
+    blackoutHint: 'स्क्रीन काली है — आवाज़ चलती रहती है। जगाने के लिए टैप करें।',
+    lockScreenWarn: '“स्क्रीन बंद” इस पेज को खुला रखता है: कैमरा, माइक्रोफ़ोन और आवाज़ चलते रहते हैं। फ़ोन लॉक करने या दूसरे ऐप पर जाने से वे रुक जाते हैं — iPhone और iPad पर सिस्टम ब्राउज़र को रोक देता है और कोई भी वेबसाइट इसे नहीं रोक सकती।',
+    streamPaused: 'बेबी यूनिट बाधित — कोई आवाज़ नहीं आ रही',
+    streamResumed: 'बेबी यूनिट फिर से आवाज़ भेज रही है',
+    micInterrupted: 'फ़ोन ने बाधित किया — बहाल किया जा रहा है…',
+  });
+  Object.assign(S.es, {
+    screenOff: 'Pantalla apagada',
+    screenOffSub: 'Pantalla oscura, el sonido sigue',
+    blackoutHint: 'La pantalla está oscura: el sonido sigue sonando. Toca para despertar.',
+    lockScreenWarn: '«Pantalla apagada» mantiene esta página abierta: la cámara, el micrófono y el sonido siguen funcionando. Bloquear el teléfono o cambiar a otra app sí los detiene: en iPhone y iPad el sistema pausa el navegador y ninguna web puede evitarlo.',
+    streamPaused: 'Unidad del bebé interrumpida: no entra sonido',
+    streamResumed: 'La unidad del bebé vuelve a enviar sonido',
+    micInterrupted: 'Interrumpido por el teléfono: restaurando…',
+  });
+  Object.assign(S.fr, {
+    screenOff: 'Écran éteint',
+    screenOffSub: 'Écran noir, le son continue',
+    blackoutHint: 'L’écran est noir — le son continue. Touchez pour réveiller.',
+    lockScreenWarn: '« Écran éteint » garde cette page ouverte : la caméra, le micro et le son continuent de fonctionner. Verrouiller le téléphone ou passer à une autre appli les arrête — sur iPhone et iPad le système met le navigateur en pause et aucun site ne peut l’empêcher.',
+    streamPaused: 'Unité bébé interrompue — aucun son ne parvient',
+    streamResumed: 'L’unité bébé envoie de nouveau du son',
+    micInterrupted: 'Interrompu par le téléphone — restauration…',
+  });
+  Object.assign(S.ar, {
+    screenOff: 'إطفاء الشاشة',
+    screenOffSub: 'شاشة مظلمة، والصوت يستمر',
+    blackoutHint: 'الشاشة مظلمة — الصوت مستمر. المس للإيقاظ.',
+    lockScreenWarn: '«إطفاء الشاشة» يُبقي هذه الصفحة مفتوحة: الكاميرا والميكروفون والصوت تستمر بالعمل. أما قفل الهاتف أو الانتقال إلى تطبيق آخر فيوقفها — على iPhone وiPad يوقف النظام المتصفح ولا يستطيع أي موقع منع ذلك.',
+    streamPaused: 'وحدة الرضيع متوقفة — لا يصل أي صوت',
+    streamResumed: 'وحدة الرضيع تُرسل الصوت من جديد',
+    micInterrupted: 'انقطع بسبب الهاتف — جارٍ الاستعادة…',
+  });
+  Object.assign(S.bn, {
+    screenOff: 'স্ক্রিন বন্ধ',
+    screenOffSub: 'স্ক্রিন অন্ধকার, শব্দ চালু থাকে',
+    blackoutHint: 'স্ক্রিন অন্ধকার — শব্দ চলতে থাকে। জাগাতে ট্যাপ করুন।',
+    lockScreenWarn: '“স্ক্রিন বন্ধ” এই পাতাটি খোলা রাখে: ক্যামেরা, মাইক্রোফোন ও শব্দ কাজ করতে থাকে। ফোন লক করলে বা অন্য অ্যাপে গেলে সেগুলো থেমে যায় — iPhone ও iPad-এ সিস্টেম ব্রাউজার থামিয়ে দেয় এবং কোনো ওয়েবসাইট তা ঠেকাতে পারে না।',
+    streamPaused: 'শিশু ইউনিট বিঘ্নিত — কোনো শব্দ আসছে না',
+    streamResumed: 'শিশু ইউনিট আবার শব্দ পাঠাচ্ছে',
+    micInterrupted: 'ফোন বাধা দিয়েছে — পুনরুদ্ধার করা হচ্ছে…',
+  });
+  Object.assign(S.pt, {
+    screenOff: 'Tela desligada',
+    screenOffSub: 'Tela escura, o som continua',
+    blackoutHint: 'A tela está escura — o som continua tocando. Toque para acordar.',
+    lockScreenWarn: '“Tela desligada” mantém esta página aberta: câmera, microfone e som continuam funcionando. Bloquear o telefone ou mudar para outro app faz com que parem — no iPhone e no iPad o sistema pausa o navegador e nenhum site pode impedir isso.',
+    streamPaused: 'Unidade do bebê interrompida — não chega som',
+    streamResumed: 'A unidade do bebê está enviando som novamente',
+    micInterrupted: 'Interrompido pelo telefone — restaurando…',
+  });
+  Object.assign(S.ru, {
+    screenOff: 'Выключить экран',
+    screenOffSub: 'Тёмный экран, звук продолжается',
+    blackoutHint: 'Экран тёмный — звук продолжает играть. Коснитесь, чтобы разбудить.',
+    lockScreenWarn: '«Выключить экран» оставляет эту страницу открытой: камера, микрофон и звук продолжают работать. Блокировка телефона или переход в другое приложение всё же их останавливает — на iPhone и iPad система приостанавливает браузер, и ни один сайт не может этому помешать.',
+    streamPaused: 'Детский блок прерван — звук не поступает',
+    streamResumed: 'Детский блок снова передаёт звук',
+    micInterrupted: 'Прервано телефоном — восстановление…',
+  });
+  Object.assign(S.ur, {
+    screenOff: 'اسکرین بند',
+    screenOffSub: 'اسکرین تاریک، آواز جاری رہتی ہے',
+    blackoutHint: 'اسکرین تاریک ہے — آواز چلتی رہتی ہے۔ جگانے کے لیے ٹیپ کریں۔',
+    lockScreenWarn: '”اسکرین بند“ اس صفحے کو کھلا رکھتا ہے: کیمرہ، مائیکروفون اور آواز کام کرتے رہتے ہیں۔ فون لاک کرنے یا دوسری ایپ پر جانے سے یہ رک جاتے ہیں — iPhone اور iPad پر سسٹم براؤزر کو روک دیتا ہے اور کوئی ویب سائٹ اسے نہیں روک سکتی۔',
+    streamPaused: 'بے بی یونٹ منقطع — کوئی آواز نہیں آ رہی',
+    streamResumed: 'بے بی یونٹ دوبارہ آواز بھیج رہا ہے',
+    micInterrupted: 'فون نے مداخلت کی — بحال کیا جا رہا ہے…',
+  });
+  Object.assign(S.id, {
+    screenOff: 'Layar mati',
+    screenOffSub: 'Layar gelap, suara tetap jalan',
+    blackoutHint: 'Layar gelap — suara tetap terdengar. Ketuk untuk membangunkan.',
+    lockScreenWarn: '“Layar mati” menjaga halaman ini tetap terbuka: kamera, mikrofon, dan suara terus bekerja. Mengunci ponsel atau berpindah ke aplikasi lain akan menghentikannya — di iPhone dan iPad sistem menjeda browser dan tidak ada situs yang bisa mencegahnya.',
+    streamPaused: 'Unit bayi terputus — tidak ada suara masuk',
+    streamResumed: 'Unit bayi mengirim suara lagi',
+    micInterrupted: 'Terputus oleh ponsel — sedang memulihkan…',
+  });
+  Object.assign(S.de, {
+    screenOff: 'Bildschirm aus',
+    screenOffSub: 'Dunkler Bildschirm, Ton bleibt an',
+    blackoutHint: 'Bildschirm ist dunkel — der Ton läuft weiter. Zum Aufwecken tippen.',
+    lockScreenWarn: '„Bildschirm aus“ hält diese Seite offen: Kamera, Mikrofon und Ton laufen weiter. Das Handy zu sperren oder zu einer anderen App zu wechseln stoppt sie dagegen — auf iPhone und iPad pausiert das System den Browser, und keine Website kann das verhindern.',
+    streamPaused: 'Babyeinheit unterbrochen — es kommt kein Ton an',
+    streamResumed: 'Babyeinheit sendet wieder Ton',
+    micInterrupted: 'Vom Telefon unterbrochen — wird wiederhergestellt…',
+  });
+  Object.assign(S.ja, {
+    screenOff: '画面オフ',
+    screenOffSub: '画面は暗く、音はそのまま',
+    blackoutHint: '画面は暗くなっています — 音は流れ続けます。タップで復帰。',
+    lockScreenWarn: '「画面オフ」はこのページを開いたままにします：カメラ、マイク、音はそのまま動きます。ただし端末をロックしたり他のアプリに切り替えると停止します — iPhone や iPad ではシステムがブラウザを一時停止し、どのウェブサイトもそれを防げません。',
+    streamPaused: '赤ちゃん機が中断 — 音が届いていません',
+    streamResumed: '赤ちゃん機が再び音を送っています',
+    micInterrupted: '端末により中断 — 復旧中…',
+  });
+  Object.assign(S.mr, {
+    screenOff: 'स्क्रीन बंद',
+    screenOffSub: 'स्क्रीन काळी, आवाज सुरू राहतो',
+    blackoutHint: 'स्क्रीन काळी आहे — आवाज सुरू राहतो. जागे करण्यासाठी टॅप करा.',
+    lockScreenWarn: '“स्क्रीन बंद” हे पान उघडे ठेवते: कॅमेरा, मायक्रोफोन आणि आवाज सुरू राहतात. फोन लॉक केल्यास किंवा दुसऱ्या अ‍ॅपवर गेल्यास ते थांबतात — iPhone आणि iPad वर सिस्टीम ब्राउझर थांबवते आणि कोणतीही वेबसाइट ते रोखू शकत नाही.',
+    streamPaused: 'बाळ युनिट खंडित — आवाज येत नाही',
+    streamResumed: 'बाळ युनिट पुन्हा आवाज पाठवत आहे',
+    micInterrupted: 'फोनने खंडित केले — पुनर्संचयित करत आहे…',
+  });
+  Object.assign(S.te, {
+    screenOff: 'స్క్రీన్ ఆఫ్',
+    screenOffSub: 'స్క్రీన్ చీకటి, శబ్దం కొనసాగుతుంది',
+    blackoutHint: 'స్క్రీన్ చీకటిగా ఉంది — శబ్దం కొనసాగుతుంది. మేల్కొలపడానికి నొక్కండి.',
+    lockScreenWarn: '“స్క్రీన్ ఆఫ్” ఈ పేజీని తెరిచి ఉంచుతుంది: కెమెరా, మైక్రోఫోన్, శబ్దం పనిచేస్తూనే ఉంటాయి. ఫోన్‌ను లాక్ చేయడం లేదా వేరే యాప్‌కు మారడం వాటిని ఆపుతుంది — iPhone మరియు iPadలో సిస్టమ్ బ్రౌజర్‌ను నిలిపివేస్తుంది, దీన్ని ఏ వెబ్‌సైట్ కూడా ఆపలేదు.',
+    streamPaused: 'పాప యూనిట్ అంతరాయం — శబ్దం రావడం లేదు',
+    streamResumed: 'పాప యూనిట్ మళ్లీ శబ్దం పంపుతోంది',
+    micInterrupted: 'ఫోన్ అంతరాయం కలిగించింది — పునరుద్ధరిస్తోంది…',
+  });
+  Object.assign(S.tr, {
+    screenOff: 'Ekranı kapat',
+    screenOffSub: 'Ekran karanlık, ses devam eder',
+    blackoutHint: 'Ekran karanlık — ses çalmaya devam ediyor. Uyandırmak için dokunun.',
+    lockScreenWarn: '“Ekranı kapat” bu sayfayı açık tutar: kamera, mikrofon ve ses çalışmaya devam eder. Telefonu kilitlemek veya başka bir uygulamaya geçmek ise onları durdurur — iPhone ve iPad’de sistem tarayıcıyı duraklatır ve hiçbir web sitesi bunu engelleyemez.',
+    streamPaused: 'Bebek ünitesi kesildi — ses gelmiyor',
+    streamResumed: 'Bebek ünitesi yeniden ses gönderiyor',
+    micInterrupted: 'Telefon kesintiye uğrattı — geri yükleniyor…',
+  });
+  Object.assign(S.ta, {
+    screenOff: 'திரையை அணை',
+    screenOffSub: 'திரை இருட்டு, ஒலி தொடரும்',
+    blackoutHint: 'திரை இருட்டாக உள்ளது — ஒலி தொடர்ந்து ஒலிக்கும். எழுப்ப தட்டவும்.',
+    lockScreenWarn: '“திரையை அணை” இந்தப் பக்கத்தைத் திறந்தே வைக்கும்: கேமரா, ஒலிவாங்கி, ஒலி தொடர்ந்து இயங்கும். ஆனால் தொலைபேசியைப் பூட்டினாலோ வேறு ஆப்பிற்கு மாறினாலோ அவை நின்றுவிடும் — iPhone மற்றும் iPad-இல் அமைப்பு உலாவியை நிறுத்துகிறது; எந்த இணையதளமும் அதைத் தடுக்க முடியாது.',
+    streamPaused: 'குழந்தை யூனிட் தடைபட்டது — ஒலி வரவில்லை',
+    streamResumed: 'குழந்தை யூனிட் மீண்டும் ஒலி அனுப்புகிறது',
+    micInterrupted: 'தொலைபேசி தடை செய்தது — மீட்கப்படுகிறது…',
+  });
+  Object.assign(S.vi, {
+    screenOff: 'Tắt màn hình',
+    screenOffSub: 'Màn hình tối, âm thanh vẫn chạy',
+    blackoutHint: 'Màn hình đang tối — âm thanh vẫn phát. Chạm để đánh thức.',
+    lockScreenWarn: '“Tắt màn hình” giữ trang này mở: camera, micro và âm thanh vẫn hoạt động. Khóa điện thoại hoặc chuyển sang ứng dụng khác thì chúng sẽ dừng — trên iPhone và iPad hệ thống tạm dừng trình duyệt và không trang web nào ngăn được điều đó.',
+    streamPaused: 'Thiết bị bé bị gián đoạn — không có tiếng truyền về',
+    streamResumed: 'Thiết bị bé đang gửi tiếng trở lại',
+    micInterrupted: 'Bị điện thoại làm gián đoạn — đang khôi phục…',
+  });
+  Object.assign(S.ko, {
+    screenOff: '화면 끄기',
+    screenOffSub: '화면은 어둡고, 소리는 계속',
+    blackoutHint: '화면이 어둡습니다 — 소리는 계속 재생됩니다. 깨우려면 탭하세요.',
+    lockScreenWarn: '“화면 끄기”는 이 페이지를 열어 둡니다: 카메라, 마이크, 소리가 계속 작동합니다. 하지만 휴대폰을 잠그거나 다른 앱으로 전환하면 멈춥니다 — iPhone과 iPad에서는 시스템이 브라우저를 일시 중지하며, 어떤 웹사이트도 이를 막을 수 없습니다.',
+    streamPaused: '베이비 유닛 중단 — 소리가 들어오지 않습니다',
+    streamResumed: '베이비 유닛이 다시 소리를 보냅니다',
+    micInterrupted: '휴대폰에 의해 중단됨 — 복구 중…',
+  });
+  Object.assign(S.it, {
+    screenOff: 'Schermo spento',
+    screenOffSub: 'Schermo scuro, l’audio continua',
+    blackoutHint: 'Lo schermo è scuro — l’audio continua. Tocca per riattivare.',
+    lockScreenWarn: '“Schermo spento” tiene aperta questa pagina: fotocamera, microfono e audio continuano a funzionare. Bloccare il telefono o passare a un’altra app invece li ferma — su iPhone e iPad il sistema mette in pausa il browser e nessun sito può impedirlo.',
+    streamPaused: 'Unità bimbo interrotta — non arriva audio',
+    streamResumed: 'L’unità bimbo invia di nuovo audio',
+    micInterrupted: 'Interrotto dal telefono — ripristino in corso…',
+  });
+  Object.assign(S.th, {
+    screenOff: 'ปิดหน้าจอ',
+    screenOffSub: 'จอมืด เสียงยังทำงาน',
+    blackoutHint: 'หน้าจอมืดอยู่ — เสียงยังเล่นต่อ แตะเพื่อปลุก',
+    lockScreenWarn: '“ปิดหน้าจอ” จะเปิดหน้านี้ค้างไว้ กล้อง ไมโครโฟน และเสียงยังทำงานต่อ แต่การล็อกเครื่องหรือสลับไปแอปอื่นจะทำให้หยุด — บน iPhone และ iPad ระบบจะหยุดเบราว์เซอร์ชั่วคราว และไม่มีเว็บไซต์ใดป้องกันได้',
+    streamPaused: 'เครื่องฝั่งทารกถูกขัดจังหวะ — ไม่มีเสียงเข้ามา',
+    streamResumed: 'เครื่องฝั่งทารกส่งเสียงอีกครั้ง',
+    micInterrupted: 'ถูกโทรศัพท์ขัดจังหวะ — กำลังกู้คืน…',
+  });
+  Object.assign(S.gu, {
+    screenOff: 'સ્ક્રીન બંધ',
+    screenOffSub: 'સ્ક્રીન કાળી, અવાજ ચાલુ રહે છે',
+    blackoutHint: 'સ્ક્રીન કાળી છે — અવાજ ચાલુ રહે છે. જગાડવા ટૅપ કરો.',
+    lockScreenWarn: '“સ્ક્રીન બંધ” આ પાનું ખુલ્લું રાખે છે: કૅમેરા, માઇક્રોફોન અને અવાજ ચાલુ રહે છે. ફોન લૉક કરવાથી કે બીજી ઍપ પર જવાથી તે બંધ થાય છે — iPhone અને iPad પર સિસ્ટમ બ્રાઉઝરને થોભાવે છે અને કોઈ વેબસાઇટ તે રોકી શકતી નથી.',
+    streamPaused: 'બેબી યુનિટ ખોરવાયું — અવાજ આવતો નથી',
+    streamResumed: 'બેબી યુનિટ ફરી અવાજ મોકલે છે',
+    micInterrupted: 'ફોને ખલેલ પાડી — પુનઃસ્થાપિત થઈ રહ્યું છે…',
+  });
+  Object.assign(S.fa, {
+    screenOff: 'خاموش کردن صفحه',
+    screenOffSub: 'صفحه تاریک، صدا ادامه دارد',
+    blackoutHint: 'صفحه تاریک است — صدا ادامه دارد. برای بیدار کردن ضربه بزنید.',
+    lockScreenWarn: '«خاموش کردن صفحه» این صفحه را باز نگه می‌دارد: دوربین، میکروفون و صدا به کار خود ادامه می‌دهند. اما قفل کردن گوشی یا رفتن به برنامه‌ای دیگر آن‌ها را متوقف می‌کند — در iPhone و iPad سیستم مرورگر را متوقف می‌کند و هیچ وب‌سایتی نمی‌تواند جلوی آن را بگیرد.',
+    streamPaused: 'دستگاه نوزاد قطع شد — صدایی نمی‌رسد',
+    streamResumed: 'دستگاه نوزاد دوباره صدا می‌فرستد',
+    micInterrupted: 'گوشی وقفه ایجاد کرد — در حال بازیابی…',
+  });
+  Object.assign(S.pl, {
+    screenOff: 'Wyłącz ekran',
+    screenOffSub: 'Ciemny ekran, dźwięk działa dalej',
+    blackoutHint: 'Ekran jest ciemny — dźwięk gra dalej. Dotknij, aby obudzić.',
+    lockScreenWarn: '„Wyłącz ekran” utrzymuje tę stronę otwartą: kamera, mikrofon i dźwięk działają dalej. Zablokowanie telefonu lub przejście do innej aplikacji je zatrzymuje — na iPhonie i iPadzie system wstrzymuje przeglądarkę i żadna witryna nie może temu zapobiec.',
+    streamPaused: 'Jednostka dziecka przerwana — nie dociera dźwięk',
+    streamResumed: 'Jednostka dziecka znów wysyła dźwięk',
+    micInterrupted: 'Przerwane przez telefon — trwa przywracanie…',
+  });
+  Object.assign(S.uk, {
+    screenOff: 'Вимкнути екран',
+    screenOffSub: 'Темний екран, звук працює далі',
+    blackoutHint: 'Екран темний — звук лунає далі. Торкніться, щоб розбудити.',
+    lockScreenWarn: '«Вимкнути екран» тримає цю сторінку відкритою: камера, мікрофон і звук продовжують працювати. Блокування телефона чи перехід в інший застосунок їх зупиняє — на iPhone та iPad система призупиняє браузер, і жоден сайт не може цьому завадити.',
+    streamPaused: 'Дитячий блок перервано — звук не надходить',
+    streamResumed: 'Дитячий блок знову передає звук',
+    micInterrupted: 'Перервано телефоном — відновлення…',
+  });
+  Object.assign(S.nl, {
+    screenOff: 'Scherm uit',
+    screenOffSub: 'Donker scherm, geluid blijft aan',
+    blackoutHint: 'Scherm is donker — geluid blijft doorspelen. Tik om te wekken.',
+    lockScreenWarn: 'Scherm uit houdt deze pagina open: camera, microfoon en geluid blijven werken. Het toestel vergrendelen of naar een andere app wisselen stopt ze wél — op iPhone en iPad zet het systeem de browser stil en geen enkele website kan dat voorkomen.',
+    streamPaused: 'Babyunit onderbroken — er komt geen geluid binnen',
+    streamResumed: 'Babyunit stuurt weer geluid',
+    micInterrupted: 'Onderbroken door de telefoon — bezig met herstellen…',
+  });
+  Object.assign(S.pa, {
+    screenOff: 'ਸਕਰੀਨ ਬੰਦ',
+    screenOffSub: 'ਸਕਰੀਨ ਹਨੇਰੀ, ਆਵਾਜ਼ ਚੱਲਦੀ ਰਹਿੰਦੀ ਹੈ',
+    blackoutHint: 'ਸਕਰੀਨ ਹਨੇਰੀ ਹੈ — ਆਵਾਜ਼ ਚੱਲਦੀ ਰਹਿੰਦੀ ਹੈ। ਜਗਾਉਣ ਲਈ ਟੈਪ ਕਰੋ।',
+    lockScreenWarn: '“ਸਕਰੀਨ ਬੰਦ” ਇਸ ਪੰਨੇ ਨੂੰ ਖੁੱਲ੍ਹਾ ਰੱਖਦਾ ਹੈ: ਕੈਮਰਾ, ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਤੇ ਆਵਾਜ਼ ਚੱਲਦੇ ਰਹਿੰਦੇ ਹਨ। ਫ਼ੋਨ ਲਾਕ ਕਰਨ ਜਾਂ ਹੋਰ ਐਪ ’ਤੇ ਜਾਣ ਨਾਲ ਇਹ ਰੁਕ ਜਾਂਦੇ ਹਨ — iPhone ਅਤੇ iPad ’ਤੇ ਸਿਸਟਮ ਬ੍ਰਾਊਜ਼ਰ ਨੂੰ ਰੋਕ ਦਿੰਦਾ ਹੈ ਅਤੇ ਕੋਈ ਵੈੱਬਸਾਈਟ ਇਸ ਨੂੰ ਨਹੀਂ ਰੋਕ ਸਕਦੀ।',
+    streamPaused: 'ਬੇਬੀ ਯੂਨਿਟ ਵਿੱਚ ਰੁਕਾਵਟ — ਕੋਈ ਆਵਾਜ਼ ਨਹੀਂ ਆ ਰਹੀ',
+    streamResumed: 'ਬੇਬੀ ਯੂਨਿਟ ਮੁੜ ਆਵਾਜ਼ ਭੇਜ ਰਿਹਾ ਹੈ',
+    micInterrupted: 'ਫ਼ੋਨ ਨੇ ਰੋਕਿਆ — ਬਹਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…',
+  });
+  Object.assign(S.sw, {
+    screenOff: 'Zima skrini',
+    screenOffSub: 'Skrini giza, sauti inaendelea',
+    blackoutHint: 'Skrini ni giza — sauti inaendelea. Gusa ili kuamsha.',
+    lockScreenWarn: '“Zima skrini” huweka ukurasa huu wazi: kamera, maikrofoni na sauti vinaendelea kufanya kazi. Kufunga simu au kubadili kwenda programu nyingine hukomesha vitu hivyo — kwenye iPhone na iPad mfumo husimamisha kivinjari na hakuna tovuti inayoweza kuzuia hilo.',
+    streamPaused: 'Kitengo cha mtoto kimekatizwa — hakuna sauti inayoingia',
+    streamResumed: 'Kitengo cha mtoto kinatuma sauti tena',
+    micInterrupted: 'Imekatizwa na simu — inarejeshwa…',
+  });
+  Object.assign(S.ha, {
+    screenOff: 'Kashe allo',
+    screenOffSub: 'Allo duhu, sauti na ci gaba',
+    blackoutHint: 'Allon yana duhu — sauti tana ci gaba. Taɓa domin farkarwa.',
+    lockScreenWarn: '“Kashe allo” yana barin wannan shafin a buɗe: kyamara, makurufo da sauti suna ci gaba da aiki. Kulle wayar ko sauya zuwa wata manhaja yana tsayar da su — a iPhone da iPad tsarin yana dakatar da burauza kuma babu gidan yanar gizo da zai iya hana hakan.',
+    streamPaused: 'An katse na’urar jariri — babu sautin da ke shigowa',
+    streamResumed: 'Na’urar jariri tana sake aika sauti',
+    micInterrupted: 'Wayar ta katse — ana dawo da shi…',
+  });
+  Object.assign(S.ro, {
+    screenOff: 'Ecran stins',
+    screenOffSub: 'Ecran întunecat, sunetul continuă',
+    blackoutHint: 'Ecranul este întunecat — sunetul continuă. Atinge pentru a trezi.',
+    lockScreenWarn: '„Ecran stins” ține această pagină deschisă: camera, microfonul și sunetul continuă să funcționeze. Blocarea telefonului sau trecerea la altă aplicație le oprește — pe iPhone și iPad sistemul pune browserul pe pauză și niciun site nu poate împiedica asta.',
+    streamPaused: 'Unitatea bebeluș întreruptă — nu vine sunet',
+    streamResumed: 'Unitatea bebeluș trimite din nou sunet',
+    micInterrupted: 'Întrerupt de telefon — se restaurează…',
+  });
+
+  // ------------------------------------------------------------------
+  // Donatieknop. BabyPhone.online is gratis en advertentievrij; de knop
+  // in de bovenbalk leidt naar een Stripe-betaalpagina. `donateBtn` is het
+  // korte label op de knop, `donateTitle` de langere omschrijving die als
+  // tooltip én als naam voor de schermlezer dient — dat laatste is nodig
+  // omdat het label op smalle telefoons wegvalt.
+  // ------------------------------------------------------------------
+  Object.assign(S.en, {
+    donateBtn: 'Support us',
+    donateTitle: 'Support BabyPhone.online — keep it free and ad-free',
+  });
+  Object.assign(S.zh, {
+    donateBtn: '支持我们',
+    donateTitle: '支持 BabyPhone.online — 保持免费且无广告',
+  });
+  Object.assign(S.hi, {
+    donateBtn: 'सहयोग करें',
+    donateTitle: 'BabyPhone.online का समर्थन करें — इसे मुफ़्त और विज्ञापन-मुक्त रखें',
+  });
+  Object.assign(S.es, {
+    donateBtn: 'Apóyanos',
+    donateTitle: 'Apoya BabyPhone.online — mantenlo gratis y sin anuncios',
+  });
+  Object.assign(S.fr, {
+    donateBtn: 'Nous soutenir',
+    donateTitle: 'Soutenez BabyPhone.online — gratuit et sans publicité',
+  });
+  Object.assign(S.ar, {
+    donateBtn: 'ادعمنا',
+    donateTitle: 'ادعم BabyPhone.online — لإبقائه مجانيًا وبدون إعلانات',
+  });
+  Object.assign(S.bn, {
+    donateBtn: 'সহায়তা করুন',
+    donateTitle: 'BabyPhone.online-কে সহায়তা করুন — বিনামূল্যে ও বিজ্ঞাপনমুক্ত রাখুন',
+  });
+  Object.assign(S.pt, {
+    donateBtn: 'Apoie-nos',
+    donateTitle: 'Apoie o BabyPhone.online — mantenha-o gratuito e sem anúncios',
+  });
+  Object.assign(S.ru, {
+    donateBtn: 'Поддержать',
+    donateTitle: 'Поддержите BabyPhone.online — чтобы он оставался бесплатным и без рекламы',
+  });
+  Object.assign(S.ur, {
+    donateBtn: 'ہماری مدد کریں',
+    donateTitle: 'BabyPhone.online کی مدد کریں — اسے مفت اور اشتہارات سے پاک رکھیں',
+  });
+  Object.assign(S.id, {
+    donateBtn: 'Dukung kami',
+    donateTitle: 'Dukung BabyPhone.online — agar tetap gratis dan tanpa iklan',
+  });
+  Object.assign(S.de, {
+    donateBtn: 'Unterstützen',
+    donateTitle: 'Unterstütze BabyPhone.online — kostenlos und werbefrei',
+  });
+  Object.assign(S.ja, {
+    donateBtn: '応援する',
+    donateTitle: 'BabyPhone.online を応援する — 無料・広告なしを守る',
+  });
+  Object.assign(S.mr, {
+    donateBtn: 'पाठिंबा द्या',
+    donateTitle: 'BabyPhone.online ला पाठिंबा द्या — ते मोफत आणि जाहिरातमुक्त ठेवा',
+  });
+  Object.assign(S.te, {
+    donateBtn: 'మద్దతు ఇవ్వండి',
+    donateTitle: 'BabyPhone.online కు మద్దతు ఇవ్వండి — ఉచితంగా, ప్రకటనలు లేకుండా ఉంచండి',
+  });
+  Object.assign(S.tr, {
+    donateBtn: 'Bize destek ol',
+    donateTitle: 'BabyPhone.online’a destek olun — ücretsiz ve reklamsız kalsın',
+  });
+  Object.assign(S.ta, {
+    donateBtn: 'ஆதரவு தாருங்கள்',
+    donateTitle: 'BabyPhone.online-க்கு ஆதரவு தாருங்கள் — இலவசமாகவும் விளம்பரமின்றியும் இருக்க',
+  });
+  Object.assign(S.vi, {
+    donateBtn: 'Ủng hộ',
+    donateTitle: 'Ủng hộ BabyPhone.online — giữ cho ứng dụng miễn phí và không quảng cáo',
+  });
+  Object.assign(S.ko, {
+    donateBtn: '후원하기',
+    donateTitle: 'BabyPhone.online 후원하기 — 무료와 광고 없는 상태를 유지',
+  });
+  Object.assign(S.it, {
+    donateBtn: 'Sostienici',
+    donateTitle: 'Sostieni BabyPhone.online — gratuito e senza pubblicità',
+  });
+  Object.assign(S.th, {
+    donateBtn: 'สนับสนุนเรา',
+    donateTitle: 'สนับสนุน BabyPhone.online — ให้ใช้ฟรีและไม่มีโฆษณา',
+  });
+  Object.assign(S.gu, {
+    donateBtn: 'સહયોગ કરો',
+    donateTitle: 'BabyPhone.online ને ટેકો આપો — તેને મફત અને જાહેરાત-મુક્ત રાખો',
+  });
+  Object.assign(S.fa, {
+    donateBtn: 'حمایت کنید',
+    donateTitle: 'از BabyPhone.online حمایت کنید — رایگان و بدون تبلیغات بماند',
+  });
+  Object.assign(S.pl, {
+    donateBtn: 'Wesprzyj nas',
+    donateTitle: 'Wesprzyj BabyPhone.online — żeby pozostał bezpłatny i bez reklam',
+  });
+  Object.assign(S.uk, {
+    donateBtn: 'Підтримати',
+    donateTitle: 'Підтримайте BabyPhone.online — щоб він залишався безкоштовним і без реклами',
+  });
+  Object.assign(S.nl, {
+    donateBtn: 'Steun ons',
+    donateTitle: 'Steun BabyPhone.online — gratis en zonder advertenties',
+  });
+  Object.assign(S.pa, {
+    donateBtn: 'ਸਾਥ ਦਿਓ',
+    donateTitle: 'BabyPhone.online ਦਾ ਸਾਥ ਦਿਓ — ਇਸਨੂੰ ਮੁਫ਼ਤ ਅਤੇ ਇਸ਼ਤਿਹਾਰ-ਮੁਕਤ ਰੱਖੋ',
+  });
+  Object.assign(S.sw, {
+    donateBtn: 'Tuunge mkono',
+    donateTitle: 'Unga mkono BabyPhone.online — iendelee kuwa bure na bila matangazo',
+  });
+  Object.assign(S.ha, {
+    donateBtn: 'Ku tallafa mana',
+    donateTitle: 'Ka tallafa wa BabyPhone.online — ya ci gaba da kasancewa kyauta kuma babu tallace-tallace',
+  });
+  Object.assign(S.ro, {
+    donateBtn: 'Susține-ne',
+    donateTitle: 'Susține BabyPhone.online — gratuit și fără reclame',
+  });
+
+  // ------------------------------------------------------------------
+  // Link in de voettekst naar security.html — het artikel dat uitlegt hoe
+  // de verbinding beveiligd is. Die pagina heeft een eigen vertaaltabel;
+  // dit is alleen het woord op de link.
+  // ------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // "Tik om te starten" — de knop over het videovenster. iPhone en iPad
+  // spelen beeld mét geluid niet af zonder dat de gebruiker ergens getikt
+  // heeft; zonder deze tekst bleef het scherm zwart zonder uitleg.
+  // ------------------------------------------------------------------
+  const TIK_START = {
+    en: 'Tap to start video and sound',
+    zh: '点按以开始画面和声音',
+    hi: 'तस्वीर और आवाज़ शुरू करने के लिए टैप करें',
+    es: 'Toca para iniciar imagen y sonido',
+    fr: 'Touchez pour lancer l’image et le son',
+    ar: 'اضغط لبدء الصورة والصوت',
+    bn: 'ছবি ও শব্দ চালু করতে ট্যাপ করুন',
+    pt: 'Toque para iniciar imagem e som',
+    ru: 'Нажмите, чтобы включить видео и звук',
+    ur: 'تصویر اور آواز شروع کرنے کے لیے تھپتھپائیں',
+    id: 'Ketuk untuk memulai video dan suara',
+    de: 'Tippen, um Bild und Ton zu starten',
+    ja: 'タップして映像と音声を開始',
+    mr: 'चित्र आणि आवाज सुरू करण्यासाठी टॅप करा',
+    te: 'దృశ్యం, ధ్వని ప్రారంభించడానికి నొక్కండి',
+    tr: 'Görüntü ve sesi başlatmak için dokunun',
+    ta: 'காட்சியையும் ஒலியையும் தொடங்கத் தட்டுங்கள்',
+    vi: 'Chạm để bắt đầu hình và tiếng',
+    ko: '화면과 소리를 시작하려면 누르세요',
+    it: 'Tocca per avviare video e audio',
+    th: 'แตะเพื่อเริ่มภาพและเสียง',
+    gu: 'ચિત્ર અને અવાજ શરૂ કરવા ટૅપ કરો',
+    fa: 'برای شروع تصویر و صدا ضربه بزنید',
+    pl: 'Dotknij, aby uruchomić obraz i dźwięk',
+    uk: 'Торкніться, щоб увімкнути відео та звук',
+    nl: 'Tik om beeld en geluid te starten',
+    pa: 'ਤਸਵੀਰ ਤੇ ਆਵਾਜ਼ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ',
+    sw: 'Gusa ili kuanzisha picha na sauti',
+    ha: 'Taɓa don fara hoto da sauti',
+    ro: 'Atinge pentru a porni imaginea și sunetul',
+  };
+  Object.keys(TIK_START).forEach(function (code) {
+    if (S[code]) S[code].tapToPlay = TIK_START[code];
+  });
+
+  const VEILIGHEID = {
+    en: 'Security', zh: '安全', hi: 'सुरक्षा', es: 'Seguridad', fr: 'Sécurité',
+    ar: 'الأمان', bn: 'নিরাপত্তা', pt: 'Segurança', ru: 'Безопасность', ur: 'سیکیورٹی',
+    id: 'Keamanan', de: 'Sicherheit', ja: 'セキュリティ', mr: 'सुरक्षा', te: 'భద్రత',
+    tr: 'Güvenlik', ta: 'பாதுகாப்பு', vi: 'Bảo mật', ko: '보안', it: 'Sicurezza',
+    th: 'ความปลอดภัย', gu: 'સુરક્ષા', fa: 'امنیت', pl: 'Bezpieczeństwo', uk: 'Безпека',
+    nl: 'Veiligheid', pa: 'ਸੁਰੱਖਿਆ', sw: 'Usalama', ha: 'Tsaro', ro: 'Securitate',
+  };
+  Object.keys(VEILIGHEID).forEach(function (code) {
+    if (S[code]) S[code].footSecurity = VEILIGHEID[code];
+  });
+
+  // ------------------------------------------------------------------
+  // Meldingen bij functies die op Android een eigen weg gaan. Ze horen bij
+  // reparaties waarbij een fout eerder stil verdween: een zaklamp die niet
+  // schakelt, een opname die de encoder niet aankan, een bestand dat de
+  // browser niet mag wegschrijven, volledig scherm dat de schil niet
+  // toestaat, en terugpraten dat de babyunit niet mag afspelen. Stilte is
+  // daar het gevaarlijkste antwoord: die is niet te onderscheiden van een
+  // kapotte verbinding.
+  // ------------------------------------------------------------------
+  const EXTRA = {
+    ledFailed: {
+      en: "LED light could not be switched",
+      zh: "无法切换 LED 灯",
+      hi: "एलईडी लाइट बदली नहीं जा सकी",
+      es: "No se pudo encender la luz LED",
+      fr: "Impossible de commuter la lumière LED",
+      ar: "تعذّر تشغيل ضوء LED",
+      bn: "এলইডি আলো চালু করা গেল না",
+      pt: "Não foi possível ligar a luz LED",
+      ru: "Не удалось переключить светодиод",
+      ur: "ایل ای ڈی لائٹ تبدیل نہیں ہو سکی",
+      id: "Lampu LED tidak dapat dinyalakan",
+      de: "LED-Licht konnte nicht geschaltet werden",
+      ja: "LED ライトを切り替えられませんでした",
+      mr: "एलईडी दिवा बदलता आला नाही",
+      te: "LED లైట్‌ను మార్చలేకపోయాం",
+      tr: "LED ışığı değiştirilemedi",
+      ta: "எல்ஐடி விளக்கை மாற்ற முடியவில்லை",
+      vi: "Không bật được đèn LED",
+      ko: "LED 조명을 전환할 수 없습니다",
+      it: "Impossibile accendere la luce LED",
+      th: "เปลี่ยนสถานะไฟ LED ไม่ได้",
+      gu: "એનલઈડી લાઇટ બદલી શકાઈ નહીં",
+      fa: "چراغ LED تغییر نکرد",
+      pl: "Nie udało się przełączyć diody LED",
+      uk: "Не вдалося перемкнути світлодіод",
+      nl: "LED-lampje kon niet geschakeld worden",
+      pa: "ਐਲਈਡੀ ਲਾਈਟ ਬਦਲੀ ਨਹੀਂ ਜਾ ਸਕੀ",
+      sw: "Taa ya LED haikuweza kuwashwa",
+      ha: "An kasa kunna hasken LED",
+      ro: "Lumina LED nu a putut fi comutată",
+    },
+    recFailed: {
+      en: "Recording failed — nothing saved",
+      zh: "录制失败，未保存任何内容",
+      hi: "रिकॉर्डिंग विफल — कुछ भी सहेजा नहीं गया",
+      es: "La grabación falló: no se guardó nada",
+      fr: "Échec de l’enregistrement — rien n’a été sauvegardé",
+      ar: "فشل التسجيل — لم يُحفظ شيء",
+      bn: "রেকর্ডিং ব্যর্থ — কিছুই সংরক্ষণ হয়নি",
+      pt: "A gravação falhou — nada foi guardado",
+      ru: "Запись не удалась — ничего не сохранено",
+      ur: "ریکارڈنگ ناکام — کچھ محفوظ نہیں ہوا",
+      id: "Perekaman gagal — tidak ada yang disimpan",
+      de: "Aufnahme fehlgeschlagen — nichts gespeichert",
+      ja: "録画に失敗しました — 保存されていません",
+      mr: "रेकॉर्डिंग अयशस्वी — काहीही जतन झाले नाही",
+      te: "రికార్డింగ్ విఫలమైంది — ఏదీ సేవ్ కాలేదు",
+      tr: "Kayıt başarısız — hiçbir şey kaydedilmedi",
+      ta: "பதிவு தோல்வியடைந்தது — எதுவும் சேமிக்கப்படவில்லை",
+      vi: "Ghi hình thất bại — chưa lưu gì",
+      ko: "녹화에 실패했습니다 — 저장된 것이 없습니다",
+      it: "Registrazione non riuscita — nulla salvato",
+      th: "บันทึกไม่สำเร็จ — ไม่ได้บันทึกอะไรเลย",
+      gu: "રેકોર્ડિંગ નિષ્ફળ — કંઈ સાચવાયું નથી",
+      fa: "ضبط ناموفق بود — چیزی ذخیره نشد",
+      pl: "Nagrywanie nie powiodło się — nic nie zapisano",
+      uk: "Запис не вдався — нічого не збережено",
+      nl: "Opnemen mislukt — er is niets opgeslagen",
+      pa: "ਰਿਕਾਰਡਿੰਗ ਅਸਫਲ — ਕੁਝ ਵੀ ਸੰਭਾਲਿਆ ਨਹੀਂ ਗਿਆ",
+      sw: "Kurekodi kumeshindikana — hakuna kilichohifadhiwa",
+      ha: "Yin rikodi ya gaza — ba a ajiye kome ba",
+      ro: "Înregistrarea a eșuat — nu s-a salvat nimic",
+    },
+    saveFailed: {
+      en: "This browser could not save the file",
+      zh: "此浏览器无法保存该文件",
+      hi: "यह ब्राउज़र फ़ाइल सहेज नहीं सका",
+      es: "Este navegador no pudo guardar el archivo",
+      fr: "Ce navigateur n’a pas pu enregistrer le fichier",
+      ar: "تعذّر على هذا المتصفح حفظ الملف",
+      bn: "এই ব্রাউজার ফাইলটি সংরক্ষণ করতে পারেনি",
+      pt: "Este navegador não conseguiu guardar o ficheiro",
+      ru: "Этот браузер не смог сохранить файл",
+      ur: "یہ براؤزر فائل محفوظ نہ کر سکا",
+      id: "Peramban ini tidak dapat menyimpan berkas",
+      de: "Dieser Browser konnte die Datei nicht speichern",
+      ja: "このブラウザーはファイルを保存できませんでした",
+      mr: "हा ब्राउझर फाइल जतन करू शकला नाही",
+      te: "ఈ బ్రౌజర్ ఫైల్‌ను సేవ్ చేయలేకపోయింది",
+      tr: "Bu tarayıcı dosyayı kaydedemedi",
+      ta: "இந்த உலாவியால் கோப்பைச் சேமிக்க முடியவில்லை",
+      vi: "Trình duyệt này không lưu được tệp",
+      ko: "이 브라우저는 파일을 저장할 수 없습니다",
+      it: "Questo browser non ha potuto salvare il file",
+      th: "เบราว์เซอร์นี้บันทึกไฟล์ไม่ได้",
+      gu: "આ બ્રાઉઝર ફાઇલ સાચવી શક્યું નહીં",
+      fa: "این مرورگر نتوانست فایل را ذخیره کند",
+      pl: "Ta przeglądarka nie mogła zapisać pliku",
+      uk: "Цей браузер не зміг зберегти файл",
+      nl: "Deze browser kon het bestand niet opslaan",
+      pa: "ਇਹ ਬ੍ਰਾੂਜ਼ਰ ਫ਼ਾਈਲ ਸੰਭਾਲ ਨਹੀਂ ਸਕਿਆ",
+      sw: "Kivinjari hiki hakikuweza kuhifadhi faili",
+      ha: "Wannan burauza ba ta iya ajiye fayil ɗin ba",
+      ro: "Acest browser nu a putut salva fișierul",
+    },
+    fsFailed: {
+      en: "Full screen is not available in this browser",
+      zh: "此浏览器不支持全屏",
+      hi: "इस ब्राउज़र में पूर्ण स्क्रीन उपलब्ध नहीं है",
+      es: "La pantalla completa no está disponible en este navegador",
+      fr: "Le plein écran n’est pas disponible dans ce navigateur",
+      ar: "وضع ملء الشاشة غير متاح في هذا المتصفح",
+      bn: "এই ব্রাউজারে পূর্ণ স্ক্রিন পাওয়া যায় না",
+      pt: "O ecrã inteiro não está disponível neste navegador",
+      ru: "Полноэкранный режим недоступен в этом браузере",
+      ur: "اس براؤزر میں فل اسکرین دستیاب نہیں",
+      id: "Layar penuh tidak tersedia di peramban ini",
+      de: "Vollbild ist in diesem Browser nicht verfügbar",
+      ja: "このブラウザーでは全画面表示を使えません",
+      mr: "या ब्राउझरमध्ये पूर्ण स्क्रीन उपलब्ध नाही",
+      te: "ఈ బ్రౌజర్‌లో పూర్తి స్క్రీన్ అందుబాటులో లేదు",
+      tr: "Bu tarayıcıda tam ekran kullanılamıyor",
+      ta: "இந்த உலாவியில் முழுத்திரை கிடைக்கவில்லை",
+      vi: "Trình duyệt này không hỗ trợ toàn màn hình",
+      ko: "이 브라우저에서는 전체 화면을 쓸 수 없습니다",
+      it: "Lo schermo intero non è disponibile in questo browser",
+      th: "เบราว์เซอร์นี้ใช้เต็มหน้าจอไม่ได้",
+      gu: "આ બ્રાઉઝરમાં પૂર્ણ સ્ક્રીન ઉપલબ્ધ નથી",
+      fa: "تمام‌صفحه در این مرورگر در دسترس نیست",
+      pl: "Pełny ekran nie jest dostępny w tej przeglądarce",
+      uk: "Повний екран недоступний у цьому браузері",
+      nl: "Volledig scherm kan niet in deze browser",
+      pa: "ਇਸ ਬ੍ਰਾੂਜ਼ਰ ਵਿੱਚ ਪੂਰੀ ਸਕ੍ਰੀਨ ਉਪਲਬਧ ਨਹੀਂ",
+      sw: "Skrini nzima haipatikani katika kivinjari hiki",
+      ha: "Cikakken allo baya samuwa a wannan burauza",
+      ro: "Ecranul complet nu este disponibil în acest browser",
+    },
+    talkPlayBlocked: {
+      en: "The baby unit is not playing your voice — tap its screen once",
+      zh: "宝宝端没有播放你的声音，请在它的屏幕上点一下",
+      hi: "बेबी यूनिट आपकी आवाज़ नहीं चला रही — उसकी स्क्रीन पर एक बार टैप करें",
+      es: "La unidad del bebé no reproduce tu voz: toca su pantalla una vez",
+      fr: "L’unité bébé ne diffuse pas votre voix — touchez son écran une fois",
+      ar: "وحدة الرضيع لا تشغّل صوتك — المس شاشتها مرة واحدة",
+      bn: "শিশু ইউনিট আপনার কণ্ঠ বাজাচ্ছে না — তার স্ক্রিনে একবার ট্যাপ করুন",
+      pt: "A unidade do bebé não reproduz a sua voz — toque uma vez no ecrã dela",
+      ru: "Детский блок не воспроизводит ваш голос — коснитесь его экрана один раз",
+      ur: "بی بی یونٹ آپ کی آواز نہیں چلا رہا — اس کی اسکرین پر ایک بار ٹیپ کریں",
+      id: "Unit bayi tidak memutar suara Anda — ketuk layarnya sekali",
+      de: "Die Babyeinheit gibt deine Stimme nicht wieder — tippe einmal auf ihren Bildschirm",
+      ja: "赤ちゃん機があなたの声を再生していません。画面を一度タップしてください",
+      mr: "बाळ यूनिट तुमचा आवाज वाजवत नाही — त्याच्या स्क्रीनवर एकदा टॅप करा",
+      te: "పాప యూనిట్ మీ గొంతును ప్లే చేయడం లేదు — దాని స్క్రీన్‌ను ఒకసారి తాకండి",
+      tr: "Bebek ünitesi sesinizi çalmıyor — ekranına bir kez dokunun",
+      ta: "குழந்தை யூனிட் உங்கள் குரலை ஒலிக்கவில்லை — அதன் திரையை ஒருமுறை தட்டுங்கள்",
+      vi: "Thiết bị bé không phát giọng của bạn — hãy chạm màn hình của nó một lần",
+      ko: "아기 기기가 목소리를 재생하지 않습니다 — 그 화면을 한 번 누르세요",
+      it: "L’unità bimbo non riproduce la tua voce: tocca una volta il suo schermo",
+      th: "เครื่องลูกไม่เล่นเสียงของคุณ — แตะหน้าจอของเครื่องลูกหนึ่งครั้ง",
+      gu: "બેબી યુનિટ તમારો અવાજ વગાડતું નથી — તેની સ્ક્રીન પર એકવાર ટૅપ કરો",
+      fa: "واحد نوزاد صدای شما را پخش نمی‌کند — یک بار روی صفحهٔ آن ضربه بزنید",
+      pl: "Jednostka dziecięca nie odtwarza Twojego głosu — dotknij raz jej ekranu",
+      uk: "Дитячий блок не відтворює ваш голос — торкніться його екрана один раз",
+      nl: "De babyunit speelt je stem niet af — tik één keer op dat scherm",
+      pa: "ਬੱਚਾ ਯੂਨਿਟ ਤੁਹਾਡੀ ਆਵਾਜ਼ ਨਹੀਂ ਚਲਾ ਰਿਹਾ — ਇਸਦੀ ਸਕ੍ਰੀਨ ਉੱਤੇ ਇੱਕ ਵਾਰ ਟੈਪ ਕਰੋ",
+      sw: "Kifaa cha mtoto hakichezi sauti yako — gusa skrini yake mara moja",
+      ha: "Na'urar jariri ba ta kunna muryarka ba — taɓa allonta sau ɗaya",
+      ro: "Unitatea bebelușului nu redă vocea ta — atinge o dată ecranul ei",
+    },
+  };
+  Object.keys(EXTRA).forEach(function (sleutel) {
+    Object.keys(EXTRA[sleutel]).forEach(function (code) {
+      if (S[code]) S[code][sleutel] = EXTRA[sleutel][code];
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // Tweede blok Android-reparaties: een camera die door een andere app bezet
+  // wordt gehouden (op Android de gewoonste fout van allemaal, en hiervoor
+  // liet de app daar de ruwe Engelse browserzin voor zien), en het herstellen
+  // van de bewaking nadat Android het tabblad heeft weggegooid.
+  // ------------------------------------------------------------------
+  const EXTRA2 = {
+    cameraBusy: {
+      en: "Camera or microphone is in use by another app. Close it and try again.",
+      zh: "摄像头或麦克风正被其他应用占用。请先关闭它，再试一次。",
+      hi: "कैमरा या माइक किसी दूसरे ऐप द्वारा उपयोग में है। उसे बंद करके फिर कोशिश करें।",
+      es: "La cámara o el micrófono los está usando otra aplicación. Ciérrala e inténtalo de nuevo.",
+      fr: "La caméra ou le micro est utilisé par une autre application. Fermez-la et réessayez.",
+      ar: "الكاميرا أو الميكروفون قيد الاستخدام من تطبيق آخر. أغلقه ثم حاول مجددًا.",
+      bn: "ক্যামেরা বা মাইক অন্য একটি অ্যাপ ব্যবহার করছে। সেটি বন্ধ করে আবার চেষ্টা করুন।",
+      pt: "A câmara ou o microfone está a ser usado por outra aplicação. Feche-a e tente novamente.",
+      ru: "Камера или микрофон заняты другим приложением. Закройте его и попробуйте снова.",
+      ur: "کیمرہ یا مائیک کوئی دوسری ایپ استعمال کر رہی ہے۔ اسے بند کرکے دوبارہ کوشش کریں۔",
+      id: "Kamera atau mikrofon sedang dipakai aplikasi lain. Tutup aplikasi itu lalu coba lagi.",
+      de: "Kamera oder Mikrofon wird von einer anderen App benutzt. Schließe sie und versuch es noch einmal.",
+      ja: "カメラまたはマイクを他のアプリが使っています。そのアプリを閉じてからやり直してください。",
+      mr: "कॅमेरा किंवा मायक दुसरे अॅप वापरत आहे. ते बंद करून पुन्हा प्रयत्न करा.",
+      te: "కెమెరా లేదా మైక్ మరో యాప్ వాడుతోంది. దాన్ని మూసి మళ్లీ ప్రయత్నించండి.",
+      tr: "Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor. Onu kapatıp yeniden deneyin.",
+      ta: "கேமரா அல்லது மைக்கை மற்றோர் செயலி பயன்படுத்துகிறது. அதை மூடிவிட்டு மீண்டும் முயற்சிக்கவும்.",
+      vi: "Máy ảnh hoặc micro đang được ứng dụng khác sử dụng. Hãy đóng ứng dụng đó rồi thử lại.",
+      ko: "카메라 또는 마이크를 다른 앱이 사용 중입니다. 그 앱을 닫고 다시 시도하세요.",
+      it: "La fotocamera o il microfono è in uso da un’altra app. Chiudila e riprova.",
+      th: "กล้องหรือไมโครโฟนถูกใช้งานโดยแอปอื่น ปิดแอปนั้นแล้วลองใหม่",
+      gu: "કૅમેરા અથવા માઇક બીજી એપ વાપરી રહી છે. તેને બંધ કરીને ફરી પ્રયાસ કરો.",
+      fa: "دوربین یا میکروفون در حال استفاده توسط برنامهٔ دیگری است. آن را ببندید و دوباره تلاش کنید.",
+      pl: "Kamera lub mikrofon są używane przez inną aplikację. Zamknij ją i spróbuj ponownie.",
+      uk: "Камера або мікрофон зайняті іншим додатком. Закрийте його та спробуйте знову.",
+      nl: "Camera of microfoon is in gebruik door een andere app. Sluit die en probeer het opnieuw.",
+      pa: "ਕੈਮਰਾ ਜਾਂ ਮਾਈਕ ਕਿਸੇ ਹੋਰ ਐਪ ਵਰਤ ਰਿਹੀ ਹੈ। ਉਸਨੂੰ ਬੰਦ ਕਰਕੇ ਦੋਬਾਰਾ ਕੋਸਿਸ਼ ਕਰੋ।",
+      sw: "Kamera au maikrofoni inatumiwa na programu nyingine. Ifunge kisha ujaribu tena.",
+      ha: "Wata manhaja tana amfani da kyamara ko makurufo. Rufe ta sannan ka sake gwadawa.",
+      ro: "Camera sau microfonul sunt folosite de altă aplicație. Închide-o și încearcă din nou.",
+    },
+    noCameraFound: {
+      en: "No camera or microphone found on this device",
+      zh: "在此设备上找不到摄像头或麦克风",
+      hi: "इस डिवाइस पर कोई कैमरा या माइक नहीं मिला",
+      es: "No se encontró cámara ni micrófono en este dispositivo",
+      fr: "Aucune caméra ni micro trouvé sur cet appareil",
+      ar: "لم يُعثر على كاميرا أو ميكروفون في هذا الجهاز",
+      bn: "এই ডিভাইসে কোনো ক্যামেরা বা মাইক পাওয়া যায়নি",
+      pt: "Não foi encontrada câmara nem microfone neste dispositivo",
+      ru: "На этом устройстве не найдено камеры или микрофона",
+      ur: "اس ڈیوائس پر کوئی کیمرہ یا مائیک نہیں ملا",
+      id: "Tidak ada kamera atau mikrofon di perangkat ini",
+      de: "Auf diesem Gerät wurde keine Kamera oder kein Mikrofon gefunden",
+      ja: "この端末でカメラやマイクが見つかりません",
+      mr: "या उपकरणावर कॅमेरा किंवा मायक सापडला नाही",
+      te: "ఈ పరికరంలో కెమెరా లేదా మైక్ దొరకలేదు",
+      tr: "Bu cihazda kamera veya mikrofon bulunamadı",
+      ta: "இந்த சாதனத்தில் கேமரா அல்லது மைக் கிடைக்கவில்லை",
+      vi: "Không tìm thấy máy ảnh hoặc micro trên thiết bị này",
+      ko: "이 기기에서 카메라나 마이크를 찾지 못했습니다",
+      it: "Nessuna fotocamera o microfono trovato su questo dispositivo",
+      th: "ไม่พบกล้องหรือไมโครโฟนในอุปกรณ์นี้",
+      gu: "આ ડિવાઇસ પર કૅમેરા કે માઇક મળ્યા નથી",
+      fa: "دوربین یا میکروفونی روی این دستگاه پیدا نشد",
+      pl: "Nie znaleziono kamery ani mikrofonu w tym urządzeniu",
+      uk: "На цьому пристрої не знайдено камери або мікрофона",
+      nl: "Geen camera of microfoon gevonden op dit apparaat",
+      pa: "ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਕੋਈ ਕੈਮਰਾ ਜਾਂ ਮਾਈਕ ਨਹੀਂ ਮਿਲਿਆ",
+      sw: "Hakuna kamera wala maikrofoni kwenye kifaa hiki",
+      ha: "Ba a sami kyamara ko makurufo a wannan na'urar ba",
+      ro: "Nu s-a găsit cameră sau microfon pe acest dispozitiv",
+    },
+    cameraUnsupported: {
+      en: "This camera cannot deliver what the app asked for",
+      zh: "此摄像头无法提供应用所需的格式",
+      hi: "यह कैमरा ऐप की मांग पूरी नहीं कर सकता",
+      es: "Esta cámara no puede ofrecer lo que la aplicación pidió",
+      fr: "Cette caméra ne peut pas fournir ce que l’application demande",
+      ar: "هذه الكاميرا لا تستطيع توفير ما يطلبه التطبيق",
+      bn: "এই ক্যামেরা অ্যাপের চাওয়া মান দিতে পারে না",
+      pt: "Esta câmara não consegue fornecer o que a aplicação pediu",
+      ru: "Эта камера не может дать то, что запросило приложение",
+      ur: "یہ کیمرہ ایپ کی ضرورت پوری نہیں کر سکتا",
+      id: "Kamera ini tidak dapat memberikan format yang diminta aplikasi",
+      de: "Diese Kamera kann nicht liefern, was die App verlangt",
+      ja: "このカメラはアプリが求めた形式を提供できません",
+      mr: "हा कॅमेरा अॅपला हवे ते देऊ शकत नाही",
+      te: "ఈ కెమెరా యాప్ అడిగినది ఇవ్వలేదు",
+      tr: "Bu kamera uygulamanın istediğini sağlayamıyor",
+      ta: "இந்த கேமரா செயலி கேட்டதைத் தர முடியவில்லை",
+      vi: "Máy ảnh này không cung cấp được định dạng mà ứng dụng yêu cầu",
+      ko: "이 카메라는 앱이 요청한 형식을 제공할 수 없습니다",
+      it: "Questa fotocamera non può fornire quello che l’app ha chiesto",
+      th: "กล้องนี้ให้สิ่งที่แอปขอไม่ได้",
+      gu: "આ કૅમેરા એપે માગેࠈલું આપી શકતો નથી",
+      fa: "این دوربین نمی‌تواند آنچه برنامه خواسته را فراهم کند",
+      pl: "Ta kamera nie może dostarczyć tego, o co poprosiła aplikacja",
+      uk: "Ця камера не може надати те, що запитав додаток",
+      nl: "Deze camera kan niet leveren wat de app vraagt",
+      pa: "ਇਹ ਕੈਮਰਾ ਐਪ ਦੀ ਮੰਗ ਪੂਰੀ ਨਹੀਂ ਕਰ ਸਕਦਾ",
+      sw: "Kamera hii haiwezi kutoa kile programu ilichoomba",
+      ha: "Wannan kyamarar ba za ta iya bayar da abin da manhajar ta nema ba",
+      ro: "Această cameră nu poate oferi ce a cerut aplicația",
+    },
+    sessionRestoring: {
+      en: "Monitoring was interrupted — reconnecting…",
+      zh: "监护被中断，正在重新连接…",
+      hi: "निगरानी बीच में रुक गई — फिर से जुड़ रहे हैं…",
+      es: "La vigilancia se interrumpió: reconectando…",
+      fr: "La surveillance a été interrompue — reconnexion…",
+      ar: "انقطعت المراقبة — جارٍ إعادة الاتصال…",
+      bn: "পর্যবেক্ষণ বাধাগ্রস্ত হয়েছিল — পুনরায় সংযোগ করা হচ্ছে…",
+      pt: "A vigilância foi interrompida — a reconectar…",
+      ru: "Наблюдение прервалось — переподключение…",
+      ur: "نگرانی منقطع ہو گئی — دوبارہ جوڑا جا رہا ہے…",
+      id: "Pemantauan sempat terputus — menyambung ulang…",
+      de: "Die Überwachung wurde unterbrochen — neu verbinden…",
+      ja: "見守りが中断されました — 再接続しています…",
+      mr: "निरीक्षण खंडित झाले — पुन्हा जोडत आहो…",
+      te: "పర్యవేక్షణ ఆగిపోయింది — మళ్లీ కనెక్ట్ అవుతోంది…",
+      tr: "İzleme kesildi — yeniden bağlanılıyor…",
+      ta: "கண்காணிப்பு தடைபப்பட்டது — மீண்டும் இணைக்கிறது…",
+      vi: "Việc theo dõi bị gián đoạn — đang kết nối lại…",
+      ko: "모니터링이 중단됐습니다 — 다시 연결 중…",
+      it: "Il monitoraggio si è interrotto — riconnessione…",
+      th: "การเฝ้าดูหยุดชะงัก — กำลังเชื่อมต่อใหม่…",
+      gu: "દેખરેખ ખોરવાઈ — ફરી કનેક્ટ થઈ રહ્યું છે…",
+      fa: "پایش قطع شد — در حال اتصال دوباره…",
+      pl: "Nadzór został przerwany — ponowne łączenie…",
+      uk: "Спостереження перервалося — перепідключення…",
+      nl: "De bewaking is onderbroken geweest — opnieuw verbinden…",
+      pa: "ਨਿਗਰਾਨੀ ਵਿਚਕਾਰ ਗਈ — ਦੋਬਾਰਾ ਜੁੜ ਰਹੇ ਹਾਂ…",
+      sw: "Ufuatiliaji ulikatizwa — tunaunganisha tena…",
+      ha: "An katse sa ido — ana sake haɗawa…",
+      ro: "Monitorizarea a fost întreruptă — se reconectează…",
+    },
+    sessionRestoreFailed: {
+      en: "Could not restore the old room code — a new code was created",
+      zh: "无法恢复原来的房间码，已生成新码",
+      hi: "पुराना रूम कोड बहाल नहीं हो सका — नया कोड बनाया गया",
+      es: "No se pudo recuperar el código de sala anterior: se creó uno nuevo",
+      fr: "Impossible de retrouver l’ancien code de chambre — un nouveau code a été créé",
+      ar: "تعذّر استعادة رمز الغرفة القديم — تم إنشاء رمز جديد",
+      bn: "পুরনো রুম কোড ফিরিয়ে আনা গেল না — নতুন কোড তৈরি হয়েছে",
+      pt: "Não foi possível recuperar o código de sala antigo — foi criado um novo",
+      ru: "Не удалось восстановить старый код комнаты — создан новый",
+      ur: "پرانا روم کوڈ بحال نہ ہو سکا — نیا کوڈ بنا دیا گیا",
+      id: "Kode ruangan lama tidak dapat dipulihkan — kode baru dibuat",
+      de: "Der alte Raumcode konnte nicht wiederhergestellt werden — es wurde ein neuer erstellt",
+      ja: "以前のルームコードを復元できませんでした — 新しいコードを作成しました",
+      mr: "जुना रूम कोड परत मिळवता आला नाही — नवीन कोड तयार केला",
+      te: "పాత రూమ్ కోడ్‌ను పునరుద్ధరించలేకపోయాం — కొత్త కోడ్ సృష్టించబడింది",
+      tr: "Eski oda kodu geri getirilemedi — yeni bir kod oluşturuldu",
+      ta: "பழைய அறைக் குறியீட்டை மீட்க முடியவில்லை — புதிய குறியீடு உருவாக்கப்பட்டது",
+      vi: "Không khôi phục được mã phòng cũ — đã tạo mã mới",
+      ko: "이전 방 코드를 복구하지 못했습니다 — 새 코드를 만들었습니다",
+      it: "Non è stato possibile recuperare il vecchio codice stanza — ne è stato creato uno nuovo",
+      th: "กู้คืนรหัสห้องเดิมไม่ได้ — สร้างรหัสใหม่แล้ว",
+      gu: "જૂનો રૂમ કોડ પાછો મેળવી શકાયો નહીં — નવો કોડ બનાવ્યો",
+      fa: "کد اتاق قبلی بازیابی نشد — کد تازه‌ای ساخته شد",
+      pl: "Nie udało się odtworzyć starego kodu pokoju — utworzono nowy",
+      uk: "Не вдалося відновити старий код кімнати — створено новий",
+      nl: "De oude kamercode kon niet terugkomen — er is een nieuwe code gemaakt",
+      pa: "ਪੁਰਾਣਾ ਰੂਮ ਕੋਡ ਬਹਾਲ ਨਹੀਂ ਹੋ ਸਕਿਆ — ਨਵਾਂ ਕੋਡ ਬਣਾਇਆ ਗਿਆ",
+      sw: "Msimbo wa chumba wa zamani haukuweza kurejeshwa — msimbo mpya umeundwa",
+      ha: "Ba a iya dawo da tsohon lambar ɗaki ba — an ƙirƙiri sabon lamba",
+      ro: "Codul vechi al camerei nu a putut fi recuperat — s-a creat unul nou",
+    },
+  };
+  Object.keys(EXTRA2).forEach(function (sleutel) {
+    Object.keys(EXTRA2[sleutel]).forEach(function (code) {
+      if (S[code]) S[code][sleutel] = EXTRA2[sleutel][code];
+    });
+  });
+
+
+  // ------------------------------------------------ scherm wakker houden
+  // Teksten die horen bij twee eerlijkheden die de app eerder niet had:
+  // dat het scherm níét wakker gehouden kan worden (en wat je daaraan doet)
+  // en dat het toestel de pagina een tijd lang heeft stilgezet, zodat er een
+  // gat in de bewaking zat. In pausedByPhone staat {t} voor de duur.
+  const EXTRA3 = {
+    wakeWarnTitle: {
+      en: "This phone will not keep the screen awake",
+      zh: "这台手机不会让屏幕保持常亮",
+      hi: "यह फ़ोन स्क्रीन को जगाए नहीं रखता",
+      es: "Este teléfono no mantiene la pantalla encendida",
+      fr: "Ce téléphone ne garde pas l’écran allumé",
+      ar: "هذا الهاتف لا يُبقي الشاشة مضاءة",
+      bn: "এই ফোনটি স্ক্রিন জেগে রাখে না",
+      pt: "Este telemóvel não mantém o ecrã ligado",
+      ru: "Этот телефон не оставляет экран включённым",
+      ur: "یہ فون اسکرین کو جاگتا نہیں رکھتا",
+      id: "Ponsel ini tidak membiarkan layar tetap menyala",
+      de: "Dieses Telefon hält den Bildschirm nicht wach",
+      ja: "この端末では画面を点灯したままにできません",
+      mr: "हा फोन स्क्रीन जागी ठेवत नाही",
+      te: "ఈ ఫోన్ స్క్రీన్‌ను మేల్కొని ఉంచదు",
+      tr: "Bu telefon ekranı açık tutmuyor",
+      ta: "இந்தத் தொலைபேசி திரையை விழித்திருக்க விடுவதில்லை",
+      vi: "Điện thoại này không giữ màn hình luôn sáng",
+      ko: "이 기기는 화면을 켜진 상태로 유지하지 않습니다",
+      it: "Questo telefono non tiene lo schermo acceso",
+      th: "โทรศัพท์เครื่องนี้ไม่ยอมให้หน้าจอเปิดค้างไว้",
+      gu: "આ ફોન સ્ક્રીનને જાગતી રાખતો નથી",
+      fa: "این گوشی صفحه را روشن نگه نمی‌دارد",
+      pl: "Ten telefon nie utrzymuje włączonego ekranu",
+      uk: "Цей телефон не тримає екран увімкненим",
+      nl: "Deze telefoon houdt het scherm niet wakker",
+      pa: "ਇਹ ਫ਼ੋਨ ਸਕਰੀਨ ਨੂੰ ਜਾਗਦੀ ਨਹੀਂ ਰੱਖਦਾ",
+      sw: "Simu hii haiiweki skrini ikiwa imewaka",
+      ha: "Wannan wayar ba ta kiyaye allon a kunne",
+      ro: "Acest telefon nu ține ecranul aprins",
+    },
+    wakeWarnBody: {
+      en: "If the screen locks, the sound stops. Turn off auto-lock in your phone settings, and use the “Screen off” button here instead of the power button.",
+      zh: "屏幕一旦锁定，声音就会中断。请在手机设置里关闭自动锁定，并使用这里的“关闭屏幕”按钮，而不是电源键。",
+      hi: "स्क्रीन लॉक होते ही आवाज़ बंद हो जाती है। फ़ोन की सेटिंग में ऑटो-लॉक बंद करें और पावर बटन के बजाय यहाँ का “स्क्रीन बंद” बटन इस्तेमाल करें।",
+      es: "Si la pantalla se bloquea, el sonido se detiene. Desactiva el bloqueo automático en los ajustes del teléfono y usa el botón “Pantalla apagada” de aquí en lugar del botón de encendido.",
+      fr: "Si l’écran se verrouille, le son s’arrête. Désactivez le verrouillage automatique dans les réglages du téléphone et utilisez le bouton « Écran éteint » ici plutôt que le bouton d’alimentation.",
+      ar: "إذا قُفلت الشاشة توقّف الصوت. أوقف القفل التلقائي في إعدادات الهاتف، واستخدم زر «إيقاف الشاشة» هنا بدل زر التشغيل.",
+      bn: "স্ক্রিন লক হলে শব্দ বন্ধ হয়ে যায়। ফোনের সেটিংসে অটো-লক বন্ধ করুন এবং পাওয়ার বোতামের বদলে এখানকার “স্ক্রিন বন্ধ” বোতাম ব্যবহার করুন।",
+      pt: "Se o ecrã bloquear, o som para. Desative o bloqueio automático nas definições do telemóvel e use o botão “Ecrã desligado” aqui em vez do botão de ligar.",
+      ru: "Если экран заблокируется, звук пропадёт. Отключите автоблокировку в настройках телефона и пользуйтесь кнопкой «Выключить экран» здесь, а не кнопкой питания.",
+      ur: "اسکرین لاک ہوتے ہی آواز بند ہو جاتی ہے۔ فون کی سیٹنگز میں آٹو لاک بند کریں اور پاور بٹن کے بجائے یہاں کا «اسکرین بند» بٹن استعمال کریں۔",
+      id: "Jika layar terkunci, suaranya berhenti. Matikan kunci otomatis di pengaturan ponsel dan gunakan tombol “Layar mati” di sini, bukan tombol daya.",
+      de: "Sperrt sich der Bildschirm, hört der Ton auf. Schalten Sie die automatische Sperre in den Telefoneinstellungen aus und nutzen Sie hier die Schaltfläche „Bildschirm aus“ statt der Ein-/Aus-Taste.",
+      ja: "画面がロックされると音は止まります。端末の設定で自動ロックをオフにし、電源ボタンではなくこちらの「画面オフ」ボタンをお使いください。",
+      mr: "स्क्रीन लॉक झाली की आवाज थांबतो. फोनच्या सेटिंगमध्ये ऑटो-लॉक बंद करा आणि पॉवर बटणाऐवजी इथले “स्क्रीन बंद” बटण वापरा.",
+      te: "స్క్రీన్ లాక్ అయితే శబ్దం ఆగిపోతుంది. ఫోన్ సెట్టింగ్‌లలో ఆటో-లాక్ ఆఫ్ చేసి, పవర్ బటన్‌కు బదులు ఇక్కడి “స్క్రీన్ ఆఫ్” బటన్ వాడండి.",
+      tr: "Ekran kilitlenirse ses kesilir. Telefon ayarlarından otomatik kilidi kapatın ve güç tuşu yerine buradaki “Ekran kapalı” düğmesini kullanın.",
+      ta: "திரை பூட்டப்பட்டால் ஒலி நின்றுவிடும். தொலைபேசி அமைப்புகளில் தானியங்கிப் பூட்டை அணைத்து, பவர் பொத்தானுக்குப் பதிலாக இங்குள்ள “திரை அணை” பொத்தானைப் பயன்படுத்துங்கள்.",
+      vi: "Nếu màn hình khoá, âm thanh sẽ dừng. Hãy tắt tự động khoá trong cài đặt điện thoại và dùng nút “Tắt màn hình” ở đây thay cho nút nguồn.",
+      ko: "화면이 잠기면 소리가 멈춥니다. 휴대폰 설정에서 자동 잠금을 끄고, 전원 버튼 대신 여기 있는 “화면 끄기” 버튼을 사용하세요.",
+      it: "Se lo schermo si blocca, l’audio si interrompe. Disattiva il blocco automatico nelle impostazioni del telefono e usa qui il pulsante “Schermo spento” invece del tasto di accensione.",
+      th: "ถ้าหน้าจอล็อก เสียงจะหยุด ปิดการล็อกอัตโนมัติในการตั้งค่าโทรศัพท์ และใช้ปุ่ม “ปิดหน้าจอ” ที่นี่แทนปุ่มเปิด/ปิดเครื่อง",
+      gu: "સ્ક્રીન લૉક થાય તો અવાજ બંધ થઈ જાય છે. ફોનનાં સેટિંગ્સમાં ઑટો-લૉક બંધ કરો અને પાવર બટનને બદલે અહીંનું “સ્ક્રીન બંધ” બટન વાપરો.",
+      fa: "اگر صفحه قفل شود، صدا قطع می‌شود. قفل خودکار را در تنظیمات گوشی خاموش کنید و به‌جای دکمهٔ روشن/خاموش از دکمهٔ «خاموش کردن صفحه» در همین صفحه استفاده کنید.",
+      pl: "Gdy ekran się zablokuje, dźwięk ustanie. Wyłącz autoblokadę w ustawieniach telefonu i korzystaj z przycisku „Wyłącz ekran” tutaj, a nie z przycisku zasilania.",
+      uk: "Якщо екран заблокується, звук зникне. Вимкніть автоблокування в налаштуваннях телефона й користуйтеся кнопкою «Вимкнути екран» тут, а не кнопкою живлення.",
+      nl: "Gaat het scherm op slot, dan stopt het geluid. Zet zelfvergrendeling uit in de instellingen van je telefoon en gebruik hier de knop “Scherm uit” in plaats van de aan/uitknop.",
+      pa: "ਸਕਰੀਨ ਲਾਕ ਹੁੰਦੇ ਹੀ ਆਵਾਜ਼ ਬੰਦ ਹੋ ਜਾਂਦੀ ਹੈ। ਫ਼ੋਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਟੋ-ਲਾਕ ਬੰਦ ਕਰੋ ਅਤੇ ਪਾਵਰ ਬਟਨ ਦੀ ਥਾਂ ਇੱਥੋਂ ਦਾ “ਸਕਰੀਨ ਬੰਦ” ਬਟਨ ਵਰਤੋ।",
+      sw: "Skrini ikifungwa, sauti hukatika. Zima kufunga kiotomatiki katika mipangilio ya simu na tumia kitufe cha “Zima skrini” hapa badala ya kitufe cha kuwasha.",
+      ha: "Idan allon ya kulle, sautin zai tsaya. Kashe kullewa ta atomatik a saitunan wayar, sannan ka yi amfani da maɓallin “Kashe allo” a nan maimakon maɓallin wuta.",
+      ro: "Dacă ecranul se blochează, sunetul se oprește. Dezactivează blocarea automată din setările telefonului și folosește butonul „Ecran stins” de aici, nu butonul de pornire.",
+    },
+    pausedByPhone: {
+      en: "Your phone paused this page for {t} — nothing could be heard during that time. Sound is running again.",
+      zh: "手机将本页面暂停了 {t}，这段时间里听不到任何声音。声音已恢复。",
+      hi: "आपके फ़ोन ने यह पेज {t} तक रोक रखा था — उस दौरान कुछ भी सुनाई नहीं दिया। आवाज़ फिर चालू है।",
+      es: "Tu teléfono pausó esta página durante {t}: en ese tiempo no se oyó nada. El sonido vuelve a funcionar.",
+      fr: "Votre téléphone a mis cette page en pause pendant {t} : rien n’était audible pendant ce temps. Le son fonctionne à nouveau.",
+      ar: "أوقف هاتفك هذه الصفحة لمدة {t} — لم يكن يُسمع شيء خلال تلك الفترة. عاد الصوت الآن.",
+      bn: "আপনার ফোন এই পেজটি {t} ধরে থামিয়ে রেখেছিল — সেই সময়ে কিছুই শোনা যায়নি। শব্দ আবার চালু।",
+      pt: "O seu telemóvel pausou esta página durante {t} — nesse tempo não se ouvia nada. O som voltou.",
+      ru: "Телефон приостановил эту страницу на {t} — в это время ничего не было слышно. Звук снова работает.",
+      ur: "آپ کے فون نے یہ صفحہ {t} تک روکے رکھا — اُس دوران کچھ سنائی نہیں دیا۔ آواز دوبارہ چل رہی ہے۔",
+      id: "Ponsel Anda menjeda halaman ini selama {t} — selama itu tidak ada yang terdengar. Suara sudah berjalan lagi.",
+      de: "Ihr Telefon hat diese Seite {t} lang angehalten — in dieser Zeit war nichts zu hören. Der Ton läuft wieder.",
+      ja: "この端末がページを {t} のあいだ停止していました。その間は何も聞こえていません。音は再開しています。",
+      mr: "तुमच्या फोनने हे पेज {t} थांबवले होते — त्या वेळात काहीही ऐकू आले नाही. आवाज पुन्हा सुरू आहे.",
+      te: "మీ ఫోన్ ఈ పేజీని {t} పాటు ఆపివేసింది — ఆ సమయంలో ఏదీ వినిపించలేదు. శబ్దం మళ్ళీ నడుస్తోంది.",
+      tr: "Telefonunuz bu sayfayı {t} boyunca durdurdu — o sürede hiçbir şey duyulmadı. Ses yeniden çalışıyor.",
+      ta: "உங்கள் தொலைபேசி இந்தப் பக்கத்தை {t} நேரம் நிறுத்தி வைத்திருந்தது — அந்த நேரத்தில் எதுவும் கேட்கவில்லை. ஒலி மீண்டும் இயங்குகிறது.",
+      vi: "Điện thoại đã tạm dừng trang này trong {t} — trong khoảng đó không nghe được gì. Âm thanh đã hoạt động lại.",
+      ko: "휴대폰이 이 페이지를 {t} 동안 멈췄습니다. 그 사이에는 아무 소리도 들리지 않았습니다. 소리가 다시 나옵니다.",
+      it: "Il telefono ha messo in pausa questa pagina per {t}: in quel tempo non si sentiva nulla. L’audio è di nuovo attivo.",
+      th: "โทรศัพท์หยุดหน้านี้ไว้ {t} ในช่วงนั้นไม่ได้ยินเสียงใด ๆ ตอนนี้เสียงกลับมาแล้ว",
+      gu: "તમારા ફોને આ પેજ {t} સુધી થંભાવી રાખ્યું — એ સમયે કશું સંભળાયું નહીં. અવાજ ફરી ચાલુ છે.",
+      fa: "گوشی شما این صفحه را {t} متوقف کرده بود — در آن مدت هیچ صدایی شنیده نمی‌شد. صدا دوباره برقرار است.",
+      pl: "Telefon wstrzymał tę stronę na {t} — w tym czasie nic nie było słychać. Dźwięk znów działa.",
+      uk: "Телефон призупинив цю сторінку на {t} — у цей час нічого не було чути. Звук знову працює.",
+      nl: "Je telefoon heeft deze pagina {t} stilgezet — in die tijd was er niets te horen. Het geluid loopt weer.",
+      pa: "ਤੁਹਾਡੇ ਫ਼ੋਨ ਨੇ ਇਹ ਪੰਨਾ {t} ਲਈ ਰੋਕ ਰੱਖਿਆ ਸੀ — ਉਸ ਦੌਰਾਨ ਕੁਝ ਵੀ ਸੁਣਾਈ ਨਹੀਂ ਦਿੱਤਾ। ਆਵਾਜ਼ ਮੁੜ ਚੱਲ ਰਹੀ ਹੈ।",
+      sw: "Simu yako ilisimamisha ukurasa huu kwa {t} — kwa muda huo hakuna kilichosikika. Sauti inafanya kazi tena.",
+      ha: "Wayarka ta dakatar da wannan shafin na {t} — a wannan lokacin ba a ji komai ba. Sauti ya dawo yanzu.",
+      ro: "Telefonul a pus pagina pe pauză timp de {t} — în acel timp nu s-a auzit nimic. Sunetul funcționează din nou.",
+    },
+    pausedByPhoneEvent: {
+      en: "Paused by the phone",
+      zh: "被手机暂停",
+      hi: "फ़ोन ने रोका",
+      es: "Pausado por el teléfono",
+      fr: "Mis en pause par le téléphone",
+      ar: "أوقفه الهاتف",
+      bn: "ফোন থামিয়ে দিয়েছিল",
+      pt: "Pausado pelo telemóvel",
+      ru: "Приостановлено телефоном",
+      ur: "فون نے روک دیا",
+      id: "Dijeda oleh ponsel",
+      de: "Vom Telefon angehalten",
+      ja: "端末により停止",
+      mr: "फोनने थांबवले",
+      te: "ఫోన్ ఆపివేసింది",
+      tr: "Telefon tarafından durduruldu",
+      ta: "தொலைபேசி நிறுத்தியது",
+      vi: "Bị điện thoại tạm dừng",
+      ko: "휴대폰이 멈춤",
+      it: "Messo in pausa dal telefono",
+      th: "ถูกโทรศัพท์หยุดไว้",
+      gu: "ફોને થંભાવ્યું",
+      fa: "توسط گوشی متوقف شد",
+      pl: "Wstrzymane przez telefon",
+      uk: "Призупинено телефоном",
+      nl: "Stilgezet door de telefoon",
+      pa: "ਫ਼ੋਨ ਨੇ ਰੋਕਿਆ",
+      sw: "Imesimamishwa na simu",
+      ha: "Wayar ta dakatar",
+      ro: "Pus pe pauză de telefon",
+    },
+    dismiss: {
+      en: "Dismiss",
+      zh: "知道了",
+      hi: "ठीक है",
+      es: "Entendido",
+      fr: "J’ai compris",
+      ar: "حسنًا",
+      bn: "ঠিক আছে",
+      pt: "Entendido",
+      ru: "Понятно",
+      ur: "ٹھیک ہے",
+      id: "Mengerti",
+      de: "Verstanden",
+      ja: "閉じる",
+      mr: "ठीक आहे",
+      te: "సరే",
+      tr: "Tamam",
+      ta: "சரி",
+      vi: "Đã hiểu",
+      ko: "닫기",
+      it: "Ho capito",
+      th: "รับทราบ",
+      gu: "સમજાયું",
+      fa: "متوجه شدم",
+      pl: "Rozumiem",
+      uk: "Зрозуміло",
+      nl: "Begrepen",
+      pa: "ਸਮਝ ਗਿਆ",
+      sw: "Nimeelewa",
+      ha: "Na gane",
+      ro: "Am înțeles",
+    },
+  };
+  Object.keys(EXTRA3).forEach(function (sleutel) {
+    Object.keys(EXTRA3[sleutel]).forEach(function (code) {
+      if (S[code]) S[code][sleutel] = EXTRA3[sleutel][code];
+    });
   });
 
   const STORE_KEY = 'babyfoon.lang';
@@ -2123,8 +4190,50 @@
     return (lang[key] != null ? lang[key] : (S.en[key] != null ? S.en[key] : key));
   }
 
+  /**
+   * SEO: houd de <head>-metadata in de gekozen taal.
+   *
+   * De app is één meertalige pagina. Voor zoekmachines betekent dat: de
+   * hreflang-varianten (/?lang=nl, /?lang=de, …) moeten elk hun eigen titel,
+   * omschrijving en zelfverwijzende canonical hebben — anders zien ze allemaal
+   * dezelfde Engelse kop en wordt alleen de Engelse variant geïndexeerd.
+   *
+   * Puur cosmetisch voor de app zelf: raakt geen enkele functie of element-ID
+   * en is volledig in try/catch gevat, zodat een ontbrekende tag nooit iets
+   * kan breken.
+   */
+  function syncHeadMeta() {
+    try {
+      const title = t('metaTitle');
+      const desc = t('metaDesc');
+      if (title) document.title = title;
+
+      const setMeta = (sel, value) => {
+        const el = document.head && document.head.querySelector(sel);
+        if (el && value) el.setAttribute('content', value);
+      };
+      setMeta('meta[name="description"]', desc);
+      setMeta('meta[property="og:title"]', title);
+      setMeta('meta[property="og:description"]', desc);
+      setMeta('meta[name="twitter:title"]', title);
+      setMeta('meta[name="twitter:description"]', desc);
+
+      // Zelfverwijzende canonical + og:url per taalvariant. De basis-URL komt
+      // uit de canonical die al in de HTML staat, zodat lokaal draaien niets
+      // verandert aan wat er in productie wordt uitgeleverd.
+      const link = document.head && document.head.querySelector('link[rel="canonical"]');
+      if (link) {
+        const base = link.getAttribute('href').split('?')[0];
+        const href = current === 'en' ? base : base + '?lang=' + current;
+        link.setAttribute('href', href);
+        setMeta('meta[property="og:url"]', href);
+      }
+    } catch (e) { /* noop */ }
+  }
+
   function apply(root) {
     const scope = root || document;
+    syncHeadMeta();
     scope.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = t(el.getAttribute('data-i18n'));
     });
@@ -2133,6 +4242,11 @@
     });
     scope.querySelectorAll('[data-i18n-title]').forEach((el) => {
       el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    });
+    // Voor knoppen waarvan het label op smalle schermen wegvalt: `display:none`
+    // haalt de tekst ook uit de schermlezer, dus die heeft een eigen naam nodig.
+    scope.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
     });
     listeners.forEach((fn) => {
       try { fn(); } catch (e) { /* noop */ }

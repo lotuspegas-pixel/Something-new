@@ -12,7 +12,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -33,7 +33,6 @@ jobs:
           for f in serverless/js/*.js public/js/*.js test/*.js; do
             [ -e "$f" ] && node -c "$f"
           done
-          node --check functions/entitlement-worker.mjs
 
       - name: E2E — server variant
         run: |
@@ -46,3 +45,48 @@ jobs:
 
       - name: E2E — serverless variant (pairing, views, reconnect)
         run: npm run test:serverless
+
+      - name: E2E — tijd tot eerste beeld (snelheidsregressie)
+        run: npm run test:timing
+
+      - name: E2E — oude browsers (API's van Safari 12 gesloopt)
+        run: npm run test:oldbrowser
+
+      - name: E2E — mediaverbinding valt weg terwijl datakanaal blijft
+        run: npm run test:media
+
+      - name: E2E — auditbevindingen (gedrag en weergave)
+        run: npm run test:audit
+
+      - name: E2E — scherm uit, achtergrond en onderbroken sporen
+        run: npm run test:background
+
+      - name: E2E — stabiliteit (koppelserver weg, trage herverbinding, wake-storm)
+        run: npm run test:stability
+
+      - name: E2E — donatieknop (Stripe-link, 30 talen, geen overloop)
+        run: npm run test:donate
+
+      - name: E2E — veiligheidsartikel (alle 30 talen leesbaar)
+        run: npm run test:securitypage
+
+      - name: E2E — gidsartikel (alle 30 talen leesbaar)
+        run: npm run test:blogpage
+
+      - name: E2E — WebKit/iOS-gedrag (Safari op iPhone en iPad)
+        run: npm run test:webkit
+
+      - name: E2E — Android-gedrag (Chrome, Samsung Internet, WebView)
+        run: npm run test:android
+
+      - name: Vertalingen compleet in alle 30 talen
+        run: npm run test:i18n
+
+      # Demo-omstandigheden: koppelserver weg/traag, TURN onbereikbaar, verse
+      # toestemmingen, trage 4G, onbeveiligde oorsprong. Deze stap faalt alleen
+      # op een REGRESSIE of een kapotte meting; de al opgeschreven bevindingen
+      # (kenmerk B1…B12, zie de kop van test/e2e-demo.js) worden gemeld maar
+      # laten de bouw slagen. Springt een van die controles op groen, dan staat
+      # er "OPGELOST" in de uitvoer en mag het kenmerk weg.
+      - name: E2E — demo-omstandigheden (koppelserver, TURN, toestemmingen, 4G)
+        run: npm run test:demo
