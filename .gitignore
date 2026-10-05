@@ -2,3 +2,14 @@ __pycache__/
 *.pyc
 *.pyo
 .cosmos_universe.json
+
+# Xcode / iOS (Delayed Film)
+# The .xcodeproj is generated from project.yml via XcodeGen — not tracked.
+*.xcodeproj/
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+.swiftpm/
+*.moved-aside
+.DS_Store

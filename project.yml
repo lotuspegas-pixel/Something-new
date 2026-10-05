@@ -1,0 +1,60 @@
+# XcodeGen spec for Delayed Film.
+#
+# This repo stores Swift sources only (no checked-in .xcodeproj). On a Mac with
+# XcodeGen installed (`brew install xcodegen`), run `xcodegen generate` from the
+# repo root to produce DelayedFilm.xcodeproj, then open and build in Xcode.
+#
+# Why no .xcodeproj in git? The project file is machine-generated and noisy in
+# diffs; regenerating from this declarative spec keeps the structure auditable.
+
+name: DelayedFilm
+options:
+  bundleIdPrefix: com.delayedfilm
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "" # set your team to run on device
+
+targets:
+  DelayedFilm:
+    type: application
+    platform: iOS
+    sources:
+      - path: DelayedFilm
+        excludes:
+          - "Tests/**"
+    info:
+      path: DelayedFilm/Resources/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.delayedfilm.app
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: DelayedFilm/Resources/Info.plist
+        TARGETED_DEVICE_FAMILY: "1" # iPhone
+
+  DelayedFilmTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DelayedFilm/Tests
+    dependencies:
+      - target: DelayedFilm
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.delayedfilm.tests
+
+schemes:
+  DelayedFilm:
+    build:
+      targets:
+        DelayedFilm: all
+        DelayedFilmTests: [test]
+    test:
+      targets:
+        - DelayedFilmTests
