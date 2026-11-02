@@ -187,7 +187,9 @@ async function metApache(bin) {
   check('D5: JSON-LD in about.html is aanwezig en geldige JSON',
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].length > 0 &&
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].every((m) => { try { JSON.parse(m[1]); return true; } catch (e) { return false; } }));
-  const i18n = lees('js/i18n.js');
+  // In de bron staan de vertalingen in js/i18n.js; in de uitgeleverde dist/ is dat
+  // bestand in index.html ingesloten en bestaat die map niet.
+  const i18n = lees('js/i18n.js') || index;
   check('D6: voettekstlink heeft een vertaling voor alle 30 talen', (i18n.match(/const OVER = \{[\s\S]*?\};/) || [''])[0].split(/\w+:\s*'/).length - 1 === 30);
 
   // ========================================================== E. Markdown
