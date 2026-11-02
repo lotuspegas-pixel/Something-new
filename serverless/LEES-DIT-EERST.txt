@@ -20,9 +20,10 @@ Na het uitpakken ziet de map er zo uit:
   index.html          <- de complete app (alles zit hierin)
   .htaccess           <- serverinstellingen, zie hieronder
   contact-send.php    <- verstuurt het contactformulier
-  privacy.html, terms.html, contact.html,
-  accessibility.html, how-it-works.html, blog.html
+  privacy.html, terms.html, contact.html, about.html,
+  accessibility.html, how-it-works.html, blog.html, security.html
   robots.txt, sitemap.xml, llms.txt, manifest.webmanifest
+  index.md            <- korte tekstversie van de homepage voor AI-assistenten
   favicon-32.png, icon-192.png, icon-512.png, apple-touch-icon.png,
   og-image.jpg
   assets/             <- afbeeldingen, merkbestanden, stylesheet
@@ -68,6 +69,15 @@ CONTROLEREN OF ALLES WERKT
 3. Open https://jouwdomein.nl op telefoon 2, klik "Connect as parent"
    en scan de QR of typ de code.
 4. Je ziet en hoort nu live beeld en geluid.
+5. Optioneel: controleer de tekstversie voor AI-assistenten. Dat werkt
+   alleen als je host de .htaccess uitvoert (bij Hostinger hoort dat zo):
+
+     curl -sI -H "Accept: text/markdown" https://jouwdomein.nl/
+
+   Je ziet dan "content-type: text/markdown". Zonder die header krijg je
+   gewoon de HTML. Staat er "text/html", dan negeert de server de
+   .htaccess; de site werkt dan nog steeds, alleen die tekstversie niet
+   (die staat ook los op https://jouwdomein.nl/index.md).
 
 Test met twee APARTE apparaten. Twee tabbladen op hetzelfde toestel
 delen dezelfde camera en geven een misleidend resultaat.

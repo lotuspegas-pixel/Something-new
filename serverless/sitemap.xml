@@ -1141,6 +1141,12 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://babyphone.online/about.html</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://babyphone.online/security.html</loc>
     <lastmod>2026-08-25</lastmod>
     <changefreq>monthly</changefreq>

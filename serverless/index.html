@@ -28,6 +28,8 @@
     <meta name="twitter:image" content="https://babyphone.online/og-image.jpg" />
     <title>Free Baby Monitor App Online — BabyPhone.online</title>
     <link rel="canonical" href="https://babyphone.online/" />
+    <link rel="alternate" type="text/markdown" href="https://babyphone.online/index.md" title="BabyPhone.online as Markdown" />
+    <link rel="describedby" type="text/plain" href="https://babyphone.online/llms.txt" title="llms.txt" />
     <link rel="alternate" hreflang="en" href="https://babyphone.online/" />
     <link rel="alternate" hreflang="zh" href="https://babyphone.online/?lang=zh" />
     <link rel="alternate" hreflang="hi" href="https://babyphone.online/?lang=hi" />
@@ -382,6 +384,7 @@
           <p class="lp-foot-dis" data-i18n="footDisclaimer">An aid, not a replacement for in-person supervision of your baby.</p>
           <nav class="lp-foot-links" aria-label="Legal">
             <a href="how-it-works.html" data-i18n="howTitle">How it works</a>
+            <a href="about.html" data-i18n="footAbout">About</a>
             <a href="blog.html" data-i18n="footGuide">Guide</a>
             <a href="security.html" data-i18n="footSecurity">Security</a>
             <a href="privacy.html" data-i18n="navPrivacy">Privacy</a>
@@ -398,7 +401,7 @@
     <section id="screenPairBaby" class="pair-wrap hidden">
       <div class="pair-head baby">
         <div class="unit-badge cam"><img src="assets/mark.png" alt="" width="589" height="700" /></div>
-        <h1 data-i18n="pairBabyTitle">Baby unit</h1>
+        <h2 data-i18n="pairBabyTitle">Baby unit</h2>
         <div class="unit-sub" data-i18n="pairBabySub">Show this code (or QR) to your own phone to connect.</div>
       </div>
       <div class="pair-box">
@@ -428,7 +431,7 @@
     <section id="screenPairParent" class="pair-wrap hidden">
       <div class="pair-head parent">
         <div class="unit-badge cam parent"><img src="assets/mark.png" alt="" width="589" height="700" /></div>
-        <h1 data-i18n="pairParentTitle">Parent unit</h1>
+        <h2 data-i18n="pairParentTitle">Parent unit</h2>
         <div class="unit-sub" data-i18n="pairParentSub">Enter the code from the baby unit, or scan its QR.</div>
       </div>
       <div class="pair-box">
@@ -510,7 +513,7 @@
           <div class="dash-titlerow">
             <div class="dash-title">
               <span class="dash-title-ic cam"><img src="assets/mark.png" alt="" width="589" height="700" /></span>
-              <div><h1 class="pu" data-i18n="parentUnit">Parent Unit</h1><small data-i18n="monitoring">Monitoring</small></div>
+              <div><h2 class="pu" data-i18n="parentUnit">Parent Unit</h2><small data-i18n="monitoring">Monitoring</small></div>
             </div>
             <div class="dash-status">
               <div class="dsb-item conn"><span class="dot off" id="connDot"></span><span id="connText" data-i18n="connecting">Connecting…</span></div>
@@ -718,7 +721,7 @@
         <div class="dash-titlerow">
           <div class="dash-title">
             <span class="dash-title-ic baby cam"><img src="assets/mark.png" alt="" width="589" height="700" /></span>
-            <div><h1 class="pu" data-i18n="babyUnit">Baby Unit</h1><small><span data-i18n="room">Room</span> <b id="bRoomInline">—</b></small></div>
+            <div><h2 class="pu" data-i18n="babyUnit">Baby Unit</h2><small><span data-i18n="room">Room</span> <b id="bRoomInline">—</b></small></div>
           </div>
           <button class="btn-stop" id="bStop" type="button"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="#fff"/></svg><span data-i18n="stop">Stop</span></button>
         </div>
@@ -810,11 +813,11 @@
     <div class="browser-block hidden" id="browserBlock" role="alertdialog" aria-live="assertive">
       <div class="browser-block-inner">
         <div id="blockUnsupported">
-          <h1 data-i18n="unsupportedTitle">This browser can't run BabyPhone.online</h1>
+          <h2 data-i18n="unsupportedTitle">This browser can't run BabyPhone.online</h2>
           <p data-i18n="unsupportedBody">This page needs camera, microphone and video-call support that this browser doesn't have. Please open babyphone.online in a recent version of Chrome, Safari, Firefox or Edge.</p>
         </div>
         <div id="blockInsecure" class="hidden">
-          <h1 data-i18n="insecureTitle">Camera and microphone need a secure address</h1>
+          <h2 data-i18n="insecureTitle">Camera and microphone need a secure address</h2>
           <p data-i18n="insecureBody">Your browser is fine. This page was opened over plain http://, and browsers only release the camera and microphone on https:// or on localhost. Open the same page over https:// and everything works.</p>
           <p class="insecure-where"><span data-i18n="insecureCurrentLabel">Opened at</span> <code id="insecureCurrent"></code></p>
           <p><a class="btn" id="insecureLink" href="https://babyphone.online/" rel="noopener" data-i18n="insecureOpenHttps">Open over https://</a></p>

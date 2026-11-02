@@ -9,7 +9,7 @@
 > (German/French), vigilabebés (Spanish), babá eletrônica (Portuguese),
 > radionyanya/радионяня (Russian), baby monitor (English/Italian).
 
-Last updated: 2026-07-29. Operator: Arcana Synthetica, Harlingen, Netherlands.
+Last updated: 2026-11-02. Operator: Arcana Synthetica, Harlingen, Netherlands.
 Contact: info@babyphone.online.
 
 ## How it works
@@ -114,17 +114,22 @@ cite:
   every feature, with nothing held back behind a payment.
 - Works on any phone, tablet or laptop with a reasonably current browser
   (Chrome, Safari, Firefox, Edge), including older devices.
-- The guide is available in English, Dutch, German, French, Spanish,
-  Portuguese and Italian (e.g. https://babyphone.online/blog.html?lang=de).
+- The guide is available in all 30 interface languages
+  (e.g. https://babyphone.online/blog.html?lang=de).
 
 ## Key pages
 
-- https://babyphone.online/ — the app (baby unit / parent unit), 30 languages
-  via ?lang= (for example https://babyphone.online/?lang=nl)
-- https://babyphone.online/blog.html — guide: two phones as a free baby monitor
-- https://babyphone.online/how-it-works.html — setup guide, how a wifi baby
-  monitor works, app-versus-device comparison and FAQ
-- https://babyphone.online/privacy.html — privacy policy
-- https://babyphone.online/terms.html — terms of service
-- https://babyphone.online/accessibility.html — accessibility statement
-- https://babyphone.online/contact.html — operator & contact information
+- [BabyPhone.online app](https://babyphone.online/): the app itself (baby unit / parent unit), in 30 languages via ?lang= (for example [Dutch](https://babyphone.online/?lang=nl))
+- [Homepage as Markdown](https://babyphone.online/index.md): a short plain-text version of the homepage for agents; also returned for `Accept: text/markdown`
+- [About](https://babyphone.online/about.html): what BabyPhone.online is, who runs it, and what it will and will not do
+- [How it works](https://babyphone.online/how-it-works.html): setup guide, how a Wi-Fi baby monitor works, app-versus-device comparison and FAQ
+- [Guide: two phones as a free baby monitor](https://babyphone.online/blog.html): what it can do, travel use, honest comparison with a dedicated monitor
+- [Security](https://babyphone.online/security.html): how the connection is protected and who can get in
+- [Privacy policy](https://babyphone.online/privacy.html): what is and is not stored (nothing, no cookies)
+- [Terms of service](https://babyphone.online/terms.html)
+- [Accessibility statement](https://babyphone.online/accessibility.html)
+- [Contact and operator information](https://babyphone.online/contact.html): Arcana Synthetica, Harlingen, Netherlands; info@babyphone.online
+
+## Optional
+
+- [Sitemap](https://babyphone.online/sitemap.xml): every page, with its language versions

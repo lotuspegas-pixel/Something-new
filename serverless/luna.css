@@ -1041,7 +1041,8 @@ button {
   font-size: 26px;
   box-shadow: var(--raised);
 }
-.pair-head h1 { font: 700 22px 'Quicksand', sans-serif; margin: 0; }
+.pair-head h1,
+.pair-head h2 { font: 700 22px 'Quicksand', sans-serif; margin: 0; }
 
 .steps {
   list-style: none;
@@ -1186,7 +1187,8 @@ button {
   border-radius: 20px;
   padding: 32px 28px;
 }
-.browser-block h1 {
+.browser-block h1,
+.browser-block h2 {
   font: 700 22px 'Quicksand', sans-serif;
   color: #EDEFF4;
   margin: 0 0 12px;
@@ -1451,7 +1453,8 @@ textarea.code:focus { outline: none; }
 .pair-head.parent .unit-badge { background: linear-gradient(150deg, #8A87F0, var(--accent)); }
 .pair-head .unit-badge.cam { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.09); padding: 7px; }
 .pair-head .unit-badge.cam img { width: auto; height: 40px; display: block; filter: drop-shadow(0 7px 12px rgba(0,0,0,.45)); }
-.pair-head h1 { font: 700 22px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
+.pair-head h1,
+.pair-head h2 { font: 700 22px 'Quicksand', sans-serif; color: var(--text); margin: 0; }
 .pair-head .unit-sub { color: var(--muted); font-size: 13.5px; font-weight: 600; max-width: 300px; }
 .waiting-pill {
   display: inline-flex; align-items: center; gap: 9px; margin: 4px auto 0;
@@ -2019,6 +2022,7 @@ body:not(.app-mode),
    anders valt donkere tekst weg tegen een donkere achtergrond. */
 .pair-wrap { color: var(--brand-navy); }
 .pair-head h1,
+.pair-head h2,
 .bigcode,
 .waiting-pill { color: var(--brand-navy); }
 .bigcode { color: var(--brand-blue); }
@@ -2142,7 +2146,8 @@ body:not(.app-mode) { color: var(--brand-navy); }
 }
 
 /* scherm voor browsers zonder WebRTC */
-.browser-block h1 { color: var(--brand-navy); }
+.browser-block h1,
+.browser-block h2 { color: var(--brand-navy); }
 .browser-block p { color: var(--brand-muted); }
 .browser-block .insecure-where code { color: var(--brand-navy); }
 

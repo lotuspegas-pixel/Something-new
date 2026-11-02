@@ -587,6 +587,7 @@ body.app-mode {
 }
 
 .dash-title h1,
+.dash-title h2,
 .dash-title small b,
 .bstat b,
 .bcard-h span,
@@ -595,6 +596,7 @@ body.app-mode {
 .dpanel-h,
 .dpanel-h2,
 body.app-mode .pair-head h1,
+body.app-mode .pair-head h2,
 body.app-mode .pair-box h4 {
   color: var(--bp-navy) !important;
 }

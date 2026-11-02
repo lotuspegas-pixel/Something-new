@@ -5899,6 +5899,102 @@
   });
   window.addEventListener('focus', () => { hervatWeergave(); checkParentHealthOnResume(); checkBabyHealthOnResume(); });
 
+  // ------------------------------------------------------------------ WebMCP
+  // Browsers met een ingebouwde assistent (navigator.modelContext) kunnen hier
+  // lezen wat deze pagina aanbiedt. Wij bieden bewust een KLEINE, ONSCHADELIJKE
+  // set aan: lezen wat de app is, de taal wisselen, een uitlegpagina openen en
+  // het scherm "Ouderunit" tonen.
+  //
+  // Wat hier met opzet NIET in zit, en dat is een veiligheidskeuze:
+  //  • de babyunit starten. Dat zet camera en microfoon aan; die beslissing
+  //    hoort bij de persoon bij het toestel. Heeft de browser de toestemming
+  //    voor deze site onthouden, dan zou er geen enkel venster meer tussen
+  //    zitten.
+  //  • een kamercode of toegangstoken teruggeven of invullen. Wie de code niet
+  //    heeft mag niet meekijken of meeluisteren, en een assistent die door een
+  //    andere pagina is misleid mag nooit een code kunnen doorgeven.
+  // Er is geen opslag en geen netwerkverkeer bijgekomen: dit zijn vier functies
+  // die een knop aanroepen die er al was.
+  //
+  // Wordt niet geregistreerd als de browser dit niet kent (vrijwel alle
+  // browsers nu): dan is dit blok een no-op.
+  function registreerWebMcp() {
+    const mc = navigator.modelContext;
+    if (!mc || typeof mc.registerTool !== 'function') return;
+    const tekst = (t) => ({ content: [{ type: 'text', text: t }] });
+    const SITES = {
+      'how-it-works': 'how-it-works.html', about: 'about.html', guide: 'blog.html',
+      security: 'security.html', privacy: 'privacy.html', terms: 'terms.html',
+      accessibility: 'accessibility.html', contact: 'contact.html',
+    };
+    const talen = (I18n.LANGS || []).map((l) => l.code);
+    const bezig = () => !!role; // er loopt (of start) een babyunit of ouderunit
+    const tools = [
+      {
+        name: 'get_app_info',
+        description: 'Explain what BabyPhone.online is and how to use it: a free baby monitor that runs in the browser, how to pair the baby unit and the parent unit, what it needs, what is and is not stored, and its limits. Read-only.',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        annotations: { readOnlyHint: true },
+        execute: async () => tekst(
+          'BabyPhone.online is a free baby monitor that runs in the browser. Two devices the person already owns become the baby unit (stays with the baby, shows a 6-character room code and a QR code) and the parent unit (enters the code or scans the QR code to watch and listen). ' +
+          'No app, no account, no cookies; video and sound go directly between the two devices, encrypted, and are not stored on a server. A device that types the room code by hand must be approved on the baby unit\'s own screen. ' +
+          'Needs: two devices with a current browser and internet, a camera and microphone on the baby device, and the page opened over https. Free in full, in 30 languages (current: ' + I18n.current + '). ' +
+          'Limits: an aid, not a replacement for supervising a baby in person; on iPhone and iPad the system pauses the browser when the device is locked, so use the in-app "Screen off" button. ' +
+          'This tool set cannot start the camera or microphone and never reveals room codes; those need the person at the device. More: https://babyphone.online/llms.txt'
+        ),
+      },
+      {
+        name: 'set_language',
+        description: 'Change the language of the BabyPhone.online interface. The choice is remembered on this device only. Works while a session is running; it does not interrupt it.',
+        inputSchema: {
+          type: 'object',
+          properties: { language: { type: 'string', enum: talen, description: 'Language code, for example "nl", "de", "es", "ar".' } },
+          required: ['language'], additionalProperties: false,
+        },
+        execute: async (args) => {
+          const code = args && args.language;
+          if (talen.indexOf(code) < 0) return tekst('Unknown language "' + code + '". Supported codes: ' + talen.join(', ') + '.');
+          I18n.setLang(code);
+          return tekst('Language is now "' + code + '".');
+        },
+      },
+      {
+        name: 'open_info_page',
+        description: 'Open one of the information pages of BabyPhone.online in this tab: how-it-works, about, guide, security, privacy, terms, accessibility or contact. Refuses while a baby or parent unit is active, because leaving the page would stop the monitoring.',
+        inputSchema: {
+          type: 'object',
+          properties: { page: { type: 'string', enum: Object.keys(SITES) } },
+          required: ['page'], additionalProperties: false,
+        },
+        execute: async (args) => {
+          const doel = SITES[args && args.page];
+          if (!doel) return tekst('Unknown page. Choose one of: ' + Object.keys(SITES).join(', ') + '.');
+          if (bezig()) return tekst('A baby or parent unit is active. Opening another page would stop the monitoring, so it was not opened.');
+          const taal = (doel === 'blog.html' || doel === 'security.html') ? '?lang=' + encodeURIComponent(I18n.current) : '';
+          location.assign(doel + taal);
+          return tekst('Opening ' + doel + '.');
+        },
+      },
+      {
+        name: 'show_parent_screen',
+        description: 'Show the "Parent unit" screen, where the person types the room code shown on the baby unit or scans its QR code. Does not connect to anything, does not use the camera and cannot enter a code: the person does that. Only works from the start screen.',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+        execute: async () => {
+          if (bezig()) return tekst('A unit is already active; nothing was changed.');
+          const knop = $('pickParent');
+          if (!knop) return tekst('The start screen is not showing; nothing was changed.');
+          knop.click();
+          return tekst('The Parent unit screen is showing. The person enters the room code from the baby unit, or scans its QR code.');
+        },
+      },
+    ];
+    tools.forEach((tool) => {
+      try { mc.registerTool(tool); }
+      catch (e) { console.warn('WebMCP: tool "' + tool.name + '" not registered: ' + (e && e.message ? e.message : e)); }
+    });
+  }
+  registreerWebMcp();
+
   // Pagina wordt opgeborgen: camera, microfoon en verbinding netjes vrijgeven.
   //
   // LET OP HET ONDERSCHEID. `shuttingDown` zet élk herstelpad in dit bestand

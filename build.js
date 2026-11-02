@@ -19,32 +19,90 @@ const path = require('path');
 const SL = path.join(__dirname, 'serverless');
 const OUT = path.resolve(process.argv[2] || path.join(__dirname, 'dist'));
 
+let acorn = null;
+try { acorn = require('acorn'); } catch (e) { /* hieronder afgehandeld */ }
+if (!acorn) {
+  console.error('acorn ontbreekt; kan de JS niet verwerken en de browsercompatibiliteit niet controleren.');
+  console.error('Draai eerst: npm install');
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
+// Commentaar eruit in wat we UITLEVEREN. De broncode in serverless/ blijft
+// zoals hij is; alleen de gebouwde index.html wordt kleiner.
+//
+// Waarom: een kwart van app.js en van de CSS is uitleg voor ons, en die gaat
+// nu bij elk bezoek mee over de lijn. Voor een bezoeker maakt het niets uit,
+// maar een AI-assistent die de pagina als tekst leest betaalt voor elk teken
+// (de pagina is ~1,7 miljoen tekens, waarvan nog geen 6.000 zichtbare tekst).
+//
+// Bewust met de parser en niet met een zoekpatroon: een `//` in een
+// tekenreeks, een sjabloon of een reguliere expressie is geen commentaar, en
+// alleen een parser weet dat. Commentaar dat met `/*!` begint of @license of
+// @preserve noemt blijft staan.
+// ---------------------------------------------------------------------------
+function stripJs(src) {
+  const comments = [];
+  acorn.parse(src, { ecmaVersion: 2018, onComment: (block, text, start, end) => comments.push({ block, text, start, end }) });
+  let out = '', pos = 0;
+  for (const c of comments) {
+    if (c.block && /^!|@license|@preserve/.test(c.text)) continue;
+    const ls = src.lastIndexOf('\n', c.start - 1) + 1;
+    let nl = src.indexOf('\n', c.end); if (nl < 0) nl = src.length;
+    const heleRegel = /^[ \t]*$/.test(src.slice(ls, c.start)) && /^[ \t\r]*$/.test(src.slice(c.end, nl));
+    if (heleRegel && ls >= pos) {
+      out += src.slice(pos, ls);
+      pos = Math.min(nl + 1, src.length);
+    } else {
+      out += src.slice(pos, c.start);
+      pos = c.end;
+      // Een blokcommentaar met een regeleinde telt voor JavaScript als regeleinde
+      // (`return /*\n*/ x`); een spatie zou dat veranderen.
+      if (c.block) out += /\n/.test(src.slice(c.start, c.end)) ? '\n' : ' ';
+      else out = out.replace(/[ \t]+$/, '');
+    }
+  }
+  return out + src.slice(pos);
+}
+function stripCss(src) {
+  return src.replace(/\/\*(?!!)[\s\S]*?\*\//g, '').replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, '\n\n');
+}
+function stripHtml(src) {
+  // Scripts en stijlen blijven onaangeroerd; alleen losse HTML-commentaar gaat eruit.
+  return src.replace(/(<script\b[\s\S]*?<\/script>)|(<style\b[\s\S]*?<\/style>)|<!--(?!\[if)[\s\S]*?-->/gi,
+    (m, sc, st) => sc || st || '');
+}
+const eigenJs = (f) => f.indexOf('vendor/') !== 0;
+
 // 1. CSS (basis + dashboards) met lettertypes als base64 data-URI's
 const inlineFont = (file) =>
   `url(data:font/woff2;base64,${fs.readFileSync(path.join(SL, 'fonts', file)).toString('base64')})`;
 
 const cssFiles = ['luna.css', 'dash.css'];
 const css = cssFiles.map((f) =>
-  fs.readFileSync(path.join(SL, f), 'utf8')
+  stripCss(fs.readFileSync(path.join(SL, f), 'utf8'))
     .replace(/url\(['"]?fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
 ).join('\n');
 
 // brand-theme.css staat in assets/, dus zijn url()'s zijn relatief aan die map:
 // ../fonts/... wordt ingesloten, brand/... wordt herschreven naar assets/brand/...
-const brandCss = fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8')
+const brandCss = stripCss(fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8'))
   .replace(/url\(['"]?\.\.\/fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
   .replace(/url\(['"]?(brand\/[^'")]+)['"]?\)/g, (m, p) => `url("assets/${p}")`);
 
 // 2. Alle JS inline, in de volgorde van index.html
 const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
   'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/app.js'];
+const uitgeleverd = {};   // bestand -> de JS-tekst die echt in index.html komt
 const inlineScripts = scripts.map((s) => {
-  const code = fs.readFileSync(path.join(SL, s), 'utf8').replace(/<\/script/gi, '<\\/script');
+  const bron = fs.readFileSync(path.join(SL, s), 'utf8');
+  uitgeleverd[s] = eigenJs(s) ? stripJs(bron) : bron;
+  const code = uitgeleverd[s].replace(/<\/script/gi, '<\\/script');
   return '<script>\n' + code + '\n</script>';
 }).join('\n');
 
 // 3. index.html samenstellen (functie-replacements zodat $ letterlijk blijft)
-let html = fs.readFileSync(path.join(SL, 'index.html'), 'utf8');
+let html = stripHtml(fs.readFileSync(path.join(SL, 'index.html'), 'utf8'));
 html = html.replace(
   /<link rel="stylesheet" href="luna\.css"[^>]*>\s*<link rel="stylesheet" href="dash\.css"[^>]*>\s*<link rel="stylesheet" href="assets\/brand-theme\.css"[^>]*>/,
   () => '<style>\n' + css + '\n' + brandCss + '\n</style>'
@@ -61,7 +119,7 @@ fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 const copies = [
   'privacy.html', 'terms.html', 'contact.html', 'accessibility.html',
-  'how-it-works.html', 'blog.html', 'security.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'manifest.webmanifest',
+  'how-it-works.html', 'blog.html', 'security.html', 'about.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'index.md', 'manifest.webmanifest',
   'favicon-32.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-image.jpg',
   '.htaccess', 'LEES-DIT-EERST.txt', 'contact-send.php',
   // app.js haalt dit bij élke paginalading op; zonder bestand gaf dat een 404
@@ -102,16 +160,10 @@ console.log('  externe script/style-verwijzingen: GEEN ✓');
 // `static NOTE = {}` in lullaby.js. Een eerdere controle met zoekpatronen
 // miste dat tweede geval volledig — daarom staat hier nu een echte parser.
 {
-  let acorn = null;
-  try { acorn = require('acorn'); } catch (e) { /* hieronder afgehandeld */ }
-  if (!acorn) {
-    console.error('acorn ontbreekt; kan de browsercompatibiliteit niet controleren.');
-    console.error('Draai eerst: npm install');
-    process.exit(1);
-  }
   const stuk = [];
   for (const f of scripts) {
-    const src = fs.readFileSync(path.join(SL, f), 'utf8');
+    // Wat hier gekeurd wordt is de tekst die echt in index.html terechtkomt.
+    const src = uitgeleverd[f];
     try {
       acorn.parse(src, { ecmaVersion: 2018 });
     } catch (e) {
@@ -128,3 +180,23 @@ console.log('  externe script/style-verwijzingen: GEEN ✓');
   console.log('  JS leesbaar voor Safari 12 (ES2018, ' + scripts.length + ' bestanden): JA ✓');
 }
 
+// Sanity: het weghalen van commentaar mag het programma niet veranderen. De
+// syntaxisboom (zonder posities) van het uitgeleverde bestand moet gelijk zijn
+// aan die van de bron. Dit is geen steekproef: het is een bewijs per bestand.
+{
+  const boom = (src) => JSON.stringify(acorn.parse(src, { ecmaVersion: 2018 }),
+    (k, v) => (k === 'start' || k === 'end' ? undefined : v));
+  const anders = [];
+  let voor = 0, na = 0;
+  for (const f of scripts.filter(eigenJs)) {
+    const bron = fs.readFileSync(path.join(SL, f), 'utf8');
+    voor += bron.length; na += uitgeleverd[f].length;
+    if (boom(bron) !== boom(uitgeleverd[f])) anders.push(f);
+  }
+  if (anders.length) {
+    console.error('Het weghalen van commentaar heeft de code veranderd in: ' + anders.join(', '));
+    process.exit(1);
+  }
+  console.log('  commentaar eruit: eigen JS ' + Math.round(voor / 1024) + ' KB → ' + Math.round(na / 1024) +
+    ' KB, syntaxisboom identiek ✓');
+}

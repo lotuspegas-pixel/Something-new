@@ -3656,6 +3656,21 @@
     if (S[code]) S[code].footSecurity = VEILIGHEID[code];
   });
 
+  // Voettekstlink naar about.html. Staat er om twee redenen: bezoekers die
+  // willen weten wie er achter een gratis babyfoon zit, en AI-assistenten die
+  // een bedrijf willen kunnen herkennen aan een pagina "over ons".
+  const OVER = {
+    en: 'About', zh: '关于我们', hi: 'हमारे बारे में', es: 'Acerca de', fr: 'À propos',
+    ar: 'من نحن', bn: 'আমাদের সম্পর্কে', pt: 'Sobre', ru: 'О нас', ur: 'ہمارے بارے میں',
+    id: 'Tentang', de: 'Über uns', ja: '概要', mr: 'आमच्याबद्दल', te: 'మా గురించి',
+    tr: 'Hakkında', ta: 'எங்களைப் பற்றி', vi: 'Giới thiệu', ko: '소개', it: 'Chi siamo',
+    th: 'เกี่ยวกับเรา', gu: 'અમારા વિશે', fa: 'درباره ما', pl: 'O nas', uk: 'Про нас',
+    nl: 'Over ons', pa: 'ਸਾਡੇ ਬਾਰੇ', sw: 'Kuhusu sisi', ha: 'Game da mu', ro: 'Despre noi',
+  };
+  Object.keys(OVER).forEach(function (code) {
+    if (S[code]) S[code].footAbout = OVER[code];
+  });
+
   // ------------------------------------------------------------------
   // Meldingen bij functies die op Android een eigen weg gaan. Ze horen bij
   // reparaties waarbij een fout eerder stil verdween: een zaklamp die niet

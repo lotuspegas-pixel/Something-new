@@ -32,7 +32,8 @@ body.app-mode {
 .dash-title-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(232, 130, 94, 0.14); color: var(--d-accent); display: grid; place-items: center; flex: 0 0 auto; }
 .dash-title-ic.baby { background: rgba(232, 130, 94, 0.14); }
 .dash-title-ic.cam img { width: auto; height: 28px; display: block; filter: drop-shadow(0 4px 7px rgba(0,0,0,.4)); }
-.dash-title h1 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0; }
+.dash-title h1,
+.dash-title h2 { font: 700 19px 'Quicksand', sans-serif; color: #fff; margin: 0; }
 .dash-title .tld { color: var(--d-accent); font-weight: 600; }
 .dash-title small { color: var(--d-muted); font-size: 12.5px; font-weight: 700; }
 .dash-title small b { color: var(--d-text); }
@@ -177,7 +178,8 @@ button.btgl:hover .btgl-arrow { color: var(--d-text); }
 /* -------- dark pairing screens (consistent met de dashboards) -------- */
 body.app-mode .pair-wrap { color: var(--d-text, #EDEFF4); }
 body.app-mode .pair-box { background: #141D2E; border: 1px solid rgba(255,255,255,0.07); box-shadow: none; }
-body.app-mode .pair-head h1 { color: #fff; }
+body.app-mode .pair-head h1,
+body.app-mode .pair-head h2 { color: #fff; }
 body.app-mode .pair-head .unit-sub { color: #8C95A8; }
 body.app-mode .pair-box h4 { color: #EDEFF4; }
 body.app-mode .bigcode { background: #1A2438; color: #E8825E; box-shadow: none; border: 1px solid rgba(255,255,255,0.07); }
@@ -222,7 +224,8 @@ body.app-mode .connecting-row { color: #8C95A8; }
 .dash { padding-top: 8px; }
 .dash-side { padding-top: 12px; }
 .dash-titlerow { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-.dash-title h1.pu { font: 700 22px 'Quicksand', sans-serif; color: #fff; margin: 0; }
+.dash-title h1.pu,
+.dash-title h2.pu { font: 700 22px 'Quicksand', sans-serif; color: #fff; margin: 0; }
 .dash-status { display: flex; align-items: center; gap: 10px; background: #141D2E; border: 1px solid rgba(255,255,255,.07); border-radius: 14px; padding: 8px 12px; flex-wrap: wrap; }
 .dash-status .dsb-item { font-size: 12.5px; }
 .dash-status .dsb-item + .dsb-item { border-left: 1px solid rgba(255,255,255,.07); padding-left: 12px; }
@@ -451,7 +454,8 @@ body.app-mode {
   --d-accent2: var(--brand-blue-hover);
   --d-ok: #2FB37A;
 }
-.dash-title h1 { color: var(--brand-navy); }
+.dash-title h1,
+.dash-title h2 { color: var(--brand-navy); }
 .dash-title .tld { color: var(--brand-pink); }
 .dash-logo { background: var(--brand-blue); }
 
@@ -489,12 +493,14 @@ input[type="range"] { accent-color: var(--brand-blue); }
 
 /* resterende vaste witte teksten die nu op licht glas staan */
 .dash-title h1.pu,
+.dash-title h2.pu,
 .dash-brand,
 .statcard b,
 .bstat b,
 .bcard-h span,
 .btile b,
-body.app-mode .pair-head h1 { color: var(--brand-navy); }
+body.app-mode .pair-head h1,
+body.app-mode .pair-head h2 { color: var(--brand-navy); }
 button.btgl:hover .btgl-ic { color: var(--brand-blue); }
 .dnav:hover { color: var(--brand-blue); background: rgba(47, 143, 240, 0.08); }
 body.app-mode .bigcode-input {
