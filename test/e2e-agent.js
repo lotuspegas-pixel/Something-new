@@ -217,7 +217,12 @@ async function metApache(bin) {
   check('E6: .htaccess serveert index.md bij Accept: text/markdown',
     /RewriteCond %\{HTTP:Accept\} text\/markdown/.test(ht) && /RewriteRule \^\(\?:index\\\.html\)\?\$ index\.md \[L\]/.test(ht));
   check('E7: .htaccess zet een Link-header met alternate en describedby',
-    /Header set Link .*rel=\\"alternate\\".*text\/markdown.*rel=\\"describedby\\"/.test(ht));
+    /Header set Link '.*rel="alternate".*text\/markdown.*rel="describedby".*'\s*$/m.test(ht));
+  // Hostinger draait LiteSpeed. Dat haalt de backslash in \" NIET weg zoals Apache wel doet:
+  // live kwam de header zo binnen als rel=\"alternate\". Een waarde tussen enkele
+  // aanhalingstekens werkt op allebei.
+  check('E7b: geen \\" in een Header-regel (LiteSpeed laat de backslash staan)',
+    !ht.split('\n').some((r) => /^\s*Header\b/.test(r) && r.indexOf('\\"') !== -1));
   check('E8: en Vary: Accept', /Header merge Vary "Accept"/.test(ht));
 
   // ====================================================== F. echte Apache

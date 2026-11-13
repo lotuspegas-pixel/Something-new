@@ -100,7 +100,7 @@
   # van de Accept-header, HTML of Markdown oplevert; zonder dat kan een
   # tussenliggende cache het ene aan de ander uitdelen.
   <Files "index.html">
-    Header set Link "</index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\""
+    Header set Link '</index.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"; type="text/plain"'
     Header merge Vary "Accept"
   </Files>
   # Het Markdown-antwoord op "/" mag NOOIT door een tussenliggende cache (CDN)
