@@ -1,0 +1,120 @@
+# BabyPhone.online — Apache/LiteSpeed config (Hostinger)
+# Plaats dit bestand naast index.html in public_html.
+
+# ---------------------------------------------------------------------------
+# 1. HTTPS afdwingen — VERPLICHT.
+# Browsers geven alleen toegang tot camera en microfoon op een beveiligde
+# verbinding. Zonder HTTPS start de babyunit niet.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 1b. Eén adres voor de site: www.babyphone.online → babyphone.online.
+  # Zoekmachines zien www en non-www anders als twee sites met dezelfde
+  # inhoud; de canonical-tags wijzen al naar de versie zonder www, dit maakt
+  # het hard. De regel doet niets als er geen www-hostnaam bestaat.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # 1c. Markdown voor agents. Wie de homepage vraagt met "Accept: text/markdown"
+  # krijgt index.md in plaats van de ~1,8 MB HTML (dat scheelt honderdduizenden
+  # tokens). Browsers sturen dit nooit, dus voor gewone bezoekers verandert er
+  # niets. De regel staat NA de https-regels: een http-verzoek gaat eerst naar
+  # https en wordt dáár pas beantwoord.
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteRule ^(?:index\.html)?$ index.md [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 2. MIME-types die op standaardhosting soms ontbreken
+# ---------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/manifest+json  .webmanifest
+  AddType video/mp4                  .mp4
+  AddType font/woff2                 .woff2
+  AddType audio/mpeg                 .mp3
+  AddType image/svg+xml              .svg
+  AddType text/markdown              .md
+  # llms.txt en index.md bevatten niet-ASCII-tekens (é, Russisch, ...); zonder
+  # tekenset raden clients wat het is.
+  AddCharset UTF-8                   .md .txt
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 3. Compressie voor tekstbestanden (index.html is ~1,3 MB onverpakt)
+# ---------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml text/markdown
+  AddOutputFilterByType DEFLATE application/javascript text/javascript application/json
+  AddOutputFilterByType DEFLATE application/manifest+json image/svg+xml
+  AddOutputFilterByType DEFLATE application/xml
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 4. Cache: media en fonts lang, HTML kort zodat updates direct zichtbaar zijn
+# ---------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/png        "access plus 1 year"
+  ExpiresByType image/jpeg       "access plus 1 year"
+  ExpiresByType image/svg+xml    "access plus 1 year"
+  ExpiresByType video/mp4        "access plus 1 year"
+  ExpiresByType audio/mpeg       "access plus 1 year"
+  ExpiresByType font/woff2       "access plus 1 year"
+  ExpiresByType text/css         "access plus 1 month"
+  # De JavaScript staat in assets/ met een hash van de inhoud in de bestandsnaam
+  # (app.dd4361e9c2.js). Verandert de code, dan verandert de naam, dus een jaar
+  # bewaren is veilig: een oude gecachete versie wordt nooit meer gevraagd.
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/javascript        "access plus 1 year"
+  ExpiresByType text/html        "access plus 10 minutes"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 5. Beveiligingsheaders
+# ---------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  # HTTPS is al verplicht (301 hierboven) — vertel de browser dat ook, zodat
+  # camera/microfoon nooit per ongeluk over onbeveiligd http lopen.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # Camera en microfoon expliciet toestaan voor deze site zelf
+  Header always set Permissions-Policy "camera=(self), microphone=(self), display-capture=(self)"
+
+  # De js- en css-bestanden in assets/ met een hash van hun inhoud in de naam
+  # (site.dc4445b158.css). Daarom mogen browsers en de CDN ze een jaar bewaren
+  # en nooit opnieuw vragen. Alleen deze bestanden: de bijpagina's gebruiken
+  # assets/brand-theme.css zonder hash, en die houdt de gewone bewaartijd.
+  <FilesMatch "\.[0-9a-f]{10}\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Wijs agents op de Markdown-versie en op llms.txt (RFC 8288 Link-header).
+  # Alleen op de homepage: index.md is het alternatief voor index.html en voor
+  # geen enkele andere pagina. "Vary: Accept" omdat dezelfde URL, afhankelijk
+  # van de Accept-header, HTML of Markdown oplevert; zonder dat kan een
+  # tussenliggende cache het ene aan de ander uitdelen.
+  <Files "index.html">
+    Header set Link '</index.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"; type="text/plain"'
+    Header merge Vary "Accept"
+  </Files>
+  # Het Markdown-antwoord op "/" mag NOOIT door een tussenliggende cache (CDN)
+  # onthouden worden. Hostinger zet er een CDN voor (server: hcdn); onthoudt die
+  # het Markdown-antwoord voor "/" en geeft hij dat daarna aan gewone bezoekers,
+  # dan zien zij tekst in plaats van de app. Vary: Accept alleen beschermt daar
+  # niet tegen: veel CDN's kijken alleen naar Accept-Encoding.
+  <Files "index.md">
+    Header merge Vary "Accept"
+    Header set Cache-Control "private, no-store"
+  </Files>
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 6. Nette 404 naar de homepage
+# ---------------------------------------------------------------------------
+ErrorDocument 404 /index.html

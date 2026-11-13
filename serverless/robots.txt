@@ -1,4 +1,21 @@
+# BabyPhone.online — a free baby monitor that runs in the browser.
+# Everything here may be crawled and indexed: there is no login, no paywall
+# and no user-generated area, so nothing is disallowed.
+
 User-agent: *
 Allow: /
+
+# How the content on this site may be used (https://contentsignals.org):
+#   search   = building a search index and showing links and short excerpts
+#   ai-input = using pages as live input to an AI answer (retrieval, grounding)
+#   ai-train = training or fine-tuning AI models
+# Allowed: search and live use in answers. Not allowed: training. The audio
+# files (lullabies) are made by and copyright of Arcana Synthetica.
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+
+# Machine-readable summary for AI answer engines:
+# https://babyphone.online/llms.txt
+# The homepage is also served as Markdown: send "Accept: text/markdown" to
+# https://babyphone.online/ or fetch https://babyphone.online/index.md
 
 Sitemap: https://babyphone.online/sitemap.xml

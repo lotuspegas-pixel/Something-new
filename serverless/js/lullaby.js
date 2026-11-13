@@ -14,19 +14,51 @@ class LullabyPlayer {
     this._noteTimer = null;
   }
 
+  // Geeft waar terug als er een bruikbare AudioContext staat.
+  //
+  // TWEE DINGEN DIE HIER EERDER STIL MISGINGEN.
+  //
+  // 1. `new AC()` stond buiten een try. Een browser zonder AudioContext, of
+  //    eentje die er geen meer wil geven (te veel contexten op iOS), gooide
+  //    hier — en die uitzondering sleepte de aanroeper mee.
+  // 2. `this.ctx.resume()` geeft een belofte terug die wordt AFGEWEZEN zolang
+  //    de gebruiker nog nergens getikt heeft: Firefox, Android Chrome en alle
+  //    WebKit doen dat. Zonder .catch werd dat een unhandledrejection, en de
+  //    vanger in index.html maakte daar een rode balk van met de kop "Deze
+  //    browser kan de app niet starten" — terwijl de app gewoon doorliep. Een
+  //    babyunit die na een herlaadbeurt vanzelf terugkomt heeft die tik per
+  //    definitie niet gehad, dus dit trof precies het geval dat het minst
+  //    opvalt en het hardst verkeerd leest.
+  //
+  // Lukt het hervatten niet, dan blijft de slaapmuziek stil; dat is zichtbaar
+  // aan de alarmbanner die de app zelf al toont zodra de AudioContext niet
+  // loopt. Er verdwijnt dus niets ongemerkt.
   _ensureCtx() {
     if (!this.ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AC();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = 0.35;
-      this.master.connect(this.ctx.destination);
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = 0.35;
+        this.master.connect(this.ctx.destination);
+      } catch (e) {
+        this.ctx = null;
+        this.master = null;
+        return false;
+      }
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') {
+      try {
+        const r = this.ctx.resume();
+        if (r && r.catch) r.catch(function () { /* geen gebaar gehad; blijft stil tot de eerste tik */ });
+      } catch (e) { /* zelfde geval, maar zonder belofte (oude WebKit) */ }
+    }
+    return true;
   }
 
   setVolume(v) {
-    this._ensureCtx();
+    if (!this._ensureCtx()) return;
     this.master.gain.value = Math.max(0, Math.min(1, v));
   }
 
@@ -38,55 +70,6 @@ class LullabyPlayer {
     return this.name;
   }
 
-  // Frequenties (in Hz) voor noten.
-  static NOTE = {
-    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0,
-    A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
-    G3: 196.0, A3: 220.0, F3: 174.61, E3: 164.81,
-  };
-
-  static MELODIES = {
-    twinkle: {
-      label: 'Twinkle Twinkle',
-      tempo: 480,
-      notes: [
-        'C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', '-',
-        'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4', '-',
-        'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
-        'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
-      ],
-    },
-    brahms: {
-      label: 'Wiegelied (Brahms)',
-      tempo: 520,
-      notes: [
-        'E4', 'E4', 'G4', '-', 'E4', 'E4', 'G4', '-',
-        'E4', 'G4', 'C5', 'B4', 'A4', 'A4', 'G4', '-',
-        'D4', 'E4', 'F4', 'D4', 'E4', 'F4', '-', 'F4',
-        'A4', 'G4', 'F4', 'E4', 'D4', '-', 'C4', '-',
-      ],
-    },
-    frere: {
-      label: 'Frère Jacques',
-      tempo: 460,
-      notes: [
-        'C4', 'D4', 'E4', 'C4', 'C4', 'D4', 'E4', 'C4',
-        'E4', 'F4', 'G4', '-', 'E4', 'F4', 'G4', '-',
-        'G4', 'A4', 'G4', 'F4', 'E4', 'C4', 'G4', 'A4',
-        'G4', 'F4', 'E4', 'C4', 'C4', 'G3', 'C4', '-',
-      ],
-    },
-  };
-
-  static SOUNDS = {
-    regen: { label: 'Regen', type: 'rain' },
-    oceaan: { label: 'Oceaan', type: 'ocean' },
-    hartslag: { label: 'Hartslag', type: 'heartbeat' },
-    witte: { label: 'Witte ruis', type: 'noise', color: 'white' },
-  };
-
-  // Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
-  static ORDER = ['regen', 'oceaan', 'hartslag', 'witte'];
 
   static list() {
     return LullabyPlayer.ORDER.map((id) => ({
@@ -97,7 +80,10 @@ class LullabyPlayer {
   }
 
   play(id) {
-    this._ensureCtx();
+    // Zonder AudioContext valt er niets af te spelen. Onwaar teruggeven is
+    // hier het eerlijke antwoord: de aanroeper laat de knop dan niet op
+    // "speelt af" staan.
+    if (!this._ensureCtx()) return false;
     this.stop();
     if (LullabyPlayer.MELODIES[id]) {
       this._playMelody(id);
@@ -279,5 +265,59 @@ class LullabyPlayer {
     clearTimeout(this._noteTimer);
   }
 }
+
+// Statische klasse-velden (static X = ...) bestaan pas vanaf Safari 14.1.
+// Op iOS 12 is dat een syntaxfout bij het INLEZEN, waardoor dit hele bestand
+// ongeldig wordt en de app niet start. Als gewone toewijzingen na de class
+// werkt het overal hetzelfde.
+// Frequenties (in Hz) voor noten.
+LullabyPlayer.NOTE = {
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0,
+  A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
+  G3: 196.0, A3: 220.0, F3: 174.61, E3: 164.81,
+};
+
+LullabyPlayer.MELODIES = {
+  twinkle: {
+    label: 'Twinkle Twinkle',
+    tempo: 480,
+    notes: [
+      'C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', '-',
+      'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4', '-',
+      'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
+      'G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '-',
+    ],
+  },
+  brahms: {
+    label: 'Wiegelied (Brahms)',
+    tempo: 520,
+    notes: [
+      'E4', 'E4', 'G4', '-', 'E4', 'E4', 'G4', '-',
+      'E4', 'G4', 'C5', 'B4', 'A4', 'A4', 'G4', '-',
+      'D4', 'E4', 'F4', 'D4', 'E4', 'F4', '-', 'F4',
+      'A4', 'G4', 'F4', 'E4', 'D4', '-', 'C4', '-',
+    ],
+  },
+  frere: {
+    label: 'Frère Jacques',
+    tempo: 460,
+    notes: [
+      'C4', 'D4', 'E4', 'C4', 'C4', 'D4', 'E4', 'C4',
+      'E4', 'F4', 'G4', '-', 'E4', 'F4', 'G4', '-',
+      'G4', 'A4', 'G4', 'F4', 'E4', 'C4', 'G4', 'A4',
+      'G4', 'F4', 'E4', 'C4', 'C4', 'G3', 'C4', '-',
+    ],
+  },
+};
+
+// Regen en witte ruis zijn er bewust uit: die klonken te veel als ruis en
+// niet als rustgevende slaapmuziek.
+LullabyPlayer.SOUNDS = {
+  oceaan: { label: 'Oceaan', type: 'ocean' },
+  hartslag: { label: 'Hartslag', type: 'heartbeat' },
+};
+
+// Vaste volgorde voor de slaapmuziek-bediening (vorige/volgende).
+LullabyPlayer.ORDER = ['oceaan', 'hartslag'];
 
 window.LullabyPlayer = LullabyPlayer;

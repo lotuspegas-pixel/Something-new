@@ -1,0 +1,38 @@
+
+    /* --- extra voor de veiligheidspagina ------------------------------- */
+    .sec-card { background:var(--surface2); border:1px solid var(--line); border-radius:22px; padding:24px; margin:0 0 30px; box-shadow:0 12px 34px rgba(47,143,240,.10); }
+    .sec-shield { width:56px; height:56px; border-radius:18px; display:grid; place-items:center; font-size:26px; background:rgba(47,179,122,.12); margin:0 0 16px; }
+    .sec-card h2 { margin:0 0 6px; font:700 21px/1.25 'Quicksand','Nunito',sans-serif; }
+    .sec-card > p { margin:0; color:#2B4E80; }
+    .sec-list { list-style:none; padding:0; margin:18px 0 0; display:grid; gap:10px; }
+    .sec-list li { display:flex; gap:10px; align-items:flex-start; font-size:15px; }
+    .ok { color:var(--ok); font-weight:800; flex:0 0 auto; }
+    .no { color:var(--pink); font-weight:800; flex:0 0 auto; }
+
+    .flow { border:1px solid var(--line); background:var(--surface2); border-radius:22px; padding:22px; margin:0 0 30px; box-shadow:0 12px 34px rgba(47,143,240,.10); }
+    .flow-row { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:12px; align-items:center; }
+    .flow-node { display:flex; gap:12px; align-items:center; text-align:left; padding:16px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.7); }
+    .flow-ico { font-size:26px; flex:0 0 auto; }
+    .flow-node strong { display:block; font:700 15px 'Quicksand','Nunito',sans-serif; }
+    .flow-node small { display:block; margin-top:2px; color:var(--muted); font-size:13px; }
+    .flow-arrow { color:var(--accent); font-weight:800; font-size:20px; text-align:center; }
+    .flow-note { margin:16px 0 0; color:var(--muted); font-size:14px; text-align:center; }
+
+    .truth { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); background:var(--surface2); border-radius:22px; overflow:hidden; margin:0 0 22px; box-shadow:0 12px 34px rgba(47,143,240,.10); }
+    .truth-col { padding:24px; }
+    .truth-col + .truth-col { border-left:1px solid var(--line); }
+    .truth-col h3 { margin:0 0 14px; font:700 17px 'Quicksand','Nunito',sans-serif; }
+    .truth-list { list-style:none; padding:0; margin:0; display:grid; gap:12px; }
+    .truth-list li { display:flex; gap:10px; align-items:flex-start; color:#2B4E80; font-size:15px; }
+
+    .notice { border:1px solid rgba(255,111,158,.35); background:rgba(255,245,248,.85); border-radius:18px; padding:18px 20px; font-size:15px; color:#2B4E80; }
+    .cta-alt { margin:16px 0 0; font-size:14px; }
+    .cta-alt a { color:var(--accent); text-decoration:none; font-weight:700; }
+    .cta-alt a:hover { text-decoration:underline; }
+
+    @media (max-width:720px) {
+      .flow-row { grid-template-columns:1fr; }
+      .flow-arrow { transform:rotate(90deg); }
+      .truth { grid-template-columns:1fr; }
+      .truth-col + .truth-col { border-left:0; border-top:1px solid var(--line); }
+    }
