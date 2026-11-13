@@ -23,7 +23,7 @@ const { PeerServer } = require('peer');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const ROOT = path.join(__dirname, '..', 'serverless');
+const ROOT = path.resolve(process.env.APP_ROOT || path.join(__dirname, '..', 'serverless'));
 const WEB_PORT = +(process.env.WEB_PORT || 8155);
 const PEER_PORT = +(process.env.PEER_PORT || 9015);
 const MIME = {

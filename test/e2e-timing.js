@@ -38,7 +38,7 @@ const { PeerServer } = require('peer');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const ROOT = path.join(__dirname, '..', 'serverless');
+const ROOT = path.resolve(process.env.APP_ROOT || path.join(__dirname, '..', 'serverless'));
 const WEB_PORT = +(process.env.WEB_PORT || 8166);
 const PEER_PORT = +(process.env.PEER_PORT || 9026);
 // Drempel voor "tijd tot eerste beeld". Gemeten mediaan met de fix is ~1,2 s

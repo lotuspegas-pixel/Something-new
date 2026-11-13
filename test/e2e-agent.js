@@ -129,6 +129,12 @@ async function metApache(bin) {
   check('A1: index.html heeft precies één <h1>', h1s === 1, h1s + ' gevonden');
   const heroH1 = /<h1[^>]*data-i18n="heroTitle"/.test(index);
   check('A2: en dat is de hoofdkop van de landingspagina', heroH1);
+  // Tokenbudget: een AI-assistent die de pagina als tekst leest betaalt voor elk teken.
+  // Bij 1,6 MB (alles inline) was dat ruim 375.000 tokens. Dit is de grens waar de
+  // bouw ook op faalt (160 KB), hier nog eens vanuit de uitgeleverde pagina.
+  check('A4: index.html is klein genoeg voor een agent (onder 160 KB, ongeveer 40.000 tokens)', index.length > 1000 && index.length < 160 * 1024, Math.round(index.length / 1024) + ' KB');
+  const inlineGroot = [...index.matchAll(/<(script|style)\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/\1>/gi)].filter((m) => m[2].length > 12000).map((m) => m[1] + ' ' + Math.round(m[2].length / 1024) + ' KB');
+  check('A5: geen inline script of stijl groter dan 12 KB (de code staat in aparte bestanden)', inlineGroot.length === 0, inlineGroot.join(', ') || 'alles klein');
   for (const f of ['about.html', 'how-it-works.html', 'privacy.html', 'terms.html', 'contact.html', 'accessibility.html', 'blog.html', 'security.html']) {
     const n = (lees(f).match(/<h1\b/gi) || []).length;
     check('A3: ' + f + ' heeft precies één <h1>', n === 1, n + ' gevonden');
@@ -187,16 +193,22 @@ async function metApache(bin) {
   check('D5: JSON-LD in about.html is aanwezig en geldige JSON',
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].length > 0 &&
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].every((m) => { try { JSON.parse(m[1]); return true; } catch (e) { return false; } }));
-  // In de bron staan de vertalingen in js/i18n.js; in de uitgeleverde dist/ is dat
-  // bestand in index.html ingesloten en bestaat die map niet.
-  const i18n = lees('js/i18n.js') || index;
+  // In de bron staan de vertalingen in js/i18n.js; in de uitgeleverde dist/ heet dat
+  // bestand js/i18n.<hash>.js (de hash is een vingerafdruk van de inhoud).
+  let i18n = lees('js/i18n.js');
+  if (!i18n) {
+    try {
+      const f = fs.readdirSync(path.join(ROOT, 'js')).find((n) => /^i18n\.[0-9a-f]{10}\.js$/.test(n));
+      if (f) i18n = lees('js/' + f);
+    } catch (e) { /* geen js/-map */ }
+  }
   check('D6: voettekstlink heeft een vertaling voor alle 30 talen', (i18n.match(/const OVER = \{[\s\S]*?\};/) || [''])[0].split(/\w+:\s*'/).length - 1 === 30);
 
   // ========================================================== E. Markdown
   console.log('\n--- E: Markdown ---');
   const md = lees('index.md');
   check('E1: index.md begint met de titel', /^# BabyPhone\.online/.test(md));
-  check('E2: bestaat en is klein (500 tot 10.240 tekens, tegenover ~1,6 MB HTML)', md.length > 500 && md.length < 10240, md.length + ' tekens');
+  check('E2: bestaat en is klein (500 tot 10.240 tekens)', md.length > 500 && md.length < 10240, md.length + ' tekens');
   check('E3: zegt dat https nodig is en noemt de beperkingen', /https/.test(md) && /iPhone and iPad/.test(md));
   check('E4: noemt de naam "Luna Unit" nergens', !/Luna Unit/i.test(md + index));
   check('E5: de homepage wijst met <link rel="alternate"> naar de Markdown',
@@ -235,7 +247,7 @@ async function metApache(bin) {
           agent.status === 200 && /^text\/markdown/.test(agent.headers['content-type']) && /^# BabyPhone\.online/.test(agent.body), agent.headers['content-type']);
         const cc = agent.headers['cache-control'] || '';
         check('F4b: het Markdown-antwoord mag door geen enkele cache (of CDN) onthouden worden', /no-store/.test(cc) && /private/.test(cc) && !/max-age/.test(cc), 'Cache-Control: ' + cc);
-        check('F5: en dat is veel kleiner dan de HTML', agent.body.length * 20 < browser.body.length, agent.body.length + ' tegenover ' + browser.body.length + ' tekens');
+        check('F5: en dat is kleiner dan de HTML', agent.body.length * 10 < browser.body.length, agent.body.length + ' tegenover ' + browser.body.length + ' tekens');
         check('F6: met UTF-8 als tekenset', /charset=utf-8/i.test(agent.headers['content-type']));
         const idx = await haal(APACHE_PORT, '/index.html', Object.assign({ Accept: 'text/markdown' }, H));
         check('F7: /index.html werkt hetzelfde', /^text\/markdown/.test(idx.headers['content-type']));
@@ -243,6 +255,21 @@ async function metApache(bin) {
         check('F8: andere pagina\'s negeren de header en blijven HTML', /text\/html/.test(priv.headers['content-type']) && !priv.headers.link);
         const llm = await haal(APACHE_PORT, '/llms.txt', H);
         check('F9: llms.txt komt als tekst met UTF-8', /^text\/plain; charset=utf-8/i.test(llm.headers['content-type']));
+        // Bestanden met een hash in de naam mogen een jaar bewaard worden; zonder hash niet.
+        const hashJs = (browser.body.match(/src="(js\/app\.[0-9a-f]{10}\.js)"/) || [])[1];
+        const hashCss = (browser.body.match(/href="(css\/site\.[0-9a-f]{10}\.css)"/) || [])[1];
+        if (hashJs && hashCss) {
+          const js = await haal(APACHE_PORT, '/' + hashJs, H);
+          const cs = await haal(APACHE_PORT, '/' + hashCss, H);
+          check('F11: de JavaScript met hash in de naam wordt als JavaScript geserveerd en een jaar bewaard',
+            js.status === 200 && /javascript/.test(js.headers['content-type']) && /max-age=31536000/.test(js.headers['cache-control'] || '') && /immutable/.test(js.headers['cache-control'] || ''),
+            js.headers['content-type'] + ' | ' + js.headers['cache-control']);
+          check('F12: de CSS met hash idem', cs.status === 200 && /text\/css/.test(cs.headers['content-type']) && /immutable/.test(cs.headers['cache-control'] || ''), cs.headers['content-type'] + ' | ' + cs.headers['cache-control']);
+          const zonder = await haal(APACHE_PORT, '/assets/brand-theme.css', H);
+          check('F13: assets/brand-theme.css (zonder hash, voor de bijpagina\'s) wordt NIET een jaar bewaard', zonder.status === 200 && !/immutable/.test(zonder.headers['cache-control'] || ''), zonder.headers['cache-control']);
+        } else {
+          console.log('ℹ️  F11-F13 overgeslagen: de index.html in ' + ROOT + ' verwijst niet naar css/js met een hash (de bron, niet de uitgeleverde bouw).');
+        }
         const plain = await haal(APACHE_PORT, '/', {});
         check('F10: zonder https-header blijft de doorverwijzing naar https werken (bestaand gedrag)',
           plain.status === 301 && /^https:\/\//.test(plain.headers.location || ''), plain.status + ' ' + (plain.headers.location || ''));

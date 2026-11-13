@@ -9,8 +9,12 @@ maan/baby/nacht-gevoel mag blijven, de naam niet).
 
 De werkende app is de serverloze single-page variant in `serverless/`
 (`index.html`, `luna.css`, `js/app.js`, `js/i18n.js`, `js/lullaby.js`,
-`vendor/`). De productie-build is één zelfstandig `index.html` +
-map `music/` (zie de build in de scratchpad: `build-single.js`).
+`vendor/`). De productie-build (`npm run build`, `build.js`) is een kleine
+`index.html` die verwijst naar `css/site.<hash>.css` en `js/<naam>.<hash>.js`,
+plus `assets/`, `fonts/` en `music/`. Voorheen was het één zelfstandig
+`index.html` met alles inline (1,7 miljoen tekens); dat is op verzoek van de
+eigenaar losgelaten omdat een AI-assistent die de pagina leest voor elk teken
+betaalt. De hash in de bestandsnaam maakt een jaar bewaren veilig.
 
 ## Visuele stijl
 
@@ -66,7 +70,7 @@ functie nog, gebruik dan een nette placeholder maar behoud het ontwerp.
 
 Een taak is pas klaar als:
 
-- Build werkt (single-file build zonder externe verwijzingen).
+- Build werkt (`npm run build`: elke verwijzing in `index.html` wijst naar een bestand dat er is, geen externe host, JS leesbaar voor Safari 12, `index.html` onder de 160 KB).
 - Lint werkt indien aanwezig (minimaal `node -c` op de JS-bestanden).
 - Geen console/pageerrors.
 - Desktop én mobiel gecontroleerd zijn.

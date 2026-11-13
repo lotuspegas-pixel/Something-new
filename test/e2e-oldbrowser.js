@@ -22,7 +22,7 @@ const fs = require('fs');
 const { chromium } = require('playwright');
 const { PeerServer } = require('peer');
 
-const ROOT = path.join(__dirname, '..', 'serverless');
+const ROOT = path.resolve(process.env.APP_ROOT || path.join(__dirname, '..', 'serverless'));
 const WEB_PORT = Number(process.env.WEB_PORT || 8688);
 const PEER_PORT = Number(process.env.PEER_PORT || 9688);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

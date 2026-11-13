@@ -63,7 +63,7 @@ test/                    ← Playwright e2e suites
   e2e-serverless.js         ← main serverless app flow (24 assertions)
   e2e-reconnect.js           ← forced-drop / reconnect-with-backoff flow
 .github/workflows/ci.yml  ← runs the e2e suites on push/PR
-build.js                  ← bundles serverless/ into a single self-contained dist/index.html
+build.js                  ← builds serverless/ into dist/: a small index.html + hashed css/ and js/ files
 server.js                 ← Express server: serves serverless/ at root, public/ at /legacy/
 CLAUDE.md                  ← design rules & workflow contract for this repo
 ```
@@ -73,7 +73,7 @@ CLAUDE.md                  ← design rules & workflow contract for this repo
 ```bash
 npm install
 npm start                  # Express server on :3000 — serverless/ at /, legacy app at /legacy/
-npm run build              # produces dist/ — one self-contained index.html + assets/, music/, legal pages
+npm run build              # produces dist/ — small index.html + css/, js/ (hashed names), assets/, fonts/, music/, legal pages
 npm run lint                # node -c syntax check on all JS
 npm run test:serverless     # Playwright e2e — main app (24 checks)
 npm run test:reconnect      # Playwright e2e — forced disconnect/reconnect
@@ -81,11 +81,20 @@ npm run test:timing         # Playwright e2e — time to first picture
 npm test                    # Playwright e2e — legacy app
 ```
 
-`build.js` inlines `luna.css`/`dash.css` as `<style>`, all `js/*.js` as
-`<script>`, and fonts as base64 directly into `index.html`. Images
-(`assets/`, `music/`, icons) are copied alongside as real files — the result
-is a single HTML file plus a handful of asset folders that can be uploaded
+`build.js` bundles `luna.css`/`dash.css`/`brand-theme.css` into one
+`css/site.<hash>.css` and writes each script as its own `js/<name>.<hash>.js`
+(same order as before, not concatenated), with comments stripped (the syntax
+tree of every script is checked to be identical). `index.html` references them.
+The hash is a fingerprint of the content, so the files can be cached for a year:
+changing the code changes the name, and a stale cached script can never meet a
+new `index.html`. Fonts and images stay real files. The build fails if a
+reference points at a missing file or another host, if a script is not readable
+by Safari 12, or if `index.html` grows past 160 KB. The result can be uploaded
 to any static host (e.g. Hostinger) with zero server-side code required.
+
+Why not one file any more: it was 1.7 million characters, of which fewer than
+6,000 were visible text. An AI assistant that reads the page as text pays for
+every character (well over 375,000 tokens), and browsers could not cache the code.
 
 ## 5. Feature roadmap executed (P0 → P3)
 
@@ -429,7 +438,7 @@ the site as eligible as possible; actual ranking builds over time.
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
 - **What to upload**: the contents of `dist/` (produced by `npm run build`)
-  — a single `index.html`, plus `assets/`, `music/`, the legal HTML pages,
+  — a small `index.html`, plus `css/`, `js/`, `assets/`, `fonts/`, `music/`, the legal HTML pages,
   and the SEO/PWA files (`robots.txt`, `sitemap.xml`, `manifest.webmanifest`,
   favicons, `og-image.png`).
 - **Note**: the `music/` folder (~34MB of MP3s) is excluded from delivery

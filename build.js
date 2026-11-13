@@ -4,17 +4,30 @@
  * Productie-build voor de serverloze variant.
  *
  * Maakt een volledige deploy-map met:
- *  - één zelfstandig `index.html` (CSS + lettertypes als base64 + alle JS
- *    inline — geen enkele externe verwijzing meer);
+ *  - een kleine `index.html` (HTML, JSON-LD en twee kleine inline scripts) die
+ *    naar de CSS en de JavaScript VERWIJST in plaats van ze te bevatten;
+ *  - `css/site.<hash>.css` en `js/<naam>.<hash>.js`: de stijl en elk script als
+ *    eigen bestand, met een hash van de inhoud in de naam;
  *  - de statische bijpagina's (legal, how-it-works) en SEO-bestanden
  *    (robots, sitemap, llms.txt, manifest, iconen, og-image);
  *  - de map `music/` met de mp3-playlist.
+ *
+ * WAAROM NIET MEER ALLES IN ÉÉN BESTAND. Eerder zat alles inline: 1,7 miljoen
+ * tekens, waarvan nog geen 6.000 zichtbare tekst. Een AI-assistent die de pagina
+ * als tekst leest betaalt voor elk teken (ruim 375.000 tokens), en een browser
+ * kon de code niet bewaren: elk bezoek haalde alles opnieuw op. Met de hash in
+ * de bestandsnaam is bewaren veilig: verandert de code, dan verandert de naam,
+ * en een oude gecachete app.js kan nooit met een nieuwe index.html botsen.
+ * De scripts blijven elk een eigen bestand (niet samengevoegd), in dezelfde
+ * volgorde als voorheen, zodat een fout in het ene het andere niet meeneemt en
+ * een "use strict" bovenaan het ene niet voor het andere gaat gelden.
  *
  *   node build.js [uitvoermap]     (standaard: ./dist)
  */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const SL = path.join(__dirname, 'serverless');
 const OUT = path.resolve(process.argv[2] || path.join(__dirname, 'dist'));
@@ -74,48 +87,66 @@ function stripHtml(src) {
 }
 const eigenJs = (f) => f.indexOf('vendor/') !== 0;
 
-// 1. CSS (basis + dashboards) met lettertypes als base64 data-URI's
-const inlineFont = (file) =>
-  `url(data:font/woff2;base64,${fs.readFileSync(path.join(SL, 'fonts', file)).toString('base64')})`;
-
+// 1. CSS (basis + dashboards + merk) als één bestand in css/. De url()'s moeten
+// kloppen vanuit die map, dus één niveau omhoog:
+//   luna/dash:   fonts/x.woff2            -> ../fonts/x.woff2
+//                assets/brand/x.png       -> ../assets/brand/x.png
+//   brand-theme: ../fonts/x.woff2 (blijft; stond al relatief aan assets/, even diep)
+//                brand/x.png              -> ../assets/brand/x.png
+// De lettertypes blijven losse bestanden (niet meer als base64 ingesloten): dat
+// scheelt 260 KB tekst in de pagina en de browser bewaart ze apart.
 const cssFiles = ['luna.css', 'dash.css'];
-const css = cssFiles.map((f) =>
+const lunaCss = cssFiles.map((f) =>
   stripCss(fs.readFileSync(path.join(SL, f), 'utf8'))
-    .replace(/url\(['"]?fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
+    .replace(/url\((['"]?)fonts\//g, 'url($1../fonts/')
+    .replace(/url\((['"]?)assets\/brand\//g, 'url($1../assets/brand/')
 ).join('\n');
-
-// brand-theme.css staat in assets/, dus zijn url()'s zijn relatief aan die map:
-// ../fonts/... wordt ingesloten, brand/... wordt herschreven naar assets/brand/...
 const brandCss = stripCss(fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8'))
-  .replace(/url\(['"]?\.\.\/fonts\/([^'")]+)['"]?\)/g, (m, file) => inlineFont(file))
-  .replace(/url\(['"]?(brand\/[^'")]+)['"]?\)/g, (m, p) => `url("assets/${p}")`);
+  .replace(/url\((['"]?)brand\//g, 'url($1../assets/brand/');
+const css = lunaCss + '\n' + brandCss;
+const hash = (tekst) => crypto.createHash('sha1').update(tekst).digest('hex').slice(0, 10);
+const cssNaam = 'css/site.' + hash(css) + '.css';
 
 // 2. Alle JS inline, in de volgorde van index.html
 const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
   'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/app.js'];
-const uitgeleverd = {};   // bestand -> de JS-tekst die echt in index.html komt
-const inlineScripts = scripts.map((s) => {
+const uitgeleverd = {};   // bronbestand -> de JS-tekst die echt wordt uitgeleverd
+const jsNaam = {};       // bronbestand -> js/<naam>.<hash>.js
+scripts.forEach((s) => {
   const bron = fs.readFileSync(path.join(SL, s), 'utf8');
   uitgeleverd[s] = eigenJs(s) ? stripJs(bron) : bron;
-  const code = uitgeleverd[s].replace(/<\/script/gi, '<\\/script');
-  return '<script>\n' + code + '\n</script>';
-}).join('\n');
+  jsNaam[s] = 'js/' + path.basename(s, '.js') + '.' + hash(uitgeleverd[s]) + '.js';
+});
+const scriptTags = scripts.map((s) => '<script src="' + jsNaam[s] + '"></script>').join('\n    ');
 
 // 3. index.html samenstellen (functie-replacements zodat $ letterlijk blijft)
 let html = stripHtml(fs.readFileSync(path.join(SL, 'index.html'), 'utf8'));
-html = html.replace(
+// De twee lettertypen die op elke pagina meteen nodig zijn worden vooraf
+// opgehaald, anders ziet de bezoeker kort de systeemletter voor de echte
+// (de lettertypen zaten eerst in de pagina zelf en waren er dus direct).
+const fontPreload = ['nunito-latin', 'quicksand-latin'].map((f) =>
+  '<link rel="preload" href="fonts/' + f + '.woff2" as="font" type="font/woff2" crossorigin />').join('\n    ');
+const na = html.replace(
   /<link rel="stylesheet" href="luna\.css"[^>]*>\s*<link rel="stylesheet" href="dash\.css"[^>]*>\s*<link rel="stylesheet" href="assets\/brand-theme\.css"[^>]*>/,
-  () => '<style>\n' + css + '\n' + brandCss + '\n</style>'
+  () => fontPreload + '\n    <link rel="stylesheet" href="' + cssNaam + '" />'
 );
-html = html.replace(
+if (na === html) { console.error('De drie stylesheet-links in index.html zijn niet gevonden; de bouw kan ze niet vervangen.'); process.exit(1); }
+html = na;
+const na2 = html.replace(
   /<script src="vendor\/qrcode\.js"><\/script>[\s\S]*?<script src="js\/app\.js"><\/script>/,
-  () => inlineScripts
+  () => scriptTags
 );
+if (na2 === html) { console.error('Het blok met de zeven script-tags in index.html is niet gevonden; de bouw kan het niet vervangen.'); process.exit(1); }
+html = na2;
 
 // 4. Deploy-map vullen
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, 'index.html'), html);
+fs.mkdirSync(path.join(OUT, 'css'), { recursive: true });
+fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
+fs.writeFileSync(path.join(OUT, cssNaam), css);
+scripts.forEach((s) => fs.writeFileSync(path.join(OUT, jsNaam[s]), uitgeleverd[s]));
 
 const copies = [
   'privacy.html', 'terms.html', 'contact.html', 'accessibility.html',
@@ -130,25 +161,53 @@ for (const f of copies) fs.copyFileSync(path.join(SL, f), path.join(OUT, f));
 fs.cpSync(path.join(SL, 'music'), path.join(OUT, 'music'), { recursive: true });
 // merk-/product-afbeeldingen (logo, camera, hero) — nodig voor de homepage
 fs.cpSync(path.join(SL, 'assets'), path.join(OUT, 'assets'), { recursive: true });
-// lettertypes: index.html heeft ze inline, maar de bijpagina's laden assets/brand-theme.css
-// van schijf en die verwijst naar ../fonts/ — zonder deze map vallen ze terug op systeemfonts
+// lettertypen: de gebundelde css en de bijpagina's (assets/brand-theme.css) verwijzen
+// ernaar via ../fonts/ — zonder deze map vallen ze terug op systeemfonts
 fs.cpSync(path.join(SL, 'fonts'), path.join(OUT, 'fonts'), { recursive: true });
 
 const kb = (f) => Math.round(fs.statSync(f).size / 1024);
 console.log('Build →', OUT);
-console.log('  index.html', kb(path.join(OUT, 'index.html')) + ' KB (zelfstandig)');
+console.log('  index.html', kb(path.join(OUT, 'index.html')) + ' KB, ' + cssNaam + ' ' + kb(path.join(OUT, cssNaam)) + ' KB, ' + scripts.length + ' scripts in js/ (' + Math.round(scripts.reduce((a, f) => a + Buffer.byteLength(uitgeleverd[f]), 0) / 1024) + ' KB)');
 console.log('  bijpagina’s + SEO:', copies.length, 'bestanden; music/:', fs.readdirSync(path.join(OUT, 'music')).length, 'items');
 
-// Sanity: geen externe script/style-verwijzingen meer in index.html.
-// Uitzondering: het Google AdSense-script móét extern van googlesyndication
-// geladen worden (advertenties kun je niet inline meebundelen).
-const extTags = (html.match(/<(?:script[^>]*\bsrc|link[^>]*rel="stylesheet"[^>]*\bhref)="(?!data:)[^"]+"/gi) || [])
-  .filter((t) => !/googlesyndication\.com/i.test(t));
-if (extTags.length) {
-  console.error('Externe verwijzingen over:', extTags.join(' | '));
-  process.exit(1);
+// Sanity: elke script- en stylesheet-verwijzing in index.html moet (1) naar een
+// bestand wijzen dat er echt is, en (2) niet naar een andere host. Eerder was
+// "geen enkele verwijzing" de regel omdat alles inline zat; nu is de regel dat
+// niets stuk of extern is. Uitzondering: het Google AdSense-script móét extern
+// van googlesyndication geladen worden (advertenties kun je niet bundelen).
+{
+  const verw = [];
+  html.replace(/<script\b[^>]*\bsrc="([^"]+)"/gi, (m, u) => { verw.push(u); return m; });
+  html.replace(/<link\b[^>]*rel="(?:stylesheet|preload)"[^>]*\bhref="([^"]+)"/gi, (m, u) => { verw.push(u); return m; });
+  const stuk = [];
+  for (const u of verw) {
+    if (/^data:/i.test(u) || /googlesyndication\.com/i.test(u)) continue;
+    if (/^(?:https?:)?\/\//i.test(u)) { stuk.push('externe host: ' + u); continue; }
+    if (!fs.existsSync(path.join(OUT, u.split('?')[0]))) stuk.push('bestand ontbreekt: ' + u);
+  }
+  if (stuk.length) {
+    console.error('Verwijzingen in index.html kloppen niet:\n  ' + stuk.join('\n  '));
+    process.exit(1);
+  }
+  console.log('  verwijzingen in index.html: ' + verw.length + ', allemaal naar bestanden die er zijn, geen externe host ✓');
 }
-console.log('  externe script/style-verwijzingen: GEEN ✓');
+
+// Sanity: tokenbudget. Dit is de reden dat de code uit de pagina is gehaald; zonder
+// grens kruipt hij ongemerkt terug (een nieuw inline script, een ingesloten
+// lettertype). Boven de grens faalt de bouw, met wat er het grootst is.
+{
+  const MAX = 160 * 1024;
+  const n = Buffer.byteLength(html);
+  if (n > MAX) {
+    const blokken = [];
+    html.replace(/<(script|style)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, t, inh) => { blokken.push([Buffer.byteLength(inh), t]); return m; });
+    blokken.sort((a, b2) => b2[0] - a[0]);
+    console.error('index.html is ' + Math.round(n / 1024) + ' KB, boven de grens van ' + (MAX / 1024) + ' KB (tokenbudget voor AI-assistenten).');
+    console.error('Grootste inline blokken: ' + blokken.slice(0, 3).map((b3) => b3[1] + ' ' + Math.round(b3[0] / 1024) + ' KB').join(', '));
+    process.exit(1);
+  }
+  console.log('  index.html ' + Math.round(n / 1024) + ' KB, onder de grens van ' + (MAX / 1024) + ' KB ✓');
+}
 
 // Sanity: alle JS moet leesbaar zijn voor de oudste browser die we willen
 // bedienen — Safari 12 (iOS 12, 2018), dat ES2018 spreekt. Iets nieuwers is
