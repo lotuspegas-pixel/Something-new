@@ -6,8 +6,8 @@
  * Maakt een volledige deploy-map met:
  *  - een kleine `index.html` (HTML, JSON-LD en twee kleine inline scripts) die
  *    naar de CSS en de JavaScript VERWIJST in plaats van ze te bevatten;
- *  - `css/site.<hash>.css` en `js/<naam>.<hash>.js`: de stijl en elk script als
- *    eigen bestand, met een hash van de inhoud in de naam;
+ *  - `assets/site.<hash>.css` en `assets/<naam>.<hash>.js`: de stijl en elk
+ *    script als eigen bestand, met een hash van de inhoud in de naam;
  *  - de statische bijpagina's (legal, how-it-works) en SEO-bestanden
  *    (robots, sitemap, llms.txt, manifest, iconen, og-image);
  *  - de map `music/` met de mp3-playlist.
@@ -87,35 +87,36 @@ function stripHtml(src) {
 }
 const eigenJs = (f) => f.indexOf('vendor/') !== 0;
 
-// 1. CSS (basis + dashboards + merk) als één bestand in css/. De url()'s moeten
-// kloppen vanuit die map, dus één niveau omhoog:
+// 1. CSS (basis + dashboards + merk) als één bestand in assets/. De url()'s moeten
+// kloppen vanuit die map:
 //   luna/dash:   fonts/x.woff2            -> ../fonts/x.woff2
-//                assets/brand/x.png       -> ../assets/brand/x.png
-//   brand-theme: ../fonts/x.woff2 (blijft; stond al relatief aan assets/, even diep)
-//                brand/x.png              -> ../assets/brand/x.png
+//                assets/brand/x.png       -> brand/x.png
+//   brand-theme: ../fonts/x.woff2 en brand/x.png blijven (het stond al in assets/)
+// Waarom in assets/ en niet in een eigen css/- en js/-map: assets/ bestaat al op de
+// server, en de bestandsserver van de host maakt via de uploadsleutel geen nieuwe
+// mappen aan. Bestanden met een hash in de naam vallen nergens mee te verwarren.
 // De lettertypes blijven losse bestanden (niet meer als base64 ingesloten): dat
 // scheelt 260 KB tekst in de pagina en de browser bewaart ze apart.
 const cssFiles = ['luna.css', 'dash.css'];
 const lunaCss = cssFiles.map((f) =>
   stripCss(fs.readFileSync(path.join(SL, f), 'utf8'))
     .replace(/url\((['"]?)fonts\//g, 'url($1../fonts/')
-    .replace(/url\((['"]?)assets\/brand\//g, 'url($1../assets/brand/')
+    .replace(/url\((['"]?)assets\/brand\//g, 'url($1brand/')
 ).join('\n');
-const brandCss = stripCss(fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8'))
-  .replace(/url\((['"]?)brand\//g, 'url($1../assets/brand/');
+const brandCss = stripCss(fs.readFileSync(path.join(SL, 'assets', 'brand-theme.css'), 'utf8'));
 const css = lunaCss + '\n' + brandCss;
 const hash = (tekst) => crypto.createHash('sha1').update(tekst).digest('hex').slice(0, 10);
-const cssNaam = 'css/site.' + hash(css) + '.css';
+const cssNaam = 'assets/site.' + hash(css) + '.css';
 
 // 2. Alle JS inline, in de volgorde van index.html
 const scripts = ['vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/peerjs.min.js',
   'js/i18n.js', 'js/lullaby.js', 'js/qr.js', 'js/app.js'];
 const uitgeleverd = {};   // bronbestand -> de JS-tekst die echt wordt uitgeleverd
-const jsNaam = {};       // bronbestand -> js/<naam>.<hash>.js
+const jsNaam = {};       // bronbestand -> assets/<naam>.<hash>.js
 scripts.forEach((s) => {
   const bron = fs.readFileSync(path.join(SL, s), 'utf8');
   uitgeleverd[s] = eigenJs(s) ? stripJs(bron) : bron;
-  jsNaam[s] = 'js/' + path.basename(s, '.js') + '.' + hash(uitgeleverd[s]) + '.js';
+  jsNaam[s] = 'assets/' + path.basename(s, '.js') + '.' + hash(uitgeleverd[s]) + '.js';
 });
 const scriptTags = scripts.map((s) => '<script src="' + jsNaam[s] + '"></script>').join('\n    ');
 
@@ -143,8 +144,7 @@ html = na2;
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, 'index.html'), html);
-fs.mkdirSync(path.join(OUT, 'css'), { recursive: true });
-fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
+fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
 fs.writeFileSync(path.join(OUT, cssNaam), css);
 scripts.forEach((s) => fs.writeFileSync(path.join(OUT, jsNaam[s]), uitgeleverd[s]));
 
@@ -167,7 +167,7 @@ fs.cpSync(path.join(SL, 'fonts'), path.join(OUT, 'fonts'), { recursive: true });
 
 const kb = (f) => Math.round(fs.statSync(f).size / 1024);
 console.log('Build →', OUT);
-console.log('  index.html', kb(path.join(OUT, 'index.html')) + ' KB, ' + cssNaam + ' ' + kb(path.join(OUT, cssNaam)) + ' KB, ' + scripts.length + ' scripts in js/ (' + Math.round(scripts.reduce((a, f) => a + Buffer.byteLength(uitgeleverd[f]), 0) / 1024) + ' KB)');
+console.log('  index.html', kb(path.join(OUT, 'index.html')) + ' KB, ' + cssNaam + ' ' + kb(path.join(OUT, cssNaam)) + ' KB, ' + scripts.length + ' scripts in assets/ (' + Math.round(scripts.reduce((a, f) => a + Buffer.byteLength(uitgeleverd[f]), 0) / 1024) + ' KB)');
 console.log('  bijpagina’s + SEO:', copies.length, 'bestanden; music/:', fs.readdirSync(path.join(OUT, 'music')).length, 'items');
 
 // Sanity: elke script- en stylesheet-verwijzing in index.html moet (1) naar een

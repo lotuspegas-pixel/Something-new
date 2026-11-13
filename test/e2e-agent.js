@@ -194,13 +194,13 @@ async function metApache(bin) {
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].length > 0 &&
     [...about.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].every((m) => { try { JSON.parse(m[1]); return true; } catch (e) { return false; } }));
   // In de bron staan de vertalingen in js/i18n.js; in de uitgeleverde dist/ heet dat
-  // bestand js/i18n.<hash>.js (de hash is een vingerafdruk van de inhoud).
+  // bestand assets/i18n.<hash>.js (de hash is een vingerafdruk van de inhoud).
   let i18n = lees('js/i18n.js');
   if (!i18n) {
     try {
-      const f = fs.readdirSync(path.join(ROOT, 'js')).find((n) => /^i18n\.[0-9a-f]{10}\.js$/.test(n));
-      if (f) i18n = lees('js/' + f);
-    } catch (e) { /* geen js/-map */ }
+      const f = fs.readdirSync(path.join(ROOT, 'assets')).find((n) => /^i18n\.[0-9a-f]{10}\.js$/.test(n));
+      if (f) i18n = lees('assets/' + f);
+    } catch (e) { /* geen assets/-map */ }
   }
   check('D6: voettekstlink heeft een vertaling voor alle 30 talen', (i18n.match(/const OVER = \{[\s\S]*?\};/) || [''])[0].split(/\w+:\s*'/).length - 1 === 30);
 
@@ -256,8 +256,8 @@ async function metApache(bin) {
         const llm = await haal(APACHE_PORT, '/llms.txt', H);
         check('F9: llms.txt komt als tekst met UTF-8', /^text\/plain; charset=utf-8/i.test(llm.headers['content-type']));
         // Bestanden met een hash in de naam mogen een jaar bewaard worden; zonder hash niet.
-        const hashJs = (browser.body.match(/src="(js\/app\.[0-9a-f]{10}\.js)"/) || [])[1];
-        const hashCss = (browser.body.match(/href="(css\/site\.[0-9a-f]{10}\.css)"/) || [])[1];
+        const hashJs = (browser.body.match(/src="(assets\/app\.[0-9a-f]{10}\.js)"/) || [])[1];
+        const hashCss = (browser.body.match(/href="(assets\/site\.[0-9a-f]{10}\.css)"/) || [])[1];
         if (hashJs && hashCss) {
           const js = await haal(APACHE_PORT, '/' + hashJs, H);
           const cs = await haal(APACHE_PORT, '/' + hashCss, H);

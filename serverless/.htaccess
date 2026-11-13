@@ -65,7 +65,7 @@
   ExpiresByType audio/mpeg       "access plus 1 year"
   ExpiresByType font/woff2       "access plus 1 year"
   ExpiresByType text/css         "access plus 1 month"
-  # De JavaScript staat in js/ met een hash van de inhoud in de bestandsnaam
+  # De JavaScript staat in assets/ met een hash van de inhoud in de bestandsnaam
   # (app.dd4361e9c2.js). Verandert de code, dan verandert de naam, dus een jaar
   # bewaren is veilig: een oude gecachete versie wordt nooit meer gevraagd.
   ExpiresByType application/javascript "access plus 1 year"
@@ -86,7 +86,7 @@
   # Camera en microfoon expliciet toestaan voor deze site zelf
   Header always set Permissions-Policy "camera=(self), microphone=(self), display-capture=(self)"
 
-  # De bestanden in js/ en css/ hebben een hash van hun inhoud in de naam
+  # De js- en css-bestanden in assets/ met een hash van hun inhoud in de naam
   # (site.dc4445b158.css). Daarom mogen browsers en de CDN ze een jaar bewaren
   # en nooit opnieuw vragen. Alleen deze bestanden: de bijpagina's gebruiken
   # assets/brand-theme.css zonder hash, en die houdt de gewone bewaartijd.

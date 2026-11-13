@@ -10,8 +10,8 @@ maan/baby/nacht-gevoel mag blijven, de naam niet).
 De werkende app is de serverloze single-page variant in `serverless/`
 (`index.html`, `luna.css`, `js/app.js`, `js/i18n.js`, `js/lullaby.js`,
 `vendor/`). De productie-build (`npm run build`, `build.js`) is een kleine
-`index.html` die verwijst naar `css/site.<hash>.css` en `js/<naam>.<hash>.js`,
-plus `assets/`, `fonts/` en `music/`. Voorheen was het één zelfstandig
+`index.html` die verwijst naar `assets/site.<hash>.css` en
+`assets/<naam>.<hash>.js`, plus `fonts/` en `music/`. Voorheen was het één zelfstandig
 `index.html` met alles inline (1,7 miljoen tekens); dat is op verzoek van de
 eigenaar losgelaten omdat een AI-assistent die de pagina leest voor elk teken
 betaalt. De hash in de bestandsnaam maakt een jaar bewaren veilig.

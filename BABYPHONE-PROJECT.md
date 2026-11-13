@@ -63,7 +63,7 @@ test/                    ← Playwright e2e suites
   e2e-serverless.js         ← main serverless app flow (24 assertions)
   e2e-reconnect.js           ← forced-drop / reconnect-with-backoff flow
 .github/workflows/ci.yml  ← runs the e2e suites on push/PR
-build.js                  ← builds serverless/ into dist/: a small index.html + hashed css/ and js/ files
+build.js                  ← builds serverless/ into dist/: a small index.html + hashed css/js files in assets/
 server.js                 ← Express server: serves serverless/ at root, public/ at /legacy/
 CLAUDE.md                  ← design rules & workflow contract for this repo
 ```
@@ -73,7 +73,7 @@ CLAUDE.md                  ← design rules & workflow contract for this repo
 ```bash
 npm install
 npm start                  # Express server on :3000 — serverless/ at /, legacy app at /legacy/
-npm run build              # produces dist/ — small index.html + css/, js/ (hashed names), assets/, fonts/, music/, legal pages
+npm run build              # produces dist/ — small index.html + assets/ (incl. hashed css/js), fonts/, music/, legal pages
 npm run lint                # node -c syntax check on all JS
 npm run test:serverless     # Playwright e2e — main app (24 checks)
 npm run test:reconnect      # Playwright e2e — forced disconnect/reconnect
@@ -82,7 +82,7 @@ npm test                    # Playwright e2e — legacy app
 ```
 
 `build.js` bundles `luna.css`/`dash.css`/`brand-theme.css` into one
-`css/site.<hash>.css` and writes each script as its own `js/<name>.<hash>.js`
+`assets/site.<hash>.css` and writes each script as its own `assets/<name>.<hash>.js`
 (same order as before, not concatenated), with comments stripped (the syntax
 tree of every script is checked to be identical). `index.html` references them.
 The hash is a fingerprint of the content, so the files can be cached for a year:
@@ -438,7 +438,7 @@ the site as eligible as possible; actual ranking builds over time.
 - **Target**: static hosting (currently Hostinger, GitHub auto-deploy from a
   connected repo).
 - **What to upload**: the contents of `dist/` (produced by `npm run build`)
-  — a small `index.html`, plus `css/`, `js/`, `assets/`, `fonts/`, `music/`, the legal HTML pages,
+  — a small `index.html`, plus `assets/` (including the hashed css/js), `fonts/`, `music/`, the legal HTML pages,
   and the SEO/PWA files (`robots.txt`, `sitemap.xml`, `manifest.webmanifest`,
   favicons, `og-image.png`).
 - **Note**: the `music/` folder (~34MB of MP3s) is excluded from delivery

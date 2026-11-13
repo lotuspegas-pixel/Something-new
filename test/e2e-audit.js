@@ -492,10 +492,10 @@ function findExecutable() {
   // BEVINDING 11 / 29 — .warn bestaat in CSS; turn.json geeft geen 404
   // ------------------------------------------------------------------
   // In de bron staan de drie stijlbestanden los; in de uitgeleverde dist/ zijn ze één
-  // bestand met een hash in de naam (css/site.<hash>.css).
+  // bestand met een hash in de naam (assets/site.<hash>.css).
   const cssBestanden = fs.existsSync(path.join(ROOT, 'luna.css'))
     ? ['luna.css', 'dash.css', path.join('assets', 'brand-theme.css')]
-    : fs.readdirSync(path.join(ROOT, 'css')).filter((n) => /^site\.[0-9a-f]{10}\.css$/.test(n)).map((n) => path.join('css', n));
+    : fs.readdirSync(path.join(ROOT, 'assets')).filter((n) => /^site\.[0-9a-f]{10}\.css$/.test(n)).map((n) => path.join('assets', n));
   const css = cssBestanden.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   check('De klasse .warn heeft een zichtbare stijl in de CSS', /\.warn\b/.test(css));
   check('Geen 404 op turn.json meer' + (gemist.length ? ' — gemist: ' + [...new Set(gemist)].join(', ') : ''),

@@ -18,7 +18,8 @@ playlist.json; zonder dat bestand blijft de lijst met slaapliedjes leeg.
 Na het uitpakken ziet de map er zo uit:
 
   index.html          <- de app (klein; verwijst naar css/ en js/)
-  css/, js/           <- stijl en code, met een code in de bestandsnaam
+  assets/             <- afbeeldingen, merkbestanden, en de stijl en code
+                         (site.<code>.css en app.<code>.js e.d.)
   .htaccess           <- serverinstellingen, zie hieronder
   contact-send.php    <- verstuurt het contactformulier
   privacy.html, terms.html, contact.html, about.html,
@@ -93,11 +94,13 @@ GOED OM TE WETEN
 - Beide apparaten moeten de site tegelijk geopend hebben. Een browser
   kan geen verbinding onderhouden als de site helemaal gesloten is.
 - Wil je later iets wijzigen: upload de nieuwe bestanden er overheen.
-  Upload dan index.html EN de mappen css/ en js/ samen. De bestandsnamen
-  in css/ en js/ bevatten een code die met de inhoud verandert (bv.
-  app.dd4361e9c2.js), en index.html verwijst naar de nieuwste. Zo kan de
-  browser de code lang bewaren zonder ooit een oude versie te tonen. Oude
-  bestanden in css/ en js/ mag je verwijderen; ze worden niet meer gebruikt.
+  Upload dan index.html EN de hele map assets/ samen. De stijl- en
+  codebestanden daarin hebben een code in de naam die met de inhoud
+  verandert (bv. app.dd4361e9c2.js), en index.html verwijst naar de
+  nieuwste. Zo kan de browser de code lang bewaren zonder ooit een oude
+  versie te tonen. Oude bestanden met zo'n code (site.*.css, app.*.js,
+  i18n.*.js, lullaby.*.js, qr.*.js, qrcode.*.js, jsQR.*.js, peerjs.min.*.js)
+  die niet meer in index.html voorkomen mag je verwijderen.
   Upload je alleen index.html, dan verwijst die naar bestanden die nog niet
   op de server staan en start de app niet.
 
