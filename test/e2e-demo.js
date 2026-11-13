@@ -998,10 +998,19 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
       await goedgekeurd;
       const z = await zicht(ouder);
       const marks = await ouder.evaluate(() => (window.BABYFOON_MARKS || []).slice()).catch(() => []);
+      // Ook de kant van de babyunit vastleggen. Een keer is deze meting op de
+      // CI-runner 40 s blijven hangen (tweede verbindingspoging van de ouder,
+      // geen akkoord); aan alleen de ouderkant was niet te zien of de baby het
+      // hallo kreeg, de vraag toonde of afwees. Nu staat dat erbij.
+      const babyMarks = await baby.evaluate(() => (window.BABYFOON_MARKS || []).slice()).catch(() => []);
+      const babyVraag = await baby.evaluate(() => {
+        const b = document.getElementById('babyApproval');
+        return b ? (b.classList.contains('hidden') ? 'vraag verborgen' : 'vraag zichtbaar') : 'geen vraagvenster';
+      }).catch(() => '?');
       await cb.close(); await cp.close();
       return {
         babyMs, code: kc.code, beeldMs: Date.now() - tO, px: b.px,
-        statussen: (z.status || []).map((x) => x.v), marks,
+        statussen: (z.status || []).map((x) => x.v), marks, babyMarks, babyVraag,
       };
     };
     // De tijdlijn van de ouderunit, stap voor stap, ten opzichte van het
@@ -1018,6 +1027,12 @@ const kop = (s) => console.log('\n' + '='.repeat(72) + '\n' + s + '\n' + '='.rep
     traagMsHuidig = TRAAG_MS;
     console.log('   loopback (0 ms extra) : babyunit klaar na ' + (snel.babyMs / 1000).toFixed(1) + ' s, beeld na ' + (snel.beeldMs / 1000).toFixed(1) + ' s');
     console.log('     ' + tijdlijn(snel.marks));
+    // Bij een meting die er veel langer over deed dan een loopback hoort: laat
+    // zien wat de babyunit zag, zodat een afwijking verklaarbaar is.
+    if (snel.beeldMs > 10000) {
+      console.log('     babyunit: ' + tijdlijn(snel.babyMarks) + ' · ' + snel.babyVraag);
+      console.log('     statusverloop ouder: ' + snel.statussen.join(' → '));
+    }
     console.log('   +' + TRAAG_MS + ' ms per richting : babyunit klaar na ' + (traagM.babyMs / 1000).toFixed(1) + ' s, beeld na ' + (traagM.beeldMs / 1000).toFixed(1) + ' s');
     console.log('     ' + tijdlijn(traagM.marks));
     console.log('   +' + TRAAG_MS * 3 + ' ms per richting : babyunit klaar na ' + (zeerTraag.babyMs / 1000).toFixed(1) + ' s, beeld na ' + (zeerTraag.beeldMs / 1000).toFixed(1) + ' s');
