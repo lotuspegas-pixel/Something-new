@@ -233,6 +233,8 @@ async function metApache(bin) {
         const agent = await haal(APACHE_PORT, '/', Object.assign({ Accept: 'text/markdown' }, H));
         check('F4: een agent met Accept: text/markdown krijgt Markdown',
           agent.status === 200 && /^text\/markdown/.test(agent.headers['content-type']) && /^# BabyPhone\.online/.test(agent.body), agent.headers['content-type']);
+        const cc = agent.headers['cache-control'] || '';
+        check('F4b: het Markdown-antwoord mag door geen enkele cache (of CDN) onthouden worden', /no-store/.test(cc) && /private/.test(cc) && !/max-age/.test(cc), 'Cache-Control: ' + cc);
         check('F5: en dat is veel kleiner dan de HTML', agent.body.length * 20 < browser.body.length, agent.body.length + ' tegenover ' + browser.body.length + ' tekens');
         check('F6: met UTF-8 als tekenset', /charset=utf-8/i.test(agent.headers['content-type']));
         const idx = await haal(APACHE_PORT, '/index.html', Object.assign({ Accept: 'text/markdown' }, H));

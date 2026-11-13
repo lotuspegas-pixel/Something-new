@@ -66,7 +66,6 @@
   ExpiresByType font/woff2       "access plus 1 year"
   ExpiresByType text/css         "access plus 1 month"
   ExpiresByType text/html        "access plus 10 minutes"
-  ExpiresByType text/markdown    "access plus 10 minutes"
 </IfModule>
 
 # ---------------------------------------------------------------------------
@@ -91,8 +90,14 @@
     Header set Link "</index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\""
     Header merge Vary "Accept"
   </Files>
+  # Het Markdown-antwoord op "/" mag NOOIT door een tussenliggende cache (CDN)
+  # onthouden worden. Hostinger zet er een CDN voor (server: hcdn); onthoudt die
+  # het Markdown-antwoord voor "/" en geeft hij dat daarna aan gewone bezoekers,
+  # dan zien zij tekst in plaats van de app. Vary: Accept alleen beschermt daar
+  # niet tegen: veel CDN's kijken alleen naar Accept-Encoding.
   <Files "index.md">
     Header merge Vary "Accept"
+    Header set Cache-Control "private, no-store"
   </Files>
 </IfModule>
 
