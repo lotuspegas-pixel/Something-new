@@ -24,6 +24,7 @@
     "test:blogpage": "node test/e2e-blog-page.js",
     "test:webkit": "node test/e2e-webkit.js",
     "test:agent": "node test/e2e-agent.js",
+    "test:alarm": "node test/e2e-alarm.js",
     "test:android": "node test/e2e-android.js",
     "test:demo": "node test/e2e-demo.js"
   },

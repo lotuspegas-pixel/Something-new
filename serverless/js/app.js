@@ -2976,6 +2976,15 @@
   let nightlightLevel = 60; // 0..100 — sterkte terwijl het aan is
   let sensitivity = 55;
   let alarmCooldown = 0;
+  // Huilalarm-balk (#cryAlert). Hij staat er altijd; alleen kleur en tekst
+  // wisselen. cryLaatsteLuid is het laatste moment waarop het geluid boven de
+  // drempel lag: de balk blijft CRY_HOLD_MS na dat moment in de alarmkleur.
+  // Zonder die nahouder zakte het geluid bij elk beeldje net wel of niet onder
+  // de drempel, en wisselde de balk (en dus de hele rij erboven het beeld) met
+  // de snelheid van de beeldjes — het videovenster sprong heen en weer.
+  const CRY_HOLD_MS = 4000;
+  let cryLaatsteLuid = 0;
+  let cryStand = '';
   // camerakeuze + LED-lampje van de babyunit (gemeld via het besturingskanaal)
   let babyCameras = [];
   let camActiveId = '';
@@ -3168,14 +3177,29 @@
     const dbt = $('dbText'); if (dbt) dbt.textContent = Math.round(30 + level * 0.55) + ' dB';
     const threshold = 100 - sensitivity;
     const now = Date.now();
-    const cry = $('cryAlert');
     if (alarmOn && level > threshold) {
-      if (cry) { cry.classList.remove('hidden'); toonMeldingenStrook(); }
+      cryLaatsteLuid = now;
       if (now > alarmCooldown) { alarmCooldown = now + 6000; triggerAlarm(); }
       if (now > soundEventCooldown) { soundEventCooldown = now + 8000; if (typeof addEvent === 'function') addEvent('sound', T('evSound'), T('evSoundSub')); }
-    } else if (now > alarmCooldown - 5000) {
-      if (cry && !cry.classList.contains('hidden')) { cry.classList.add('hidden'); toonMeldingenStrook(); }
     }
+    // Elke meting de stand van de balk bijwerken; zetCryBalk() doet niets zolang
+    // de stand gelijk blijft, dus dit raakt de pagina alleen bij een wisseling.
+    werkCryBalkBij();
+  }
+  // Welke stand hoort de balk nu te hebben?
+  function werkCryBalkBij() {
+    zetCryBalk(!alarmOn ? 'off' : (Date.now() - cryLaatsteLuid < CRY_HOLD_MS ? 'alarm' : 'on'));
+  }
+  // Zet de balk in een stand. De balk wordt nooit verborgen of getoond: alleen
+  // data-state (kleur) en de tekst veranderen, op een vaste hoogte (zie de CSS),
+  // zodat er nergens iets verschuift. Gelijke stand = niets doen.
+  function zetCryBalk(stand) {
+    if (stand === cryStand) return;
+    const b = $('cryAlert');
+    if (!b) return;
+    cryStand = stand;
+    b.setAttribute('data-state', stand);
+    b.textContent = stand === 'alarm' ? T('cryingDetected') : (stand === 'off' ? T('alarmOff') : T('alarmOn'));
   }
   // De geluidsmeter én het huilalarm hingen volledig aan requestAnimationFrame.
   // Een browser levert géén animatieframes meer zodra de pagina niet zichtbaar
@@ -3937,11 +3961,13 @@
       // het alarm had uitgezet. Nu volgt hij de werkelijke stand.
       sendControl({ cmd: 'cryAlert', on: alarmOn });
       toonAlarmBanner();
+      // Weer aanzetten begint rustig: een oud alarm uit een eerdere periode telt niet mee.
+      if (alarmOn) cryLaatsteLuid = 0;
+      werkCryBalkBij();
     };
     $('btnAlarm').onclick = () => {
       alarmOn = !alarmOn;
       setAlarmUI();
-      if (!alarmOn) { const c = $('cryAlert'); if (c) c.classList.add('hidden'); }
       toonMeldingenStrook();
     };
     if ($('alToggle')) $('alToggle').onclick = () => $('btnAlarm').click();
@@ -5439,6 +5465,10 @@
         // komt de werkelijke stand terug (in de nieuwe taal).
         renderBabyTiles();
       }
+      // De balk heeft geen data-i18n (zijn tekst hangt van de stand af), dus
+      // I18n.apply() laat hem staan: hier opnieuw tekenen in de nieuwe taal.
+      cryStand = '';
+      werkCryBalkBij();
       zetDonatieknop();
     });
   }

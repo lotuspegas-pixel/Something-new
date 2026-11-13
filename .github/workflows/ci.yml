@@ -76,6 +76,11 @@ jobs:
       - name: E2E — WebKit/iOS-gedrag (Safari op iPhone en iPad)
         run: npm run test:webkit
 
+      # Huilalarm-balk: staat er altijd, wisselt alleen van kleur, en het
+      # videovenster springt niet meer als het geluid rond de drempel schommelt.
+      - name: E2E — huilalarm-balk (geen schuivend beeld, alle talen en standen)
+        run: npm run test:alarm
+
       - name: E2E — Android-gedrag (Chrome, Samsung Internet, WebView)
         run: npm run test:android
 

@@ -549,8 +549,14 @@
             <div class="vcard-hd"><span id="vcardHd" data-i18n="hd">HD</span><span class="sig sm"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
           </div>
 
-          <div class="monitor-alerts hidden" id="monitorAlerts">
-            <div class="alert-pill hidden" id="cryAlert" role="status" data-i18n="cryingDetected">Crying detected</div>
+          <div class="monitor-alerts" id="monitorAlerts">
+            <!-- Huilalarm-balk. Staat er ALTIJD en verandert alleen van kleur en tekst
+                 (data-state: on = luistert, alarm = gehuil gedetecteerd, off = uit).
+                 Hij mag nooit de klasse "hidden" krijgen: de strook heeft een eigen
+                 rij in het raster, en elke keer dat die verscheen of verdween
+                 schoof het videovenster mee. De tekst komt uit app.js, niet uit
+                 data-i18n, omdat hij per stand wisselt. -->
+            <div class="alert-pill cry-pill" id="cryAlert" role="status" data-state="on">Alarm on</div>
             <div class="alert-pill hidden" id="streamAlert" role="status" data-i18n="streamPaused">Baby unit interrupted — no sound coming in</div>
             <!-- Het toestel heeft deze pagina stilgezet gehad: er is dan een gat
                  in de bewaking geweest. Tik = wegklikken. -->

@@ -2956,6 +2956,60 @@ body.app-mode #dviewMonitor.dview.active,
 }
 
 /* ================================================================
+   Huilalarm-balk (#cryAlert)
+   ----------------------------------------------------------------
+   De balk staat er altijd. Alleen kleur en tekst wisselen, en dat
+   gebeurt via data-state:
+     on    = het alarm luistert (rustig groen)
+     alarm = er is gehuil gedetecteerd (koraalrood, met een lichte rand)
+     off   = het alarm staat uit (grijsblauw)
+
+   Hij is bewust altijd even hoog en altijd één regel. Dat is de reden
+   dat het videovenster niet meer beweegt: de strook erboven heeft een
+   eigen rij in het raster, en elke keer dat die rij groter of kleiner
+   werd schoof het beeld mee. Langste vertaling is 23 tekens, dus één
+   regel past ook op een smalle telefoon.
+
+   Contrast (WCAG AA, 4,5:1 voor kleine tekst), uitgerekend en niet
+   geschat: rustig 5,5:1, uit 5,6:1, alarm 4,9:1 of meer. De oude
+   alarmpil (wit op #EC7358) haalde 2,9:1.
+   ================================================================ */
+#dviewMonitor > .monitor-alerts > .cry-pill {
+  box-sizing: border-box;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid transparent;
+  font: 700 13px "Nunito", sans-serif;
+  letter-spacing: 0.1px;
+  transition: color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#dviewMonitor > .monitor-alerts > .cry-pill[data-state="on"] {
+  background: rgba(47, 179, 122, 0.12);
+  border-color: rgba(47, 179, 122, 0.34);
+  color: #1b6e4e;
+  box-shadow: none;
+}
+#dviewMonitor > .monitor-alerts > .cry-pill[data-state="alarm"] {
+  background: linear-gradient(145deg, #c8432f, #b33325);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(200, 67, 47, 0.2);
+}
+#dviewMonitor > .monitor-alerts > .cry-pill[data-state="off"] {
+  background: rgba(110, 159, 222, 0.1);
+  border-color: rgba(110, 159, 222, 0.3);
+  color: #4a6290;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #dviewMonitor > .monitor-alerts > .cry-pill { transition: none; }
+}
+
+/* ================================================================
    14. Donatieknop in de bovenbalk
    ----------------------------------------------------------------
    BabyPhone.online is gratis en advertentievrij; deze knop leidt naar
